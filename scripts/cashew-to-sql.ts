@@ -104,6 +104,18 @@ insert(
     c.archived,
   ])
 )
+// Opening balances need category '0' and transfers need the other two, whatever the backup has.
+// Inserted before anything that points at them: D1 checks foreign keys as it goes.
+insert(
+  "categories",
+  ["id", "name", "icon", "income", "sort"],
+  [
+    ["0", "Balance correction", "⚖️", 0, 997],
+    ["transfer_fee", "Transfer fees", "💱", 0, 998],
+    ["transfer", "Transfer", "↔️", 0, 999],
+  ],
+  " ON CONFLICT(user_id, id) DO NOTHING"
+)
 
 // Cashew stores every payment of a subscription as its own row, and the next one as an unpaid row.
 // Group them into one subscription per title; unpaid rows become projected occurrences.
@@ -316,15 +328,4 @@ insert(
   ["key", "value"],
   [["timezone", tz]],
   " ON CONFLICT(user_id, key) DO UPDATE SET value = excluded.value"
-)
-// Opening balances need category '0' and transfers need the other two, whatever the backup has.
-insert(
-  "categories",
-  ["id", "name", "icon", "income", "sort"],
-  [
-    ["0", "Balance correction", "⚖️", 0, 997],
-    ["transfer_fee", "Transfer fees", "💱", 0, 998],
-    ["transfer", "Transfer", "↔️", 0, 999],
-  ],
-  " ON CONFLICT(user_id, id) DO NOTHING"
 )
