@@ -45,6 +45,12 @@ Before you finish, run all five. Each one must pass.
 - `npm run knip` must report nothing. If it flags a dependency, file or export you just stopped using, delete it. Code in `src/components/ui/` comes from shadcn, so knip ignores its unused exports.
 - To check the app in a browser, sign in as `demo@kosha.local` with the password `kosha-demo-2026`. Run `npm run db:demo` to reset it. Never use or screenshot real account data.
 
+## Commits
+
+Commit messages follow [Conventional Commits](https://www.conventionalcommits.org): `type(scope): subject`, with a header of 100 characters or fewer. The scope is optional, and `!` after the type or scope marks a breaking change. The types are `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore` and `revert`.
+
+Git hooks in `.githooks/` enforce this. `npm install` turns them on through the `prepare` script. `pre-commit` runs `npm run check` and `npm run lint`, and `commit-msg` checks the header. If a hook fails, fix the cause and commit again.
+
 ## Code style
 
 - Write comments that explain why. Keep them short and put them above the code they describe.

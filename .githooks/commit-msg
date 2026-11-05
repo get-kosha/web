@@ -1,0 +1,20 @@
+#!/bin/sh
+# Conventional Commits: type(optional-scope)!: subject — https://www.conventionalcommits.org
+header=$(head -n 1 "$1")
+
+# Messages git writes itself (merges, reverts, fixup!/squash! for autosquash).
+case "$header" in
+  "Merge "* | "Revert "* | "fixup! "* | "squash! "* | "amend! "*) exit 0 ;;
+esac
+
+types="feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert"
+if ! printf '%s' "$header" | grep -Eq "^($types)(\([a-z0-9._/-]+\))?!?: [^ ].*$"; then
+  echo "commit-msg: header must look like 'type(scope): subject'" >&2
+  echo "  types: $(echo "$types" | tr '|' ' ')" >&2
+  echo "  got:   $header" >&2
+  exit 1
+fi
+if [ "${#header}" -gt 100 ]; then
+  echo "commit-msg: header is ${#header} characters; keep it to 100" >&2
+  exit 1
+fi

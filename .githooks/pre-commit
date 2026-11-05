@@ -1,0 +1,4 @@
+#!/bin/sh
+# Lint and format check over the whole repo (both take well under a second).
+# Fix formatting with `npm run format`.
+npm run -s check && npm run -s lint

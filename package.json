@@ -17,7 +17,8 @@
     "db:migrate": "wrangler d1 migrations apply kosha --local",
     "import:cashew": "node scripts/cashew-to-sql.ts",
     "db:demo": "node scripts/seed-demo.ts > .wrangler/demo.sql && wrangler d1 execute kosha --local --file .wrangler/demo.sql",
-    "knip": "knip"
+    "knip": "knip",
+    "prepare": "git config core.hooksPath .githooks || true"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
