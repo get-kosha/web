@@ -14,3 +14,11 @@ todos.json
 
 # typescript
 *.tsbuildinfo
+
+.dev.vars
+.wrangler
+
+# Local-only: design handoff and screenshots (contain real account data), generated SQL
+design/
+Claude outputs/
+/*.sql

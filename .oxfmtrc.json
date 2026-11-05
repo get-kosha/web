@@ -1,0 +1,18 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "semi": false,
+  "trailingComma": "es5",
+  "printWidth": 120,
+  "sortPackageJson": false,
+  "sortTailwindcss": {
+    "stylesheet": "src/styles.css",
+    "functions": ["cn", "cva"]
+  },
+  "ignorePatterns": [
+    "package-lock.json",
+    "src/routeTree.gen.ts",
+    "worker-configuration.d.ts",
+    "design/",
+    "Claude outputs/"
+  ]
+}

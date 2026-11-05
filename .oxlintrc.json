@@ -1,0 +1,16 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "react", "unicorn", "oxc", "import"],
+  "categories": {
+    "correctness": "error"
+  },
+  "rules": {
+    "react/rules-of-hooks": "error",
+    "react/exhaustive-deps": "warn",
+    "react/purity": "warn",
+    "react/set-state-in-effect": "warn",
+    "react/static-components": "warn",
+    "react/immutability": "warn"
+  },
+  "ignorePatterns": ["src/routeTree.gen.ts", "worker-configuration.d.ts", "design/**", "Claude outputs/**"]
+}

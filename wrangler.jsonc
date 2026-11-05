@@ -1,0 +1,24 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "kosha",
+  "compatibility_date": "2026-11-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "@tanstack/react-start/server-entry",
+  "observability": { "enabled": true },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "kosha",
+      // Replace with the id printed by `wrangler d1 create kosha` before deploying.
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations",
+    },
+  ],
+  // BETTER_AUTH_SECRET goes in .dev.vars locally and `wrangler secret put` in production.
+  "vars": {
+    // Public URL of the app. Passkeys are tied to this domain.
+    "BETTER_AUTH_URL": "https://kosha.example.com",
+    // Comma-separated emails allowed to sign up. Empty = anyone.
+    "ALLOWED_EMAILS": "",
+  },
+}

@@ -1,0 +1,59 @@
+import { useEffect, useRef, useState, type ComponentProps } from "react"
+import NumberFlow from "@number-flow/react"
+import { getRouteApi } from "@tanstack/react-router"
+import { LOCALE } from "@/lib/core"
+import { cn } from "@/lib/utils"
+
+// Set once the first (hydration) render has committed. Numbers on a hard load render final and still;
+// numbers that mount later (client navigation) roll in, so the server never sends a misleading €0.00.
+let hydrated = false
+export function useMarkHydrated() {
+  useEffect(() => {
+    hydrated = true
+  }, [])
+}
+
+/** True once the element has scrolled into view (and stays true). */
+function useInView<T extends Element>(initial = false) {
+  const ref = useRef<T>(null)
+  const [seen, setSeen] = useState(initial)
+  useEffect(() => {
+    const el = ref.current
+    if (seen || !el) return
+    const io = new IntersectionObserver(([e]) => e.isIntersecting && setSeen(true), { threshold: 0.15 })
+    io.observe(el)
+    return () => io.disconnect()
+  }, [seen])
+  return [ref, seen] as const
+}
+
+/**
+ * Entrance for charts: `x` wipes in left to right (lines, areas), `bars` grows children marked
+ * `bar-grow` / `bar-grow-x` with a stagger from their `--i`. Plays once, when first in view.
+ */
+export function Reveal({ kind = "x", className, ...props }: ComponentProps<"div"> & { kind?: "x" | "bars" }) {
+  const [ref, seen] = useInView<HTMLDivElement>()
+  return <div ref={ref} data-reveal={kind} data-shown={seen || undefined} className={className} {...props} />
+}
+
+const spin = { duration: 650, easing: "cubic-bezier(0.23, 1, 0.32, 1)" }
+const fade = { duration: 250, easing: "ease-out" }
+
+/** Money whose digits slide into place on entrance and when the value changes (e.g. a new month). */
+export function RollingMoney({ value, currency, className }: { value: number; currency: string; className?: string }) {
+  const motion = getRouteApi("/_app").useLoaderData({ select: (m) => m.prefs.motion })
+  const [ref, seen] = useInView<HTMLSpanElement>(!hydrated || motion === "off")
+  return (
+    <span ref={ref} className={cn("inline-block", className)}>
+      <NumberFlow
+        value={(seen ? value : 0) / 100}
+        locales={LOCALE}
+        format={{ style: "currency", currency: currency.toUpperCase(), maximumFractionDigits: 2 }}
+        transformTiming={spin}
+        spinTiming={spin}
+        opacityTiming={fade}
+        animated={motion !== "off"}
+      />
+    </span>
+  )
+}

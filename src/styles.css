@@ -2,132 +2,242 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/geist";
+@import "@fontsource-variable/geist-mono";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-    --font-heading: var(--font-sans);
-    --font-sans: 'Geist Variable', sans-serif;
-    --color-sidebar-ring: var(--sidebar-ring);
-    --color-sidebar-border: var(--sidebar-border);
-    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-    --color-sidebar-accent: var(--sidebar-accent);
-    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-    --color-sidebar-primary: var(--sidebar-primary);
-    --color-sidebar-foreground: var(--sidebar-foreground);
-    --color-sidebar: var(--sidebar);
-    --color-chart-5: var(--chart-5);
-    --color-chart-4: var(--chart-4);
-    --color-chart-3: var(--chart-3);
-    --color-chart-2: var(--chart-2);
-    --color-chart-1: var(--chart-1);
-    --color-ring: var(--ring);
-    --color-input: var(--input);
-    --color-border: var(--border);
-    --color-destructive: var(--destructive);
-    --color-accent-foreground: var(--accent-foreground);
-    --color-accent: var(--accent);
-    --color-muted-foreground: var(--muted-foreground);
-    --color-muted: var(--muted);
-    --color-secondary-foreground: var(--secondary-foreground);
-    --color-secondary: var(--secondary);
-    --color-primary-foreground: var(--primary-foreground);
-    --color-primary: var(--primary);
-    --color-popover-foreground: var(--popover-foreground);
-    --color-popover: var(--popover);
-    --color-card-foreground: var(--card-foreground);
-    --color-card: var(--card);
-    --color-foreground: var(--foreground);
-    --color-background: var(--background);
-    --radius-sm: calc(var(--radius) * 0.6);
-    --radius-md: calc(var(--radius) * 0.8);
-    --radius-lg: var(--radius);
-    --radius-xl: calc(var(--radius) * 1.4);
-    --radius-2xl: calc(var(--radius) * 1.8);
-    --radius-3xl: calc(var(--radius) * 2.2);
-    --radius-4xl: calc(var(--radius) * 2.6);
+  --font-heading: var(--font-sans);
+  --font-sans: "Geist Variable", sans-serif;
+  --font-mono: "Geist Mono Variable", ui-monospace, monospace;
+  /* Motion: strong curves for UI. ease-out overrides Tailwind's weak default. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --color-subtle-foreground: var(--subtle-foreground);
+  --color-selected: var(--selected);
+  --color-warning: var(--warning);
+  --color-chart-5: var(--chart-5);
+  --color-positive: var(--positive);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
 :root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.708 0 0);
+  --background: #f6f6f4;
+  --foreground: #111113;
+  --card: #ffffff;
+  --card-foreground: #111113;
+  --popover: #ffffff;
+  --popover-foreground: #111113;
+  --primary: #111113;
+  --primary-foreground: #f6f6f4;
+  --secondary: #f0f0ed;
+  --secondary-foreground: #111113;
+  --muted: #f0f0ed;
+  --muted-foreground: #6b6b73;
+  --subtle-foreground: #46464d;
+  --accent: #f0f0ed;
+  --accent-foreground: #111113;
+  --selected: #ebebe7;
+  --destructive: #b42318;
+  --warning: #b45309;
+  --positive: #0f766e;
+  --border: #e4e4e0;
+  --input: #e4e4e0;
+  --ring: #6b6b73;
+  --chart-1: #0f766e;
+  --chart-2: #1c1c1f;
+  --chart-3: #6b6b73;
+  --chart-4: #cfcfca;
+  --chart-5: #e4e4e0;
+  --radius: 0.625rem;
 }
 
 .dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.205 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.922 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.556 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.488 0.243 264.376);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.556 0 0);
+  --background: #0b0b0c;
+  --foreground: #f3f3f4;
+  --card: #131315;
+  --card-foreground: #f3f3f4;
+  --popover: #131315;
+  --popover-foreground: #f3f3f4;
+  --primary: #f3f3f4;
+  --primary-foreground: #0b0b0c;
+  --secondary: #1c1c1f;
+  --secondary-foreground: #f3f3f4;
+  --muted: #1c1c1f;
+  --muted-foreground: #90909a;
+  --subtle-foreground: #bdbdc4;
+  --accent: #1c1c1f;
+  --accent-foreground: #f3f3f4;
+  --selected: #232327;
+  --destructive: #f87171;
+  --warning: #f59e0b;
+  --positive: #2dd4bf;
+  --border: #27272b;
+  --input: #27272b;
+  --ring: #90909a;
+  --chart-1: #2dd4bf;
+  --chart-2: #ececee;
+  --chart-3: #90909a;
+  --chart-4: #3b3b41;
+  --chart-5: #27272b;
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
-    }
+  }
   body {
     @apply bg-background text-foreground;
-    }
-  button:not(:disabled), [role="button"]:not(:disabled) {
+  }
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
     cursor: pointer;
-    }
+  }
   html {
     @apply font-sans;
-    }
+  }
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+  ::selection {
+    background: color-mix(in oklab, var(--positive) 22%, transparent);
+  }
+  .num {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+}
+
+.dark {
+  color-scheme: dark;
+}
+
+/* Reduced motion: keep fades, drop movement and scale from enter/exit animations. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    --tw-enter-scale: 1;
+    --tw-exit-scale: 1;
+    --tw-enter-translate-x: 0;
+    --tw-enter-translate-y: 0;
+    --tw-exit-translate-x: 0;
+    --tw-exit-translate-y: 0;
+  }
+}
+
+/* Chart entrances (see Reveal in components/motion.tsx). Strong ease-out, under a second, once. */
+@keyframes kosha-wipe {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+@keyframes kosha-grow-y {
+  from {
+    transform: scaleY(0);
+  }
+}
+@keyframes kosha-grow-x {
+  from {
+    transform: scaleX(0);
+  }
+}
+@keyframes kosha-fade {
+  from {
+    opacity: 0;
+  }
+}
+/* The clip sits on the child: IntersectionObserver treats a self-clipped target as never visible. */
+[data-reveal="x"] > * {
+  clip-path: inset(0 100% 0 0);
+}
+[data-reveal="x"][data-shown] > * {
+  clip-path: none;
+  animation: kosha-wipe 700ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+[data-reveal="bars"] .bar-grow {
+  transform-origin: bottom;
+  transform: scaleY(0);
+}
+[data-reveal="bars"] .bar-grow-x {
+  transform-origin: left;
+  transform: scaleX(0);
+}
+[data-reveal="bars"][data-shown] :is(.bar-grow, .bar-grow-x) {
+  transform: none;
+  animation: kosha-grow-y 500ms cubic-bezier(0.23, 1, 0.32, 1) backwards;
+  animation-delay: calc(var(--i, 0) * 25ms);
+}
+[data-reveal="bars"][data-shown] .bar-grow-x {
+  animation-name: kosha-grow-x;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal="x"] > *,
+  [data-reveal="x"][data-shown] > * {
+    clip-path: none;
+    animation: kosha-fade 300ms ease-out;
+  }
+  [data-reveal="bars"] :is(.bar-grow, .bar-grow-x),
+  [data-reveal="bars"][data-shown] :is(.bar-grow, .bar-grow-x) {
+    transform: none;
+    animation: kosha-fade 300ms ease-out backwards;
+  }
+}
+/* Hero figures: cents in the muted ink, inside NumberFlow's shadow DOM. */
+.cents-muted number-flow-react::part(fraction),
+.cents-muted number-flow-react::part(decimal) {
+  color: var(--muted-foreground);
+}
+
+/* Settings › Appearance › Animations off: everything snaps to its end state. Dialog portals and toasts
+   live outside the app shell, so the switch sits on <html>. */
+:root[data-motion="off"] *,
+:root[data-motion="off"] *::before,
+:root[data-motion="off"] *::after {
+  animation-duration: 0s !important;
+  animation-delay: 0s !important;
+  transition-duration: 0s !important;
+  transition-delay: 0s !important;
+  scroll-behavior: auto !important;
+}
+:root[data-motion="off"] [data-reveal] > *,
+:root[data-motion="off"] [data-reveal] :is(.bar-grow, .bar-grow-x) {
+  clip-path: none !important;
+  transform: none !important;
 }
