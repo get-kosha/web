@@ -9,7 +9,7 @@ Personal finance tracker: a TanStack Start app on one Cloudflare Worker with a D
 - `src/server/db.server.ts`: database helpers, exchange rates, subscription settling and transfer legs. `src/server/auth.server.ts`: Better Auth setup and `userId()`.
 - `src/routes/_app/*`: signed-in pages. `src/routes/_app.tsx` owns the app-wide `month` and `currency` search params and loads `getMeta()` once for every page. `/login` sits outside `_app`, so it loads no account data.
 - `src/components/ui/*`: shadcn/ui components on Base UI. App components sit beside them in `src/components/`.
-- `migrations/`: numbered D1 migrations. To change the schema, add the next numbered file. Never edit a migration that has already run.
+- `migrations/`: numbered D1 migrations. To change the schema, add the next numbered file. Production has applied `0001_init.sql`, so never edit a migration that is already in the repo. `npm run deploy` applies pending migrations before it deploys, so keep each migration compatible with the code currently running.
 - `scripts/`: Node scripts run directly as TypeScript. They cover the Cashew import and the demo seed.
 - `src/routeTree.gen.ts` and `worker-configuration.d.ts` are generated. Regenerate them with `npm run generate-routes` and `npm run cf-typegen`.
 

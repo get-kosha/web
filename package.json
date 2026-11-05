@@ -11,7 +11,7 @@
     "format": "oxfmt",
     "check": "oxfmt --check",
     "typecheck": "tsrs --noEmit --fast",
-    "deploy": "npm run build && wrangler deploy",
+    "deploy": "npm run build && wrangler d1 migrations apply kosha --remote && wrangler deploy",
     "cf-typegen": "wrangler types",
     "test": "node src/lib/core.test.ts",
     "db:migrate": "wrangler d1 migrations apply kosha --local",

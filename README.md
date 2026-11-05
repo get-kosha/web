@@ -50,12 +50,15 @@ The demo account is `demo@kosha.local` with the password `kosha-demo-2026`. It h
 
 ## Deploy to Cloudflare
 
-Kosha runs on a single Cloudflare Worker with a D1 database.
+Kosha runs on a single Cloudflare Worker with a D1 database. Production is at https://kosha.amruth-pillai.workers.dev, and every push to `main` deploys it through Workers Builds.
+
+`npm run deploy` builds the app, applies new D1 migrations, then deploys the Worker. Workers Builds runs the same command.
+
+To set up your own copy:
 
 ```sh
 npx wrangler d1 create kosha                  # copy the database_id into wrangler.jsonc
-npx wrangler d1 migrations apply kosha --remote
-npx wrangler secret put BETTER_AUTH_SECRET
+npx wrangler secret put BETTER_AUTH_SECRET    # 32+ random characters
 npm run deploy
 ```
 
@@ -64,7 +67,7 @@ Before you deploy, set these under `vars` in `wrangler.jsonc`:
 - `BETTER_AUTH_URL`: the public URL of the app. Passkeys only work on this domain.
 - `ALLOWED_EMAILS`: a comma-separated list of who may sign up. Leave it empty to let anyone sign up.
 
-Then add a custom domain to the Worker in the Cloudflare dashboard.
+To deploy on every push, connect the repository under the Worker's **Settings → Build**. Use `npm run deploy` as the deploy command and leave the build command empty. The build token needs **D1: Edit** for the migration step, which the token Cloudflare creates by default does not have.
 
 ## Import from Cashew
 
