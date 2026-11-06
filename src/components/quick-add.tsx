@@ -31,6 +31,8 @@ export function QuickAdd({
 }) {
   // Esc while the category list is open closes the list, not the dialog.
   const pickingRef = useRef<(() => void) | null>(null)
+  // "Add another" starts a fresh line by remounting the body.
+  const [round, setRound] = useState(0)
   return (
     <Dialog
       open={open}
@@ -49,7 +51,12 @@ export function QuickAdd({
         className="top-[12vh] max-h-[calc(100svh-14vh)] translate-y-0 gap-0 overflow-y-auto rounded-2xl border p-0 ring-0 sm:max-w-[640px] data-open:animate-none data-closed:animate-none"
       >
         <DialogTitle className="sr-only">Quick add</DialogTitle>
-        <Body key={initial} initial={initial} onDone={() => onOpenChange(false)} pickingRef={pickingRef} />
+        <Body
+          key={`${initial}:${round}`}
+          initial={initial}
+          onDone={(again) => (again ? setRound((r) => r + 1) : onOpenChange(false))}
+          pickingRef={pickingRef}
+        />
       </DialogContent>
     </Dialog>
   )
@@ -63,7 +70,8 @@ function Body({
   pickingRef,
 }: {
   initial: string
-  onDone: () => void
+  /** `again` keeps quick add open for the next entry. */
+  onDone: (again?: boolean) => void
   pickingRef: React.RefObject<(() => void) | null>
 }) {
   const meta = useMeta()
@@ -161,7 +169,7 @@ function Body({
     void navigate({ to: "/transactions", search: (s) => ({ ...s, q: searchTerm || undefined }) })
   }
 
-  async function add() {
+  async function add(again = false) {
     if (busy) return
     if (!signed) return toast.error("Enter an amount")
     if (!category) return toast.error("Pick a category")
@@ -183,9 +191,9 @@ function Body({
       try {
         localStorage.setItem(WALLET_KEY, wallet.id)
       } catch {}
-      onDone()
+      onDone(again)
       if (!queued) await router.invalidate()
-      toast(`${queued ? "Saved offline" : "Added"} ${fmt(signed, currency)} · ${name || category.name}`, {
+      toast(`${queued ? "Saved offline" : "Added"} ${fmt(signed, currency)}, ${name || category.name}`, {
         action: {
           label: "Undo",
           onClick: async () => {
@@ -210,6 +218,9 @@ function Body({
         if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
           e.preventDefault()
           searchActivity()
+        } else if (e.key === "Enter" && e.shiftKey) {
+          e.preventDefault()
+          void add(true)
         }
       }}
     >
@@ -230,7 +241,7 @@ function Body({
 
       <div className="px-[18px] pt-4 pb-1.5">
         <div className="mb-2 text-xs text-muted-foreground">Will add</div>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-[108px_minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)_128px_84px]">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-[100px_minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1fr)_104px_72px]">
           <Box label="Amount">
             <span className="flex items-baseline">
               <span
@@ -291,7 +302,7 @@ function Body({
                   states.account === "guess" && "text-subtle-foreground"
                 )}
               >
-                <SelectValue />
+                <SelectValue className="block min-w-0 truncate" />
               </SelectTrigger>
               <SelectContent>
                 {wallets.map((w) => (
@@ -333,11 +344,24 @@ function Body({
         )}
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
           <span className="text-xs text-muted-foreground">{hint}</span>
-          <Button type="submit" size="lg" disabled={busy} className="gap-2.5 px-4">
-            {income ? "Add income" : "Add expense"}
-            {signed ? <span className="num font-normal opacity-80">{fmt(signed, currency)}</span> : null}
-            <Kbd className="border-current bg-transparent text-current opacity-70">↵</Kbd>
-          </Button>
+          <div className="ml-auto flex items-center gap-2">
+            <Button
+              type="button"
+              variant="ghost"
+              size="lg"
+              disabled={busy}
+              className="gap-2.5 px-3"
+              onClick={() => add(true)}
+            >
+              Add another
+              <Kbd>⇧↵</Kbd>
+            </Button>
+            <Button type="submit" size="lg" disabled={busy} className="gap-2.5 px-4">
+              {income ? "Add income" : "Add expense"}
+              {signed ? <span className="num font-normal opacity-80">{fmt(signed, currency)}</span> : null}
+              <Kbd className="border-current bg-transparent text-current opacity-70">↵</Kbd>
+            </Button>
+          </div>
         </div>
       </div>
 

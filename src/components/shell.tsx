@@ -172,7 +172,8 @@ export function AppShell({ children }: { children: ReactNode }) {
             "mx-auto w-full min-w-0 flex-1",
             prefs.layout === "boxed" && "max-w-[1240px]",
             "pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-14",
-            bare && "max-md:pb-0"
+            // A bare page fills what is left under the demo banner, so /add can pin its keypad to the bottom.
+            bare && "max-md:flex max-md:flex-col max-md:pb-0"
           )}
         >
           {children}

@@ -64,6 +64,139 @@ const PROVIDERS = ["Wise", "Xe", "Revolut", "Remitly", "Bank"]
 
 const cents2 = (v: number) => (Math.abs(v) / 100).toFixed(2)
 
+type Exchange = ReturnType<typeof useExchange>
+
+/**
+ * The exchange side of a transfer: the fee, the provider, and either the rate or the amount received.
+ * You type one of those two and it works out the other. `sent` leaves `from` and includes the fee.
+ * `start` holds an edited transfer's sides.
+ */
+export function useExchange(
+  from: Wallet | undefined,
+  to: Wallet | undefined,
+  sent: number,
+  start?: { fee: number; received: number } | null,
+  startProvider?: string | null
+) {
+  const meta = useMeta()
+  const [fee, setFee] = useState(start?.fee ? cents2(start.fee) : "")
+  const [provider, setProvider] = useState(startProvider ?? "")
+  const [rateText, setRateText] = useState("")
+  const [received, setReceived] = useState(start ? cents2(start.received) : "")
+  const [fxInput, setFxInput] = useState<"rate" | "received" | null>(start ? "received" : null)
+  const crossCurrency = !!from && !!to && from.currency !== to.currency
+  const feeCents = Math.abs(parseAmount(fee) ?? 0)
+  const converted = sent - feeCents
+  const market = crossCurrency ? convert(100, from.currency, to.currency, meta.rates) / 100 : 1
+  const typedRate = Number(rateText.replace(",", "."))
+  const receivedCents = !crossCurrency
+    ? converted
+    : fxInput === "received"
+      ? Math.abs(parseAmount(received) ?? 0)
+      : Math.round(converted * (fxInput === "rate" ? typedRate || 0 : market))
+  return {
+    from,
+    to,
+    fee,
+    setFee,
+    provider,
+    setProvider,
+    rateText,
+    setRateText,
+    received,
+    setReceived,
+    fxInput,
+    setFxInput,
+    crossCurrency,
+    feeCents,
+    converted,
+    market,
+    receivedCents,
+    rate: crossCurrency && converted > 0 ? receivedCents / converted : 1,
+    fx: exchange(sent, feeCents, receivedCents, crossCurrency ? market : null),
+    reset() {
+      setFee("")
+      setRateText("")
+      setReceived("")
+      setFxInput(null)
+    },
+  }
+}
+
+/** Fee and provider, plus the rate and amount received when the currencies differ, with what it cost. */
+export function ExchangeFields({ x }: { x: Exchange }) {
+  const meta = useMeta()
+  const from = x.from?.currency ?? meta.primary
+  return (
+    <div className="grid gap-3 rounded-lg border p-3 text-sm">
+      <div className="grid grid-cols-2 gap-3">
+        <label className="grid gap-1">
+          <span className="text-xs text-muted-foreground">
+            Fee <span className="uppercase">({from})</span>
+          </span>
+          <Input
+            value={x.fee}
+            onChange={(e) => x.setFee(e.target.value)}
+            inputMode="decimal"
+            className="num h-9"
+            aria-label="Fee"
+          />
+        </label>
+        <label className="grid gap-1">
+          <span className="text-xs text-muted-foreground">Via</span>
+          <Suggest
+            value={x.provider}
+            onChange={x.setProvider}
+            options={PROVIDERS}
+            render={<Input className="h-9" />}
+            aria-label="Provider"
+          />
+        </label>
+      </div>
+      {x.crossCurrency && x.to && (
+        <div className="grid grid-cols-2 gap-3">
+          <label className="grid gap-1">
+            <span className="text-xs text-muted-foreground">Rate, 1 {from.toUpperCase()} =</span>
+            <Input
+              value={x.fxInput === "rate" ? x.rateText : fmtRate(x.rate)}
+              onChange={(e) => {
+                x.setRateText(e.target.value)
+                x.setFxInput("rate")
+              }}
+              inputMode="decimal"
+              className="num h-9"
+              aria-label="Exchange rate"
+            />
+          </label>
+          <label className="grid gap-1">
+            <span className="text-xs text-muted-foreground">
+              Received <span className="uppercase">({x.to.currency})</span>
+            </span>
+            <Input
+              value={x.fxInput === "received" ? x.received : x.receivedCents ? cents2(x.receivedCents) : ""}
+              onChange={(e) => {
+                x.setReceived(e.target.value)
+                x.setFxInput("received")
+              }}
+              inputMode="decimal"
+              className="num h-9"
+              aria-label="Amount received"
+            />
+          </label>
+        </div>
+      )}
+      {(x.feeCents > 0 || x.crossCurrency) && x.converted > 0 && (
+        <p className="num text-xs text-muted-foreground">
+          {x.crossCurrency && x.to
+            ? `${fmt(x.converted, from)} becomes ${fmt(x.receivedCents, x.to.currency)}, market rate ${fmtRate(x.market)}.`
+            : `${fmt(x.converted, from)} arrives.`}
+          {x.fx.totalCost > 0.5 && ` It costs ${fmt(x.fx.totalCost, from)} (${x.fx.costPct.toFixed(2)}%).`}
+        </p>
+      )}
+    </div>
+  )
+}
+
 /**
  * Add or edit a transaction or transfer. It ends in a sticky footer with Delete (when editing), Cancel and Save.
  * `preset` starts a new transfer into `transferTo` (e.g. paying off a card) with `amount` cents prefilled.
@@ -72,13 +205,11 @@ export function TransactionForm({
   initial,
   onDone,
   onCancel,
-  big,
   preset,
 }: {
   initial?: Tx
   onDone?: () => void
   onCancel?: () => void
-  big?: boolean
   preset?: { transferTo?: string; amount?: number }
 }) {
   const meta = useMeta()
@@ -102,12 +233,6 @@ export function TransactionForm({
   const [amount, setAmount] = useState(
     sides ? cents2(sides.sent) : initial ? cents2(initial.amount) : preset?.amount ? cents2(preset.amount) : ""
   )
-  // Exchange details. You type either the rate or the received amount, and the form works out the other.
-  const [fee, setFee] = useState(sides?.fee ? cents2(sides.fee) : "")
-  const [provider, setProvider] = useState(initial?.provider ?? "")
-  const [rateText, setRateText] = useState("")
-  const [received, setReceived] = useState(sides ? cents2(sides.received) : "")
-  const [fxInput, setFxInput] = useState<"rate" | "received" | null>(sides ? "received" : null)
   const [name, setName] = useState(initial?.name ?? "")
   const [note, setNote] = useState(initial?.note ?? "")
   const [categoryId, setCategoryId] = useState(initial?.category_id ?? "")
@@ -162,18 +287,7 @@ export function TransactionForm({
   const wallet = meta.wallets.find((w) => w.id === walletId)
   const toWallet = meta.wallets.find((w) => w.id === toWalletId)
   const cents = parseAmount(amount)
-  const crossCurrency = transfer && !!wallet && !!toWallet && wallet.currency !== toWallet.currency
-  const feeCents = transfer ? Math.abs(parseAmount(fee) ?? 0) : 0
-  const converted = Math.abs(cents ?? 0) - feeCents
-  const market = crossCurrency ? convert(100, wallet.currency, toWallet.currency, meta.rates) / 100 : 1
-  const typedRate = Number(rateText.replace(",", "."))
-  const receivedCents = !crossCurrency
-    ? converted
-    : fxInput === "received"
-      ? Math.abs(parseAmount(received) ?? 0)
-      : Math.round(converted * (fxInput === "rate" ? typedRate || 0 : market))
-  const rate = crossCurrency && converted > 0 ? receivedCents / converted : 1
-  const fx = exchange(Math.abs(cents ?? 0), feeCents, receivedCents, crossCurrency ? market : null)
+  const x = useExchange(transfer ? wallet : undefined, toWallet, Math.abs(cents ?? 0), sides, initial?.provider)
 
   function onName(v: string) {
     setName(v)
@@ -191,8 +305,8 @@ export function TransactionForm({
     if (!cents) return toast.error("Enter an amount")
     if (transfer) {
       if (!toWalletId || toWalletId === walletId) return toast.error("Pick the account the money goes to")
-      if (converted <= 0) return toast.error("The fee must be less than the amount")
-      if (!receivedCents) return toast.error("Enter the amount received")
+      if (x.converted <= 0) return toast.error("The fee must be less than the amount")
+      if (!x.receivedCents) return toast.error("Enter the amount received")
     } else if (!categoryId || !categories.some((c) => c.id === categoryId)) return toast.error("Pick a category")
     setBusy(true)
     try {
@@ -203,15 +317,17 @@ export function TransactionForm({
             fromWalletId: walletId,
             toWalletId,
             sent: Math.abs(cents),
-            fee: feeCents,
-            received: receivedCents,
-            provider,
+            fee: x.feeCents,
+            received: x.receivedCents,
+            provider: x.provider,
             day,
             time: sendTime,
             note,
           },
         })
-        toast.success(`${fmt(Math.abs(cents), wallet?.currency ?? meta.primary)} · ${wallet?.name} → ${toWallet?.name}`)
+        toast.success(
+          `Moved ${fmt(Math.abs(cents), wallet?.currency ?? meta.primary)} from ${wallet?.name} to ${toWallet?.name}`
+        )
       } else {
         const signed = Math.abs(cents) * (income ? 1 : -1)
         // When an existing transfer becomes an expense or income, delete it and save a new transaction.
@@ -232,7 +348,9 @@ export function TransactionForm({
           },
         })
         const cat = meta.categories.find((c) => c.id === categoryId)
-        toast.success(`${fmt(signed, wallet?.currency ?? meta.primary)} · ${name || cat?.name}`)
+        toast.success(
+          `${initial ? "Saved" : "Added"} ${fmt(signed, wallet?.currency ?? meta.primary)}, ${name || cat?.name}`
+        )
       }
       try {
         localStorage.setItem(WALLET_KEY, walletId)
@@ -241,10 +359,7 @@ export function TransactionForm({
       if (initial) onDone?.()
       else {
         setAmount("")
-        setReceived("")
-        setRateText("")
-        setFee("")
-        setFxInput(null)
+        x.reset()
         setName("")
         setNote("")
         setTags([])
@@ -315,7 +430,7 @@ export function TransactionForm({
       </div>
 
       <label className="flex flex-col items-center gap-1">
-        <span className="text-xs tracking-wide text-muted-foreground uppercase">{wallet?.currency}</span>
+        <span className="text-xs text-muted-foreground uppercase">{wallet?.currency}</span>
         <input
           ref={amountRef}
           value={amount}
@@ -325,8 +440,7 @@ export function TransactionForm({
           autoFocus={!initial}
           aria-label="Amount"
           className={cn(
-            "num w-full min-w-0 bg-transparent text-center font-semibold tracking-tight outline-none",
-            big ? "text-6xl" : "text-5xl",
+            "num w-full min-w-0 bg-transparent text-center text-5xl font-semibold tracking-tight outline-none",
             income && "text-positive"
           )}
         />
@@ -345,73 +459,7 @@ export function TransactionForm({
             value={toWalletId}
             onChange={setToWalletId}
           />
-          <div className="grid gap-3 rounded-lg border p-3 text-sm">
-            <div className="grid grid-cols-2 gap-3">
-              <label className="grid gap-1">
-                <span className="text-xs text-muted-foreground">
-                  Fee <span className="uppercase">({wallet?.currency})</span>
-                </span>
-                <Input
-                  value={fee}
-                  onChange={(e) => setFee(e.target.value)}
-                  inputMode="decimal"
-                  className="num h-9"
-                  aria-label="Fee"
-                />
-              </label>
-              <label className="grid gap-1">
-                <span className="text-xs text-muted-foreground">Via</span>
-                <Suggest
-                  value={provider}
-                  onChange={setProvider}
-                  options={PROVIDERS}
-                  render={<Input className="h-9" />}
-                  aria-label="Provider"
-                />
-              </label>
-            </div>
-            {crossCurrency && (
-              <div className="grid grid-cols-2 gap-3">
-                <label className="grid gap-1">
-                  <span className="text-xs text-muted-foreground">Rate · 1 {wallet.currency.toUpperCase()} =</span>
-                  <Input
-                    value={fxInput === "rate" ? rateText : fmtRate(rate)}
-                    onChange={(e) => {
-                      setRateText(e.target.value)
-                      setFxInput("rate")
-                    }}
-                    inputMode="decimal"
-                    className="num h-9"
-                    aria-label="Exchange rate"
-                  />
-                </label>
-                <label className="grid gap-1">
-                  <span className="text-xs text-muted-foreground">
-                    Received <span className="uppercase">({toWallet.currency})</span>
-                  </span>
-                  <Input
-                    value={fxInput === "received" ? received : receivedCents ? cents2(receivedCents) : ""}
-                    onChange={(e) => {
-                      setReceived(e.target.value)
-                      setFxInput("received")
-                    }}
-                    inputMode="decimal"
-                    className="num h-9"
-                    aria-label="Amount received"
-                  />
-                </label>
-              </div>
-            )}
-            {(feeCents > 0 || crossCurrency) && converted > 0 && (
-              <p className="num text-xs text-muted-foreground">
-                {fmt(converted, wallet?.currency ?? meta.primary)}{" "}
-                {crossCurrency ? `converted → ${fmt(receivedCents, toWallet.currency)}` : "arrives"}
-                {crossCurrency && ` · market ≈ ${fmtRate(market)}`}
-                {fx.totalCost > 0.5 &&
-                  ` · costs ${fmt(fx.totalCost, wallet?.currency ?? meta.primary)} (${fx.costPct.toFixed(2)}%)`}
-              </p>
-            )}
-          </div>
+          <ExchangeFields x={x} />
           <p className="text-xs text-muted-foreground">
             Moves money between your accounts. It doesn't count as spending or income, but the fee does.
           </p>
@@ -478,7 +526,7 @@ export function TransactionForm({
             Cancel
           </Button>
         )}
-        <Button type="submit" size="lg" disabled={busy || !cents} className={cn("min-w-28", big && "flex-1")}>
+        <Button type="submit" size="lg" disabled={busy || !cents} className="min-w-28">
           {initial ? "Save" : `Add ${mode}`}
         </Button>
       </div>
@@ -562,7 +610,7 @@ export function TransactionSheet({
 }
 
 /** Categories in a two-row strip that scrolls sideways. On open, it scrolls the chosen one into view. */
-export function CategoryStrip({
+function CategoryStrip({
   categories,
   value,
   onPick,
@@ -604,7 +652,7 @@ export function CategoryStrip({
  * Note, tags and event. Each stays behind an "Add …" link until it has a value or you open it.
  * Without `onTags` (transfers), it offers only the note. `auto` marks an event picked by date.
  */
-export function Extras({
+function Extras({
   note,
   onNote,
   tags,
