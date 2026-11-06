@@ -20,7 +20,7 @@
   // BETTER_AUTH_SECRET goes in .dev.vars locally and `wrangler secret put` in production.
   "vars": {
     // Public URL of the app. Passkeys are tied to this domain.
-    "BETTER_AUTH_URL": "https://kosha.amruth-pillai.workers.dev",
+    "BETTER_AUTH_URL": "https://getkosha.app",
     // Comma-separated emails allowed to sign up. Empty = anyone.
     "ALLOWED_EMAILS": "im.amruth@gmail.com",
   },

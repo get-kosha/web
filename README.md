@@ -53,7 +53,7 @@ The demo account is `demo@kosha.local` with the password `kosha-demo-2026`. It h
 
 ## Deploy to Cloudflare
 
-Kosha runs on a single Cloudflare Worker with a D1 database. Production is at https://kosha.amruth-pillai.workers.dev, and every push to `main` deploys it through Workers Builds.
+Kosha runs on a single Cloudflare Worker with a D1 database. Production is at https://getkosha.app, and every push to `main` deploys it through Workers Builds.
 
 `npm run deploy` builds the app, applies new D1 migrations, then deploys the Worker. Workers Builds runs the same command.
 
