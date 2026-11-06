@@ -960,6 +960,8 @@ const DOCS = `<!doctype html>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Kosha API</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
   </head>
   <body>
     <div id="app"></div>
@@ -1040,7 +1042,19 @@ Conventions every tool shares:
 
 const mcp = createMcpHandler(({ authInfo }) => {
   const who = authInfo?.extra?.principal as Principal
-  const server = new McpServer({ name: "kosha", title: "Kosha", version: "1.0.0" }, { instructions: INSTRUCTIONS })
+  const server = new McpServer(
+    {
+      name: "kosha",
+      title: "Kosha",
+      version: "1.0.0",
+      websiteUrl: ORIGIN,
+      icons: [
+        { src: `${ORIGIN}/icon-192.png`, mimeType: "image/png", sizes: ["192x192"] },
+        { src: `${ORIGIN}/icon.svg`, mimeType: "image/svg+xml", sizes: ["any"] },
+      ],
+    },
+    { instructions: INSTRUCTIONS }
+  )
   for (const [name, o] of operations) {
     // A read-only connection only sees the tools it can use.
     if (o.scope === "write" && who.scope !== "write") continue

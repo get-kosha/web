@@ -1,11 +1,13 @@
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset=".github/assets/wordmark-dark.svg">
-    <img src=".github/assets/wordmark-light.svg" alt="kosha" height="64">
+    <source media="(prefers-color-scheme: dark)" srcset=".github/assets/logo-dark.svg">
+    <img src=".github/assets/logo-light.svg" alt="Kosha" height="72">
   </picture>
 </p>
 
-<p align="center">A personal finance tracker for people with money in more than one place and more than one currency.</p>
+<p align="center"><strong>Every account. Every currency. One treasury.</strong></p>
+
+<p align="center">A personal finance tracker for people with money in more than one place and more than one currency.<br><a href="https://getkosha.app">getkosha.app</a></p>
 
 <p align="center">
   <picture>

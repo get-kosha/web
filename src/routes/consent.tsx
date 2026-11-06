@@ -1,7 +1,8 @@
 import { useState, type ReactNode } from "react"
 import { createFileRoute } from "@tanstack/react-router"
-import { PlugsConnectedIcon, WarningIcon } from "@phosphor-icons/react/ssr"
+import { ArrowsLeftRightIcon, WarningIcon } from "@phosphor-icons/react/ssr"
 import { z } from "zod"
+import { KoshaMark } from "@/components/kosha-mark"
 import { Button } from "@/components/ui/button"
 import { getConsentRequest } from "@/lib/api"
 import { authClient } from "@/lib/auth-client"
@@ -34,8 +35,11 @@ function Consent() {
   if (!request)
     return (
       <Shell>
-        <h1 className="text-lg font-semibold tracking-tight">This link didn’t work</h1>
-        <p className="text-sm text-muted-foreground">{error}</p>
+        <KoshaMark className="h-10 self-start" />
+        <div>
+          <h1 className="text-lg font-semibold tracking-tight">This link didn’t work</h1>
+          <p className="text-sm text-muted-foreground">{error}</p>
+        </div>
       </Shell>
     )
 
@@ -56,14 +60,16 @@ function Consent() {
 
   return (
     <Shell>
-      <div className="flex items-center gap-3">
-        {request.logo ? (
-          <img src={request.logo} alt="" className="size-10 rounded-lg border object-cover" />
-        ) : (
-          <div className="flex size-10 items-center justify-center rounded-lg border text-muted-foreground">
-            <PlugsConnectedIcon className="size-5" />
-          </div>
-        )}
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center gap-3">
+          {request.logo && (
+            <>
+              <img src={request.logo} alt="" className="size-10 rounded-lg border object-cover" />
+              <ArrowsLeftRightIcon aria-hidden="true" className="size-4 text-muted-foreground" />
+            </>
+          )}
+          <KoshaMark className="h-10" />
+        </div>
         <div className="min-w-0">
           <h1 className="text-lg font-semibold tracking-tight">Connect {request.name} to Kosha?</h1>
           <p className="truncate text-sm text-muted-foreground">
