@@ -17,6 +17,15 @@ export const isSystemCategory = (id: string) =>
   id === CORRECTION_CATEGORY || id === TRANSFER_CATEGORY || id === "transfer_fee"
 export const NEUTRAL_SQL = `('${CORRECTION_CATEGORY}', '${TRANSFER_CATEGORY}')`
 
+/**
+ * The shared demo account (scripts/seed-demo.ts). Its password is public on purpose: anyone can sign in
+ * and look around, and the server refuses every change it tries to make. It is known by its id, which
+ * only the seed script can create; Better Auth gives real accounts random ids.
+ */
+export const DEMO = { id: "demo", email: "demo@kosha.local", password: "kosha-demo-2026" } as const
+export const DEMO_READ_ONLY =
+  "This is the demo account, so changes are turned off. Create your own account to make changes."
+
 /** Allows only same-origin paths, never "//host". */
 export const safeReturn = (p: string | null | undefined) => (p && p.startsWith("/") && !p.startsWith("//") ? p : "/")
 
@@ -42,6 +51,16 @@ export function fmt(cents: number, currency: string, compact = false) {
     moneyFormats.set(key, f)
   }
   return f.format(cents / 100)
+}
+
+/** The phone keypad: one ".", at most 2 decimals, a leading "0" is replaced, at most 8 digits. */
+export function pressKey(amount: string, key: string) {
+  if (key === "del") return amount.slice(0, -1)
+  if (key === ".") return amount.includes(".") ? amount : (amount || "0") + "."
+  const dot = amount.indexOf(".")
+  if (dot !== -1 && amount.length - dot > 2) return amount
+  if (amount.replace(".", "").length >= 8) return amount
+  return (amount === "0" ? "" : amount) + key
 }
 
 /** Parses "12,50", "1.234,56", "1,234.56", "-45", "€ 12.00" or "12.00 Dr" into cents, or returns null. */

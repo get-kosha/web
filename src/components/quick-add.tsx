@@ -215,7 +215,7 @@ function Body({
           autoFocus
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="29.57 dosaking dining visa"
+          placeholder="24.90 pizza hut dining visa"
           autoComplete="off"
           spellCheck={false}
           className="w-full min-w-0 bg-transparent font-mono text-lg tracking-[-0.01em] text-foreground outline-none placeholder:text-muted-foreground"

@@ -1,12 +1,12 @@
 import { env } from "cloudflare:workers"
 import { betterAuth } from "better-auth"
-import { APIError } from "better-auth/api"
 import { tanstackStartCookies } from "better-auth/tanstack-start"
 import { passkey } from "@better-auth/passkey"
 import { jwt, twoFactor } from "better-auth/plugins"
 import { mcp } from "@better-auth/mcp"
 import { getRequest } from "@tanstack/react-start/server"
 import { DEFAULT_CATEGORIES } from "@/lib/defaults"
+import { DEMO } from "@/lib/core"
 
 const ORIGIN = env.BETTER_AUTH_URL.replace(/\/+$/, "")
 /** The MCP server's URL: what people paste into Claude or ChatGPT, and the audience of its access tokens. */
@@ -32,9 +32,6 @@ export const auth = betterAuth({
   databaseHooks: {
     user: {
       create: {
-        before: async (user) => {
-          if (!isAllowed(user.email)) throw new APIError("FORBIDDEN", { message: "Sign-up is closed for this email." })
-        },
         after: async (user) => {
           const DB = env.DB
           const cat = DB.prepare(
@@ -97,15 +94,6 @@ async function deleteUserData(id: string) {
   ])
 }
 
-/** ALLOWED_EMAILS limits who can sign up. Empty means anyone. */
-function isAllowed(email: string) {
-  const allowed = (env.ALLOWED_EMAILS ?? "")
-    .split(",")
-    .map((s) => s.trim().toLowerCase())
-    .filter(Boolean)
-  return !allowed.length || allowed.includes(email.toLowerCase())
-}
-
 type User = { id: string; email: string; name: string }
 
 // One session lookup per request, shared by the auth middleware and server functions.
@@ -119,6 +107,18 @@ export function getUser(request: Request = getRequest()) {
     sessions.set(request, user)
   }
   return user
+}
+
+/**
+ * Whether this user is the demo account with changes locked. DEMO_WRITABLE=1 in .dev.vars unlocks it
+ * locally, so features that write can still be tried in the browser as the demo user.
+ */
+export const demoLocked = (uid: string | undefined) =>
+  uid === DEMO.id && (env as { DEMO_WRITABLE?: string }).DEMO_WRITABLE !== "1"
+
+/** Whether this deployment has the demo account (scripts/seed-demo.ts), so the landing page can offer it. */
+export async function demoAvailable() {
+  return !!(await env.DB.prepare('SELECT 1 FROM "user" WHERE id = ?').bind(DEMO.id).first())
 }
 
 /** The signed-in user's id. Every data query is scoped by it. */

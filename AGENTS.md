@@ -30,6 +30,7 @@ These invariants hold across the codebase. Breaking one gives wrong totals witho
 - **Events are optional date ranges.** `saveTransaction` gives a new entry the event its day falls in (`eventFor`) when no `eventId` is sent; `undefined` keeps an edit's event and `null` clears it. `event_id` has no foreign key, so `deleteEvent` clears it.
 - **Subscriptions are schedules, not rows.** Upcoming payments are computed from the schedule. A transaction row is written only when a payment is paid, edited or skipped. Due payments are settled when the app loads (`ensureSettled`), and there is no cron job.
 - **Exchange rates are stored as units per 1 USD** and refresh at most once a day from the fawazahmed0 currency API. Convert with `convert(cents, from, to, rates)`.
+- **A server function that changes data is a POST, and one that only reads is a GET.** The demo account (`DEMO` in `core.ts`) is read-only, and `start.ts` enforces that by refusing every POST server function for it. A write behind a GET would slip past. Better Auth's own endpoints are gated in `routes/api/auth/$.ts`, and API tokens for the demo account are read-only.
 - **The public API speaks its own shapes.** It says account (not wallet) and payee (not name), and uses camelCase. Handlers in `api.server.ts` translate. Bulk writes are all-or-nothing and report every invalid field as `transactions.3.accountId`. Auth, AI keys, export and Delete & reset stay out of the API on purpose.
 - **Net worth depends on account type** (bank, credit card, investment). Use `accountWorth` and `netWorth` rather than summing balances.
 
@@ -50,7 +51,7 @@ Before you finish, run all five. Each one must pass.
 - `npm run lint` runs oxlint. Fix any new error. The React warnings (`purity`, `set-state-in-effect`, `static-components`, `immutability`, `exhaustive-deps`) are known, so leave them unless you are changing that code.
 - `npm run format` formats with oxfmt, which also sorts Tailwind classes. `npm run check` verifies the formatting.
 - `npm run knip` must report nothing. If it flags a dependency, file or export you just stopped using, delete it. Code in `src/components/ui/` comes from shadcn, so knip ignores its unused exports.
-- To check the app in a browser, sign in as `demo@kosha.local` with the password `kosha-demo-2026`. Run `npm run db:demo` to reset it. Never use or screenshot real account data.
+- To check the app in a browser, sign in as `demo@kosha.local` with the password `kosha-demo-2026`. Run `npm run db:demo` to reset it. The demo account is read-only unless `.dev.vars` has `DEMO_WRITABLE=1`. Never use or screenshot real account data.
 
 ## Commits
 

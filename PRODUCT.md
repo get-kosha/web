@@ -1,0 +1,52 @@
+# Product
+
+<!-- impeccable:product-schema 1 -->
+
+## Platform
+
+web
+
+## Users
+
+People with money in more than one place and more than one currency: bank accounts, cash, credit cards and investments, often across countries. They log spending on their phone as it happens and review the month on a desktop.
+
+## Product Purpose
+
+Kosha is a personal finance tracker. It keeps every account in one place, converts totals at daily exchange rates, and answers one question each month: how is this month going compared with a usual one. Success is a person who records entries in seconds and trusts the totals.
+
+## Positioning
+
+Built for multi-currency lives. Net worth respects account types (credit cards count what is owed, investments count their latest gain), transfers and currency exchanges never count as spending, and exchange costs are shown against the market rate. Entry is one line of text (`12.50 groceries yesterday`) or an amount-first phone screen.
+
+## Operating Context
+
+- Phone: an installable web app (PWA) opened to `/add` for quick entry.
+- Desktop: Overview, Activity, Recurring and Accounts, with a global month and display currency.
+- AI assistants (Claude, ChatGPT, Cursor) and scripts reach the same data through a REST API and an MCP server.
+
+## Capabilities and Constraints
+
+- Accounts, categories, tags, events, subscriptions and bills, transfers, currency exchange, Cashew import, REST API and MCP.
+- Sign in with a password or passkey, optional two-factor codes. One account per person.
+- Runs on one Cloudflare Worker with a D1 database. Production is https://getkosha.app.
+- Not built yet: bank statement reconciliation and offline entry.
+
+## Brand Commitments
+
+- Name: Kosha (कोश, Sanskrit for treasury). Tagline: "Every account. Every currency. One treasury."
+- Symbol: a K whose arm is a coin. Peacock `#0F524E`, marigold `#F4A62A`, paper `#F3F5F0`. Wordmark: lowercase "kosha", Bricolage Grotesque Bold.
+- Inside the app, brand colours appear only in the mark. Marketing surfaces (the landing page) may use peacock and marigold as grounds (confirmed by the owner, 2026-11-06).
+- Source code: github.com/amruthpillai/kosha, public and MIT licensed (confirmed by the owner; the LICENSE file is still to be added).
+
+## Evidence on Hand
+
+- Brand kit and banners: `design/brand/` in the main checkout. Redesign renders: `design/redesign/screens/png/`.
+- A demo account (`demo@kosha.local`) with invented data, safe to screenshot.
+- No testimonials, customer counts, press or benchmarks exist. Never invent them.
+
+## Product Principles
+
+- Entry must take seconds; guesses from history fill the rest.
+- Totals must be right before they are pretty: neutral categories, transfers and account types are respected everywhere.
+- Plain words. Say what a number means.
+- Everything in the app is also reachable from the API.

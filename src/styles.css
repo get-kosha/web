@@ -3,6 +3,8 @@
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/geist";
 @import "@fontsource-variable/geist-mono";
+/* The wordmark's face. Only the landing page sets type in it; its files load only where it is used. */
+@import "@fontsource-variable/bricolage-grotesque";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -10,6 +12,11 @@
   --font-heading: var(--font-sans);
   --font-sans: "Geist Variable", sans-serif;
   --font-mono: "Geist Mono Variable", ui-monospace, monospace;
+  --font-display: "Bricolage Grotesque Variable", var(--font-sans);
+  /* Brand colours. Inside the app they appear only in the mark; the landing page uses them as grounds. */
+  --color-peacock: #0f524e;
+  --color-marigold: #f4a62a;
+  --color-paper: #f3f5f0;
   /* Motion: strong curves for UI. ease-out overrides Tailwind's weak default. */
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
@@ -494,4 +501,10 @@ nav[data-tabbar] {
 }
 :root[data-motion="reduced"]::view-transition-new(page) {
   animation: kosha-fade 120ms ease-out both !important;
+}
+
+/* Landing page: a 2px ring in the text's own colour, which reads on every brand ground. */
+[data-landing] :is(a, button, pre[tabindex]):focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
 }

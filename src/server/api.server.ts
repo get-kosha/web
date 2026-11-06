@@ -34,7 +34,7 @@ import {
   type Instance,
   type TitleRule,
 } from "@/lib/core"
-import { API_SCOPES, MCP_RESOURCE, OAUTH_ISSUER, auth } from "@/server/auth.server"
+import { API_SCOPES, MCP_RESOURCE, OAUTH_ISSUER, auth, demoLocked } from "@/server/auth.server"
 import {
   COUNTERPART,
   HttpError,
@@ -883,7 +883,7 @@ async function fromApiKey(key: string): Promise<Principal | null> {
         .bind(row.user_id, row.id)
         .run()
     )
-  return { uid: row.user_id, scope: row.scope }
+  return { uid: row.user_id, scope: demoLocked(row.user_id) ? "read" : row.scope }
 }
 
 // One JWKS fetch per isolate, refetched when a token names a key it hasn't seen.
@@ -912,7 +912,8 @@ async function fromAccessToken(token: string): Promise<Principal | "no-scope" | 
     .first()
   if (!consent) return null
   const scopes = String(claims.scope ?? "").split(" ")
-  if (scopes.includes(API_SCOPES.write)) return { uid: claims.sub, scope: "write" }
+  // The demo account is read-only, whatever a token says.
+  if (scopes.includes(API_SCOPES.write)) return { uid: claims.sub, scope: demoLocked(claims.sub) ? "read" : "write" }
   if (scopes.includes(API_SCOPES.read)) return { uid: claims.sub, scope: "read" }
   return "no-scope"
 }

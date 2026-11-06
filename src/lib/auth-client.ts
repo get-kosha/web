@@ -7,8 +7,11 @@ import { oauthProviderClient } from "@better-auth/oauth-provider/client"
 export const authClient = createAuthClient({ plugins: [passkeyClient(), twoFactorClient(), oauthProviderClient()] })
 
 /** Signs out and forgets the pages and data this device saved for offline use. Queued new entries stay for next time. */
-export async function signOut() {
+export const signOut = () => signOutTo("/login")
+
+/** signOut, then opens `to` instead of the sign-in page. */
+export async function signOutTo(to: string) {
   await authClient.signOut()
   if ("caches" in window) await Promise.all((await caches.keys()).map((k) => caches.delete(k)))
-  window.location.assign("/login")
+  window.location.assign(to)
 }

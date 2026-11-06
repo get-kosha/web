@@ -5,6 +5,7 @@ import {
   CaretRightIcon,
   ChartBarIcon,
   CreditCardIcon,
+  EyeIcon,
   ListIcon,
   MagnifyingGlassIcon,
   PlusIcon,
@@ -17,7 +18,8 @@ import { useMarkHydrated } from "@/components/motion"
 import { SearchPalette } from "@/components/search-palette"
 import { QuickAdd } from "@/components/quick-add"
 import { PwaPrompts } from "@/components/pwa-prompts"
-import { LOCALE, monthOf, shiftMonth } from "@/lib/core"
+import { DEMO, LOCALE, monthOf, shiftMonth } from "@/lib/core"
+import { signOutTo } from "@/lib/auth-client"
 import { syncPreferences } from "@/lib/theme"
 import { cn } from "@/lib/utils"
 import type { Meta } from "@/lib/api"
@@ -101,6 +103,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <ShortcutsContext value={() => setShortcuts(true)}>
       <div className="flex min-h-svh flex-col">
+        {prefsUser.id === DEMO.id && <DemoBanner />}
         <header className="hidden flex-wrap items-center gap-x-5 gap-y-3 border-b bg-card px-8 py-3 md:flex">
           <Link to="/">
             <KoshaLogo className="text-xl" />
@@ -196,6 +199,40 @@ export function AppShell({ children }: { children: ReactNode }) {
         <PwaPrompts uid={prefsUser.id} bare={bare} />
       </div>
     </ShortcutsContext>
+  )
+}
+
+/**
+ * Shown on every page of the shared demo account. The server refuses its changes (start.ts), and this
+ * says so up front, with the way out: sign out and create your own account.
+ */
+function DemoBanner() {
+  const [leaving, setLeaving] = useState(false)
+  const leave = async () => {
+    setLeaving(true)
+    await signOutTo("/login?mode=up")
+  }
+  return (
+    <div
+      role="status"
+      className="flex items-center gap-3 bg-foreground px-4 pt-[max(0.5rem,env(safe-area-inset-top))] pb-2 text-[13px] text-background md:px-8"
+    >
+      <EyeIcon className="size-4 shrink-0 opacity-80" aria-hidden="true" />
+      <p className="min-w-0 flex-1">
+        <span className="font-medium">Demo account.</span>{" "}
+        <span className="opacity-80 max-sm:hidden">It holds sample data, and changes are turned off.</span>
+        <span className="opacity-80 sm:hidden">Changes are turned off.</span>
+      </p>
+      <button
+        type="button"
+        onClick={leave}
+        disabled={leaving}
+        className="inline-flex h-8 shrink-0 items-center rounded-md bg-background px-3 text-xs font-medium text-foreground transition-[opacity,scale] duration-150 ease-out hover:opacity-90 disabled:opacity-60 motion-safe:active:scale-[0.97] max-md:h-11"
+      >
+        <span className="max-sm:hidden">Create your own account</span>
+        <span className="sm:hidden">Sign up</span>
+      </button>
+    </div>
   )
 }
 

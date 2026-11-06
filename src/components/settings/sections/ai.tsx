@@ -343,7 +343,7 @@ const FEATURES = [
   [
     LightningIcon,
     "Natural-language add",
-    'Type "29.57 dosaking yesterday visa" in quick add and Kosha fills the form.',
+    'Type "24.90 pizza hut yesterday visa" in quick add and Kosha fills the form.',
   ],
   [ArticleIcon, "Monthly recap", "A short note on the 1st: what changed, and why."],
   [ChatCircleDotsIcon, "Ask Kosha", "Questions about your money, answered from your data."],
@@ -462,11 +462,11 @@ function ShareRow({
 function Payload({ shares }: { shares: AiShares }) {
   const meta = useMeta()
   const tx = {
-    payee: "Dosaking Indisches Restaurant",
+    payee: "Pizza Hut",
     amount: -2957,
     currency: meta.primary,
     day: "2026-11-04",
-    note: "via Wolt",
+    note: "Delivery",
     account: meta.wallets[0]?.name ?? "Visa Card",
   }
   const sent = redactForAi(tx, shares, meta.user.id)

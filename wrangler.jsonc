@@ -21,7 +21,5 @@
   "vars": {
     // Public URL of the app. Passkeys are tied to this domain.
     "BETTER_AUTH_URL": "https://getkosha.app",
-    // Comma-separated emails allowed to sign up. Empty = anyone.
-    "ALLOWED_EMAILS": "im.amruth@gmail.com",
   },
 }

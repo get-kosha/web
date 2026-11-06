@@ -40,7 +40,7 @@ export type Section = {
   description: string
   component: ComponentType
   rows: SettingKey[]
-  /** The value shown on the right of the phone list (a zone, "EUR · INR", a count). */
+  /** The value shown on the right of the phone list (a zone, "EUR · USD", a count). */
   summary?: (d: SummaryData) => ReactNode
   /** A pill beside the section in the rail and phone list, such as the count of open security steps or "Beta". */
   badge?: (d: SummaryData) => { label: string; tone: "brand" | "warning" } | null

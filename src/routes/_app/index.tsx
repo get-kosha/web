@@ -27,7 +27,8 @@ import { cn } from "@/lib/utils"
 
 export const Route = createFileRoute("/_app/")({
   loaderDeps: ({ search }) => ({ month: search.month, currency: search.currency }),
-  loader: ({ deps }) => getDashboard({ data: deps }),
+  // A guest sees the landing page from the _app layout instead, so there is no dashboard to load.
+  loader: ({ deps, context }) => (context.guest ? (null as unknown as Dash) : getDashboard({ data: deps })),
   component: Overview,
 })
 

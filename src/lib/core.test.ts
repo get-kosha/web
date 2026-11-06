@@ -7,10 +7,17 @@ import {
   guessCategory,
   monthRange,
   parseAmount,
+  pressKey,
   unixOf,
   dayOf,
   usualCurve,
 } from "./core.ts"
+
+assert.equal(["1", "2", ".", "5", "7", "9"].reduce(pressKey, ""), "12.57")
+assert.equal(["0", "4"].reduce(pressKey, ""), "4")
+assert.equal([".", ".", "5"].reduce(pressKey, ""), "0.5")
+assert.equal(pressKey("12.5", "del"), "12.")
+assert.equal(pressKey("12345678", "9"), "12345678")
 
 assert.equal(parseAmount("12,50"), 1250)
 assert.equal(parseAmount("-1.234,56"), -123456)
@@ -20,9 +27,9 @@ assert.equal(parseAmount("1,234"), 123400)
 assert.equal(parseAmount("500.00 Dr"), -50000)
 assert.equal(parseAmount("abc"), null)
 
-assert.equal(Math.round(convert(10000, "eur", "inr", { eur: 0.9, inr: 90 })), 1000000)
+assert.equal(Math.round(convert(10000, "eur", "jpy", { eur: 0.9, jpy: 90 })), 1000000)
 
-const tz = "Europe/Berlin"
+const tz = "Europe/Paris"
 assert.equal(dayOf(unixOf("2026-11-05", tz, 0), tz), "2026-11-05")
 assert.equal(dayOf(unixOf("2026-07-01", tz, 0), tz), "2026-07-01")
 const [s, e] = monthRange("2026-12", tz)
@@ -30,12 +37,12 @@ assert.equal(dayOf(s, tz), "2026-12-01")
 assert.equal(dayOf(e - 1, tz), "2026-12-31")
 
 const rules = [
-  { title: "rewe", category_id: "groceries", exact: 0 },
-  { title: "rewe to go", category_id: "dining", exact: 0 },
+  { title: "tesco", category_id: "groceries", exact: 0 },
+  { title: "tesco cafe", category_id: "dining", exact: 0 },
   { title: "o2", category_id: "utilities", exact: 1 },
 ]
-assert.equal(guessCategory("REWE To Go Berlin", rules), "dining")
-assert.equal(guessCategory("Rewe Markt", rules), "groceries")
+assert.equal(guessCategory("TESCO Cafe London", rules), "dining")
+assert.equal(guessCategory("Tesco Extra", rules), "groceries")
 assert.equal(guessCategory("o2 shop", rules), null)
 
 assert.equal(daysInMonth("2026-02"), 28)
@@ -96,10 +103,10 @@ console.log("subscriptions ok")
 import { accountWorth, netWorth } from "./core.ts"
 const card = { type: "credit" as const, currency: "eur", balance: 458557, credit_limit: 600000, gain: null }
 const fund = { type: "investment" as const, currency: "eur", balance: 2445438, credit_limit: null, gain: 120000 }
-const bank = { type: "bank" as const, currency: "inr", balance: 9000, credit_limit: null, gain: null }
+const bank = { type: "bank" as const, currency: "jpy", balance: 9000, credit_limit: null, gain: null }
 assert.equal(accountWorth(card), -141443)
 assert.equal(accountWorth(fund), 2565438)
-const nw = netWorth([card, fund, bank], "eur", { eur: 1, inr: 90 })
+const nw = netWorth([card, fund, bank], "eur", { eur: 1, jpy: 90 })
 assert.equal(Math.round(nw.total), -141443 + 2565438 + 100)
 assert.equal(nw.debt, 141443)
 assert.equal(nw.gains, 120000)
@@ -116,36 +123,36 @@ assert.equal(fx.costPct.toFixed(2), "0.97")
 assert.equal(exchange(100000, 0, 100000, null).totalCost, 0)
 console.log("exchange ok")
 
-// quick add: "29.57 dosaking dining visa"
+// quick add: "24.90 pizza hut dining visa"
 import { parseQuickAdd } from "./quick-add.ts"
 const qw = [
   { id: "v", name: "Visa Card" },
-  { id: "n", name: "N26" },
+  { id: "n", name: "Main account" },
 ]
 const qc = [
   { id: "dining", name: "Dining" },
   { id: "groceries", name: "Groceries" },
 ]
-const qa = parseQuickAdd("29,57 Dosaking dining visa yesterday", qw, qc)
+const qa = parseQuickAdd("29,57 Pizza Hut dining visa yesterday", qw, qc)
 assert.deepEqual(qa, {
   amount: 2957,
   income: false,
   date: "yesterday",
   walletId: "v",
   categoryId: "dining",
-  payee: "Dosaking",
+  payee: "Pizza Hut",
   tags: [],
 })
 const qt = parseQuickAdd("12 #Trip lunch #trip #rome-2026", qw, qc)
 assert.deepEqual(qt.tags, ["trip", "rome-2026"])
 assert.equal(qt.payee, "lunch")
-const qi = parseQuickAdd("+4200 salary n26 di", qw, qc)
+const qi = parseQuickAdd("+4200 salary main di", qw, qc)
 assert.equal(qi.amount, 420000)
 assert.equal(qi.income, true)
 assert.equal(qi.walletId, "n")
 assert.equal(qi.categoryId, null) // "di" is under 3 letters
 assert.equal(qi.payee, "salary di")
-assert.equal(parseQuickAdd("rewe", qw, qc).amount, null)
+assert.equal(parseQuickAdd("tesco", qw, qc).amount, null)
 console.log("quick add ok")
 
 // tags and events
@@ -206,14 +213,21 @@ console.log("prefs ok")
 
 // what AI can see
 import { redactForAi } from "./core.ts"
-const aiTx = { payee: "Dosaking", amount: -2957, currency: "eur", day: "2026-11-04", note: "via Wolt", account: "Visa" }
+const aiTx = {
+  payee: "Pizza Hut",
+  amount: -2957,
+  currency: "eur",
+  day: "2026-11-04",
+  note: "Delivery",
+  account: "Visa",
+}
 const all = { amount: true, payee: true, date: true, note: true, account: true }
 assert.deepEqual(redactForAi(aiTx, all, "u1"), {
-  payee: "Dosaking",
+  payee: "Pizza Hut",
   amount: -29.57,
   currency: "EUR",
   date: "2026-11-04",
-  note: "via Wolt",
+  note: "Delivery",
   account: "Visa",
 })
 const none = { amount: false, payee: false, date: false, note: false, account: false }
@@ -223,7 +237,7 @@ assert.equal(hidden.amount, null)
 assert.equal(hidden.month, "2026-11")
 assert.match(String(hidden.payee), /^payee_[0-9a-z]+$/)
 // Stable per user and payee (case-insensitive), different across users.
-assert.equal(redactForAi({ ...aiTx, payee: "DOSAKING" }, none, "u1").payee, hidden.payee)
+assert.equal(redactForAi({ ...aiTx, payee: "PIZZA HUT" }, none, "u1").payee, hidden.payee)
 assert.notEqual(redactForAi(aiTx, none, "u2").payee, hidden.payee)
 console.log("ai redaction ok")
 

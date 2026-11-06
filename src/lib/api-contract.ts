@@ -62,7 +62,7 @@ const Month = z
 const Currency = z
   .string()
   .regex(/^[a-z]{3,6}$/)
-  .describe("Lowercase currency code, e.g. eur, usd, inr.")
+  .describe("Lowercase currency code, e.g. eur, usd, gbp.")
 const AccountType = z
   .enum(["bank", "cash", "credit", "investment"])
   .describe(
@@ -209,7 +209,7 @@ const Preferences = z.object(
 const Settings = z.object({
   user: z.object({ name: z.string(), email: z.string() }),
   primaryCurrency: Currency.describe("Reports and net worth are converted to this currency."),
-  timeZone: z.string().describe("IANA zone, e.g. Europe/Berlin. Days and months follow it."),
+  timeZone: z.string().describe("IANA zone, e.g. Europe/Paris. Days and months follow it."),
   currencyOrder: z.array(Currency),
   preferences: Preferences,
   exchangeRates: z.object({
@@ -298,11 +298,11 @@ const transfer = {
   fromAccountId: "a1",
   toAccountId: "a3",
   sent: 100000,
-  received: 9150000,
+  received: 107546,
   fee: 420,
   provider: "Wise",
   fromCurrency: "eur",
-  toCurrency: "inr",
+  toCurrency: "usd",
   note: "",
 }
 
@@ -647,7 +647,7 @@ export const OPERATIONS = {
     example: {
       input: {},
       output: {
-        events: [{ id: "e1", name: "Lisbon trip", startDay: "2026-10-10", endDay: "2026-10-17", transactionCount: 23 }],
+        events: [{ id: "e1", name: "Rome trip", startDay: "2026-10-10", endDay: "2026-10-17", transactionCount: 23 }],
       },
     },
   }),
@@ -668,8 +668,8 @@ export const OPERATIONS = {
       .refine((e) => !e.startDay || !e.endDay || e.endDay >= e.startDay, "The end is before the start"),
     output: Event,
     example: {
-      input: { name: "Lisbon trip", startDay: "2026-10-10", endDay: "2026-10-17" },
-      output: { id: "e1", name: "Lisbon trip", startDay: "2026-10-10", endDay: "2026-10-17", transactionCount: 0 },
+      input: { name: "Rome trip", startDay: "2026-10-10", endDay: "2026-10-17" },
+      output: { id: "e1", name: "Rome trip", startDay: "2026-10-10", endDay: "2026-10-17", transactionCount: 0 },
     },
   }),
   update_event: op({
@@ -690,7 +690,7 @@ export const OPERATIONS = {
     output: Event,
     example: {
       input: { id: "e1", endDay: "2026-10-18" },
-      output: { id: "e1", name: "Lisbon trip", startDay: "2026-10-10", endDay: "2026-10-18", transactionCount: 23 },
+      output: { id: "e1", name: "Rome trip", startDay: "2026-10-10", endDay: "2026-10-18", transactionCount: 23 },
     },
   }),
   delete_event: op({
@@ -1204,8 +1204,8 @@ export const OPERATIONS = {
       output: {
         user: { name: "Ada", email: "ada@example.com" },
         primaryCurrency: "eur",
-        timeZone: "Europe/Berlin",
-        currencyOrder: ["eur", "inr"],
+        timeZone: "Europe/Paris",
+        currencyOrder: ["eur", "usd"],
         preferences: {
           theme: "system",
           layout: "boxed",
@@ -1222,7 +1222,7 @@ export const OPERATIONS = {
           upcoming_horizon: "month",
           learn_rules: "1",
         },
-        exchangeRates: { updatedAt: 1793900000, perUsd: { eur: 0.92, inr: 84.6, usd: 1 } },
+        exchangeRates: { updatedAt: 1793900000, perUsd: { eur: 0.92, gbp: 0.78, usd: 1 } },
       },
     },
   }),
@@ -1237,18 +1237,18 @@ export const OPERATIONS = {
       "Changes your primary currency, time zone, currency order or preferences. Only the fields you pass change.",
     input: z.object({
       primaryCurrency: Currency.optional(),
-      timeZone: z.string().max(64).optional().describe("IANA zone, e.g. Asia/Kolkata."),
+      timeZone: z.string().max(64).optional().describe("IANA zone, e.g. America/New_York."),
       currencyOrder: z.array(Currency).max(50).optional(),
       preferences: Preferences.partial().optional(),
     }),
     output: Settings,
     example: {
-      input: { timeZone: "Asia/Kolkata", preferences: { theme: "dark" } },
+      input: { timeZone: "America/New_York", preferences: { theme: "dark" } },
       output: {
         user: { name: "Ada", email: "ada@example.com" },
         primaryCurrency: "eur",
-        timeZone: "Asia/Kolkata",
-        currencyOrder: ["eur", "inr"],
+        timeZone: "America/New_York",
+        currencyOrder: ["eur", "usd"],
         preferences: {
           theme: "dark",
           layout: "boxed",
@@ -1265,7 +1265,7 @@ export const OPERATIONS = {
           upcoming_horizon: "month",
           learn_rules: "1",
         },
-        exchangeRates: { updatedAt: 1793900000, perUsd: { eur: 0.92, inr: 84.6, usd: 1 } },
+        exchangeRates: { updatedAt: 1793900000, perUsd: { eur: 0.92, gbp: 0.78, usd: 1 } },
       },
     },
   }),

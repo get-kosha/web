@@ -49,7 +49,9 @@ BETTER_AUTH_URL=http://localhost:3000
 AI_KEY_SECRET=        # 32+ random characters; encrypts AI provider keys (Settings › AI)
 ```
 
-The demo account is `demo@kosha.local` with the password `kosha-demo-2026`. It has about 14 months of invented data. Running `npm run db:demo` again resets it. The password is public, so only seed it locally.
+The demo account is `demo@kosha.local` with the password `kosha-demo-2026`. It has about 14 months of invented data, and running `npm run db:demo` again resets it.
+
+The demo account is read-only: the server refuses every change it tries to make, in the app, the API and its sign-in settings. That makes it safe to seed in production with `npm run db:demo:remote`, which also turns on **Try the demo** on the landing page. Its data ends on the day you seed it, so re-run that now and then. To try features that write as the demo user locally, add `DEMO_WRITABLE=1` to `.dev.vars`.
 
 `npm test` runs the self-checks for money parsing, time zones, categorising and subscriptions. `npm run typecheck` (tsrs), `npm run lint` (oxlint), `npm run check` (oxfmt) and `npm run knip` (unused code and dependencies) check the rest.
 
@@ -68,10 +70,7 @@ npx wrangler secret put AI_KEY_SECRET         # 32+ random characters; changing 
 npm run deploy
 ```
 
-Before you deploy, set these under `vars` in `wrangler.jsonc`:
-
-- `BETTER_AUTH_URL`: the public URL of the app. Passkeys only work on this domain.
-- `ALLOWED_EMAILS`: a comma-separated list of who may sign up. Leave it empty to let anyone sign up.
+Before you deploy, set `BETTER_AUTH_URL` under `vars` in `wrangler.jsonc` to the public URL of the app. Passkeys only work on this domain.
 
 To deploy on every push, connect the repository under the Worker's **Settings → Build**. Use `npm run deploy` as the deploy command and leave the build command empty. The build token needs **D1: Edit** for the migration step, which the token Cloudflare creates by default does not have.
 

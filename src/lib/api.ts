@@ -1,9 +1,9 @@
-import { createServerFn } from "@tanstack/react-start"
+import { createIsomorphicFn, createServerFn } from "@tanstack/react-start"
 import { z } from "zod"
 import { monthOf, monthRange, dayOf } from "@/lib/core"
 import { db, getSettings } from "@/server/db.server"
 import * as finance from "@/server/finance.server"
-import { MCP_RESOURCE, auth, getUser, userId } from "@/server/auth.server"
+import { MCP_RESOURCE, auth, demoAvailable, getUser, userId } from "@/server/auth.server"
 import {
   consentDetails,
   createApiKey,
@@ -39,6 +39,22 @@ export type {
 export type { SubscriptionView } from "@/server/db.server"
 
 // ---------- meta: everything most screens need ----------
+
+/** What the landing page needs to know about a signed-out visit: whether it can offer the demo account. */
+export type Guest = { demo: boolean }
+
+/**
+ * A Guest when nobody is signed in, else null. Only the server can tell. The router carries its answer to
+ * the client on hydration, but runs beforeLoad again on a hash change, back/forward or invalidate. A guest
+ * only ever reaches / by a full page load, so on the client the landing page on screen holds the answer.
+ */
+export const guestVisit = createIsomorphicFn()
+  .server(async (): Promise<Guest | null> => ((await getUser()) ? null : { demo: await demoAvailable() }))
+  // ponytail: reads the DOM for the server's earlier answer; a client-side sign-in would need a reload anyway
+  .client(async (): Promise<Guest | null> => {
+    const page = document.querySelector<HTMLElement>("[data-landing]")
+    return page ? { demo: page.dataset.demo === "1" } : null
+  })
 
 export const getMeta = createServerFn({ method: "GET" }).handler(async () => {
   const user = (await getUser())!

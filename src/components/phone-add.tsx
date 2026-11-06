@@ -9,20 +9,10 @@ import { bottomSheet, segment, segmentButton, useMeta } from "@/components/shell
 import { suggestPayees, type PayeeSuggestion } from "@/lib/api"
 import { addTransaction } from "@/lib/offline"
 import { WALLET_KEY, startWallet } from "@/lib/add-defaults"
-import { LOCALE, addDays, dayOf, eventFor, fmt, guessCategory, isNeutral } from "@/lib/core"
+import { LOCALE, addDays, dayOf, eventFor, fmt, guessCategory, isNeutral, pressKey } from "@/lib/core"
 import { cn } from "@/lib/utils"
 
 type Kind = "expense" | "income" | "transfer"
-
-/** Keypad rules: one ".", at most 2 decimals, a leading "0" is replaced, at most 8 digits. */
-function pressKey(amount: string, key: string) {
-  if (key === "del") return amount.slice(0, -1)
-  if (key === ".") return amount.includes(".") ? amount : (amount || "0") + "."
-  const dot = amount.indexOf(".")
-  if (dot !== -1 && amount.length - dot > 2) return amount
-  if (amount.replace(".", "").length >= 8) return amount
-  return (amount === "0" ? "" : amount) + key
-}
 
 const KEYS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "0", "del"]
 

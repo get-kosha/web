@@ -1,15 +1,17 @@
 // Creates (or resets) a demo account with about 14 months of made-up data ending today, so the app
-// can be tried and tested without real finances.
-//   node scripts/seed-demo.ts > demo.sql
-//   npx wrangler d1 execute kosha --local --file demo.sql
+// can be tried and tested without real finances. The account is read-only (see DEMO in src/lib/core.ts).
+//   npm run db:demo          # local database
+//   npm run db:demo:remote   # production, which turns on "Try the demo" on the landing page
 // Sign in as demo@kosha.local / kosha-demo-2026. Re-running deletes the demo account and starts over.
+// ponytail: the data ends on the day it is seeded; re-run it now and then so the current month has spending.
 import { hashPassword } from "better-auth/crypto"
 import { DEFAULT_CATEGORIES } from "../src/lib/defaults.ts"
+import { DEMO } from "../src/lib/core.ts"
 
-const UID = "demo"
-const EMAIL = "demo@kosha.local"
-const PASSWORD = "kosha-demo-2026"
-const TZ = "Europe/Berlin"
+const UID = DEMO.id
+const EMAIL = DEMO.email
+const PASSWORD = DEMO.password
+const TZ = "Europe/Paris"
 
 // ---------- helpers ----------
 
@@ -33,7 +35,7 @@ const monthDay = (monthsAgo: number, day: number) => {
   const now = new Date()
   return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - monthsAgo, day)).toISOString().slice(0, 10)
 }
-/** Unix seconds at `hour` o'clock Berlin time. It ignores summer time, which is close enough for a day. */
+/** Unix seconds at `hour` o'clock Paris time. It ignores summer time, which is close enough for a day. */
 const unix = (day: string, hour = 12) => Date.parse(`${day}T00:00:00Z`) / 1000 + (hour - 1) * 3600
 
 const lit = (v: unknown): string =>
@@ -53,11 +55,11 @@ function insert(table: string, rows: Record<string, unknown>[]) {
 
 // ---------- accounts ----------
 
-const W = { main: "main", savings: "savings", cash: "cash", card: "card", india: "india", etf: "etf", old: "old" }
+const W = { main: "main", savings: "savings", cash: "cash", card: "card", usd: "usd", etf: "etf", old: "old" }
 insert("wallets", [
   {
     id: W.main,
-    name: "Girokonto",
+    name: "Current account",
     currency: "eur",
     colour: "#2563eb",
     sort: 1,
@@ -96,9 +98,9 @@ insert("wallets", [
     credit_limit: 300000,
   },
   {
-    id: W.india,
-    name: "HDFC (India)",
-    currency: "inr",
+    id: W.usd,
+    name: "Dollar account",
+    currency: "usd",
     colour: "#ea580c",
     sort: 5,
     archived: 0,
@@ -107,7 +109,7 @@ insert("wallets", [
   },
   {
     id: W.etf,
-    name: "ETF portfolio",
+    name: "Index fund",
     currency: "eur",
     colour: "#7c3aed",
     sort: 6,
@@ -148,16 +150,16 @@ insert("settings", [
 insert(
   "title_rules",
   [
-    ["REWE", "groceries"],
+    ["Tesco", "groceries"],
     ["Lidl", "groceries"],
-    ["Edeka", "groceries"],
+    ["Aldi", "groceries"],
     ["Starbucks", "dining"],
-    ["Vapiano", "dining"],
-    ["DB Ticket", "transit"],
+    ["Pizza Hut", "dining"],
+    ["Uber", "transit"],
     ["Amazon", "shopping"],
     ["IKEA", "home"],
-    ["Apotheke", "health"],
-    ["BigBasket", "groceries"],
+    ["Pharmacy", "health"],
+    ["GitHub", "bills"],
   ].map(([title, category_id]) => ({ title, category_id, exact: 0 }))
 )
 
@@ -243,7 +245,7 @@ tx({ wallet_id: W.main, category_id: "0", name: "Opening balance", amount: 42000
 tx({ wallet_id: W.savings, category_id: "0", name: "Opening balance", amount: 850000, date: unix(opening) })
 tx({ wallet_id: W.cash, category_id: "0", name: "Opening balance", amount: 12000, date: unix(opening) })
 tx({ wallet_id: W.card, category_id: "0", name: "Opening balance", amount: 300000, date: unix(opening) }) // full credit available
-tx({ wallet_id: W.india, category_id: "0", name: "Opening balance", amount: 4500000, date: unix(opening) })
+tx({ wallet_id: W.usd, category_id: "0", name: "Opening balance", amount: 260000, date: unix(opening) })
 tx({ wallet_id: W.etf, category_id: "0", name: "Opening balance", amount: 600000, date: unix(opening) })
 // The closed account: money moved out, then archived.
 tx({ wallet_id: W.old, category_id: "0", name: "Opening balance", amount: 98000, date: unix(opening) })
@@ -257,9 +259,9 @@ for (let m = MONTHS; m >= 0; m--) {
     tx({
       wallet_id: W.main,
       category_id: "salary",
-      name: "Acme GmbH",
+      name: "Northwind Ltd",
       note: "Salary",
-      amount: 385000,
+      amount: 410000,
       date: unix(salaryDay, 8),
     })
 
@@ -271,7 +273,7 @@ for (let m = MONTHS; m >= 0; m--) {
     tx({
       wallet_id: cash ? W.cash : W.main,
       category_id: "groceries",
-      name: pick(["REWE", "Lidl", "Edeka"]),
+      name: pick(["Tesco", "Lidl", "Aldi"]),
       amount: -between(cash ? 8 : 25, cash ? 30 : 95),
       date: unix(when, 18),
     })
@@ -285,7 +287,7 @@ for (let m = MONTHS; m >= 0; m--) {
       wallet_id: W.card,
       category_id: "dining",
       subcategory_id: coffee ? "coffee" : null,
-      name: coffee ? "Starbucks" : pick(["Vapiano", "Sushi Circle", "Pizzeria Napoli", "Thai Express"]),
+      name: coffee ? "Starbucks" : pick(["Pizza Hut", "Sushi bar", "Burger King", "Thai Express"]),
       amount: -(coffee ? between(3, 7) : between(14, 58)),
       date: unix(when, 13),
     })
@@ -307,7 +309,7 @@ for (let m = MONTHS; m >= 0; m--) {
         wallet_id: W.card,
         category_id: "shopping",
         subcategory_id: "electronics",
-        name: "MediaMarkt",
+        name: "Apple Store",
         note: "New headphones",
         amount: -between(180, 320),
         date: unix(big, 16),
@@ -321,7 +323,7 @@ for (let m = MONTHS; m >= 0; m--) {
   if (rand() < 0.5) {
     const when = d(15)
     if (past(when))
-      tx({ wallet_id: W.cash, category_id: "health", name: "Apotheke", amount: -between(6, 25), date: unix(when, 11) })
+      tx({ wallet_id: W.cash, category_id: "health", name: "Pharmacy", amount: -between(6, 25), date: unix(when, 11) })
   }
   if (m === 7 || m === 2) {
     const when = d(18)
@@ -329,39 +331,39 @@ for (let m = MONTHS; m >= 0; m--) {
       tx({
         wallet_id: W.card,
         category_id: "travel",
-        name: m === 7 ? "Lufthansa" : "Deutsche Bahn",
-        note: m === 7 ? "Summer holiday" : "Weekend in Hamburg",
+        name: m === 7 ? "EasyJet" : "Train tickets",
+        note: m === 7 ? "Summer holiday" : "Weekend away",
         amount: -between(140, 480),
         date: unix(when, 9),
       })
   }
   if (m === 11)
     tx({ wallet_id: W.main, category_id: "gifts", name: "Birthday present", amount: -6500, date: unix(d(20)) })
-  // Side income and a refund.
-  if (m % 5 === 1) {
+  // Freelance work, paid in dollars, and a refund.
+  if (m % 2 === 1) {
     const when = d(22)
     if (past(when))
       tx({
-        wallet_id: W.main,
+        wallet_id: W.usd,
         category_id: "other_income",
         name: "Freelance invoice",
-        note: "Website for a friend",
-        amount: between(300, 700),
+        note: "Website for a client",
+        amount: between(600, 1100),
         date: unix(when, 9),
       })
   }
   if (m === 4)
     tx({ wallet_id: W.card, category_id: "shopping", name: "Amazon", note: "Refund", amount: 3499, date: unix(d(25)) })
 
-  // India: spending in rupees.
+  // Tools for the freelance work, paid from the dollar account.
   for (let i = 0; i < 2; i++) {
     const when = d(6 + i * 12)
     if (past(when))
       tx({
-        wallet_id: W.india,
-        category_id: i ? "dining" : "groceries",
-        name: i ? "Swiggy" : "BigBasket",
-        amount: -between(600, 2400),
+        wallet_id: W.usd,
+        category_id: "bills",
+        name: i ? "Figma" : "GitHub",
+        amount: -between(4, 16),
         date: unix(when, 14),
       })
   }
@@ -453,14 +455,14 @@ const subs: Sub[] = [
     name: "Rent",
     wallet_id: W.main,
     category_id: "home",
-    amount: -115000,
+    amount: -124000,
     unit: "month",
     start_day: monthDay(MONTHS, 3),
     kind: "repetitive",
   },
   {
     id: "ticket",
-    name: "Deutschlandticket",
+    name: "Transit pass",
     wallet_id: W.main,
     category_id: "transit",
     amount: -5800,
@@ -548,7 +550,7 @@ const subs: Sub[] = [
   // Recurring transfers
   {
     id: "save",
-    name: "Girokonto → Savings",
+    name: "Current account → Savings",
     wallet_id: W.main,
     category_id: "transfer",
     amount: -50000,
@@ -559,7 +561,7 @@ const subs: Sub[] = [
   },
   {
     id: "invest",
-    name: "Girokonto → ETF portfolio",
+    name: "Current account → Index fund",
     wallet_id: W.main,
     category_id: "transfer",
     amount: -30000,
@@ -569,17 +571,17 @@ const subs: Sub[] = [
     to_wallet_id: W.etf,
   },
   {
-    id: "family",
-    name: "Girokonto → HDFC (India)",
-    wallet_id: W.main,
+    id: "dollars",
+    name: "Dollar account → Current account",
+    wallet_id: W.usd,
     category_id: "transfer",
-    amount: -25000,
+    amount: -50000,
     unit: "month",
     start_day: monthDay(MONTHS, 15),
     kind: "repetitive",
-    to_wallet_id: W.india,
+    to_wallet_id: W.main,
     variable: 1,
-    note: "Family support via Wise",
+    note: "Freelance dollars to euros, via Wise",
   },
 ]
 insert(
@@ -603,7 +605,7 @@ insert(
   }))
 )
 // The app records fixed-amount subscriptions with auto-pay on first load. Seed the exceptions:
-// a skipped gym month, a one-off Netflix price, and the variable rupee transfers (paid by hand, through Wise).
+// a skipped gym month, a one-off Netflix price, and the variable dollar transfers (paid by hand, through Wise).
 const gymSkip = monthDay(4, 5)
 tx({
   id: "gym-skip",
@@ -635,54 +637,54 @@ tx({
 for (let m = MONTHS; m >= 1; m--) {
   const due = monthDay(m, 15)
   if (due > today) continue
-  const rate = 89 + rand() * 4 // INR per EUR
-  const sent = between(220, 300)
+  const rate = 0.9 + rand() * 0.04 // EUR per USD
+  const sent = between(400, 650)
   const fee = Math.round(sent * 0.006) + 50
   transfer({
-    from: W.main,
-    to: W.india,
+    from: W.usd,
+    to: W.main,
     sent,
     received: Math.round((sent - fee) * rate * 0.997),
     day: due,
     fee,
     provider: "Wise",
     rate,
-    sub: "family",
+    sub: "dollars",
   })
 }
 // A one-off exchange at the bank, for comparing providers.
 const bankFx = monthDay(9, 8)
 transfer({
   from: W.savings,
-  to: W.india,
+  to: W.usd,
   sent: 100000,
-  received: Math.round(100000 * 86.1),
+  received: Math.round(98500 * 1.061),
   day: bankFx,
   fee: 1500,
   provider: "Bank",
-  rate: 90.4,
-  note: "Laptop for parents",
+  rate: 1.087,
+  note: "Dollars for a trip",
 })
 
-// An event: last month's weekend in Lisbon, with the spending filed under it and tagged.
-const lisbon = monthDay(1, 12)
-insert("events", [{ id: "lisbon", name: "Lisbon weekend", start_day: lisbon, end_day: addDays(lisbon, 3) }])
+// An event: last month's weekend in Rome, with the spending filed under it and tagged.
+const trip = monthDay(1, 12)
+insert("events", [{ id: "rome", name: "Rome weekend", start_day: trip, end_day: addDays(trip, 3) }])
 for (const [i, name, category_id, amount] of [
-  [0, "TAP Air Portugal", "travel", -18640],
-  [0, "Hotel Alfama", "travel", -31200],
-  [1, "Time Out Market", "dining", -3870],
-  [1, "Carris tram", "transit", -960],
-  [2, "Pastéis de Belém", "dining", -1250],
-  [3, "A Vida Portuguesa", "shopping", -4290],
+  [0, "Ryanair", "travel", -16480],
+  [0, "Hotel", "travel", -29600],
+  [1, "Trattoria", "dining", -4230],
+  [1, "Metro tickets", "transit", -1400],
+  [2, "Gelato", "dining", -900],
+  [3, "Souvenirs", "shopping", -3650],
 ] as const)
   tx({
     wallet_id: W.card,
     category_id,
     name,
     amount,
-    date: unix(addDays(lisbon, i), 13),
-    event_id: "lisbon",
-    tags: ["travel", "portugal"],
+    date: unix(addDays(trip, i), 13),
+    event_id: "rome",
+    tags: ["travel", "italy"],
   })
 // Tag work lunches so the tag filter has something to show.
 for (const t of txs.filter((t) => t.category_id === "dining" && !t.event_id).slice(-6)) t.tags = ["work"]

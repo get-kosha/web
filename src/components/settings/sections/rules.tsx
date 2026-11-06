@@ -263,7 +263,7 @@ function RuleEditor({ rule: r, onDone }: { rule: TitleRuleRow | null; onDone: (r
             value={title}
             autoFocus={!r}
             maxLength={100}
-            placeholder="e.g. rewe"
+            placeholder="e.g. tesco"
             onChange={(e) => setTitle(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
             onBlur={() => {

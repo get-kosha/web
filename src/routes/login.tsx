@@ -1,24 +1,32 @@
 import { useEffect, useState, type FormEvent } from "react"
 import { createFileRoute } from "@tanstack/react-router"
-import { KeyIcon } from "@phosphor-icons/react/ssr"
+import { EyeIcon, KeyIcon } from "@phosphor-icons/react/ssr"
 import { z } from "zod"
 import { KoshaLogo } from "@/components/kosha-mark"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { authClient } from "@/lib/auth-client"
-import { safeReturn } from "@/lib/core"
+import { DEMO, safeReturn } from "@/lib/core"
 
 export const Route = createFileRoute("/login")({
   // Loose: an app signing in through MCP OAuth adds a signed query that must reach the sign-in request.
-  validateSearch: z.looseObject({ returnTo: z.string().optional() }),
+  validateSearch: z.looseObject({
+    returnTo: z.string().optional(),
+    mode: z.enum(["in", "up"]).optional().catch(undefined),
+    demo: z.coerce.boolean().optional().catch(undefined),
+  }),
   head: () => ({ meta: [{ title: "Sign in · Kosha" }] }),
   component: Login,
 })
 
 function Login() {
-  const { returnTo } = Route.useSearch()
-  const [mode, setMode] = useState<"in" | "up">("in")
+  const search = Route.useSearch()
+  const { returnTo } = search
+  // The landing page's "Create an account" opens this page with ?mode=up.
+  const [mode, setMode] = useState<"in" | "up">(search.mode ?? "in")
+  // The landing page's "Try the demo" opens this page with ?demo=1: the shared demo account, filled in.
+  const [demo, setDemo] = useState(!!search.demo && mode === "in")
   const [error, setError] = useState("")
   const [busy, setBusy] = useState(false)
   // Set after a correct password when the account has two-factor on. The next step asks for the code.
@@ -69,12 +77,25 @@ function Login() {
       <div className="flex w-full max-w-sm flex-col gap-6">
         <div>
           <h1 className="mb-4">
-            <KoshaLogo className="text-[28px]" />
+            {/* A full page load, so a signed-out visitor gets the landing page back. */}
+            <a href="/" className="inline-block rounded-md">
+              <KoshaLogo className="text-[28px]" />
+            </a>
           </h1>
           <p className="text-sm text-muted-foreground">
-            {mode === "in" ? "Sign in to your account." : "Create an account."}
+            {demo ? "Sign in to the demo account." : mode === "in" ? "Sign in to your account." : "Create an account."}
           </p>
         </div>
+
+        {demo && (
+          <div className="flex gap-3 rounded-xl border bg-card p-4 text-sm">
+            <EyeIcon className="mt-0.5 size-5 shrink-0 text-subtle-foreground" aria-hidden="true" />
+            <p className="text-subtle-foreground">
+              <span className="font-medium text-foreground">This is a shared demo account.</span> It has 14 months of
+              sample data. You can look around everything, but adding, editing and deleting are turned off.
+            </p>
+          </div>
+        )}
 
         <form onSubmit={submit} className="flex flex-col gap-4">
           {mode === "up" && (
@@ -85,7 +106,16 @@ function Login() {
           )}
           <div className="grid gap-1.5">
             <Label htmlFor="email">Email</Label>
-            <Input id="email" name="email" type="email" required autoComplete="username webauthn" />
+            <Input
+              key={demo ? "demo" : "own"}
+              id="email"
+              name="email"
+              type="email"
+              required
+              autoComplete="username webauthn"
+              defaultValue={demo ? DEMO.email : undefined}
+              readOnly={demo}
+            />
           </div>
           <div className="grid gap-1.5">
             <Label htmlFor="password">Password</Label>
@@ -96,6 +126,9 @@ function Login() {
               required
               minLength={mode === "up" ? 10 : undefined}
               autoComplete={mode === "in" ? "current-password" : "new-password"}
+              key={demo ? "demo" : "own"}
+              defaultValue={demo ? DEMO.password : undefined}
+              readOnly={demo}
             />
             {mode === "up" && <p className="text-xs text-muted-foreground">At least 10 characters.</p>}
           </div>
@@ -105,11 +138,20 @@ function Login() {
             </p>
           )}
           <Button type="submit" disabled={busy}>
-            {mode === "in" ? "Sign in" : "Create account"}
+            {demo ? "Open the demo" : mode === "in" ? "Sign in" : "Create account"}
           </Button>
+          {demo && (
+            <button
+              type="button"
+              onClick={() => setDemo(false)}
+              className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
+            >
+              Sign in to your own account instead
+            </button>
+          )}
         </form>
 
-        {mode === "in" && (
+        {mode === "in" && !demo && (
           <Button
             variant="outline"
             disabled={busy}
@@ -126,6 +168,7 @@ function Login() {
             className="text-foreground underline underline-offset-4"
             onClick={() => {
               setMode(mode === "in" ? "up" : "in")
+              setDemo(false)
               setError("")
             }}
           >
