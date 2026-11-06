@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
-import { Link, getRouteApi, useLocation, useNavigate } from "@tanstack/react-router"
+import { Link, getRouteApi, useLocation, useNavigate, useRouter } from "@tanstack/react-router"
 import {
   CaretLeftIcon,
   CaretRightIcon,
@@ -65,6 +65,14 @@ export function AppShell({ children }: { children: ReactNode }) {
   useMarkHydrated()
   const { prefs, user: prefsUser } = useMeta()
   useEffect(() => syncPreferences(prefs), [prefs])
+  // Once the page settles, load the other main pages in the background, so the first tap on a tab is
+  // instant. Visiting a page later shows this data and refreshes it behind the scenes.
+  const router = useRouter()
+  const { month, currency } = app.useSearch()
+  useEffect(() => {
+    const t = setTimeout(() => nav.forEach(({ to }) => void router.preloadRoute({ to }).catch(() => {})), 1500)
+    return () => clearTimeout(t)
+  }, [router, month, currency])
   const add = (text = "") => {
     setAddText(text)
     setAdding(true)
@@ -317,6 +325,25 @@ function CurrencySwitch() {
     >
       {currency}
     </Link>
+  )
+}
+
+/** What a main page shows while its data loads for the first time. Later visits show the cached page at once. */
+export function PageSkeleton() {
+  return (
+    <div role="status" className="animate-pulse motion-reduce:animate-none">
+      <span className="sr-only">Loading</span>
+      <div className="px-4 pt-5 pb-5 md:px-8 md:pt-7">
+        <div className="h-7 w-36 rounded-md bg-muted" />
+        <div className="mt-2 h-4 w-56 max-w-full rounded bg-muted" />
+      </div>
+      <div className="grid gap-3 px-4 md:px-8">
+        <div className="h-40 rounded-xl bg-card" />
+        {[0, 1, 2, 3, 4].map((i) => (
+          <div key={i} className="h-14 rounded-xl bg-card" />
+        ))}
+      </div>
+    </div>
   )
 }
 

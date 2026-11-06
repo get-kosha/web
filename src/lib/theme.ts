@@ -50,7 +50,18 @@ function getTheme(): Theme {
 
 function applyTheme() {
   const t = getTheme()
-  document.documentElement.classList.toggle("dark", t === "dark" || (t === "system" && matchMedia(QUERY).matches))
+  const d = document.documentElement
+  const dark = t === "dark" || (t === "system" && matchMedia(QUERY).matches)
+  if (d.classList.contains("dark") === dark) return
+  // Without this, elements with a colour transition fade from the old theme while the rest snaps,
+  // so the old selection glows for a moment. Transitions are off for the one style recalc of the swap.
+  const off = document.createElement("style")
+  off.textContent = "*,*::before,*::after{transition:none!important}"
+  document.head.appendChild(off)
+  d.classList.toggle("dark", dark)
+  // Reading a style forces the recalc now, while the override is still in place.
+  void getComputedStyle(d).color
+  setTimeout(() => off.remove())
 }
 
 /** Applies a theme on this device right away. Saving it to the account is the caller's job. */

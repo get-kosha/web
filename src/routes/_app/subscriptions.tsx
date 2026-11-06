@@ -17,7 +17,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { CategoryIcon } from "@/components/category-icon"
-import { PageHeader, useGlobals, useMeta } from "@/components/shell"
+import { PageHeader, PageSkeleton, useGlobals, useMeta } from "@/components/shell"
 import { SubscriptionForm } from "@/components/subscription-form"
 import { TransactionForm, TransactionSheet } from "@/components/transaction-form"
 import {
@@ -51,6 +51,7 @@ export const Route = createFileRoute("/_app/subscriptions")({
     return { subs, income }
   },
   head: () => ({ meta: [{ title: "Recurring · Kosha" }] }),
+  pendingComponent: PageSkeleton,
   component: Subscriptions,
 })
 

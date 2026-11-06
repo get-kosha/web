@@ -11,7 +11,7 @@ import { Chip, eventDates } from "@/components/tags-events"
 import { ActivityPanel } from "@/components/activity-panel"
 import { CategoryIcon } from "@/components/category-icon"
 import { CategoryPicker, categoryPath } from "@/components/category-picker"
-import { PageHeader, bottomSheet, isTyping, monthLabel, useGlobals, useMeta } from "@/components/shell"
+import { PageHeader, PageSkeleton, bottomSheet, isTyping, monthLabel, useGlobals, useMeta } from "@/components/shell"
 import { TransactionForm, TransactionSheet } from "@/components/transaction-form"
 import { listTransactions, type Tx } from "@/lib/api"
 import { LOCALE, convert, dayOf, fmt, isNeutral, parseAmount, tagList } from "@/lib/core"
@@ -52,6 +52,7 @@ export const Route = createFileRoute("/_app/transactions")({
   }),
   loader: ({ deps }) => listTransactions({ data: { ...deps, limit: deps.limit ?? PAGE } }),
   head: () => ({ meta: [{ title: "Activity · Kosha" }] }),
+  pendingComponent: PageSkeleton,
   component: Activity,
 })
 

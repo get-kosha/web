@@ -17,7 +17,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { PageHeader, segment, segmentButton, useGlobals, useMeta } from "@/components/shell"
+import { PageHeader, PageSkeleton, segment, segmentButton, useGlobals, useMeta } from "@/components/shell"
 import { BigMoney, CompositionBar } from "@/components/net-worth"
 import { GainDialog } from "@/components/gain-dialog"
 import { Pick } from "@/components/pick"
@@ -46,6 +46,7 @@ export const Route = createFileRoute("/_app/accounts")({
     return { valuations, exchanges, overview }
   },
   head: () => ({ meta: [{ title: "Accounts · Kosha" }] }),
+  pendingComponent: PageSkeleton,
   component: Accounts,
 })
 

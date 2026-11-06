@@ -20,7 +20,7 @@ import { BigMoney, CompositionBar } from "@/components/net-worth"
 import { Reveal, RollingMoney } from "@/components/motion"
 import { GainDialog } from "@/components/gain-dialog"
 import { TransactionForm, TransactionSheet } from "@/components/transaction-form"
-import { useGlobals, useMeta } from "@/components/shell"
+import { PageSkeleton, useGlobals, useMeta } from "@/components/shell"
 import { getDashboard, updateOccurrence, type Upcoming, type Wallet } from "@/lib/api"
 import { LOCALE, addDays, convert, dayOf, fmt, netWorth, shiftMonth } from "@/lib/core"
 import { cn } from "@/lib/utils"
@@ -29,6 +29,7 @@ export const Route = createFileRoute("/_app/")({
   loaderDeps: ({ search }) => ({ month: search.month, currency: search.currency }),
   // A guest sees the landing page from the _app layout instead, so there is no dashboard to load.
   loader: ({ deps, context }) => (context.guest ? (null as unknown as Dash) : getDashboard({ data: deps })),
+  pendingComponent: PageSkeleton,
   component: Overview,
 })
 
