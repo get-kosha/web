@@ -23,6 +23,7 @@ import {
   parseAmount,
   shiftMonth,
   unixOf,
+  entryDate,
   usualCurve,
   type AccountType,
   type Schedule,
@@ -98,6 +99,8 @@ export type Event = {
 }
 
 const day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/)
+/** "HH:MM", 24-hour, in the user's time zone. Left out, the time follows `entryDate`. */
+const time = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Use a 24-hour time like 09:30")
 const month = z.string().regex(/^\d{4}-\d{2}$/)
 const currency = z.string().regex(/^[a-z]{3,6}$/)
 const tags = z
@@ -563,6 +566,7 @@ export const saveInput = z.object({
     .int()
     .refine((n) => n !== 0, "Amount is required"),
   day,
+  time: time.optional(),
   paid: z.boolean().default(true),
   /** A subcategory of `categoryId`. When left out, it is kept while the category stays the same. */
   subcategoryId: z.string().nullable().optional(),
@@ -610,13 +614,7 @@ export async function saveTransactions(uid: string, items: SaveTx[]) {
   const out: string[] = []
   for (const data of items) {
     const old = data.id ? existing.get(data.id) : undefined
-    // Keep the original time when the day is unchanged; today means "now"; other days default to noon.
-    const date =
-      old !== undefined && dayOf(old, tz) === data.day
-        ? old
-        : data.day === dayOf(now, tz)
-          ? now
-          : unixOf(data.day, tz, 12)
+    const date = entryDate(data.day, tz, now, data.time, old)
     const name = data.name.trim()
     const id = data.id ?? crypto.randomUUID()
     const eventId = data.eventId === undefined && old === undefined ? eventFor(data.day, events) : data.eventId
@@ -717,6 +715,7 @@ export const transferInput = z
     received: z.number().int().positive(),
     provider: z.string().trim().max(60).default(""),
     day,
+    time: time.optional(),
     note: z.string().max(2000).default(""),
   })
   .refine((d) => d.fromWalletId !== d.toWalletId, "Pick two different accounts")
@@ -750,8 +749,7 @@ export async function saveTransfers(uid: string, items: SaveTransfer[]) {
     if (data.transferId && !legs.length) throw notFound("Transfer")
     const outLeg = legs.find((l) => l.amount < 0)
     const inLeg = legs.find((l) => l.amount > 0)
-    const date =
-      outLeg && dayOf(outLeg.date, tz) === data.day ? outLeg.date : data.day === today ? now : unixOf(data.day, tz, 12)
+    const date = entryDate(data.day, tz, now, data.time, outLeg?.date)
     const transferId = data.transferId ?? crypto.randomUUID()
     const meta = data.transferId
       ? await DB.prepare("SELECT * FROM transfers WHERE user_id = ? AND id = ?")

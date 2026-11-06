@@ -9,7 +9,7 @@ import { useMeta } from "@/components/shell"
 import { suggestPayees, type PayeeSuggestion } from "@/lib/api"
 import { addTransaction } from "@/lib/offline"
 import { WALLET_KEY, startWallet } from "@/lib/add-defaults"
-import { LOCALE, addDays, dayOf, eventFor, fmt, guessCategory, isNeutral, parseAmount } from "@/lib/core"
+import { LOCALE, addDays, dayOf, eventFor, fmt, guessCategory, isNeutral, parseAmount, timeOf } from "@/lib/core"
 import { parseQuickAdd } from "@/lib/quick-add"
 import { cn } from "@/lib/utils"
 
@@ -53,7 +53,7 @@ export function QuickAdd({
   )
 }
 
-type Over = { amount?: string; payee?: string; categoryId?: string; walletId?: string; day?: string }
+type Over = { amount?: string; payee?: string; categoryId?: string; walletId?: string; day?: string; time?: string }
 
 function Body({
   initial,
@@ -125,6 +125,8 @@ function Body({
   const walletId = over.walletId ?? p.walletId ?? best?.wallet_id ?? remembered ?? wallets[0]?.id
   const wallet = meta.wallets.find((w) => w.id === walletId)
   const day = over.day ?? (p.date === "yesterday" ? addDays(today, -1) : today)
+  // Shows now until you change it. Untouched on today, the server stamps the exact moment.
+  const time = over.time ?? timeOf(Date.now() / 1000, meta.tz)
   // The server files a new entry under the event its day falls in, so show that event here.
   const event = meta.events.find((e) => e.id === eventFor(day, meta.events))
 
@@ -172,6 +174,7 @@ function Body({
         note: "",
         amount: signed,
         day,
+        time: over.time ?? (day === today ? undefined : time),
         paid: true,
         tags: p.tags,
       })
@@ -225,7 +228,7 @@ function Body({
 
       <div className="px-[18px] pt-4 pb-1.5">
         <div className="mb-2 text-xs text-muted-foreground">Will add</div>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-[108px_minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)_128px]">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-[108px_minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)_128px_84px]">
           <Box label="Amount">
             <span className="flex items-baseline">
               <span
@@ -302,6 +305,19 @@ function Body({
             <span className="sr-only">
               {day === today ? "Today" : new Date(`${day}T12:00:00Z`).toLocaleDateString(LOCALE, { timeZone: "UTC" })}
             </span>
+          </Box>
+          <Box label="Time">
+            <input
+              aria-label="Time"
+              type="time"
+              value={time}
+              onChange={(e) => setOver((o) => ({ ...o, time: e.target.value || undefined }))}
+              className={cn(
+                field,
+                "num [&::-webkit-calendar-picker-indicator]:hidden",
+                !over.time && "text-subtle-foreground"
+              )}
+            />
           </Box>
         </div>
         {(p.tags.length > 0 || event) && (

@@ -125,10 +125,31 @@ function offsetMs(utcMs: number, tz: string) {
   )
   return Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour, +p.minute, +p.second) - utcMs
 }
-/** Converts "YYYY-MM-DD" (plus an optional hour) in `tz` to unix seconds. */
-export function unixOf(day: string, tz: string, hour = 0) {
-  const guess = Date.UTC(+day.slice(0, 4), +day.slice(5, 7) - 1, +day.slice(8, 10), hour)
+/** Converts "YYYY-MM-DD" (plus an optional hour and minute) in `tz` to unix seconds. */
+export function unixOf(day: string, tz: string, hour = 0, minute = 0) {
+  const guess = Date.UTC(+day.slice(0, 4), +day.slice(5, 7) - 1, +day.slice(8, 10), hour, minute)
   return Math.floor((guess - offsetMs(guess, tz)) / 1000)
+}
+
+const timeFormats = new Map<string, Intl.DateTimeFormat>()
+/** Formats unix seconds as 24-hour "HH:MM" in `tz`. */
+export function timeOf(unix: number, tz: string) {
+  let f = timeFormats.get(tz)
+  if (!f) {
+    f = new Intl.DateTimeFormat("en-GB", { timeZone: tz, hour: "2-digit", minute: "2-digit", hourCycle: "h23" })
+    timeFormats.set(tz, f)
+  }
+  return f.format(unix * 1000)
+}
+
+/**
+ * When a saved entry happened. A given "HH:MM" wins. Otherwise an edit that keeps its day keeps its time,
+ * an entry for today is stamped now, and any other day gets noon.
+ */
+export function entryDate(day: string, tz: string, now: number, time?: string, old?: number) {
+  if (time) return unixOf(day, tz, +time.slice(0, 2), +time.slice(3, 5))
+  if (old !== undefined && dayOf(old, tz) === day) return old
+  return day === dayOf(now, tz) ? now : unixOf(day, tz, 12)
 }
 /** Returns the [start, end) unix seconds of a "YYYY-MM" month in `tz`. */
 export function monthRange(month: string, tz: string): [number, number] {

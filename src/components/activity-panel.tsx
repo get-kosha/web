@@ -18,7 +18,7 @@ import { useGlobals, useMeta } from "@/components/shell"
 import { TransactionForm } from "@/components/transaction-form"
 import { EventEditor, TagInput, eventDates } from "@/components/tags-events"
 import { deleteTransaction, getPayeeHistory, saveTransaction, type Tx } from "@/lib/api"
-import { CORRECTION_CATEGORY, LOCALE, convert, dayOf, fmt, isNeutral, parseAmount, tagList } from "@/lib/core"
+import { CORRECTION_CATEGORY, LOCALE, convert, dayOf, fmt, isNeutral, parseAmount, tagList, timeOf } from "@/lib/core"
 import { cn } from "@/lib/utils"
 
 type Draft = {
@@ -28,6 +28,8 @@ type Draft = {
   subcategoryId: string | null
   walletId: string
   day: string
+  /** Left out until you change it, so the server keeps the exact saved time. */
+  time?: string
   note: string
   tags: string[]
   eventId: string | null
@@ -86,6 +88,7 @@ export function ActivityPanel({
     eventId: tx.event_id ?? null,
   }
   const [draft, setDraft] = useState(initial)
+  const shownTime = draft.time ?? timeOf(tx.date, meta.tz)
   const saved = useRef(initial)
   const pending = useRef<{ timer: ReturnType<typeof setTimeout>; next: Draft } | null>(null)
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle")
@@ -153,7 +156,7 @@ export function ActivityPanel({
   async function duplicate() {
     const today = dayOf(Date.now() / 1000, meta.tz)
     try {
-      const { id } = await saveTransaction({ data: { ...draft, day: today, paid: true } })
+      const { id } = await saveTransaction({ data: { ...draft, day: today, time: undefined, paid: true } })
       toast.success(`Duplicated · ${fmt(draft.amount, currency)} today`)
       await router.invalidate()
       onSelect(id)
@@ -291,7 +294,26 @@ export function ActivityPanel({
             id="f-date"
             type="date"
             value={draft.day}
-            onChange={(e) => e.target.value && change({ day: e.target.value }, 0)}
+            // Moving to another day keeps the time of day.
+            onChange={(e) => e.target.value && change({ day: e.target.value, time: shownTime }, 0)}
+            onClick={(e) => e.currentTarget.showPicker?.()}
+            className="absolute inset-0 cursor-pointer opacity-0"
+          />
+        </span>
+      </div>
+
+      <div className={field}>
+        <label className={fieldLabel} htmlFor="f-time">
+          Time
+        </label>
+        <span className={cn(fieldValue, "relative focus-within:bg-muted")}>
+          <span className="num">{shownTime}</span>
+          <CaretDownIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+          <input
+            id="f-time"
+            type="time"
+            value={shownTime}
+            onChange={(e) => e.target.value && change({ time: e.target.value }, 0)}
             onClick={(e) => e.currentTarget.showPicker?.()}
             className="absolute inset-0 cursor-pointer opacity-0"
           />

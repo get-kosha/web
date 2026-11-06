@@ -29,6 +29,7 @@ import {
   isNeutral,
   parseAmount,
   tagList,
+  timeOf,
 } from "@/lib/core"
 import { cn } from "@/lib/utils"
 
@@ -119,6 +120,11 @@ export function TransactionForm({
   )
   const [toWalletId, setToWalletId] = useState(sides?.to ?? presetTo ?? "")
   const [day, setDay] = useState(initial ? dayOf(initial.date, meta.tz) : today)
+  // null until you change it. It shows the entry's own time, or now for a new one.
+  const [time, setTime] = useState<string | null>(null)
+  const shownTime = time ?? timeOf(initial ? initial.date : Date.now() / 1000, meta.tz)
+  // Untouched on its own day, the server keeps an edit's exact time or stamps a new entry with now.
+  const sendTime = time ?? (day === (initial ? dayOf(initial.date, meta.tz) : today) ? undefined : shownTime)
   const [paid, setPaid] = useState(initial ? !!initial.paid : true)
   const [tags, setTags] = useState(() => tagList(initial?.tags))
   // Until you pick an event this stays undefined. An edit keeps its event, and a new entry gets the
@@ -199,6 +205,7 @@ export function TransactionForm({
             received: receivedCents,
             provider,
             day,
+            time: sendTime,
             note,
           },
         })
@@ -216,6 +223,7 @@ export function TransactionForm({
             note,
             amount: signed,
             day,
+            time: sendTime,
             paid,
             tags,
             eventId,
@@ -239,6 +247,7 @@ export function TransactionForm({
         setNote("")
         setTags([])
         setPickedEvent(undefined)
+        setTime(null)
         setCategoryTouched(false)
         amountRef.current?.focus()
         onDone?.()
@@ -283,13 +292,22 @@ export function TransactionForm({
             </button>
           ))}
         </div>
-        <input
-          type="date"
-          value={day}
-          onChange={(e) => setDay(e.target.value || today)}
-          className="rounded-md bg-transparent text-sm text-muted-foreground outline-none"
-          aria-label="Date"
-        />
+        <div className="flex items-center gap-1">
+          <input
+            type="date"
+            value={day}
+            onChange={(e) => setDay(e.target.value || today)}
+            className="rounded-md bg-transparent text-sm text-muted-foreground outline-none"
+            aria-label="Date"
+          />
+          <input
+            type="time"
+            value={shownTime}
+            onChange={(e) => setTime(e.target.value || null)}
+            className="rounded-md bg-transparent text-sm text-muted-foreground outline-none"
+            aria-label="Time"
+          />
+        </div>
       </div>
 
       <label className="flex flex-col items-center gap-1">

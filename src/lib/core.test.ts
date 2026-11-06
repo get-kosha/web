@@ -10,6 +10,8 @@ import {
   pressKey,
   unixOf,
   dayOf,
+  entryDate,
+  timeOf,
   usualCurve,
 } from "./core.ts"
 
@@ -35,6 +37,15 @@ assert.equal(dayOf(unixOf("2026-07-01", tz, 0), tz), "2026-07-01")
 const [s, e] = monthRange("2026-12", tz)
 assert.equal(dayOf(s, tz), "2026-12-01")
 assert.equal(dayOf(e - 1, tz), "2026-12-31")
+
+const now = unixOf("2026-11-06", tz, 15, 42) + 17
+assert.equal(timeOf(now, tz), "15:42")
+const at = entryDate("2026-07-01", tz, now, "09:05")
+assert.equal(dayOf(at, tz), "2026-07-01")
+assert.equal(timeOf(at, tz), "09:05")
+assert.equal(entryDate("2026-11-06", tz, now), now)
+assert.equal(timeOf(entryDate("2026-11-01", tz, now), tz), "12:00")
+assert.equal(entryDate("2026-11-01", tz, now, undefined, at + 86_400 * 123), at + 86_400 * 123)
 
 const rules = [
   { title: "tesco", category_id: "groceries", exact: 0 },
