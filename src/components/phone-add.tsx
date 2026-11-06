@@ -4,12 +4,11 @@ import { BackspaceIcon, CalendarBlankIcon, CreditCardIcon, XIcon } from "@phosph
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { CategoryIcon } from "@/components/category-icon"
-import { TransactionForm } from "@/components/transaction-form"
-import { segment, segmentButton, useMeta } from "@/components/shell"
+import { CategoryStrip, Extras, TransactionForm } from "@/components/transaction-form"
+import { bottomSheet, segment, segmentButton, useMeta } from "@/components/shell"
 import { deleteTransaction, saveTransaction, suggestPayees, type PayeeSuggestion } from "@/lib/api"
 import { WALLET_KEY, startWallet } from "@/lib/add-defaults"
-import { LOCALE, addDays, dayOf, fmt, guessCategory, isNeutral } from "@/lib/core"
+import { LOCALE, addDays, dayOf, eventFor, fmt, guessCategory, isNeutral } from "@/lib/core"
 import { cn } from "@/lib/utils"
 
 type Kind = "expense" | "income" | "transfer"
@@ -25,10 +24,6 @@ function pressKey(amount: string, key: string) {
 }
 
 const KEYS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "0", "del"]
-
-// Bottom sheet: the Dialog popup pinned to the bottom edge, sliding up with the drawer curve.
-const sheet =
-  "top-auto bottom-0 left-0 max-w-none translate-x-0 translate-y-0 rounded-b-none p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:max-w-none ease-drawer data-open:duration-300 data-open:zoom-in-100 data-open:slide-in-from-bottom data-closed:zoom-out-100 data-closed:slide-out-to-bottom md:top-1/2 md:bottom-auto md:left-1/2 md:max-w-md md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-xl md:data-open:slide-in-from-bottom-0 md:data-closed:slide-out-to-bottom-0"
 
 export function PhoneAdd() {
   const meta = useMeta()
@@ -50,7 +45,12 @@ export function PhoneAdd() {
     if (id) setWalletId(id)
   }, [meta.wallets, meta.prefs.default_wallet])
   const [day, setDay] = useState(today)
-  const [sheetOpen, setSheetOpen] = useState<"account" | "date" | "category" | null>(null)
+  const [sheetOpen, setSheetOpen] = useState<"account" | "date" | null>(null)
+  const [note, setNote] = useState("")
+  const [tags, setTags] = useState<string[]>([])
+  // undefined until picked: follows the event the chosen day falls in.
+  const [pickedEvent, setPickedEvent] = useState<string | null | undefined>(undefined)
+  const eventId = pickedEvent !== undefined ? pickedEvent : eventFor(day, meta.events)
   const [match, setMatch] = useState<PayeeSuggestion | null>(null)
   const [saving, setSaving] = useState(false)
 
@@ -84,14 +84,13 @@ export function PhoneAdd() {
       : match && candidates.some((c) => c.id === match.category_id)
         ? match.category_id
         : guessCategory(payee, meta.rules)
-  const pills = useMemo(() => {
+  // Most used first, with this payee's usual category leading.
+  const ordered = useMemo(() => {
     const top = [...candidates].sort((a, b) => b.uses - a.uses)
-    const first = usual ? top.filter((c) => c.id === usual) : []
-    return [...first, ...top.filter((c) => c.id !== usual)].slice(0, 3)
+    return [...top.filter((c) => c.id === usual), ...top.filter((c) => c.id !== usual)]
   }, [candidates, usual])
   const chosen = categoryId ?? usual ?? null
   const chosenCat = meta.categories.find((c) => c.id === chosen)
-  const pillsShown = chosenCat && !pills.some((c) => c.id === chosenCat.id) ? [chosenCat, ...pills.slice(0, 2)] : pills
 
   const display = (() => {
     const [whole, dec] = (amount || "0").split(".")
@@ -108,7 +107,7 @@ export function PhoneAdd() {
     try {
       const name = payee.trim()
       const { id } = await saveTransaction({
-        data: { walletId: wallet.id, categoryId: chosen, name, note: "", amount: signed, day, paid: true },
+        data: { walletId: wallet.id, categoryId: chosen, name, note, amount: signed, day, paid: true, tags, eventId },
       })
       try {
         localStorage.setItem(WALLET_KEY, wallet.id)
@@ -128,6 +127,9 @@ export function PhoneAdd() {
       setAmount("")
       setPayee("")
       setCategoryId(null)
+      setNote("")
+      setTags([])
+      setPickedEvent(undefined)
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not add")
     } finally {
@@ -189,7 +191,12 @@ export function PhoneAdd() {
       </div>
 
       {kind === "transfer" ? (
-        <TransactionForm big preset={{ amount: cents || undefined }} onDone={() => navigate({ to: "/" })} />
+        <TransactionForm
+          big
+          preset={{ amount: cents || undefined }}
+          onDone={() => navigate({ to: "/" })}
+          onCancel={() => navigate({ to: "/" })}
+        />
       ) : (
         <>
           <div className="pt-2.5 text-center">
@@ -236,18 +243,19 @@ export function PhoneAdd() {
             <div className="mx-0.5 mb-2 text-xs text-muted-foreground">
               Category{usual ? " · this payee’s usual first" : ""}
             </div>
-            <div className="flex flex-wrap gap-2">
-              {pillsShown.map((c) => (
-                <Pill key={c.id} on={c.id === chosen} onClick={() => setCategoryId(c.id)}>
-                  <CategoryIcon icon={c.icon} className={cn("size-4", c.id === chosen && "text-primary-foreground")} />{" "}
-                  {c.name}
-                </Pill>
-              ))}
-              <Pill onClick={() => setSheetOpen("category")} className="text-muted-foreground">
-                More…
-              </Pill>
-            </div>
+            <CategoryStrip categories={ordered} value={chosen} onPick={setCategoryId} />
           </div>
+
+          <Extras
+            note={note}
+            onNote={setNote}
+            tags={tags}
+            onTags={setTags}
+            eventId={eventId}
+            onEvent={setPickedEvent}
+            auto={pickedEvent === undefined}
+            day={day}
+          />
 
           <div className="flex-1" />
 
@@ -277,7 +285,7 @@ export function PhoneAdd() {
       )}
 
       <Dialog open={sheetOpen === "account"} onOpenChange={(o) => !o && setSheetOpen(null)}>
-        <DialogContent className={sheet}>
+        <DialogContent className={bottomSheet}>
           <DialogHeader>
             <DialogTitle>Account</DialogTitle>
           </DialogHeader>
@@ -301,7 +309,7 @@ export function PhoneAdd() {
       </Dialog>
 
       <Dialog open={sheetOpen === "date"} onOpenChange={(o) => !o && setSheetOpen(null)}>
-        <DialogContent className={sheet}>
+        <DialogContent className={bottomSheet}>
           <DialogHeader>
             <DialogTitle>Date</DialogTitle>
           </DialogHeader>
@@ -333,31 +341,6 @@ export function PhoneAdd() {
             aria-label="Pick a date"
             className="h-11 rounded-md border bg-card px-3 text-sm"
           />
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={sheetOpen === "category"} onOpenChange={(o) => !o && setSheetOpen(null)}>
-        <DialogContent className={sheet}>
-          <DialogHeader>
-            <DialogTitle>Category</DialogTitle>
-          </DialogHeader>
-          <div className="grid max-h-[60svh] grid-cols-3 gap-1.5 overflow-y-auto">
-            {candidates.map((c) => (
-              <button
-                key={c.id}
-                type="button"
-                aria-pressed={c.id === chosen}
-                onClick={() => {
-                  setCategoryId(c.id)
-                  setSheetOpen(null)
-                }}
-                className="flex min-h-16 flex-col items-center justify-center gap-1.5 rounded-lg border border-transparent px-1 text-xs text-subtle-foreground transition-colors hover:bg-muted aria-pressed:border-foreground aria-pressed:bg-muted aria-pressed:text-foreground"
-              >
-                <CategoryIcon icon={c.icon} className="size-5" />
-                <span className="line-clamp-1">{c.name}</span>
-              </button>
-            ))}
-          </div>
         </DialogContent>
       </Dialog>
     </div>

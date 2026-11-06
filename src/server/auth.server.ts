@@ -47,6 +47,7 @@ export const USER_TABLES = [
   "transfers",
   "valuations",
   "transactions",
+  "events",
   "subscriptions",
   "title_rules",
   "categories",

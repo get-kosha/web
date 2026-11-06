@@ -134,7 +134,11 @@ assert.deepEqual(qa, {
   walletId: "v",
   categoryId: "dining",
   payee: "Dosaking",
+  tags: [],
 })
+const qt = parseQuickAdd("12 #Trip lunch #trip #rome-2026", qw, qc)
+assert.deepEqual(qt.tags, ["trip", "rome-2026"])
+assert.equal(qt.payee, "lunch")
 const qi = parseQuickAdd("+4200 salary n26 di", qw, qc)
 assert.equal(qi.amount, 420000)
 assert.equal(qi.income, true)
@@ -143,6 +147,26 @@ assert.equal(qi.categoryId, null) // "di" is under 3 letters
 assert.equal(qi.payee, "salary di")
 assert.equal(parseQuickAdd("rewe", qw, qc).amount, null)
 console.log("quick add ok")
+
+// tags and events
+import { eventFor, parseTags, tagList } from "./core.ts"
+assert.deepEqual(parseTags("#Trip, food  #trip Café! ##x"), ["trip", "food", "café", "x"])
+assert.deepEqual(parseTags(" , # "), [])
+assert.deepEqual(tagList('["a","b"]'), ["a", "b"])
+assert.deepEqual(tagList("not json"), [])
+assert.deepEqual(tagList(null), [])
+const evs = [
+  { id: "year", start_day: "2026-01-01", end_day: "2026-12-31" },
+  { id: "rome", start_day: "2026-11-03", end_day: "2026-11-10" },
+  { id: "open", start_day: "2026-12-20", end_day: null },
+  { id: "undated", start_day: null, end_day: null },
+]
+assert.equal(eventFor("2026-11-05", evs), "rome") // overlapping: the later start wins
+assert.equal(eventFor("2026-11-10", evs), "rome") // end day included
+assert.equal(eventFor("2026-11-11", evs), "year")
+assert.equal(eventFor("2027-02-01", evs), "open") // no end: still going
+assert.equal(eventFor("2025-06-01", evs), null)
+console.log("tags and events ok")
 
 // preferences
 import { parsePrefs } from "./core.ts"

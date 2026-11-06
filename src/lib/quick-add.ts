@@ -1,4 +1,5 @@
 // Quick add (⌘K): one line of text, parsed live into a transaction. Pure, so core.test.ts can check it.
+import { cleanTag } from "./core.ts"
 
 export type QuickParse = {
   /** Cents, always positive; `income` carries the sign. */
@@ -9,10 +10,12 @@ export type QuickParse = {
   walletId: string | null
   categoryId: string | null
   payee: string
+  /** Words typed as #hashtags, cleaned as stored. */
+  tags: string[]
 }
 
 /**
- * First number is the amount (`,` or `.` decimals, leading `+` = income); `today`/`yesterday` set the date;
+ * `#word` is a tag; first number is the amount (`,` or `.` decimals, leading `+` = income); `today`/`yesterday` set the date;
  * a word equal to an account's name or its first word sets the account; a 3+ letter word that prefixes a
  * category name sets the category; the remaining words are the payee.
  */
@@ -21,11 +24,24 @@ export function parseQuickAdd(
   wallets: { id: string; name: string }[],
   categories: { id: string; name: string }[]
 ): QuickParse {
-  const out: QuickParse = { amount: null, income: false, date: null, walletId: null, categoryId: null, payee: "" }
+  const out: QuickParse = {
+    amount: null,
+    income: false,
+    date: null,
+    walletId: null,
+    categoryId: null,
+    payee: "",
+    tags: [],
+  }
   const words: string[] = []
   for (const t of q.trim().split(/\s+/)) {
     if (!t) continue
     const low = t.toLowerCase()
+    if (t.startsWith("#")) {
+      const tag = cleanTag(t)
+      if (tag && !out.tags.includes(tag)) out.tags.push(tag)
+      continue
+    }
     if (out.amount === null && /^[+-]?\d+([.,]\d{1,2})?$/.test(t)) {
       out.amount = Math.round(Math.abs(parseFloat(t.replace(",", "."))) * 100)
       out.income = t.startsWith("+")

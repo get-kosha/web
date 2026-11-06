@@ -1,18 +1,20 @@
 import { useEffect, useRef, useState, type ReactNode } from "react"
-import { MagnifyingGlassIcon, PlusIcon, XIcon } from "@phosphor-icons/react/ssr"
+import { MagnifyingGlassIcon, SlidersHorizontalIcon, XIcon } from "@phosphor-icons/react/ssr"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Switch } from "@/components/ui/switch"
+import { Segmented } from "@/components/settings/row"
+import { Chip, eventDates } from "@/components/tags-events"
 import { ActivityPanel } from "@/components/activity-panel"
 import { CategoryIcon } from "@/components/category-icon"
 import { CategoryPicker, categoryPath } from "@/components/category-picker"
-import { PageHeader, isTyping, monthLabel, segment, segmentButton, useGlobals, useMeta } from "@/components/shell"
-import { TransactionForm } from "@/components/transaction-form"
+import { PageHeader, bottomSheet, isTyping, monthLabel, useGlobals, useMeta } from "@/components/shell"
+import { TransactionForm, TransactionSheet } from "@/components/transaction-form"
 import { listTransactions, type Tx } from "@/lib/api"
-import { LOCALE, convert, dayOf, fmt, isNeutral, parseAmount } from "@/lib/core"
+import { LOCALE, convert, dayOf, fmt, isNeutral, parseAmount, tagList } from "@/lib/core"
 import { cn } from "@/lib/utils"
 
 const PAGE = 100
@@ -22,6 +24,8 @@ const search = z.object({
   q: z.coerce.string().optional(),
   wallet: z.coerce.string().optional(),
   category: z.coerce.string().optional(),
+  tag: z.coerce.string().optional(),
+  event: z.coerce.string().optional(),
   /** Amount range in cents, by absolute value. */
   min: z.number().int().min(0).optional(),
   max: z.number().int().min(0).optional(),
@@ -33,10 +37,12 @@ type Search = z.infer<typeof search>
 
 export const Route = createFileRoute("/_app/transactions")({
   validateSearch: search,
-  loaderDeps: ({ search: { q, wallet, category, month, min, max, type, corrections, limit } }) => ({
+  loaderDeps: ({ search: { q, wallet, category, tag, event, month, min, max, type, corrections, limit } }) => ({
     q,
     wallet,
     category,
+    tag,
+    event,
     month,
     min,
     max,
@@ -136,20 +142,45 @@ function Activity() {
           ? `Under ${fmt(s.max, cur)}`
           : null
 
+  const event = s.event ? meta.events.find((e) => e.id === s.event) : undefined
+  // Every active filter as a removable chip under the search.
+  const chips = [
+    wallet && { key: "wallet", label: wallet.name, clear: { wallet: undefined } },
+    category && {
+      key: "category",
+      label: (
+        <>
+          <CategoryIcon
+            icon={(category.parent_id ? categories.get(category.parent_id) : category)?.icon}
+            className="size-4"
+          />
+          {categoryPath(category, meta.categories)}
+        </>
+      ),
+      clear: { category: undefined },
+    },
+    amountLabel && { key: "amount", label: amountLabel, clear: { min: undefined, max: undefined } },
+    s.tag && { key: "tag", label: `#${s.tag}`, clear: { tag: undefined } },
+    event && { key: "event", label: event.name, clear: { event: undefined } },
+    s.corrections && { key: "corrections", label: "Corrections shown", clear: { corrections: undefined } },
+  ].filter((c) => !!c)
+  const [filtering, setFiltering] = useState(false)
+
   return (
     <div className="pb-8">
       <PageHeader
         title="Activity"
         sub={
           <>
-            {monthLabel(month)} · <span className="num">{data.total}</span> transactions
+            {event ? [event.name, eventDates(event)].filter(Boolean).join(" · ") : monthLabel(month)} ·{" "}
+            <span className="num">{data.total}</span> {data.total === 1 ? "transaction" : "transactions"}
           </>
         }
       />
 
       <div className="flex flex-col gap-4 px-4 md:px-8">
         <div className="flex flex-wrap items-center gap-2">
-          <label className="relative min-w-0 flex-[1_1_260px] md:max-w-[360px]">
+          <label className="relative min-w-0 flex-1 md:max-w-[360px]">
             <MagnifyingGlassIcon
               className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
               aria-hidden="true"
@@ -164,123 +195,75 @@ function Activity() {
               className="h-9 bg-card pl-9 text-[13px] md:text-[13px]"
             />
           </label>
-
-          <Filter label="Account" value={wallet?.name} onClear={() => set({ wallet: undefined })}>
-            {(close) => (
-              <div className="flex flex-col p-1">
-                {meta.wallets
-                  .filter((w) => !w.archived || w.id === s.wallet)
-                  .map((w) => (
-                    <button
-                      key={w.id}
-                      type="button"
-                      aria-pressed={w.id === s.wallet}
-                      onClick={() => {
-                        set({ wallet: w.id })
-                        close()
-                      }}
-                      className="flex min-h-9 items-center justify-between gap-3 rounded-md px-2 text-left text-sm hover:bg-muted aria-pressed:font-medium"
-                    >
-                      <span className="truncate">{w.name}</span>
-                      <span className="text-xs text-muted-foreground uppercase">{w.currency}</span>
-                    </button>
-                  ))}
-              </div>
-            )}
-          </Filter>
-
-          <Filter
-            label="Category"
-            value={
-              category && (
-                <>
-                  <CategoryIcon
-                    icon={(category.parent_id ? categories.get(category.parent_id) : category)?.icon}
-                    className="size-4"
-                  />
-                  {categoryPath(category, meta.categories)}
-                </>
-              )
-            }
-            onClear={() => set({ category: undefined })}
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={() => setFiltering(true)}
+            aria-label={chips.length ? `Filters, ${chips.length} on` : "Filters"}
+            className="relative gap-2 bg-card px-3 text-[13px] font-normal max-md:size-11 max-md:px-0"
           >
-            {(close) => (
-              <CategoryPicker
-                value={s.category}
-                onPick={(c) => {
-                  set({ category: c.id })
-                  close()
-                }}
-              />
+            <SlidersHorizontalIcon className="size-4" />
+            <span className="max-md:hidden">Filters</span>
+            {chips.length > 0 && (
+              <span className="num inline-flex size-5 items-center justify-center rounded-full bg-foreground text-[11px] text-background max-md:absolute max-md:-top-1 max-md:-right-1">
+                {chips.length}
+              </span>
             )}
-          </Filter>
-
-          <Filter label="Amount" value={amountLabel} onClear={() => set({ min: undefined, max: undefined })}>
-            {(close) => (
-              <AmountRange
-                min={s.min}
-                max={s.max}
-                currency={cur}
-                onApply={(min, max) => {
-                  set({ min, max })
-                  close()
-                }}
-              />
-            )}
-          </Filter>
-
-          {(data.corrections > 0 || s.corrections) && (
-            <button
-              type="button"
-              aria-pressed={!!s.corrections}
-              onClick={() => set({ corrections: s.corrections ? undefined : true })}
-              className="inline-flex h-[34px] items-center gap-1.5 rounded-full border bg-card px-3 text-[13px] text-muted-foreground transition-colors hover:text-foreground aria-pressed:border-foreground/40 aria-pressed:text-foreground max-md:h-11"
-            >
-              <span className="num">{data.corrections}</span> {data.corrections === 1 ? "correction" : "corrections"}{" "}
-              {s.corrections ? "shown" : "hidden"}
-            </button>
-          )}
-
+          </Button>
           <div className="hidden flex-1 md:block" />
-          <div role="group" aria-label="Show" className={segment}>
-            {(
-              [
-                [undefined, "All"],
-                ["out", "Out"],
-                ["in", "In"],
-                ["transfers", "Transfers"],
-              ] as const
-            ).map(([value, label]) => (
-              <button
-                key={label}
-                type="button"
-                aria-pressed={s.type === value}
-                onClick={() => set({ type: value })}
-                className={segmentButton}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+          <Segmented
+            label="Show"
+            value={s.type ?? "all"}
+            onChange={(v) => set({ type: v === "all" ? undefined : v })}
+            options={[
+              ["all", "All"],
+              ["out", "Out"],
+              ["in", "In"],
+              ["transfers", "Transfers"],
+            ]}
+          />
         </div>
 
-        <div className="flex flex-wrap items-baseline gap-x-8 gap-y-2 px-0.5 text-[13px] text-muted-foreground">
-          <span>
-            Out <span className="num ml-1.5 text-[15px] text-foreground">{fmt(out, cur)}</span>
-          </span>
-          <span>
-            In <span className="num ml-1.5 text-[15px] text-positive">{signed(inn, cur)}</span>
-          </span>
-          <span>
-            Net <span className="num ml-1.5 text-[15px] text-foreground">{signed(out + inn, cur)}</span>
-          </span>
+        {chips.length > 0 && (
+          <div className="-mt-1 flex flex-wrap items-center gap-1.5">
+            {chips.map((c) => (
+              <span
+                key={c.key}
+                className="inline-flex h-8 items-center gap-1.5 rounded-full border bg-card pr-1 pl-3 text-[13px] max-md:h-10"
+              >
+                <span className="flex max-w-48 items-center gap-1.5 truncate">{c.label}</span>
+                <button
+                  type="button"
+                  onClick={() => set(c.clear)}
+                  aria-label={`Remove ${c.key} filter`}
+                  className="inline-flex size-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground max-md:size-8"
+                >
+                  <XIcon className="size-3.5" />
+                </button>
+              </span>
+            ))}
+            {chips.length > 1 && (
+              <button
+                type="button"
+                onClick={() => set(NO_FILTERS)}
+                className="inline-flex min-h-8 items-center rounded-md px-2 text-[13px] text-muted-foreground hover:text-foreground max-md:min-h-10"
+              >
+                Clear all
+              </button>
+            )}
+          </div>
+        )}
+
+        <dl className="grid grid-cols-3 gap-3 px-0.5 sm:flex sm:gap-10">
+          <Total label="Out" value={fmt(out, cur)} />
+          <Total label="In" value={signed(inn, cur)} className="text-positive" />
+          <Total label="Net" value={signed(out + inn, cur)} />
           {moved > 0 && (
-            <span>
-              Transfers <span className="num ml-1.5 text-[15px] text-subtle-foreground">{fmt(moved, cur)}</span>{" "}
-              <span className="ml-1">not counted</span>
-            </span>
+            <p className="col-span-3 -mt-1 text-xs text-muted-foreground sm:mt-0 sm:self-end sm:pb-0.5">
+              <span className="num">{fmt(moved, cur)}</span> moved between accounts, not counted
+            </p>
           )}
-        </div>
+        </dl>
 
         <div className="flex flex-wrap items-start gap-5">
           <section
@@ -359,14 +342,29 @@ function Activity() {
         </div>
       </div>
 
-      <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Edit transaction</DialogTitle>
-          </DialogHeader>
-          {editing && <TransactionForm key={editing.id} initial={editing} onDone={() => setEditing(null)} />}
-        </DialogContent>
-      </Dialog>
+      <FiltersSheet
+        open={filtering}
+        onClose={() => setFiltering(false)}
+        s={s}
+        set={set}
+        total={data.total}
+        corrections={data.corrections}
+      />
+
+      <TransactionSheet
+        open={!!editing}
+        title={editing?.transfer_id ? "Edit transfer" : "Edit transaction"}
+        onClose={() => setEditing(null)}
+      >
+        {editing && (
+          <TransactionForm
+            key={editing.id}
+            initial={editing}
+            onDone={() => setEditing(null)}
+            onCancel={() => setEditing(null)}
+          />
+        )}
+      </TransactionSheet>
     </div>
   )
 }
@@ -397,6 +395,10 @@ function Row({
     : t.name || c?.name || "Untitled"
   const amount = isTransfer && !singleWallet ? Math.abs(t.amount) + (t.amount < 0 ? (t.fee ?? 0) : 0) : t.amount
   const foreign = currency !== cur
+  const event = t.event_id ? meta.events.find((e) => e.id === t.event_id) : undefined
+  const sub = [!t.paid && (t.kind ?? "upcoming"), event?.name, ...tagList(t.tags).map((x) => `#${x}`), t.note]
+    .filter(Boolean)
+    .join(" · ")
 
   return (
     <button
@@ -421,11 +423,7 @@ function Row({
             </span>
           )}
         </span>
-        {(t.note || !t.paid) && (
-          <span className="block truncate text-xs text-muted-foreground">
-            {[!t.paid && (t.kind ?? "upcoming"), t.note].filter(Boolean).join(" · ")}
-          </span>
-        )}
+        {sub && <span className="block truncate text-xs text-muted-foreground">{sub}</span>}
       </span>
       <span className="hidden min-w-0 items-center gap-2 text-[13px] text-subtle-foreground min-[760px]:flex">
         <CategoryIcon icon={c?.icon} className="size-[17px]" />
@@ -444,61 +442,153 @@ function Row({
   )
 }
 
-/** A dashed "+ Label" pill that opens a popover; once set it turns into a solid chip with a remove button. */
-function Filter({
-  label,
-  value,
-  onClear,
-  children,
+const NO_FILTERS = {
+  wallet: undefined,
+  category: undefined,
+  min: undefined,
+  max: undefined,
+  tag: undefined,
+  event: undefined,
+  corrections: undefined,
+} satisfies Partial<Search>
+
+const Total = ({ label, value, className }: { label: string; value: string; className?: string }) => (
+  <div className="min-w-0">
+    <dt className="text-xs text-muted-foreground">{label}</dt>
+    <dd className={cn("num mt-0.5 truncate text-[15px] font-medium", className)}>{value}</dd>
+  </div>
+)
+
+/** Every filter in one place. Changes apply as you make them; the button shows how many match. */
+function FiltersSheet({
+  open,
+  onClose,
+  s,
+  set,
+  total,
+  corrections,
 }: {
-  label: string
-  value: ReactNode
-  onClear: () => void
-  children: (close: () => void) => ReactNode
+  open: boolean
+  onClose: () => void
+  s: Search
+  set: (patch: Partial<Search>) => void
+  total: number
+  corrections: number
 }) {
-  const [open, setOpen] = useState(false)
-  const active = value !== undefined && value !== null && value !== false
+  const meta = useMeta()
+  const { currency: cur } = useGlobals()
+  const [pickingCategory, setPickingCategory] = useState(false)
+  const category = s.category ? meta.categories.find((c) => c.id === s.category) : undefined
+  const toggle = <K extends keyof Search>(key: K, value: Search[K]) =>
+    set({ [key]: s[key] === value ? undefined : value })
   return (
-    <div
-      className={cn(
-        "inline-flex h-[34px] items-center rounded-full border bg-card text-[13px] max-md:h-[46px]",
-        active ? "border-foreground/40" : "border-dashed"
-      )}
-    >
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger
-          className={cn(
-            "inline-flex h-full items-center gap-1.5 rounded-full px-3 transition-colors hover:text-foreground",
-            active ? "pr-1.5 text-foreground" : "text-subtle-foreground"
+    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className={cn(bottomSheet, "max-h-[88svh] gap-5 md:max-w-lg")}>
+        <DialogHeader>
+          <DialogTitle>Filters</DialogTitle>
+        </DialogHeader>
+
+        <FilterSection label="Account">
+          {meta.wallets
+            .filter((w) => !w.archived || w.id === s.wallet)
+            .map((w) => (
+              <Chip key={w.id} on={w.id === s.wallet} onClick={() => toggle("wallet", w.id)}>
+                {w.name}
+              </Chip>
+            ))}
+        </FilterSection>
+
+        <FilterSection label="Category">
+          <Chip on={!!category} onClick={() => setPickingCategory((v) => !v)} label="Pick a category">
+            {category ? (
+              <>
+                <CategoryIcon icon={category.icon} className="size-4" /> {categoryPath(category, meta.categories)}
+              </>
+            ) : (
+              "Any category"
+            )}
+          </Chip>
+          {category && (
+            <Chip onClick={() => set({ category: undefined })} className="text-muted-foreground">
+              Clear
+            </Chip>
           )}
-        >
-          {active ? (
-            <span className="flex max-w-48 items-center gap-1.5 truncate">{value}</span>
-          ) : (
-            <>
-              <PlusIcon className="size-4" aria-hidden="true" />
-              {label}
-            </>
+          {pickingCategory && (
+            <div className="basis-full overflow-hidden rounded-lg border">
+              <CategoryPicker
+                value={s.category}
+                onPick={(c) => {
+                  set({ category: c.id })
+                  setPickingCategory(false)
+                }}
+              />
+            </div>
           )}
-        </PopoverTrigger>
-        <PopoverContent align="start" className="w-64 gap-0 p-0">
-          {children(() => setOpen(false))}
-        </PopoverContent>
-      </Popover>
-      {active && (
-        <button
-          type="button"
-          onClick={onClear}
-          aria-label={`Remove ${label.toLowerCase()} filter`}
-          className="mr-1 inline-flex size-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground max-md:size-10"
-        >
-          <XIcon className="size-3.5" />
-        </button>
-      )}
-    </div>
+        </FilterSection>
+
+        <FilterSection label="Amount">
+          <AmountRange
+            key={`${s.min}-${s.max}`}
+            min={s.min}
+            max={s.max}
+            currency={cur}
+            onApply={(min, max) => set({ min, max })}
+          />
+        </FilterSection>
+
+        {meta.tags.length > 0 && (
+          <FilterSection label="Tag">
+            {meta.tags.map((t) => (
+              <Chip key={t} on={t === s.tag} onClick={() => toggle("tag", t)}>
+                #{t}
+              </Chip>
+            ))}
+          </FilterSection>
+        )}
+
+        {meta.events.length > 0 && (
+          <FilterSection label="Event" note="An event shows all of its transactions, whatever the month.">
+            {meta.events.map((e) => (
+              <Chip key={e.id} on={e.id === s.event} onClick={() => toggle("event", e.id)}>
+                {e.name}
+              </Chip>
+            ))}
+          </FilterSection>
+        )}
+
+        {(corrections > 0 || s.corrections) && (
+          <label className="flex min-h-11 items-center justify-between gap-3 text-sm">
+            <span>
+              Show balance corrections <span className="num text-muted-foreground">({corrections})</span>
+            </span>
+            <Switch checked={!!s.corrections} onCheckedChange={(on) => set({ corrections: on || undefined })} />
+          </label>
+        )}
+
+        <div className="sticky -bottom-5 -mx-5 -mb-5 flex gap-2 border-t bg-popover px-5 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+          <Button variant="ghost" size="lg" onClick={() => set(NO_FILTERS)}>
+            Clear all
+          </Button>
+          <Button size="lg" className="flex-1" onClick={onClose}>
+            Show <span className="num">{total}</span> {total === 1 ? "transaction" : "transactions"}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   )
 }
 
+function FilterSection({ label, note, children }: { label: string; note?: string; children: ReactNode }) {
+  return (
+    <section className="grid gap-2">
+      <h3 className="text-xs font-medium text-subtle-foreground">{label}</h3>
+      <div className="flex flex-wrap gap-1.5">{children}</div>
+      {note && <p className="text-xs text-muted-foreground">{note}</p>}
+    </section>
+  )
+}
+
+/** At least / at most, applied when a field loses focus or on Enter. */
 function AmountRange({
   min,
   max,
@@ -516,28 +606,30 @@ function AmountRange({
     const c = parseAmount(v)
     return c === null ? undefined : Math.abs(c)
   }
+  const apply = () => {
+    if (cents(lo) !== min || cents(hi) !== max) onApply(cents(lo), cents(hi))
+  }
+  const field = (label: string, value: string, set: (v: string) => void) => (
+    <label className="grid gap-1">
+      <span className="text-xs text-muted-foreground">{label}</span>
+      <Input
+        value={value}
+        onChange={(e) => set(e.target.value)}
+        onBlur={apply}
+        onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
+        inputMode="decimal"
+        placeholder="—"
+        className="num bg-card"
+      />
+    </label>
+  )
   return (
-    <form
-      className="grid gap-3 p-3"
-      onSubmit={(e) => {
-        e.preventDefault()
-        onApply(cents(lo), cents(hi))
-      }}
-    >
+    <div className="grid basis-full gap-2">
       <div className="grid grid-cols-2 gap-2">
-        <label className="grid gap-1">
-          <span className="text-xs text-muted-foreground">
-            At least <span className="uppercase">({currency})</span>
-          </span>
-          <Input autoFocus value={lo} onChange={(e) => setLo(e.target.value)} inputMode="decimal" className="num" />
-        </label>
-        <label className="grid gap-1">
-          <span className="text-xs text-muted-foreground">At most</span>
-          <Input value={hi} onChange={(e) => setHi(e.target.value)} inputMode="decimal" className="num" />
-        </label>
+        {field(`At least (${currency.toUpperCase()})`, lo, setLo)}
+        {field("At most", hi, setHi)}
       </div>
       <p className="text-xs text-muted-foreground">Compares each amount in its own currency, ignoring the sign.</p>
-      <Button type="submit">Apply</Button>
-    </form>
+    </div>
   )
 }

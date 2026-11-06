@@ -11,6 +11,7 @@ import {
   FunnelIcon,
   DatabaseIcon,
   SparkleIcon,
+  CalendarStarIcon,
 } from "@phosphor-icons/react/ssr"
 import type { Icon } from "@phosphor-icons/react"
 import { currencyOptions } from "@/components/shell"
@@ -19,6 +20,7 @@ import { Appearance } from "@/components/settings/sections/appearance"
 import { Categories } from "@/components/settings/sections/categories"
 import { Currencies } from "@/components/settings/sections/currencies"
 import { DeleteReset } from "@/components/settings/sections/danger"
+import { Events } from "@/components/settings/sections/events"
 import { General } from "@/components/settings/sections/general"
 import { Profile } from "@/components/settings/sections/profile"
 import { Recurring } from "@/components/settings/sections/recurring"
@@ -226,6 +228,22 @@ const GROUPS: Group[] = [
             title: "Categories",
             description: "Icons, names, subcategories, merging.",
             keywords: "category icon merge subcategory archive",
+          },
+        ],
+      },
+      {
+        id: "events",
+        title: "Events",
+        icon: CalendarStarIcon,
+        description: "Trips and occasions that group transactions, so you can see what each one cost.",
+        component: Events,
+        summary: ({ meta }) => meta.events.length || undefined,
+        rows: [
+          {
+            key: "events",
+            title: "Events",
+            description: "Create, rename and date events.",
+            keywords: "trip travel holiday vacation occasion wedding label group",
           },
         ],
       },

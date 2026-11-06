@@ -19,7 +19,7 @@ import {
 import { CategoryIcon } from "@/components/category-icon"
 import { PageHeader, useGlobals, useMeta } from "@/components/shell"
 import { SubscriptionForm } from "@/components/subscription-form"
-import { TransactionForm } from "@/components/transaction-form"
+import { TransactionForm, TransactionSheet } from "@/components/transaction-form"
 import {
   deleteSubscription,
   listSubscriptions,
@@ -735,14 +735,20 @@ function Detail({ sub, today, displayCurrency }: { sub: SubscriptionView; today:
         </DialogContent>
       </Dialog>
 
-      <Dialog open={!!payment} onOpenChange={(o) => !o && setPayment(null)}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>{isTransfer ? "Edit transfer" : "Edit payment"}</DialogTitle>
-          </DialogHeader>
-          {payment && <TransactionForm key={payment.id} initial={payment} onDone={() => setPayment(null)} />}
-        </DialogContent>
-      </Dialog>
+      <TransactionSheet
+        open={!!payment}
+        title={isTransfer ? "Edit transfer" : "Edit payment"}
+        onClose={() => setPayment(null)}
+      >
+        {payment && (
+          <TransactionForm
+            key={payment.id}
+            initial={payment}
+            onDone={() => setPayment(null)}
+            onCancel={() => setPayment(null)}
+          />
+        )}
+      </TransactionSheet>
     </div>
   )
 }

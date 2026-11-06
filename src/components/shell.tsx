@@ -222,6 +222,10 @@ export const monthLabel = (m: string, year = true) =>
     timeZone: "UTC",
   })
 
+/** Bottom sheet: the Dialog popup pinned to the bottom edge on phones, sliding up with the drawer curve. */
+export const bottomSheet =
+  "top-auto bottom-0 left-0 max-w-none translate-x-0 translate-y-0 rounded-b-none p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:max-w-none ease-drawer data-open:duration-300 data-open:zoom-in-100 data-open:slide-in-from-bottom data-closed:zoom-out-100 data-closed:slide-out-to-bottom md:top-1/2 md:bottom-auto md:left-1/2 md:max-w-md md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-xl md:data-open:slide-in-from-bottom-0 md:data-closed:slide-out-to-bottom-0"
+
 /** Bordered segmented control (month stepper, currency, filters). Buttons use aria-pressed. */
 export const segment = "inline-flex h-9 items-center rounded-md border bg-card p-0.5 max-md:h-auto"
 export const segmentButton =

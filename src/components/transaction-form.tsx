@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react"
 import { useRouter } from "@tanstack/react-router"
-import { ArrowDownIcon } from "@phosphor-icons/react/ssr"
+import { ArrowDownIcon, CalendarStarIcon, HashIcon, NotePencilIcon, TrashIcon, XIcon } from "@phosphor-icons/react/ssr"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -15,17 +15,20 @@ import {
 } from "@/components/ui/dialog"
 import { CategoryIcon } from "@/components/category-icon"
 import { segment, segmentButton, useMeta } from "@/components/shell"
-import { deleteTransaction, saveTransaction, saveTransfer, type Tx, type Wallet } from "@/lib/api"
+import { EventPicker, TagInput } from "@/components/tags-events"
+import { deleteTransaction, saveTransaction, saveTransfer, type Category, type Tx, type Wallet } from "@/lib/api"
 import {
   CORRECTION_CATEGORY,
   convert,
   dayOf,
+  eventFor,
   exchange,
   fmt,
   fmtRate,
   guessCategory,
   isNeutral,
   parseAmount,
+  tagList,
 } from "@/lib/core"
 import { cn } from "@/lib/utils"
 
@@ -56,17 +59,19 @@ const PROVIDERS = ["Wise", "Xe", "Revolut", "Remitly", "Bank"]
 const cents2 = (v: number) => (Math.abs(v) / 100).toFixed(2)
 
 /**
- * Add or edit a transaction or transfer.
+ * Add or edit a transaction or transfer. Ends in a sticky footer: delete (when editing), Cancel, Save.
  * `preset` starts a new transfer into `transferTo` (e.g. paying off a card) with `amount` cents prefilled.
  */
 export function TransactionForm({
   initial,
   onDone,
+  onCancel,
   big,
   preset,
 }: {
   initial?: Tx
   onDone?: () => void
+  onCancel?: () => void
   big?: boolean
   preset?: { transferTo?: string; amount?: number }
 }) {
@@ -112,6 +117,11 @@ export function TransactionForm({
   const [toWalletId, setToWalletId] = useState(sides?.to ?? presetTo ?? "")
   const [day, setDay] = useState(initial ? dayOf(initial.date, meta.tz) : today)
   const [paid, setPaid] = useState(initial ? !!initial.paid : true)
+  const [tags, setTags] = useState(() => tagList(initial?.tags))
+  // undefined until picked: an edit keeps its event, a new entry follows the event its day falls in.
+  const [pickedEvent, setPickedEvent] = useState<string | null | undefined>(undefined)
+  const eventId =
+    pickedEvent !== undefined ? pickedEvent : initial ? (initial.event_id ?? null) : eventFor(day, meta.events)
   const [busy, setBusy] = useState(false)
   const [confirming, setConfirming] = useState(false)
   const income = mode === "income"
@@ -203,6 +213,8 @@ export function TransactionForm({
             amount: signed,
             day,
             paid,
+            tags,
+            eventId,
           },
         })
         const cat = meta.categories.find((c) => c.id === categoryId)
@@ -221,6 +233,8 @@ export function TransactionForm({
         setFxInput(null)
         setName("")
         setNote("")
+        setTags([])
+        setPickedEvent(undefined)
         setCategoryTouched(false)
         amountRef.current?.focus()
         onDone?.()
@@ -246,7 +260,7 @@ export function TransactionForm({
   }
 
   return (
-    <form onSubmit={submit} className="flex flex-col gap-5">
+    <form onSubmit={submit} className="flex flex-1 flex-col gap-5">
       <div className="flex items-center justify-between gap-3">
         <div role="group" aria-label="Type" className={segment}>
           {(["expense", "income", "transfer"] as const).map((m) => (
@@ -399,33 +413,29 @@ export function TransactionForm({
             ))}
           </datalist>
 
-          <div className="grid grid-cols-4 gap-1.5 sm:grid-cols-5">
-            {categories.map((c) => (
-              <button
-                key={c.id}
-                type="button"
-                onClick={() => {
-                  setCategoryId(c.id)
-                  setCategoryTouched(true)
-                }}
-                aria-pressed={c.id === categoryId}
-                className={cn(
-                  "flex flex-col items-center gap-1.5 rounded-md border border-transparent px-1 py-2.5 text-[11px] leading-tight text-muted-foreground transition-colors hover:bg-muted",
-                  c.id === categoryId && "border-foreground bg-muted text-foreground"
-                )}
-              >
-                <CategoryIcon icon={c.icon} className={cn("size-5", c.id === categoryId && "text-foreground")} />
-                <span className="line-clamp-1 w-full text-center">{c.name}</span>
-              </button>
-            ))}
-          </div>
+          <CategoryStrip
+            categories={categories}
+            value={categoryId}
+            onPick={(id) => {
+              setCategoryId(id)
+              setCategoryTouched(true)
+            }}
+          />
         </>
       )}
 
-      <label className="grid gap-1">
-        <span className="text-xs text-muted-foreground">Note (optional)</span>
-        <Input value={note} onChange={(e) => setNote(e.target.value)} className="h-10" />
-      </label>
+      <Extras
+        note={note}
+        onNote={setNote}
+        {...(!transfer && {
+          tags,
+          onTags: setTags,
+          eventId,
+          onEvent: setPickedEvent,
+          auto: pickedEvent === undefined && !initial,
+          day,
+        })}
+      />
 
       {initial && !initial.paid && !transfer && (
         <label className="flex items-center gap-2 text-sm">
@@ -435,16 +445,30 @@ export function TransactionForm({
 
       <div
         className={cn(
-          "flex gap-2",
-          big && "sticky bottom-[calc(4.5rem+env(safe-area-inset-bottom))] bg-background py-2 md:bottom-0"
+          "sticky bottom-0 z-10 mt-auto flex items-center gap-2 border-t bg-background py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]",
+          // In a sheet the footer runs edge to edge; in the side panel it sits on the card.
+          "in-data-[slot=dialog-content]:-mx-4 in-data-[slot=dialog-content]:-mb-4 in-data-[slot=dialog-content]:bg-popover in-data-[slot=dialog-content]:px-4 in-[aside]:bg-card"
         )}
       >
         {initial && (
-          <Button type="button" variant="ghost" className="text-destructive" onClick={() => setConfirming(true)}>
-            Delete
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-lg"
+            className="text-destructive hover:text-destructive"
+            onClick={() => setConfirming(true)}
+            aria-label={initial.transfer_id ? "Delete transfer" : "Delete transaction"}
+          >
+            <TrashIcon className="size-5" />
           </Button>
         )}
-        <Button type="submit" disabled={busy || !cents} className="h-11 flex-1 text-base">
+        <div className="flex-1" />
+        {onCancel && (
+          <Button type="button" variant="outline" size="lg" className="min-w-24" onClick={onCancel}>
+            Cancel
+          </Button>
+        )}
+        <Button type="submit" size="lg" disabled={busy || !cents} className={cn("min-w-28", big && "flex-1")}>
           {initial ? "Save" : `Add ${mode}`}
         </Button>
       </div>
@@ -492,6 +516,192 @@ function WalletChips({
           {w.name}
         </button>
       ))}
+    </div>
+  )
+}
+
+// Full-screen page on phones (slides up), a centred dialog from md up.
+const pageSheet =
+  "inset-0 flex h-dvh max-h-none w-full max-w-none translate-x-0 translate-y-0 flex-col gap-5 rounded-none pt-0 ring-0 sm:max-w-none data-open:zoom-in-100 data-open:slide-in-from-bottom-6 data-closed:zoom-out-100 data-closed:slide-out-to-bottom-6 md:inset-auto md:top-1/2 md:left-1/2 md:h-auto md:max-h-[calc(100svh-4rem)] md:max-w-lg md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-xl md:ring-1 md:data-open:zoom-in-[0.97] md:data-open:slide-in-from-bottom-0 md:data-closed:zoom-out-[0.97] md:data-closed:slide-out-to-bottom-0"
+
+/** The add/edit form as its own page: title bar with a close button, the form, its footer. */
+export function TransactionSheet({
+  open,
+  title,
+  onClose,
+  children,
+}: {
+  open: boolean
+  title: string
+  onClose: () => void
+  children: ReactNode
+}) {
+  return (
+    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent showCloseButton={false} className={pageSheet}>
+        <div className="sticky top-0 z-10 -mx-4 flex min-h-14 items-center justify-between gap-3 border-b bg-popover px-4 pt-[env(safe-area-inset-top)] md:static md:min-h-12 md:border-0 md:pt-2">
+          <DialogTitle className="text-[17px] font-semibold md:text-base md:font-medium">{title}</DialogTitle>
+          <Button variant="ghost" size="icon-lg" onClick={onClose} aria-label="Close" className="-mr-2">
+            <XIcon className="size-5" />
+          </Button>
+        </div>
+        {children}
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+/** Categories as a two-row strip that scrolls sideways; the chosen one is scrolled into view on open. */
+export function CategoryStrip({
+  categories,
+  value,
+  onPick,
+}: {
+  categories: Category[]
+  value: string | null
+  onPick: (id: string) => void
+}) {
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    ref.current
+      ?.querySelector<HTMLElement>("[aria-pressed=true]")
+      ?.scrollIntoView({ block: "nearest", inline: "center" })
+  }, [])
+  return (
+    <div
+      ref={ref}
+      role="group"
+      aria-label="Category"
+      className="-mx-4 grid snap-x scroll-px-4 [scrollbar-width:none] auto-cols-[76px] grid-flow-col grid-rows-2 gap-1.5 overflow-x-auto overscroll-x-contain px-4 pb-1 md:[scrollbar-width:thin]"
+    >
+      {categories.map((c) => (
+        <button
+          key={c.id}
+          type="button"
+          onClick={() => onPick(c.id)}
+          aria-pressed={c.id === value}
+          className="flex h-[68px] snap-start flex-col items-center justify-center gap-1.5 rounded-lg border border-transparent px-1 text-[11px] leading-tight text-muted-foreground transition-colors hover:bg-muted aria-pressed:border-foreground aria-pressed:bg-muted aria-pressed:text-foreground"
+        >
+          <CategoryIcon icon={c.icon} className="size-5" />
+          <span className="line-clamp-1 w-full text-center">{c.name}</span>
+        </button>
+      ))}
+    </div>
+  )
+}
+
+/**
+ * Note, tags and event, each hidden behind an "Add …" link until it has a value or is opened.
+ * Leave out `onTags` (transfers) and only the note is offered. `auto` marks an event picked by date.
+ */
+export function Extras({
+  note,
+  onNote,
+  tags,
+  onTags,
+  eventId,
+  onEvent,
+  auto,
+  day,
+}: {
+  note: string
+  onNote: (v: string) => void
+  tags?: string[]
+  onTags?: (t: string[]) => void
+  eventId?: string | null
+  onEvent?: (id: string | null) => void
+  auto?: boolean
+  day?: string
+}) {
+  const [opened, setOpened] = useState<"note" | "tags" | "event" | null>(null)
+  const show = {
+    note: !!note || opened === "note",
+    tags: !!onTags && (!!tags?.length || opened === "tags"),
+    event: !!onEvent && (!!eventId || opened === "event"),
+  }
+  const links = [
+    !show.note && { key: "note" as const, icon: <NotePencilIcon />, label: "Add note" },
+    onTags && !show.tags && { key: "tags" as const, icon: <HashIcon />, label: "Add tags" },
+    onEvent && !show.event && { key: "event" as const, icon: <CalendarStarIcon />, label: "Add to event" },
+  ].filter((l) => !!l)
+
+  return (
+    <div className="grid gap-4">
+      {show.note && (
+        <Extra
+          label="Note"
+          onClose={() => {
+            onNote("")
+            setOpened(null)
+          }}
+        >
+          <textarea
+            value={note}
+            onChange={(e) => onNote(e.target.value)}
+            autoFocus={opened === "note"}
+            rows={2}
+            maxLength={2000}
+            aria-label="Note"
+            className="field-sizing-content min-h-16 w-full resize-none rounded-md border bg-card px-2.5 py-2 text-sm outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+          />
+        </Extra>
+      )}
+      {show.tags && onTags && (
+        <Extra
+          label="Tags"
+          onClose={() => {
+            onTags([])
+            setOpened(null)
+          }}
+        >
+          <TagInput value={tags ?? []} onChange={onTags} autoFocus={opened === "tags"} />
+        </Extra>
+      )}
+      {show.event && onEvent && (
+        <Extra
+          label={auto && eventId ? "Event · picked by date" : "Event"}
+          onClose={() => {
+            onEvent(null)
+            setOpened(null)
+          }}
+        >
+          <EventPicker value={eventId ?? null} onChange={onEvent} day={day ?? ""} />
+        </Extra>
+      )}
+      {links.length > 0 && (
+        <div className="-ml-2 flex flex-wrap gap-x-1">
+          {links.map((l) => (
+            <button
+              key={l.key}
+              type="button"
+              onClick={() => setOpened(l.key)}
+              className="inline-flex min-h-9 items-center gap-1.5 rounded-md px-2 text-[13px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground max-md:min-h-11 [&_svg]:size-4"
+            >
+              {l.icon}
+              {l.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function Extra({ label, onClose, children }: { label: string; onClose: () => void; children: ReactNode }) {
+  return (
+    <div className="grid gap-1.5">
+      <div className="flex items-center justify-between">
+        <span className="text-xs text-muted-foreground">{label}</span>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label={`Remove ${label.split(" ")[0].toLowerCase()}`}
+          className="-my-2 -mr-2 inline-flex size-8 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground max-md:size-11"
+        >
+          <XIcon className="size-3.5" />
+        </button>
+      </div>
+      {children}
     </div>
   )
 }

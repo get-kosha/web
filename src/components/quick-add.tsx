@@ -8,7 +8,7 @@ import { CategoryIcon } from "@/components/category-icon"
 import { useMeta } from "@/components/shell"
 import { deleteTransaction, saveTransaction, suggestPayees, type PayeeSuggestion } from "@/lib/api"
 import { WALLET_KEY, startWallet } from "@/lib/add-defaults"
-import { LOCALE, addDays, dayOf, fmt, guessCategory, isNeutral, parseAmount } from "@/lib/core"
+import { LOCALE, addDays, dayOf, eventFor, fmt, guessCategory, isNeutral, parseAmount } from "@/lib/core"
 import { parseQuickAdd } from "@/lib/quick-add"
 import { cn } from "@/lib/utils"
 
@@ -124,6 +124,8 @@ function Body({
   const walletId = over.walletId ?? p.walletId ?? best?.wallet_id ?? remembered ?? wallets[0]?.id
   const wallet = meta.wallets.find((w) => w.id === walletId)
   const day = over.day ?? (p.date === "yesterday" ? addDays(today, -1) : today)
+  // The server files a new entry under the event its day falls in; show which.
+  const event = meta.events.find((e) => e.id === eventFor(day, meta.events))
 
   const overAmount = over.amount !== undefined ? parseAmount(over.amount.replace(/^\+/, "")) : undefined
   const cents = overAmount !== undefined ? (overAmount === null ? null : Math.abs(overAmount)) : p.amount
@@ -163,7 +165,16 @@ function Body({
     try {
       const name = payee.value.trim()
       const { id } = await saveTransaction({
-        data: { walletId: wallet.id, categoryId: category.id, name, note: "", amount: signed, day, paid: true },
+        data: {
+          walletId: wallet.id,
+          categoryId: category.id,
+          name,
+          note: "",
+          amount: signed,
+          day,
+          paid: true,
+          tags: p.tags,
+        },
       })
       try {
         localStorage.setItem(WALLET_KEY, wallet.id)
@@ -294,6 +305,13 @@ function Body({
             </span>
           </Box>
         </div>
+        {(p.tags.length > 0 || event) && (
+          <p className="mt-2.5 text-xs text-muted-foreground">
+            {p.tags.map((t) => `#${t}`).join(" ")}
+            {p.tags.length > 0 && event && " · "}
+            {event && `Goes to ${event.name}`}
+          </p>
+        )}
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
           <span className="text-xs text-muted-foreground">{hint}</span>
           <Button type="submit" size="lg" disabled={busy} className="gap-2.5 px-4">

@@ -177,6 +177,8 @@ type Tx = {
   subscription_id?: string | null
   due_day?: string | null
   transfer_id?: string | null
+  tags?: string[]
+  event_id?: string | null
 }
 const txs: Tx[] = []
 let n = 0
@@ -662,6 +664,29 @@ transfer({
   note: "Laptop for parents",
 })
 
+// An event: last month's weekend in Lisbon, with the spending filed under it and tagged.
+const lisbon = monthDay(1, 12)
+insert("events", [{ id: "lisbon", name: "Lisbon weekend", start_day: lisbon, end_day: addDays(lisbon, 3) }])
+for (const [i, name, category_id, amount] of [
+  [0, "TAP Air Portugal", "travel", -18640],
+  [0, "Hotel Alfama", "travel", -31200],
+  [1, "Time Out Market", "dining", -3870],
+  [1, "Carris tram", "transit", -960],
+  [2, "Pastéis de Belém", "dining", -1250],
+  [3, "A Vida Portuguesa", "shopping", -4290],
+] as const)
+  tx({
+    wallet_id: W.card,
+    category_id,
+    name,
+    amount,
+    date: unix(addDays(lisbon, i), 13),
+    event_id: "lisbon",
+    tags: ["travel", "portugal"],
+  })
+// Tag work lunches so the tag filter has something to show.
+for (const t of txs.filter((t) => t.category_id === "dining" && !t.event_id).slice(-6)) t.tags = ["work"]
+
 insert(
   "transactions",
   txs.map((t) => ({
@@ -678,6 +703,8 @@ insert(
     subscription_id: t.subscription_id ?? null,
     due_day: t.due_day ?? null,
     transfer_id: t.transfer_id ?? null,
+    tags: JSON.stringify(t.tags ?? []),
+    event_id: t.event_id ?? null,
     created_at: t.date,
     updated_at: t.date,
   }))
@@ -704,6 +731,7 @@ for (const t of [
   "valuations",
   "title_rules",
   "transactions",
+  "events",
   "subscriptions",
   "settings",
   "categories",

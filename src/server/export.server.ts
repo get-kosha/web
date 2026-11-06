@@ -1,4 +1,4 @@
-import { dayOf } from "@/lib/core"
+import { dayOf, tagList } from "@/lib/core"
 import { USER_TABLES } from "@/server/auth.server"
 import { db, getSettings } from "@/server/db.server"
 
@@ -12,11 +12,12 @@ export async function transactionsCsv(uid: string) {
   const { tz } = await getSettings(uid)
   const { results } = await db()
     .prepare(`SELECT t.date, t.name, c.name AS category, s.name AS subcategory, w.name AS account, w.currency,
-        t.amount, t.note, t.paid, t.kind, t.transfer_id
+        t.amount, t.note, t.paid, t.kind, t.transfer_id, t.tags, e.name AS event
       FROM transactions t
       JOIN wallets w ON w.user_id = t.user_id AND w.id = t.wallet_id
       LEFT JOIN categories c ON c.user_id = t.user_id AND c.id = t.category_id
       LEFT JOIN categories s ON s.user_id = t.user_id AND s.id = t.subcategory_id
+      LEFT JOIN events e ON e.user_id = t.user_id AND e.id = t.event_id
       WHERE t.user_id = ? ORDER BY t.date DESC`)
     .bind(uid)
     .all<{
@@ -31,6 +32,8 @@ export async function transactionsCsv(uid: string) {
       paid: number
       kind: string | null
       transfer_id: string | null
+      tags: string
+      event: string | null
     }>()
   const head = [
     "date",
@@ -43,6 +46,8 @@ export async function transactionsCsv(uid: string) {
     "note",
     "status",
     "transfer",
+    "tags",
+    "event",
   ]
   const rows = results.map((r) =>
     [
@@ -56,6 +61,10 @@ export async function transactionsCsv(uid: string) {
       r.note,
       r.kind === "skipped" ? "skipped" : r.paid ? "paid" : "upcoming",
       r.transfer_id ?? "",
+      tagList(r.tags)
+        .map((t) => `#${t}`)
+        .join(" "),
+      r.event,
     ]
       .map(cell)
       .join(",")

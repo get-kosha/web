@@ -16,8 +16,9 @@ import { CategoryIcon } from "@/components/category-icon"
 import { CategoryPicker, categoryPath } from "@/components/category-picker"
 import { useGlobals, useMeta } from "@/components/shell"
 import { TransactionForm } from "@/components/transaction-form"
+import { EventEditor, TagInput, eventDates } from "@/components/tags-events"
 import { deleteTransaction, getPayeeHistory, saveTransaction, type Tx } from "@/lib/api"
-import { CORRECTION_CATEGORY, LOCALE, convert, dayOf, fmt, isNeutral, parseAmount } from "@/lib/core"
+import { CORRECTION_CATEGORY, LOCALE, convert, dayOf, fmt, isNeutral, parseAmount, tagList } from "@/lib/core"
 import { cn } from "@/lib/utils"
 
 type Draft = {
@@ -28,6 +29,8 @@ type Draft = {
   walletId: string
   day: string
   note: string
+  tags: string[]
+  eventId: string | null
 }
 type History = Awaited<ReturnType<typeof getPayeeHistory>>
 
@@ -79,6 +82,8 @@ export function ActivityPanel({
     walletId: tx.wallet_id,
     day: dayOf(tx.date, meta.tz),
     note: tx.note,
+    tags: tagList(tx.tags),
+    eventId: tx.event_id ?? null,
   }
   const [draft, setDraft] = useState(initial)
   const saved = useRef(initial)
@@ -173,7 +178,7 @@ export function ActivityPanel({
     return (
       <div>
         {header}
-        <TransactionForm key={tx.id} initial={tx} onDone={() => void router.invalidate()} />
+        <TransactionForm key={tx.id} initial={tx} onDone={() => void router.invalidate()} onCancel={onClose} />
       </div>
     )
 
@@ -293,6 +298,18 @@ export function ActivityPanel({
         </span>
       </div>
 
+      <div className={cn(field, "py-1.5")}>
+        <span className={fieldLabel}>Tags</span>
+        <TagInput value={draft.tags} onChange={(tags) => change({ tags }, 0)} />
+      </div>
+
+      <div className={field}>
+        <span className={fieldLabel} id="f-event">
+          Event
+        </span>
+        <EventField value={draft.eventId} day={draft.day} onChange={(eventId) => change({ eventId }, 0)} />
+      </div>
+
       <div className={cn(field, "border-b")}>
         <label className={fieldLabel} htmlFor="f-note">
           Note
@@ -388,3 +405,64 @@ const Stat = ({ label, value }: { label: string; value: string }) => (
     <div className="num mt-0.5 text-sm">{value}</div>
   </div>
 )
+
+/** The event row: a popover listing events, "No event", and a "New event" editor. */
+function EventField({
+  value,
+  day,
+  onChange,
+}: {
+  value: string | null
+  day: string
+  onChange: (id: string | null) => void
+}) {
+  const meta = useMeta()
+  const [open, setOpen] = useState(false)
+  const [creating, setCreating] = useState(false)
+  const current = meta.events.find((e) => e.id === value)
+  const pick = (id: string | null) => {
+    onChange(id)
+    setOpen(false)
+  }
+  return (
+    <Popover
+      open={open}
+      onOpenChange={(o) => {
+        setOpen(o)
+        if (!o) setCreating(false)
+      }}
+    >
+      <PopoverTrigger aria-labelledby="f-event" className={fieldValue}>
+        <span className={cn("truncate", !current && "text-muted-foreground")}>{current?.name ?? "None"}</span>
+        <CaretDownIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+      </PopoverTrigger>
+      <PopoverContent align="start" className="w-72 gap-0 p-1">
+        {creating ? (
+          <EventEditor defaultDay={day} onSaved={pick} onCancel={() => setCreating(false)} />
+        ) : (
+          <>
+            {[{ id: null, name: "No event", start_day: null, end_day: null }, ...meta.events].map((e) => (
+              <button
+                key={e.id ?? "none"}
+                type="button"
+                aria-pressed={e.id === value}
+                onClick={() => pick(e.id)}
+                className="flex min-h-9 w-full items-center justify-between gap-3 rounded-md px-2 text-left text-sm hover:bg-muted aria-pressed:font-medium"
+              >
+                <span className="truncate">{e.name}</span>
+                <span className="shrink-0 text-xs text-muted-foreground">{eventDates(e)}</span>
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={() => setCreating(true)}
+              className="flex min-h-9 w-full items-center rounded-md px-2 text-left text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+            >
+              New event…
+            </button>
+          </>
+        )}
+      </PopoverContent>
+    </Popover>
+  )
+}

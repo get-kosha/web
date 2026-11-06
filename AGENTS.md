@@ -23,6 +23,8 @@ These invariants hold across the codebase. Breaking one gives wrong totals witho
 - **Timestamps are unix seconds. Days and months are strings in the user's time zone** (`YYYY-MM-DD`, `YYYY-MM`). Convert with `dayOf`, `unixOf` and `monthRange`, not with `Date` arithmetic.
 - **Category `0` (corrections) and `transfer` are neutral.** Income and spending totals leave them out, using `isNeutral` or `NEUTRAL_SQL`. `transfer_fee` is a system category too, but it counts as spending. See `isSystemCategory`.
 - **A transfer is two rows linked by `transfer_id`**, one out and one in, each in its own account's currency. Keep both rows in sync on every create, edit and delete.
+- **Tags are a JSON array in `transactions.tags`** (lowercase, no `#`). Clean input with `parseTags`/`cleanTag`, read with `tagList`, and filter in SQL with `json_each`.
+- **Events are optional date ranges.** `saveTransaction` gives a new entry the event its day falls in (`eventFor`) when no `eventId` is sent; `undefined` keeps an edit's event and `null` clears it. `event_id` has no foreign key, so `deleteEvent` clears it.
 - **Subscriptions are schedules, not rows.** Upcoming payments are computed from the schedule. A transaction row is written only when a payment is paid, edited or skipped. Due payments are settled when the app loads (`ensureSettled`), and there is no cron job.
 - **Exchange rates are stored as units per 1 USD** and refresh at most once a day from the fawazahmed0 currency API. Convert with `convert(cents, from, to, rates)`.
 - **Net worth depends on account type** (bank, credit card, investment). Use `accountWorth` and `netWorth` rather than summing balances.

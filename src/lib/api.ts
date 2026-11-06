@@ -12,6 +12,9 @@ import {
   dayOf,
   daysInMonth,
   isNeutral,
+  MAX_TAGS,
+  cleanTag,
+  eventFor,
   monthOf,
   monthRange,
   parseAmount,
@@ -89,9 +92,23 @@ export type Tx = {
   fee?: number | null
   provider?: string | null
   market_rate?: number | null
+  /** JSON array of tags as stored; read with tagList. */
+  tags?: string
+  event_id?: string | null
+}
+export type Event = {
+  id: string
+  name: string
+  start_day: string | null
+  end_day: string | null
+  tx_count: number
 }
 
 const day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/)
+const tags = z
+  .array(z.string().transform(cleanTag))
+  .max(MAX_TAGS)
+  .transform((t) => [...new Set(t.filter(Boolean))])
 const month = z.string().regex(/^\d{4}-\d{2}$/)
 
 // ---------- meta: everything most screens need ----------
@@ -103,7 +120,7 @@ export const getMeta = createServerFn({ method: "GET" }).handler(async () => {
   await ensureSettled(uid)
   const settings = await getSettings(uid)
   refreshRatesIfStale(settings.ratesUpdated)
-  const [wallets, categories, rules, titles] = await DB.batch([
+  const [wallets, categories, rules, titles, events, tagRows] = await DB.batch([
     DB.prepare(`SELECT w.id, w.name, w.currency, w.colour, w.archived, w.type, w.credit_limit,
       COALESCE((SELECT SUM(amount) FROM transactions WHERE user_id = w.user_id AND wallet_id = w.id AND paid = 1), 0) AS balance,
       (SELECT COUNT(*) FROM transactions WHERE user_id = w.user_id AND wallet_id = w.id) AS tx_count,
@@ -118,12 +135,21 @@ export const getMeta = createServerFn({ method: "GET" }).handler(async () => {
     DB.prepare(
       "SELECT name FROM transactions WHERE user_id = ? AND name <> '' GROUP BY name ORDER BY COUNT(*) DESC, MAX(date) DESC LIMIT 300"
     ).bind(uid),
+    // Newest first: the picker and Settings both lead with the current trip.
+    DB.prepare(`SELECT e.id, e.name, e.start_day, e.end_day,
+      (SELECT COUNT(*) FROM transactions WHERE user_id = e.user_id AND event_id = e.id) AS tx_count
+      FROM events e WHERE e.user_id = ? ORDER BY COALESCE(e.start_day, '') DESC, e.created_at DESC`).bind(uid),
+    // Every tag in use, most used first, for suggestions and the Activity filter.
+    DB.prepare(`SELECT j.value AS tag FROM transactions t, json_each(t.tags) j
+      WHERE t.user_id = ? GROUP BY j.value ORDER BY COUNT(*) DESC, j.value LIMIT 200`).bind(uid),
   ])
   return {
     wallets: wallets.results as Wallet[],
     categories: categories.results as Category[],
     rules: rules.results as TitleRule[],
     titles: (titles.results as { name: string }[]).map((t) => t.name),
+    events: events.results as Event[],
+    tags: (tagRows.results as { tag: string }[]).map((t) => t.tag),
     rates: await getRates(),
     primary: settings.primary,
     order: settings.order,
@@ -356,6 +382,9 @@ const listInput = z.object({
   q: z.string().max(100).optional(),
   wallet: z.string().optional(),
   category: z.string().optional(),
+  tag: z.string().max(32).optional(),
+  /** An event's transactions, whatever their month. */
+  event: z.string().optional(),
   month: month.optional(),
   /** Amount range in cents, by absolute value. */
   min: z.number().int().min(0).optional(),
@@ -389,15 +418,25 @@ export const listTransactions = createServerFn({ method: "GET" })
       where.push("t.wallet_id = ?")
       binds.push(data.wallet)
     } else where.push("NOT (t.transfer_id IS NOT NULL AND t.amount > 0)") // one row per transfer
-    // Activity follows the app-wide month; no month means the current one.
-    const [from, to] = monthRange(data.month ?? monthOf(Date.now() / 1000, tz), tz)
-    where.push("t.date >= ? AND t.date < ?")
-    binds.push(from, to)
+    // Activity follows the app-wide month (no month means the current one), except for an event,
+    // which is about the whole trip.
+    if (data.event) {
+      where.push("t.event_id = ?")
+      binds.push(data.event)
+    } else {
+      const [from, to] = monthRange(data.month ?? monthOf(Date.now() / 1000, tz), tz)
+      where.push("t.date >= ? AND t.date < ?")
+      binds.push(from, to)
+    }
     const base = [...where]
     const baseBinds = [...binds]
     if (data.category) {
       where.push("(t.category_id = ? OR t.subcategory_id = ?)")
       binds.push(data.category, data.category)
+    }
+    if (data.tag) {
+      where.push("EXISTS (SELECT 1 FROM json_each(t.tags) WHERE value = ?)")
+      binds.push(data.tag)
     }
     if (data.min !== undefined) {
       where.push("ABS(t.amount) >= ?")
@@ -434,6 +473,46 @@ export const listTransactions = createServerFn({ method: "GET" })
       totals: totals.results as { currency: string; out: number; inn: number; transfers: number }[],
       corrections: (corrections.results[0] as { n: number }).n,
     }
+  })
+
+// ---------- events ----------
+
+export const saveEvent = createServerFn({ method: "POST" })
+  .validator(
+    z
+      .object({
+        id: z.string().optional(),
+        name: z.string().trim().min(1, "Give the event a name").max(80),
+        startDay: day.nullable(),
+        endDay: day.nullable(),
+      })
+      .refine((e) => !e.startDay || !e.endDay || e.endDay >= e.startDay, "The end is before the start")
+  )
+  .handler(async ({ data }) => {
+    const uid = await userId()
+    const DB = db()
+    const id = data.id ?? crypto.randomUUID()
+    const res = data.id
+      ? await DB.prepare("UPDATE events SET name = ?, start_day = ?, end_day = ? WHERE user_id = ? AND id = ?")
+          .bind(data.name, data.startDay, data.endDay, uid, id)
+          .run()
+      : await DB.prepare("INSERT INTO events (user_id, id, name, start_day, end_day) VALUES (?, ?, ?, ?, ?)")
+          .bind(uid, id, data.name, data.startDay, data.endDay)
+          .run()
+    if (!res.meta.changes) throw new Error("Event not found")
+    return { id }
+  })
+
+/** Deletes an event. Its transactions stay; they just no longer belong to it. */
+export const deleteEvent = createServerFn({ method: "POST" })
+  .validator(z.object({ id: z.string() }))
+  .handler(async ({ data }) => {
+    const uid = await userId()
+    const DB = db()
+    await DB.batch([
+      DB.prepare("UPDATE transactions SET event_id = NULL WHERE user_id = ? AND event_id = ?").bind(uid, data.id),
+      DB.prepare("DELETE FROM events WHERE user_id = ? AND id = ?").bind(uid, data.id),
+    ])
   })
 
 // ---------- activity panel ----------
@@ -474,6 +553,10 @@ const saveInput = z.object({
   paid: z.boolean().default(true),
   /** A subcategory of `categoryId`. Left out: kept while the category stays the same. */
   subcategoryId: z.string().nullable().optional(),
+  /** Left out: kept on an edit, none on a new entry. */
+  tags: tags.optional(),
+  /** null = no event. Left out: kept on an edit; a new entry gets the event its day falls in. */
+  eventId: z.string().nullable().optional(),
 })
 
 export const saveTransaction = createServerFn({ method: "POST" })
@@ -498,9 +581,17 @@ export const saveTransaction = createServerFn({ method: "POST" })
           : unixOf(data.day, tz, 12)
     const name = data.name.trim()
     const id = data.id ?? crypto.randomUUID()
+    // An event id must be one of this user's; a new entry without one gets the event covering its day.
+    const { results: events } = await DB.prepare("SELECT id, start_day, end_day FROM events WHERE user_id = ?")
+      .bind(uid)
+      .all<{ id: string; start_day: string | null; end_day: string | null }>()
+    if (data.eventId && !events.some((e) => e.id === data.eventId)) throw new Error("Event not found")
+    const eventId = data.eventId === undefined && !existing ? eventFor(data.day, events) : data.eventId
+    const tagsJson = data.tags === undefined ? null : JSON.stringify(data.tags)
     const write = existing
       ? DB.prepare(`UPDATE transactions SET wallet_id = ?1, category_id = ?2,
           subcategory_id = CASE WHEN ?10 = 1 THEN ?11 WHEN category_id = ?2 THEN subcategory_id ELSE NULL END,
+          tags = COALESCE(?12, tags), event_id = CASE WHEN ?13 = 1 THEN ?14 ELSE event_id END,
           name = ?3, note = ?4, amount = ?5, date = ?6, paid = ?7, updated_at = unixepoch() WHERE user_id = ?9 AND id = ?8`).bind(
           data.walletId,
           data.categoryId,
@@ -512,10 +603,13 @@ export const saveTransaction = createServerFn({ method: "POST" })
           id,
           uid,
           data.subcategoryId === undefined ? 0 : 1,
-          data.subcategoryId ?? null
+          data.subcategoryId ?? null,
+          tagsJson,
+          eventId === undefined ? 0 : 1,
+          eventId ?? null
         )
-      : DB.prepare(`INSERT INTO transactions (user_id, id, wallet_id, category_id, subcategory_id, name, note, amount, date, paid)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).bind(
+      : DB.prepare(`INSERT INTO transactions (user_id, id, wallet_id, category_id, subcategory_id, name, note, amount, date, paid, tags, event_id)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).bind(
           uid,
           id,
           data.walletId,
@@ -525,7 +619,9 @@ export const saveTransaction = createServerFn({ method: "POST" })
           data.note.trim(),
           data.amount,
           date,
-          data.paid ? 1 : 0
+          data.paid ? 1 : 0,
+          tagsJson ?? "[]",
+          eventId ?? null
         )
     // Settings › Payee rules › Learn from my edits. A learned rule never replaces one you made.
     const { prefs } = await getSettings(uid)

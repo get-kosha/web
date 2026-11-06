@@ -15,12 +15,11 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { ChartContainer } from "@/components/ui/chart"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { CategoryIcon } from "@/components/category-icon"
 import { BigMoney, CompositionBar } from "@/components/net-worth"
 import { Reveal, RollingMoney } from "@/components/motion"
 import { GainDialog } from "@/components/gain-dialog"
-import { TransactionForm } from "@/components/transaction-form"
+import { TransactionForm, TransactionSheet } from "@/components/transaction-form"
 import { useGlobals, useMeta } from "@/components/shell"
 import { getDashboard, updateOccurrence, type Upcoming, type Wallet } from "@/lib/api"
 import { LOCALE, addDays, convert, dayOf, fmt, netWorth, shiftMonth } from "@/lib/core"
@@ -83,19 +82,15 @@ function Overview() {
 
       <LastTwelveMonths d={d} />
 
-      <Dialog open={!!paying} onOpenChange={(o) => !o && setPaying(null)}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Pay {paying?.card.name}</DialogTitle>
-          </DialogHeader>
-          {paying && (
-            <TransactionForm
-              preset={{ transferTo: paying.card.id, amount: paying.owed }}
-              onDone={() => setPaying(null)}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
+      <TransactionSheet open={!!paying} title={`Pay ${paying?.card.name ?? ""}`} onClose={() => setPaying(null)}>
+        {paying && (
+          <TransactionForm
+            preset={{ transferTo: paying.card.id, amount: paying.owed }}
+            onDone={() => setPaying(null)}
+            onCancel={() => setPaying(null)}
+          />
+        )}
+      </TransactionSheet>
       <GainDialog wallet={gainFor} onClose={() => setGainFor(null)} />
     </div>
   )

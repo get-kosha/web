@@ -139,6 +139,54 @@ export function guessCategory(name: string, rules: TitleRule[]) {
   return best?.category_id ?? null
 }
 
+// --- tags and events ---
+
+export const MAX_TAGS = 20
+
+/** One hashtag as stored: lowercase, no '#', letters, digits, '-' and '_' only. Empty when nothing is left. */
+export const cleanTag = (t: string) =>
+  t
+    .trim()
+    .replace(/^#+/, "")
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}_-]/gu, "")
+    .slice(0, 32)
+
+/** Typed text ("#trip, food rome") to unique stored tags, in the order typed. */
+export function parseTags(text: string) {
+  const out: string[] = []
+  for (const part of text.split(/[\s,]+/)) {
+    const t = cleanTag(part)
+    if (t && !out.includes(t)) out.push(t)
+  }
+  return out.slice(0, MAX_TAGS)
+}
+
+/** The stored JSON column to a list; anything unreadable is no tags. */
+export function tagList(json: string | null | undefined): string[] {
+  try {
+    const v: unknown = JSON.parse(json || "[]")
+    return Array.isArray(v) ? v.filter((t): t is string => typeof t === "string") : []
+  } catch {
+    return []
+  }
+}
+
+export type EventSpan = { id: string; start_day: string | null; end_day: string | null }
+
+/**
+ * The event a new entry on `day` belongs to by default: one whose dates cover the day. A missing end
+ * means it is still going. When events overlap, the one that started last (the more specific) wins.
+ */
+export function eventFor(day: string, events: EventSpan[]) {
+  let best: EventSpan | null = null
+  for (const e of events) {
+    if (!e.start_day || day < e.start_day || (e.end_day && day > e.end_day)) continue
+    if (!best || e.start_day > best.start_day!) best = e
+  }
+  return best?.id ?? null
+}
+
 // --- subscriptions ---
 
 export type Unit = "day" | "week" | "month" | "year"
