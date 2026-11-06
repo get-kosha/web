@@ -27,7 +27,9 @@ import { setDevicePref, setTheme } from "@/lib/theme"
 import { Switch } from "@/components/ui/switch"
 import { cn } from "@/lib/utils"
 
-export const initials = (name: string, email: string) =>
+type Person = { name: string; email: string; image: string | null }
+
+const initials = (name: string, email: string) =>
   (
     name
       .trim()
@@ -36,6 +38,32 @@ export const initials = (name: string, email: string) =>
       .map((w) => w[0])
       .join("") || email[0]
   ).toUpperCase()
+
+/**
+ * The round avatar: the profile picture over the user's initials in their accent colour. The picture
+ * lies on top, so when it can't load (offline, or removed) it hides and the initials show through.
+ */
+export function Avatar({ user, className }: { user: Person; className?: string }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={cn(
+        "relative flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand font-semibold text-brand-foreground",
+        className
+      )}
+    >
+      {initials(user.name, user.email)}
+      {user.image && (
+        <img
+          src={user.image}
+          alt=""
+          className="absolute inset-0 size-full object-cover"
+          onError={(e) => (e.currentTarget.hidden = true)}
+        />
+      )}
+    </span>
+  )
+}
 
 const THEMES = [
   ["light", "Light", SunIcon],
@@ -53,16 +81,16 @@ export const Kbd = ({ children }: { children: ReactNode }) => (
 )
 
 /** The avatar menu: who you are, theme, the Settings pages you visit most, shortcuts, sign out. */
-export function AccountMenu({ user, onShortcuts }: { user: { name: string; email: string }; onShortcuts: () => void }) {
+export function AccountMenu({ user, onShortcuts }: { user: Person; onShortcuts: () => void }) {
   const [theme, saveTheme] = usePref("theme", setTheme)
   const [hidden, saveHidden] = usePref("hide_amounts", (v) => setDevicePref("hide_amounts", v))
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
         aria-label="Account and settings"
-        className="inline-flex size-9 items-center justify-center rounded-full bg-brand text-xs font-semibold text-brand-foreground transition-shadow duration-200 hover:shadow-[0_0_0_3px_var(--brand-soft)] aria-expanded:shadow-[0_0_0_3px_var(--brand-soft)] max-md:size-11"
+        className="inline-flex size-9 rounded-full transition-shadow duration-200 hover:shadow-[0_0_0_3px_var(--brand-soft)] aria-expanded:shadow-[0_0_0_3px_var(--brand-soft)] max-md:size-11"
       >
-        {initials(user.name, user.email)}
+        <Avatar user={user} className="size-full text-xs" />
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="end"
@@ -70,12 +98,7 @@ export function AccountMenu({ user, onShortcuts }: { user: { name: string; email
         className="data-[side=bottom]:slide-in-from-top-1.5 w-[300px] rounded-[14px] p-1.5 shadow-[0_12px_32px_rgba(17,17,19,0.12),0_2px_6px_rgba(17,17,19,0.06)] duration-[220ms] dark:bg-[#1a1a1d] dark:shadow-[0_16px_40px_rgba(0,0,0,0.55),0_2px_6px_rgba(0,0,0,0.3)] data-open:zoom-in-[0.97]"
       >
         <div className="flex items-center gap-3 px-2.5 pt-2.5 pb-3">
-          <span
-            aria-hidden="true"
-            className="flex size-9 shrink-0 items-center justify-center rounded-full bg-brand text-xs font-semibold text-brand-foreground"
-          >
-            {initials(user.name, user.email)}
-          </span>
+          <Avatar user={user} className="size-9 text-xs" />
           <div className="min-w-0">
             <div className="truncate text-sm font-medium">{user.name || user.email}</div>
             <div className="truncate text-xs text-muted-foreground">{user.email}</div>

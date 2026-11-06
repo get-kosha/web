@@ -3,7 +3,7 @@ import { z } from "zod"
 import { monthOf, monthRange, dayOf } from "@/lib/core"
 import { db, getSettings } from "@/server/db.server"
 import * as finance from "@/server/finance.server"
-import { MCP_RESOURCE, auth, demoAvailable, getUser, userId } from "@/server/auth.server"
+import { MCP_RESOURCE, auth, avatars, demoAvailable, getUser, setAvatar, userId } from "@/server/auth.server"
 import {
   consentDetails,
   createApiKey,
@@ -58,9 +58,23 @@ export const guestVisit = createIsomorphicFn()
 
 export const getMeta = createServerFn({ method: "GET" }).handler(async () => {
   const user = (await getUser())!
-  return { ...(await finance.loadMeta(user.id)), user }
+  // `avatars` says whether this deployment has R2 for profile pictures (wrangler.jsonc).
+  return { ...(await finance.loadMeta(user.id)), user, avatars: !!avatars() }
 })
 export type Meta = Awaited<ReturnType<typeof getMeta>>
+
+// ---------- profile picture ----------
+
+/** Sets the profile picture: a FormData with `file`, a JPEG the browser has cropped to a square. */
+export const uploadAvatar = createServerFn({ method: "POST" })
+  .validator((data: FormData) => {
+    const file = data instanceof FormData ? data.get("file") : null
+    if (!(file instanceof Blob) || file.size > 512 * 1024) throw new Error("Choose an image under 512 KB")
+    return file
+  })
+  .handler(async ({ data }) => setAvatar(await userId(), data))
+
+export const removeAvatar = createServerFn({ method: "POST" }).handler(async () => setAvatar(await userId(), null))
 
 // ---------- dashboard analytics ----------
 

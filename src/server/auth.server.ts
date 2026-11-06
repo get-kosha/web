@@ -87,6 +87,7 @@ export const USER_TABLES = [
 ]
 async function deleteUserData(id: string) {
   const DB = env.DB
+  await avatars()?.delete(avatarKey(id))
   await DB.batch([
     ...USER_TABLES.map((t) => DB.prepare(`DELETE FROM ${t} WHERE user_id = ?`).bind(id)),
     DB.prepare('DELETE FROM "passkey" WHERE "userId" = ?').bind(id),
@@ -94,7 +95,7 @@ async function deleteUserData(id: string) {
   ])
 }
 
-type User = { id: string; email: string; name: string }
+type User = { id: string; email: string; name: string; image: string | null }
 
 // One session lookup per request, shared by the auth middleware and server functions.
 const sessions = new WeakMap<Request, Promise<User | null>>()
@@ -103,7 +104,7 @@ export function getUser(request: Request = getRequest()) {
   if (!user) {
     user = auth.api
       .getSession({ headers: request.headers })
-      .then((s) => (s ? { id: s.user.id, email: s.user.email, name: s.user.name } : null))
+      .then((s) => (s ? { id: s.user.id, email: s.user.email, name: s.user.name, image: s.user.image ?? null } : null))
     sessions.set(request, user)
   }
   return user
@@ -126,4 +127,29 @@ export async function userId() {
   const user = await getUser()
   if (!user) throw new Error("Not signed in")
   return user.id
+}
+
+/** The R2 bucket for profile pictures. It's an optional binding, so a deployment without R2 has none. */
+export const avatars = () => (env as { AVATARS?: R2Bucket }).AVATARS
+const avatarKey = (uid: string) => `avatars/${uid}`
+
+/** The user's profile picture from R2, or null. */
+export const getAvatar = (uid: string) => avatars()?.get(avatarKey(uid)) ?? null
+
+/**
+ * Stores a profile picture (a JPEG the browser has already cropped and shrunk), or removes it when `file`
+ * is null. user.image points at /api/avatar with a new version each time, so browsers can cache it for good.
+ */
+export async function setAvatar(uid: string, file: Blob | null) {
+  const bucket = avatars()
+  if (!bucket) throw new Error("Profile pictures aren't set up on this server")
+  let image: string | null = null
+  if (file) {
+    const bytes = new Uint8Array(await file.arrayBuffer())
+    // Every JPEG starts FF D8 FF. The route serves it as image/jpeg, so nothing else may get in.
+    if (bytes[0] !== 0xff || bytes[1] !== 0xd8 || bytes[2] !== 0xff) throw new Error("That image couldn't be read")
+    await bucket.put(avatarKey(uid), bytes, { httpMetadata: { contentType: "image/jpeg" } })
+    image = `/api/avatar?v=${Date.now().toString(36)}`
+  } else await bucket.delete(avatarKey(uid))
+  await auth.api.updateUser({ headers: getRequest().headers, body: { image } })
 }

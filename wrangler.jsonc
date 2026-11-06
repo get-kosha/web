@@ -15,6 +15,10 @@
       "migrations_dir": "migrations",
     },
   ],
+  // Profile pictures. R2 needs a payment card on the Cloudflare account, so it's optional: delete this
+  // block to deploy without it, and Settings › Profile says photos aren't set up. With it, create the
+  // bucket once with `npx wrangler r2 bucket create kosha-avatars`.
+  "r2_buckets": [{ "binding": "AVATARS", "bucket_name": "kosha-avatars" }],
   // Public API and MCP: 120 requests a minute per user (src/server/api.server.ts).
   "ratelimits": [{ "name": "API_LIMITER", "namespace_id": "1001", "simple": { "limit": 120, "period": 60 } }],
   // BETTER_AUTH_SECRET goes in .dev.vars locally and `wrangler secret put` in production.

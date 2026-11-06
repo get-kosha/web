@@ -63,6 +63,12 @@ const GROUPS: Group[] = [
         description: "How you appear in Kosha and on anything you export.",
         component: Profile,
         rows: [
+          {
+            key: "photo",
+            title: "Profile picture",
+            description: "A photo instead of your initials.",
+            keywords: "avatar image",
+          },
           { key: "name", title: "Name", description: "Shown in the menu and on exports.", keywords: "display" },
           { key: "email", title: "Email", description: "The address you sign in with.", keywords: "address login" },
         ],

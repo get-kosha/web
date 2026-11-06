@@ -4,7 +4,7 @@ import { CaretLeftIcon, CaretRightIcon, MagnifyingGlassIcon, ShieldCheckIcon, XI
 import { groups, searchSettings, type Section, type SearchResult } from "@/components/settings/registry"
 import { Kbd } from "@/components/account-menu"
 import { isTyping, useMeta, useShortcuts } from "@/components/shell"
-import { initials } from "@/components/account-menu"
+import { Avatar } from "@/components/account-menu"
 import { securitySteps, useAccount } from "@/components/settings/sections/security"
 import { Pill } from "@/components/settings/row"
 import { cn } from "@/lib/utils"
@@ -314,12 +314,7 @@ export function PhoneList() {
         viewTransition={slide("forward")}
         className="flex items-center gap-3.5 rounded-2xl border bg-card p-3 pr-4 transition-colors active:bg-muted"
       >
-        <span
-          aria-hidden="true"
-          className="flex size-11 shrink-0 items-center justify-center rounded-full bg-brand text-base font-semibold text-brand-foreground"
-        >
-          {initials(meta.user.name, meta.user.email)}
-        </span>
+        <Avatar user={meta.user} className="size-11 text-base" />
         <span className="min-w-0 flex-1">
           <span className="block truncate text-base font-medium">{meta.user.name || meta.user.email}</span>
           <span className="block truncate text-[13px] text-muted-foreground">{meta.user.email}</span>

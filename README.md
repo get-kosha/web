@@ -70,6 +70,11 @@ npx wrangler secret put AI_KEY_SECRET         # 32+ random characters; changing 
 npm run deploy
 ```
 
+Profile pictures are stored in Cloudflare R2, which asks for a payment card on the account even on the free tier. They are optional:
+
+- **With R2:** run `npx wrangler r2 bucket create kosha-avatars` once before you deploy.
+- **Without R2:** delete the `r2_buckets` block from `wrangler.jsonc`. Everything else works, and Settings › Profile shows initials and says photos aren't set up.
+
 Before you deploy, set `BETTER_AUTH_URL` under `vars` in `wrangler.jsonc` to the public URL of the app. Passkeys only work on this domain.
 
 To deploy on every push, connect the repository under the Worker's **Settings → Build**. Use `npm run deploy` as the deploy command and leave the build command empty. The build token needs **D1: Edit** for the migration step, which the token Cloudflare creates by default does not have.

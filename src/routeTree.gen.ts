@@ -22,6 +22,7 @@ import { Route as AppCategoriesRouteImport } from './routes/_app/categories'
 import { Route as AppSettingsRouteImport } from './routes/_app/settings'
 import { Route as AppSubscriptionsRouteImport } from './routes/_app/subscriptions'
 import { Route as AppTransactionsRouteImport } from './routes/_app/transactions'
+import { Route as ApiAvatarRouteImport } from './routes/api/avatar'
 import { Route as AppSettingsIndexRouteImport } from './routes/_app/settings.index'
 import { Route as AppSettingsSectionRouteImport } from './routes/_app/settings.$section'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
@@ -93,6 +94,11 @@ const AppTransactionsRoute = AppTransactionsRouteImport.update({
   path: '/transactions',
   getParentRoute: () => AppRoute,
 } as any)
+const ApiAvatarRoute = ApiAvatarRouteImport.update({
+  id: '/api/avatar',
+  path: '/api/avatar',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppSettingsIndexRoute = AppSettingsIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -138,6 +144,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AppSettingsRouteWithChildren
   '/subscriptions': typeof AppSubscriptionsRoute
   '/transactions': typeof AppTransactionsRoute
+  '/api/avatar': typeof ApiAvatarRoute
   '/settings/$section': typeof AppSettingsSectionRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/export/kosha.json': typeof ApiExportKoshaDotjsonRoute
@@ -156,6 +163,7 @@ export interface FileRoutesByTo {
   '/categories': typeof AppCategoriesRoute
   '/subscriptions': typeof AppSubscriptionsRoute
   '/transactions': typeof AppTransactionsRoute
+  '/api/avatar': typeof ApiAvatarRoute
   '/': typeof AppIndexRoute
   '/settings/$section': typeof AppSettingsSectionRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -178,6 +186,7 @@ export interface FileRoutesById {
   '/_app/settings': typeof AppSettingsRouteWithChildren
   '/_app/subscriptions': typeof AppSubscriptionsRoute
   '/_app/transactions': typeof AppTransactionsRoute
+  '/api/avatar': typeof ApiAvatarRoute
   '/_app/': typeof AppIndexRoute
   '/_app/settings/$section': typeof AppSettingsSectionRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -201,6 +210,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/subscriptions'
     | '/transactions'
+    | '/api/avatar'
     | '/settings/$section'
     | '/api/auth/$'
     | '/api/export/kosha.json'
@@ -219,6 +229,7 @@ export interface FileRouteTypes {
     | '/categories'
     | '/subscriptions'
     | '/transactions'
+    | '/api/avatar'
     | '/'
     | '/settings/$section'
     | '/api/auth/$'
@@ -240,6 +251,7 @@ export interface FileRouteTypes {
     | '/_app/settings'
     | '/_app/subscriptions'
     | '/_app/transactions'
+    | '/api/avatar'
     | '/_app/'
     | '/_app/settings/$section'
     | '/api/auth/$'
@@ -255,6 +267,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   McpRoute: typeof McpRoute
   DotwellKnownSplatRoute: typeof DotwellKnownSplatRoute
+  ApiAvatarRoute: typeof ApiAvatarRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiExportKoshaDotjsonRoute: typeof ApiExportKoshaDotjsonRoute
   ApiExportTransactionsDotcsvRoute: typeof ApiExportTransactionsDotcsvRoute
@@ -354,6 +367,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppTransactionsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/api/avatar': {
+      id: '/api/avatar'
+      path: '/api/avatar'
+      fullPath: '/api/avatar'
+      preLoaderRoute: typeof ApiAvatarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_app/settings/': {
       id: '/_app/settings/'
       path: '/'
@@ -443,6 +463,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   McpRoute: McpRoute,
   DotwellKnownSplatRoute: DotwellKnownSplatRoute,
+  ApiAvatarRoute: ApiAvatarRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiExportKoshaDotjsonRoute: ApiExportKoshaDotjsonRoute,
   ApiExportTransactionsDotcsvRoute: ApiExportTransactionsDotcsvRoute,
