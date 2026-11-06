@@ -313,6 +313,7 @@ function Row({
       to="/subscriptions"
       search={(p) => ({ ...p, id: x.id })}
       aria-current={selected ? "true" : undefined}
+      data-row
       className={cn(
         COLS,
         "min-h-12 items-center px-4 py-1.5 text-sm hover:bg-muted",

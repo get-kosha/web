@@ -41,7 +41,9 @@ export const auth = betterAuth({
 })
 
 /** Every table that holds a user's data, children before parents so foreign keys hold. Auth tables follow the user row. */
-const USER_TABLES = [
+export const USER_TABLES = [
+  "ai_log",
+  "ai_providers",
   "transfers",
   "valuations",
   "transactions",

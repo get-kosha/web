@@ -40,19 +40,30 @@ const spin = { duration: 650, easing: "cubic-bezier(0.23, 1, 0.32, 1)" }
 const fade = { duration: 250, easing: "ease-out" }
 
 /** Money whose digits slide into place on entrance and when the value changes (e.g. a new month). */
-export function RollingMoney({ value, currency, className }: { value: number; currency: string; className?: string }) {
+export function RollingMoney({
+  value,
+  currency,
+  className,
+  round,
+}: {
+  value: number
+  currency: string
+  className?: string
+  /** Whole units only (Settings › General › Round amounts on Overview). */
+  round?: boolean
+}) {
   const motion = getRouteApi("/_app").useLoaderData({ select: (m) => m.prefs.motion })
-  const [ref, seen] = useInView<HTMLSpanElement>(!hydrated || motion === "off")
+  const [ref, seen] = useInView<HTMLSpanElement>(!hydrated || motion !== "on")
   return (
     <span ref={ref} className={cn("inline-block", className)}>
       <NumberFlow
         value={(seen ? value : 0) / 100}
         locales={LOCALE}
-        format={{ style: "currency", currency: currency.toUpperCase(), maximumFractionDigits: 2 }}
+        format={{ style: "currency", currency: currency.toUpperCase(), maximumFractionDigits: round ? 0 : 2 }}
         transformTiming={spin}
         spinTiming={spin}
         opacityTiming={fade}
-        animated={motion !== "off"}
+        animated={motion === "on"}
       />
     </span>
   )

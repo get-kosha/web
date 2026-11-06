@@ -37,11 +37,12 @@ npm run db:demo      # optional: a demo account with sample data
 npm run dev          # http://localhost:3000
 ```
 
-Create `.dev.vars` with two values:
+Create `.dev.vars` with three values:
 
 ```sh
 BETTER_AUTH_SECRET=   # 32+ random characters, e.g. from `openssl rand -hex 32`
 BETTER_AUTH_URL=http://localhost:3000
+AI_KEY_SECRET=        # 32+ random characters; encrypts AI provider keys (Settings › AI)
 ```
 
 The demo account is `demo@kosha.local` with the password `kosha-demo-2026`. It has about 14 months of invented data. Running `npm run db:demo` again resets it. The password is public, so only seed it locally.
@@ -59,6 +60,7 @@ To set up your own copy:
 ```sh
 npx wrangler d1 create kosha                  # copy the database_id into wrangler.jsonc
 npx wrangler secret put BETTER_AUTH_SECRET    # 32+ random characters
+npx wrangler secret put AI_KEY_SECRET         # 32+ random characters; changing it makes saved AI keys unreadable
 npm run deploy
 ```
 

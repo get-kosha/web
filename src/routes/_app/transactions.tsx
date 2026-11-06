@@ -9,7 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { ActivityPanel } from "@/components/activity-panel"
 import { CategoryIcon } from "@/components/category-icon"
 import { CategoryPicker, categoryPath } from "@/components/category-picker"
-import { PageHeader, monthLabel, segment, segmentButton, useGlobals, useMeta } from "@/components/shell"
+import { PageHeader, isTyping, monthLabel, segment, segmentButton, useGlobals, useMeta } from "@/components/shell"
 import { TransactionForm } from "@/components/transaction-form"
 import { listTransactions, type Tx } from "@/lib/api"
 import { LOCALE, convert, dayOf, fmt, isNeutral, parseAmount } from "@/lib/core"
@@ -57,8 +57,6 @@ const dayTitle = (day: string) =>
     timeZone: "UTC",
   })
 const signed = (cents: number, currency: string) => `${cents > 0 ? "+" : ""}${fmt(cents, currency)}`
-const isTyping = (el: EventTarget | null) =>
-  el instanceof HTMLElement && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName))
 
 function Activity() {
   const meta = useMeta()
@@ -404,6 +402,7 @@ function Row({
     <button
       type="button"
       data-tx={t.id}
+      data-row
       aria-pressed={selected}
       onClick={onClick}
       className={cn(

@@ -19,7 +19,11 @@ import { Route as AppCategoriesRouteImport } from './routes/_app/categories'
 import { Route as AppSettingsRouteImport } from './routes/_app/settings'
 import { Route as AppSubscriptionsRouteImport } from './routes/_app/subscriptions'
 import { Route as AppTransactionsRouteImport } from './routes/_app/transactions'
+import { Route as AppSettingsIndexRouteImport } from './routes/_app/settings.index'
+import { Route as AppSettingsSectionRouteImport } from './routes/_app/settings.$section'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as ApiExportKoshaDotjsonRouteImport } from './routes/api/export/kosha[.]json'
+import { Route as ApiExportTransactionsDotcsvRouteImport } from './routes/api/export/transactions[.]csv'
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
@@ -70,11 +74,32 @@ const AppTransactionsRoute = AppTransactionsRouteImport.update({
   path: '/transactions',
   getParentRoute: () => AppRoute,
 } as any)
+const AppSettingsIndexRoute = AppSettingsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppSettingsRoute,
+} as any)
+const AppSettingsSectionRoute = AppSettingsSectionRouteImport.update({
+  id: '/$section',
+  path: '/$section',
+  getParentRoute: () => AppSettingsRoute,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiExportKoshaDotjsonRoute = ApiExportKoshaDotjsonRouteImport.update({
+  id: '/api/export/kosha.json',
+  path: '/api/export/kosha.json',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiExportTransactionsDotcsvRoute =
+  ApiExportTransactionsDotcsvRouteImport.update({
+    id: '/api/export/transactions.csv',
+    path: '/api/export/transactions.csv',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
@@ -83,10 +108,14 @@ export interface FileRoutesByFullPath {
   '/accounts': typeof AppAccountsRoute
   '/add': typeof AppAddRoute
   '/categories': typeof AppCategoriesRoute
-  '/settings': typeof AppSettingsRoute
+  '/settings': typeof AppSettingsRouteWithChildren
   '/subscriptions': typeof AppSubscriptionsRoute
   '/transactions': typeof AppTransactionsRoute
+  '/settings/$section': typeof AppSettingsSectionRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/export/kosha.json': typeof ApiExportKoshaDotjsonRoute
+  '/api/export/transactions.csv': typeof ApiExportTransactionsDotcsvRoute
+  '/settings/': typeof AppSettingsIndexRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
@@ -94,11 +123,14 @@ export interface FileRoutesByTo {
   '/accounts': typeof AppAccountsRoute
   '/add': typeof AppAddRoute
   '/categories': typeof AppCategoriesRoute
-  '/settings': typeof AppSettingsRoute
   '/subscriptions': typeof AppSubscriptionsRoute
   '/transactions': typeof AppTransactionsRoute
   '/': typeof AppIndexRoute
+  '/settings/$section': typeof AppSettingsSectionRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/export/kosha.json': typeof ApiExportKoshaDotjsonRoute
+  '/api/export/transactions.csv': typeof ApiExportTransactionsDotcsvRoute
+  '/settings': typeof AppSettingsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -108,11 +140,15 @@ export interface FileRoutesById {
   '/_app/accounts': typeof AppAccountsRoute
   '/_app/add': typeof AppAddRoute
   '/_app/categories': typeof AppCategoriesRoute
-  '/_app/settings': typeof AppSettingsRoute
+  '/_app/settings': typeof AppSettingsRouteWithChildren
   '/_app/subscriptions': typeof AppSubscriptionsRoute
   '/_app/transactions': typeof AppTransactionsRoute
   '/_app/': typeof AppIndexRoute
+  '/_app/settings/$section': typeof AppSettingsSectionRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/export/kosha.json': typeof ApiExportKoshaDotjsonRoute
+  '/api/export/transactions.csv': typeof ApiExportTransactionsDotcsvRoute
+  '/_app/settings/': typeof AppSettingsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -126,7 +162,11 @@ export interface FileRouteTypes {
     | '/settings'
     | '/subscriptions'
     | '/transactions'
+    | '/settings/$section'
     | '/api/auth/$'
+    | '/api/export/kosha.json'
+    | '/api/export/transactions.csv'
+    | '/settings/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
@@ -134,11 +174,14 @@ export interface FileRouteTypes {
     | '/accounts'
     | '/add'
     | '/categories'
-    | '/settings'
     | '/subscriptions'
     | '/transactions'
     | '/'
+    | '/settings/$section'
     | '/api/auth/$'
+    | '/api/export/kosha.json'
+    | '/api/export/transactions.csv'
+    | '/settings'
   id:
     | '__root__'
     | '/_app'
@@ -151,13 +194,19 @@ export interface FileRouteTypes {
     | '/_app/subscriptions'
     | '/_app/transactions'
     | '/_app/'
+    | '/_app/settings/$section'
     | '/api/auth/$'
+    | '/api/export/kosha.json'
+    | '/api/export/transactions.csv'
+    | '/_app/settings/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   LoginRoute: typeof LoginRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiExportKoshaDotjsonRoute: typeof ApiExportKoshaDotjsonRoute
+  ApiExportTransactionsDotcsvRoute: typeof ApiExportTransactionsDotcsvRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -232,6 +281,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppTransactionsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/settings/': {
+      id: '/_app/settings/'
+      path: '/'
+      fullPath: '/settings/'
+      preLoaderRoute: typeof AppSettingsIndexRouteImport
+      parentRoute: typeof AppSettingsRoute
+    }
+    '/_app/settings/$section': {
+      id: '/_app/settings/$section'
+      path: '/$section'
+      fullPath: '/settings/$section'
+      preLoaderRoute: typeof AppSettingsSectionRouteImport
+      parentRoute: typeof AppSettingsRoute
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -239,15 +302,43 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/export/kosha.json': {
+      id: '/api/export/kosha.json'
+      path: '/api/export/kosha.json'
+      fullPath: '/api/export/kosha.json'
+      preLoaderRoute: typeof ApiExportKoshaDotjsonRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/export/transactions.csv': {
+      id: '/api/export/transactions.csv'
+      path: '/api/export/transactions.csv'
+      fullPath: '/api/export/transactions.csv'
+      preLoaderRoute: typeof ApiExportTransactionsDotcsvRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
+
+interface AppSettingsRouteChildren {
+  AppSettingsSectionRoute: typeof AppSettingsSectionRoute
+  AppSettingsIndexRoute: typeof AppSettingsIndexRoute
+}
+
+const AppSettingsRouteChildren: AppSettingsRouteChildren = {
+  AppSettingsSectionRoute: AppSettingsSectionRoute,
+  AppSettingsIndexRoute: AppSettingsIndexRoute,
+}
+
+const AppSettingsRouteWithChildren = AppSettingsRoute._addFileChildren(
+  AppSettingsRouteChildren,
+)
 
 interface AppRouteChildren {
   AppAccountRoute: typeof AppAccountRoute
   AppAccountsRoute: typeof AppAccountsRoute
   AppAddRoute: typeof AppAddRoute
   AppCategoriesRoute: typeof AppCategoriesRoute
-  AppSettingsRoute: typeof AppSettingsRoute
+  AppSettingsRoute: typeof AppSettingsRouteWithChildren
   AppSubscriptionsRoute: typeof AppSubscriptionsRoute
   AppTransactionsRoute: typeof AppTransactionsRoute
   AppIndexRoute: typeof AppIndexRoute
@@ -258,7 +349,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppAccountsRoute: AppAccountsRoute,
   AppAddRoute: AppAddRoute,
   AppCategoriesRoute: AppCategoriesRoute,
-  AppSettingsRoute: AppSettingsRoute,
+  AppSettingsRoute: AppSettingsRouteWithChildren,
   AppSubscriptionsRoute: AppSubscriptionsRoute,
   AppTransactionsRoute: AppTransactionsRoute,
   AppIndexRoute: AppIndexRoute,
@@ -270,6 +361,8 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   LoginRoute: LoginRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiExportKoshaDotjsonRoute: ApiExportKoshaDotjsonRoute,
+  ApiExportTransactionsDotcsvRoute: ApiExportTransactionsDotcsvRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

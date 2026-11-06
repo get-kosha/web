@@ -15,6 +15,9 @@
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
   --color-subtle-foreground: var(--subtle-foreground);
+  --color-brand: var(--brand);
+  --color-brand-foreground: var(--brand-foreground);
+  --color-brand-soft: var(--brand-soft);
   --color-selected: var(--selected);
   --color-warning: var(--warning);
   --color-chart-5: var(--chart-5);
@@ -79,6 +82,10 @@
   --chart-4: #cfcfca;
   --chart-5: #e4e4e0;
   --radius: 0.625rem;
+  /* The user's accent (Settings › Appearance). Not shadcn's --accent, which is the hover background. */
+  --brand: #0f766e;
+  --brand-foreground: #ffffff;
+  --brand-soft: color-mix(in srgb, var(--brand) 13%, transparent);
 }
 
 .dark {
@@ -109,6 +116,8 @@
   --chart-3: #90909a;
   --chart-4: #3b3b41;
   --chart-5: #27272b;
+  --brand: #2dd4bf;
+  --brand-foreground: #0b0b0c;
 }
 
 @layer base {
@@ -240,4 +249,241 @@
 :root[data-motion="off"] [data-reveal] :is(.bar-grow, .bar-grow-x) {
   clip-path: none !important;
   transform: none !important;
+}
+
+/* Settings: a section fades up as it opens, its groups 40ms apart. */
+@keyframes kosha-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+.rise-in {
+  animation: kosha-rise 340ms cubic-bezier(0.23, 1, 0.32, 1) backwards;
+}
+/* Phone pages slide in as a whole (view transitions below), so the fade-up is desktop only. */
+@media (min-width: 768px) {
+  .settings-enter > * {
+    animation: kosha-rise 340ms cubic-bezier(0.23, 1, 0.32, 1) backwards;
+  }
+  .settings-enter > :nth-child(2) {
+    animation-delay: 40ms;
+  }
+  .settings-enter > :nth-child(3) {
+    animation-delay: 80ms;
+  }
+  .settings-enter > :nth-child(4) {
+    animation-delay: 120ms;
+  }
+  .settings-enter > :nth-child(n + 5) {
+    animation-delay: 160ms;
+  }
+}
+/* A row reached from search or a deep link: tinted, then fading back over 1.6s. */
+@keyframes kosha-flash {
+  0%,
+  30% {
+    background-color: var(--brand-soft);
+  }
+}
+[data-flash] {
+  animation: kosha-flash 1.6s ease-out;
+}
+/* "Saved" pops in beside the control it belongs to. */
+@keyframes kosha-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+.saved-pop {
+  animation: kosha-pop 200ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .settings-enter > *,
+  .rise-in,
+  .saved-pop {
+    animation-name: kosha-fade;
+  }
+}
+
+/* Phone settings: a section pushes in from the right; going back slides the list in from -22% with a
+   fade. Typed view transitions (see slide() in settings/layout.tsx). */
+@keyframes kosha-push-in {
+  from {
+    transform: translateX(100%);
+  }
+}
+@keyframes kosha-push-out {
+  to {
+    transform: translateX(-22%);
+    opacity: 0;
+  }
+}
+@keyframes kosha-back-in {
+  from {
+    transform: translateX(-22%);
+    opacity: 0;
+  }
+}
+@keyframes kosha-back-out {
+  to {
+    transform: translateX(100%);
+  }
+}
+:root:active-view-transition-type(forward, back)::view-transition-group(root) {
+  animation-duration: 380ms;
+  animation-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
+}
+:root:active-view-transition-type(forward)::view-transition-new(root) {
+  animation: kosha-push-in 380ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+:root:active-view-transition-type(forward)::view-transition-old(root) {
+  animation: kosha-push-out 380ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+:root:active-view-transition-type(back)::view-transition-new(root) {
+  animation: kosha-back-in 380ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+:root:active-view-transition-type(back)::view-transition-old(root) {
+  animation: kosha-back-out 380ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  z-index: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root:active-view-transition-type(forward, back)::view-transition-old(root) {
+    animation: kosha-fade-out 120ms ease-out both;
+  }
+  :root:active-view-transition-type(forward, back)::view-transition-new(root) {
+    animation: kosha-fade 120ms ease-out both;
+  }
+}
+
+/* Settings › Appearance › Accent colour. Teal is the default in :root and .dark above. */
+:root[data-accent="blue"] {
+  --brand: #2563eb;
+}
+:root[data-accent="violet"] {
+  --brand: #7c3aed;
+}
+:root[data-accent="amber"] {
+  --brand: #b45309;
+}
+:root[data-accent="rose"] {
+  --brand: #be123c;
+}
+:root[data-accent="graphite"] {
+  --brand: #27272a;
+}
+:root.dark[data-accent="blue"] {
+  --brand: #60a5fa;
+}
+:root.dark[data-accent="violet"] {
+  --brand: #a78bfa;
+}
+:root.dark[data-accent="amber"] {
+  --brand: #fbbf24;
+}
+:root.dark[data-accent="rose"] {
+  --brand: #fb7185;
+}
+:root.dark[data-accent="graphite"] {
+  --brand: #e4e4e7;
+}
+
+/* Density › Compact: list rows about a quarter shorter, cards 14px in. */
+:root[data-density="compact"] [data-row] {
+  min-height: 2.25rem;
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+}
+:root[data-density="compact"] [data-row="setting"] {
+  min-height: 3rem;
+  padding-top: 0.625rem;
+  padding-bottom: 0.625rem;
+}
+:root[data-density="compact"] [data-slot="card"] {
+  --card-spacing: 14px;
+}
+
+/* Number font › Proportional: Geist, still with tabular figures so columns line up. */
+:root[data-figures="proportional"] .num {
+  font-family: var(--font-sans);
+  letter-spacing: -0.01em;
+}
+
+/* Hide amounts: figures blur until hovered or pressed. Counts and codes opt out with data-plain. */
+:root[data-private] :is(.num:not([data-plain]), number-flow-react) {
+  filter: blur(6px);
+  transition: filter 250ms ease-out;
+}
+:root[data-private] :is(.num:not([data-plain]), number-flow-react):is(:hover, :active) {
+  filter: none;
+}
+
+/* Animations › Reduced: 120ms fades only. No slides, count-ups or charts drawing in. */
+:root[data-motion="reduced"] *,
+:root[data-motion="reduced"] *::before,
+:root[data-motion="reduced"] *::after {
+  --tw-enter-scale: 1;
+  --tw-exit-scale: 1;
+  --tw-enter-translate-x: 0;
+  --tw-enter-translate-y: 0;
+  --tw-exit-translate-x: 0;
+  --tw-exit-translate-y: 0;
+  animation-duration: 120ms !important;
+  animation-delay: 0s !important;
+  transition-duration: 120ms !important;
+  transition-delay: 0s !important;
+}
+:root[data-motion="reduced"] :is(.settings-enter > *, .rise-in, .saved-pop) {
+  animation-name: kosha-fade !important;
+}
+:root[data-motion="reduced"] [data-reveal] > *,
+:root[data-motion="reduced"] [data-reveal] :is(.bar-grow, .bar-grow-x) {
+  clip-path: none !important;
+  transform: none !important;
+  animation: kosha-fade 120ms ease-out !important;
+}
+@keyframes kosha-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+:root[data-motion="reduced"]::view-transition-old(root) {
+  animation: kosha-fade-out 120ms ease-out both !important;
+}
+:root[data-motion="reduced"]::view-transition-new(root) {
+  animation: kosha-fade 120ms ease-out both !important;
+}
+:root[data-motion="off"]::view-transition-group(*),
+:root[data-motion="off"]::view-transition-old(*),
+:root[data-motion="off"]::view-transition-new(*) {
+  animation: none !important;
+}
+
+/* Main pages (shell nav): only <main> takes part, so the header and tab bar never move. */
+@keyframes kosha-page-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+:root:active-view-transition-type(page) main[data-page] {
+  view-transition-name: page;
+}
+:root:active-view-transition-type(page)::view-transition-group(page) {
+  animation: none;
+}
+:root:active-view-transition-type(page)::view-transition-old(page) {
+  animation: kosha-fade-out 120ms ease-out both;
+}
+:root:active-view-transition-type(page)::view-transition-new(page) {
+  animation: kosha-page-in 220ms cubic-bezier(0.23, 1, 0.32, 1) 40ms both;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root:active-view-transition-type(page)::view-transition-new(page) {
+    animation: kosha-fade 120ms ease-out both;
+  }
+}
+:root[data-motion="reduced"]::view-transition-new(page) {
+  animation: kosha-fade 120ms ease-out both !important;
 }

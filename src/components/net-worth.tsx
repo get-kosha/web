@@ -1,3 +1,4 @@
+import { getRouteApi } from "@tanstack/react-router"
 import { Reveal, RollingMoney } from "@/components/motion"
 import type { Wallet } from "@/lib/api"
 import { fmt, netWorth, type Rates } from "@/lib/core"
@@ -49,11 +50,12 @@ export function CompositionBar({ wallets, currency, rates }: { wallets: Wallet[]
 
 /** Hero figure: Geist sans 40px (32px on phone), cents muted. */
 export function BigMoney({ value, currency, className }: { value: number; currency: string; className?: string }) {
+  const round = getRouteApi("/_app").useLoaderData({ select: (m) => m.prefs.round_hero === "1" })
   return (
     <div
       className={`cents-muted text-[32px] leading-none font-semibold tracking-[-0.035em] tabular-nums min-[700px]:text-[40px] ${className ?? ""}`}
     >
-      <RollingMoney value={value} currency={currency} />
+      <RollingMoney value={value} currency={currency} round={round} />
     </div>
   )
 }

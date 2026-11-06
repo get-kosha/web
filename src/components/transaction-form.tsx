@@ -4,6 +4,7 @@ import { ArrowDownIcon } from "@phosphor-icons/react/ssr"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { WALLET_KEY, startWallet } from "@/lib/add-defaults"
 import {
   Dialog,
   DialogContent,
@@ -28,7 +29,6 @@ import {
 } from "@/lib/core"
 import { cn } from "@/lib/utils"
 
-const WALLET_KEY = "kosha:wallet"
 type Mode = "expense" | "income" | "transfer"
 
 /** Initial state for editing either half of a transfer: always shown as from → to, total sent including the fee. */
@@ -80,7 +80,13 @@ export function TransactionForm({
   )
 
   const [mode, setMode] = useState<Mode>(
-    sides || (!initial && preset?.transferTo) ? "transfer" : initial && initial.amount > 0 ? "income" : "expense"
+    sides || (!initial && preset?.transferTo)
+      ? "transfer"
+      : initial
+        ? initial.amount > 0
+          ? "income"
+          : "expense"
+        : meta.prefs.add_kind
   )
   const [amount, setAmount] = useState(
     sides ? cents2(sides.sent) : initial ? cents2(initial.amount) : preset?.amount ? cents2(preset.amount) : ""
@@ -114,10 +120,8 @@ export function TransactionForm({
   // Remember the last used account for quick entry.
   useEffect(() => {
     if (initial) return
-    try {
-      const saved = localStorage.getItem(WALLET_KEY)
-      if (saved && saved !== presetTo && activeWallets.some((w) => w.id === saved)) setWalletId(saved)
-    } catch {}
+    const saved = startWallet(meta.prefs.default_wallet, activeWallets, presetTo)
+    if (saved) setWalletId(saved)
   }, [])
 
   const categories = useMemo(
@@ -151,7 +155,7 @@ export function TransactionForm({
 
   function onName(v: string) {
     setName(v)
-    if (categoryTouched) return
+    if (categoryTouched || meta.prefs.suggest_category !== "1") return
     const guess = guessCategory(v, meta.rules)
     const cat = guess && meta.categories.find((c) => c.id === guess)
     if (cat) {

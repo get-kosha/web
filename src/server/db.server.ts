@@ -5,6 +5,7 @@ import {
   instances,
   monthlyCost,
   occurrencesBetween,
+  parsePrefs,
   unixOf,
   type Materialized,
   type Rates,
@@ -22,11 +23,7 @@ export async function getSettings(uid: string) {
     DB.prepare("SELECT COALESCE(MAX(updated_at), 0) AS at FROM rates"),
   ])
   const s = Object.fromEntries((settings.results as { key: string; value: string }[]).map((r) => [r.key, r.value]))
-  const prefs = {
-    theme: (s.theme === "light" || s.theme === "dark" ? s.theme : "system") as "light" | "dark" | "system",
-    layout: (s.layout === "full" ? "full" : "boxed") as "boxed" | "full",
-    motion: (s.motion === "off" ? "off" : "on") as "on" | "off",
-  }
+  const prefs = parsePrefs(s)
   return {
     primary: s.primary_currency ?? "eur",
     tz: s.timezone ?? "UTC",
@@ -45,7 +42,7 @@ export async function getRates(): Promise<Rates> {
 
 const RATES_URL = "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json"
 
-async function refreshRates() {
+export async function refreshRates() {
   const res = await fetch(RATES_URL)
   if (!res.ok) throw new Error(`rates fetch failed: ${res.status}`)
   const body = (await res.json()) as { usd: Record<string, number> }

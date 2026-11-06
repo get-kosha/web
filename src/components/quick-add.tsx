@@ -7,11 +7,10 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { CategoryIcon } from "@/components/category-icon"
 import { useMeta } from "@/components/shell"
 import { deleteTransaction, saveTransaction, suggestPayees, type PayeeSuggestion } from "@/lib/api"
+import { WALLET_KEY, startWallet } from "@/lib/add-defaults"
 import { LOCALE, addDays, dayOf, fmt, guessCategory, isNeutral, parseAmount } from "@/lib/core"
 import { parseQuickAdd } from "@/lib/quick-add"
 import { cn } from "@/lib/utils"
-
-const WALLET_KEY = "kosha:wallet" // shared with TransactionForm: the last account used
 
 /**
  * ⌘K quick add: one monospace line parsed live into a transaction.
@@ -108,20 +107,15 @@ function Body({
 
   // A typed payee that matches a past one becomes that payee, as a guess.
   const best = p.payee ? payees.find((x) => x.name.toLowerCase().includes(p.payee.toLowerCase())) : undefined
-  const remembered = (() => {
-    try {
-      const id = localStorage.getItem(WALLET_KEY)
-      return wallets.find((w) => w.id === id)?.id
-    } catch {
-      return undefined
-    }
-  })()
+  const remembered = startWallet(meta.prefs.default_wallet, wallets)
 
   const payee = {
     value: over.payee ?? best?.name ?? p.payee,
     state: over.payee || (p.payee && !best) ? "set" : best ? "guess" : "missing",
   } as const
-  const guessedCat = guessCategory(payee.value, meta.rules) ?? best?.category_id
+  // Settings › General › Suggest a category off: nothing is guessed, the category waits for you.
+  const guessedCat =
+    meta.prefs.suggest_category === "1" ? (guessCategory(payee.value, meta.rules) ?? best?.category_id) : undefined
   const categoryId =
     over.categoryId ??
     p.categoryId ??
@@ -133,7 +127,11 @@ function Body({
 
   const overAmount = over.amount !== undefined ? parseAmount(over.amount.replace(/^\+/, "")) : undefined
   const cents = overAmount !== undefined ? (overAmount === null ? null : Math.abs(overAmount)) : p.amount
-  const income = (over.amount !== undefined ? over.amount.trim().startsWith("+") : p.income) || category?.income === 1
+  // With no amount typed yet, Add opens as Settings › General › Add opens as.
+  const income =
+    (over.amount !== undefined
+      ? over.amount.trim().startsWith("+")
+      : p.income || (p.amount === null && meta.prefs.add_kind === "income")) || category?.income === 1
   const signed = cents ? (income ? cents : -cents) : null
   const currency = wallet?.currency ?? meta.primary
 

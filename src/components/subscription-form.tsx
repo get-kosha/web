@@ -53,7 +53,8 @@ export function SubscriptionForm({
   const [unit, setUnit] = useState<Unit>(initial?.unit ?? "month")
   const [nextDay, setNextDay] = useState(initial?.next?.due_day ?? initial?.start_day ?? today)
   const [endDay, setEndDay] = useState(initial?.end_day ?? "")
-  const [autoPay, setAutoPay] = useState(initial ? !!initial.auto_pay : true)
+  // New schedules start from Settings › Recurring › Record payments automatically.
+  const [autoPay, setAutoPay] = useState(initial ? !!initial.auto_pay : meta.prefs.default_auto_pay === "1")
   const [note, setNote] = useState(initial?.note ?? "")
   const [busy, setBusy] = useState(false)
   const transfer = kind === "transfer"

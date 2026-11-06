@@ -445,6 +445,7 @@ function AccountRow({
       type="button"
       onClick={onSelect}
       aria-pressed={selected}
+      data-row
       className={cn(
         "grid min-h-14 w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-x-6 px-4 py-2.5 text-left transition-colors hover:bg-muted/60 sm:grid-cols-[minmax(0,1fr)_112px_minmax(8rem,auto)] md:px-5",
         selected && "bg-selected hover:bg-selected",

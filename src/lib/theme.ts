@@ -1,18 +1,31 @@
 import { useSyncExternalStore } from "react"
+import { PREFS, type Prefs } from "@/lib/core"
 
-export type Theme = "light" | "dark" | "system"
-export type Motion = "on" | "off"
+export type Theme = Prefs["theme"]
 
 // The account holds the real values (settings table, see savePreferences). This device keeps a copy in
-// localStorage only so the right theme and motion apply before the first paint, before any data loads.
+// localStorage only so they apply before the first paint, before any data loads.
 const THEME = "theme"
-const MOTION = "motion"
 const QUERY = "(prefers-color-scheme: dark)"
 const listeners = new Set<() => void>()
 
+/** Preferences that show as a data attribute on <html> (styles.css keys off them). Default = no attribute. */
+const ATTRS = {
+  motion: "motion",
+  accent: "accent",
+  density: "density",
+  figures: "figures",
+  hide_amounts: "private",
+} as const
+type DevicePref = keyof typeof ATTRS
+
 // Runs before first paint (no flash). A literal string, not fn.toString(): server and client
 // bundles print functions differently, which breaks hydration of the <script> tag.
-export const themeScript = `(()=>{const q=matchMedia("${QUERY}"),d=document.documentElement,g=k=>{try{return localStorage.getItem(k)}catch{}};const a=()=>{const t=g("${THEME}");d.classList.toggle("dark",t==="dark"||(t!=="light"&&q.matches))};a();q.addEventListener("change",a);if(g("${MOTION}")==="off")d.dataset.motion="off"})()`
+export const themeScript = `(()=>{const q=matchMedia("${QUERY}"),d=document.documentElement,g=k=>{try{return localStorage.getItem(k)}catch{}};const a=()=>{const t=g("${THEME}");d.classList.toggle("dark",t==="dark"||(t!=="light"&&q.matches))};a();q.addEventListener("change",a);${Object.entries(
+  ATTRS
+)
+  .map(([k, attr]) => `if(g("${k}"))d.dataset.${attr}=g("${k}");`)
+  .join("")}})()`
 
 const read = (key: string) => {
   try {
@@ -47,17 +60,21 @@ export function setTheme(theme: Theme) {
   listeners.forEach((l) => l())
 }
 
-/** Turns every animation and transition off (or back on) on this device right away. */
-export function setMotion(motion: Motion) {
-  write(MOTION, motion === "off" ? "off" : null)
-  if (motion === "off") document.documentElement.dataset.motion = "off"
-  else delete document.documentElement.dataset.motion
+/** Applies motion, accent, density, number font or hide-amounts on this device right away. */
+export function setDevicePref<K extends DevicePref>(key: K, value: Prefs[K]) {
+  const off = value === PREFS[key].fallback
+  write(key, off ? null : value)
+  const ds = document.documentElement.dataset
+  if (off) delete ds[ATTRS[key]]
+  else ds[ATTRS[key]] = value
 }
 
 /** Brings this device in line with the account's saved preferences (another device may have changed them). */
-export function syncPreferences(prefs: { theme: Theme; motion: Motion }) {
+export function syncPreferences(prefs: Prefs) {
   if (getTheme() !== prefs.theme) setTheme(prefs.theme)
-  if ((read(MOTION) === "off") !== (prefs.motion === "off")) setMotion(prefs.motion)
+  for (const key of Object.keys(ATTRS) as DevicePref[]) {
+    if ((read(key) ?? PREFS[key].fallback) !== prefs[key]) setDevicePref(key, prefs[key])
+  }
 }
 
 const subscribe = (l: () => void) => {

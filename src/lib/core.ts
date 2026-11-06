@@ -1,5 +1,7 @@
 // Pure helpers shared by client and server: money, dates, categorising, subscriptions.
 
+import { z } from "zod"
+
 export type Rates = Record<string, number> // units per 1 USD
 
 export const LOCALE = "en-GB"
@@ -331,3 +333,77 @@ export function exchange(total: number, fee: number, received: number, marketRat
 }
 
 export const fmtRate = (r: number) => (r >= 100 ? r.toFixed(2) : r >= 1 ? r.toFixed(4) : r.toPrecision(4))
+
+// ---------- preferences ----------
+
+const pref = <T extends z.ZodType<string | null>>(schema: T, fallback: z.infer<T>) => ({ schema, fallback })
+
+/**
+ * Every per-user preference in the settings table: its allowed values and its default. getSettings parses
+ * with parsePrefs and savePreferences validates against the same schemas, so a new key is one line here.
+ */
+export const PREFS = {
+  theme: pref(z.enum(["light", "dark", "system"]), "system"),
+  layout: pref(z.enum(["boxed", "full"]), "boxed"),
+  motion: pref(z.enum(["on", "reduced", "off"]), "on"),
+  accent: pref(z.enum(["teal", "blue", "violet", "amber", "rose", "graphite"]), "teal"),
+  density: pref(z.enum(["comfortable", "compact"]), "comfortable"),
+  figures: pref(z.enum(["mono", "proportional"]), "mono"),
+  hide_amounts: pref(z.enum(["0", "1"]), "0"),
+  round_hero: pref(z.enum(["0", "1"]), "0"),
+  default_wallet: pref(z.string().max(64), "last"),
+  add_kind: pref(z.enum(["expense", "income"]), "expense"),
+  suggest_category: pref(z.enum(["0", "1"]), "1"),
+  default_auto_pay: pref(z.enum(["0", "1"]), "1"),
+  upcoming_horizon: pref(z.enum(["month", "30d"]), "month"),
+  learn_rules: pref(z.enum(["0", "1"]), "1"),
+  ai_enabled: pref(z.enum(["0", "1"]), "0"),
+  ai_share_amount: pref(z.enum(["0", "1"]), "1"),
+  ai_share_payee: pref(z.enum(["0", "1"]), "1"),
+  ai_share_date: pref(z.enum(["0", "1"]), "1"),
+  ai_share_note: pref(z.enum(["0", "1"]), "0"),
+  ai_share_account: pref(z.enum(["0", "1"]), "0"),
+  ai_log_enabled: pref(z.enum(["0", "1"]), "1"),
+  backup_codes_saved_at: pref(z.string().regex(/^\d+$/).nullable(), null),
+}
+export type Prefs = { [K in keyof typeof PREFS]: z.infer<(typeof PREFS)[K]["schema"]> }
+
+/** Stored key/value rows to typed preferences. Unknown or invalid values fall back to the default. */
+export function parsePrefs(rows: Record<string, string | undefined>): Prefs {
+  return Object.fromEntries(
+    Object.entries(PREFS).map(([k, p]) => {
+      const r = p.schema.safeParse(rows[k])
+      return [k, r.success ? r.data : p.fallback]
+    })
+  ) as Prefs
+}
+
+// ---------- AI ----------
+
+export type AiShares = { amount: boolean; payee: boolean; date: boolean; note: boolean; account: boolean }
+export type AiTx = { payee: string; amount: number; currency: string; day: string; note: string; account: string }
+
+/** FNV-1a: a small stable hash, so the same payee always gets the same code. Not for secrets. */
+function fnv1a(s: string) {
+  let h = 0x811c9dc5
+  for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 0x01000193)
+  return h >>> 0
+}
+
+/**
+ * Exactly what an AI request may contain for one transaction, per Settings › AI › What AI can see.
+ * Payee off: a per-user stable code, so a model can still group them. Exact dates off: only YYYY-MM.
+ * Notes and account names are left out entirely unless shared.
+ */
+export function redactForAi(tx: AiTx, shares: AiShares, uid: string) {
+  const out: Record<string, string | number | null> = {
+    payee: shares.payee ? tx.payee : `payee_${fnv1a(`${uid}\u0000${tx.payee.trim().toLowerCase()}`).toString(36)}`,
+    amount: shares.amount ? tx.amount / 100 : null,
+    currency: tx.currency.toUpperCase(),
+  }
+  if (shares.date) out.date = tx.day
+  else out.month = tx.day.slice(0, 7)
+  if (shares.note) out.note = tx.note
+  if (shares.account) out.account = tx.account
+  return out
+}

@@ -143,3 +143,60 @@ assert.equal(qi.categoryId, null) // "di" is under 3 letters
 assert.equal(qi.payee, "salary di")
 assert.equal(parseQuickAdd("rewe", qw, qc).amount, null)
 console.log("quick add ok")
+
+// preferences
+import { parsePrefs } from "./core.ts"
+assert.deepEqual(parsePrefs({}), {
+  theme: "system",
+  layout: "boxed",
+  motion: "on",
+  accent: "teal",
+  density: "comfortable",
+  figures: "mono",
+  hide_amounts: "0",
+  round_hero: "0",
+  default_wallet: "last",
+  add_kind: "expense",
+  suggest_category: "1",
+  default_auto_pay: "1",
+  upcoming_horizon: "month",
+  learn_rules: "1",
+  ai_enabled: "0",
+  ai_share_amount: "1",
+  ai_share_payee: "1",
+  ai_share_date: "1",
+  ai_share_note: "0",
+  ai_share_account: "0",
+  ai_log_enabled: "1",
+  backup_codes_saved_at: null,
+})
+assert.equal(parsePrefs({ backup_codes_saved_at: "1767225600" }).backup_codes_saved_at, "1767225600")
+assert.equal(parsePrefs({ backup_codes_saved_at: "soon" }).backup_codes_saved_at, null)
+assert.equal(parsePrefs({ motion: "reduced", accent: "pink" }).motion, "reduced")
+assert.equal(parsePrefs({ accent: "pink" }).accent, "teal")
+assert.equal(parsePrefs({ theme: "dark", layout: "wide" }).layout, "boxed")
+assert.equal(parsePrefs({ theme: "dark" }).theme, "dark")
+console.log("prefs ok")
+
+// what AI can see
+import { redactForAi } from "./core.ts"
+const aiTx = { payee: "Dosaking", amount: -2957, currency: "eur", day: "2026-11-04", note: "via Wolt", account: "Visa" }
+const all = { amount: true, payee: true, date: true, note: true, account: true }
+assert.deepEqual(redactForAi(aiTx, all, "u1"), {
+  payee: "Dosaking",
+  amount: -29.57,
+  currency: "EUR",
+  date: "2026-11-04",
+  note: "via Wolt",
+  account: "Visa",
+})
+const none = { amount: false, payee: false, date: false, note: false, account: false }
+const hidden = redactForAi(aiTx, none, "u1")
+assert.deepEqual(Object.keys(hidden), ["payee", "amount", "currency", "month"])
+assert.equal(hidden.amount, null)
+assert.equal(hidden.month, "2026-11")
+assert.match(String(hidden.payee), /^payee_[0-9a-z]+$/)
+// Stable per user and payee (case-insensitive), different across users.
+assert.equal(redactForAi({ ...aiTx, payee: "DOSAKING" }, none, "u1").payee, hidden.payee)
+assert.notEqual(redactForAi(aiTx, none, "u2").payee, hidden.payee)
+console.log("ai redaction ok")

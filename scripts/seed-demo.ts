@@ -698,6 +698,8 @@ const now = new Date().toISOString()
 const hash = await hashPassword(PASSWORD)
 console.log("PRAGMA defer_foreign_keys = on;")
 for (const t of [
+  "ai_log",
+  "ai_providers",
   "transfers",
   "valuations",
   "title_rules",

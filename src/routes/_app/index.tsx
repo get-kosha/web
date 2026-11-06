@@ -23,7 +23,7 @@ import { GainDialog } from "@/components/gain-dialog"
 import { TransactionForm } from "@/components/transaction-form"
 import { useGlobals, useMeta } from "@/components/shell"
 import { getDashboard, updateOccurrence, type Upcoming, type Wallet } from "@/lib/api"
-import { LOCALE, convert, dayOf, fmt, netWorth, shiftMonth } from "@/lib/core"
+import { LOCALE, addDays, convert, dayOf, fmt, netWorth, shiftMonth } from "@/lib/core"
 import { cn } from "@/lib/utils"
 
 export const Route = createFileRoute("/_app/")({
@@ -77,7 +77,7 @@ function Overview() {
         <WhereItWent d={d} />
         <div className="flex min-w-0 flex-col gap-3 md:flex-[1_1_340px] md:gap-5">
           <NeedsAttention d={d} today={today} onPay={setPaying} onGain={setGainFor} />
-          <ComingUp d={d} today={today} items={d.upcoming} monthEnd={monthEnd} total={stillToPay} />
+          <ComingUp d={d} today={today} items={d.upcoming} monthEnd={monthEnd} total={stillToPay} outflow={outflow} />
         </div>
       </div>
 
@@ -722,17 +722,22 @@ function ComingUp({
   today,
   items,
   monthEnd,
-  total,
+  total: monthTotal,
+  outflow,
 }: {
   d: Dash
   today: string
   items: Upcoming[]
   monthEnd: string
   total: number
+  outflow: (u: Upcoming) => number
 }) {
   const meta = useMeta()
-  const end = d.month >= today.slice(0, 7) ? monthEnd : `${today.slice(0, 7)}-31`
+  // Settings › Recurring › "Coming up" shows: until month end, or the next 30 days.
+  const thirty = meta.prefs.upcoming_horizon === "30d"
+  const end = d.month >= today.slice(0, 7) ? (thirty ? addDays(today, 30) : monthEnd) : `${today.slice(0, 7)}-31`
   const soon = items.filter((u) => u.day <= end)
+  const total = thirty ? soon.reduce((t, u) => t + outflow(u), 0) : monthTotal
   const later = items.filter((u) => u.day > end)
   const name = (u: Upcoming) => u.name || meta.categories.find((c) => c.id === u.category_id)?.name || "Untitled"
   const amount = (u: Upcoming) => fmt(u.to_wallet_id ? Math.abs(u.amount) : u.amount, u.currency)

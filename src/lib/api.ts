@@ -3,6 +3,7 @@ import { z } from "zod"
 import {
   CORRECTION_CATEGORY,
   NEUTRAL_SQL,
+  PREFS,
   TRANSFER_CATEGORY,
   addDays,
   isSystemCategory,
@@ -30,10 +31,20 @@ import {
   loadSubscriptions,
   marketRate,
   receivedFor,
+  refreshRates,
   refreshRatesIfStale,
   transferLegs,
 } from "@/server/db.server"
 import { auth, getUser, userId } from "@/server/auth.server"
+import {
+  AI_PROVIDERS,
+  checkBaseUrl,
+  decryptKey,
+  encryptKey,
+  listModels,
+  usesBaseUrl,
+  type AiProviderId,
+} from "@/server/ai.server"
 import { getRequest } from "@tanstack/react-start/server"
 
 export type Wallet = {
@@ -118,6 +129,7 @@ export const getMeta = createServerFn({ method: "GET" }).handler(async () => {
     order: settings.order,
     tz: settings.tz,
     prefs: settings.prefs,
+    ratesUpdated: settings.ratesUpdated,
     user,
   }
 })
@@ -515,11 +527,13 @@ export const saveTransaction = createServerFn({ method: "POST" })
           date,
           data.paid ? 1 : 0
         )
+    // Settings › Payee rules › Learn from my edits. A learned rule never replaces one you made.
+    const { prefs } = await getSettings(uid)
     const learn =
-      name && !isNeutral(data.categoryId)
+      name && !isNeutral(data.categoryId) && prefs.learn_rules === "1"
         ? [
             DB.prepare(`INSERT INTO title_rules (user_id, title, category_id) VALUES (?, ?, ?)
-          ON CONFLICT(user_id, title) DO UPDATE SET category_id = excluded.category_id`).bind(
+          ON CONFLICT(user_id, title) DO UPDATE SET category_id = excluded.category_id WHERE source = 'learned'`).bind(
               uid,
               name,
               data.categoryId
@@ -739,15 +753,20 @@ export const saveSettings = createServerFn({ method: "POST" })
     ])
   })
 
+/** Settings › Currencies › Refresh: fetch rates now, at most once every 10 minutes. */
+export const refreshRatesNow = createServerFn({ method: "POST" }).handler(async () => {
+  const { ratesUpdated } = await getSettings(await userId())
+  if (Date.now() / 1000 - ratesUpdated >= 600) await refreshRates()
+})
+
 /** Appearance, saved to the account so every device agrees. Only the keys passed change. */
+const prefsInput = z.object(
+  Object.fromEntries(Object.entries(PREFS).map(([k, p]) => [k, p.schema.optional()])) as {
+    [K in keyof typeof PREFS]: z.ZodOptional<(typeof PREFS)[K]["schema"]>
+  }
+)
 export const savePreferences = createServerFn({ method: "POST" })
-  .validator(
-    z.object({
-      theme: z.enum(["light", "dark", "system"]).optional(),
-      layout: z.enum(["boxed", "full"]).optional(),
-      motion: z.enum(["on", "off"]).optional(),
-    })
-  )
+  .validator(prefsInput)
   .handler(async ({ data }) => {
     const DB = db()
     const uid = await userId()
@@ -755,8 +774,8 @@ export const savePreferences = createServerFn({ method: "POST" })
       "INSERT INTO settings (user_id, key, value) VALUES (?, ?, ?) ON CONFLICT(user_id, key) DO UPDATE SET value = excluded.value"
     )
     const writes = Object.entries(data)
-      .filter(([, v]) => v)
-      .map(([k, v]) => set.bind(uid, k, v!))
+      .filter(([, v]) => v != null)
+      .map(([k, v]) => set.bind(uid, k, String(v)))
     if (writes.length) await DB.batch(writes)
   })
 
@@ -1474,6 +1493,237 @@ export const deleteCategory = createServerFn({ method: "POST" })
     ])
   })
 
+// ---------- payee rules ----------
+
+export type TitleRuleRow = {
+  title: string
+  category_id: string
+  exact: number
+  source: "learned" | "manual"
+  used: number
+}
+const RULES_PAGE = 50
+
+/** Payee rules, most used first, 50 a page. "Used" counts the transactions each rule matches today. */
+export const listTitleRules = createServerFn({ method: "GET" })
+  .validator(z.object({ q: z.string().max(100), page: z.number().int().min(0) }))
+  .handler(async ({ data }) => {
+    const uid = await userId()
+    const q = data.q.trim().toLowerCase()
+    const where = "r.user_id = ?1 AND (?2 = '' OR instr(lower(r.title), ?2) > 0)"
+    const DB = db()
+    const [rows, total] = await DB.batch([
+      DB.prepare(`SELECT r.title, r.category_id, r.exact, r.source,
+          (SELECT COUNT(*) FROM transactions t WHERE t.user_id = r.user_id
+            AND (t.category_id = r.category_id OR t.subcategory_id = r.category_id)
+            AND CASE WHEN r.exact = 1 THEN lower(t.name) = lower(r.title) ELSE instr(lower(t.name), lower(r.title)) > 0 END) AS used
+        FROM title_rules r WHERE ${where} ORDER BY used DESC, r.title LIMIT ${RULES_PAGE} OFFSET ?3`).bind(
+        uid,
+        q,
+        data.page * RULES_PAGE
+      ),
+      DB.prepare(`SELECT COUNT(*) AS n FROM title_rules r WHERE ${where}`).bind(uid, q),
+    ])
+    const n = (total.results[0] as { n: number }).n
+    return { rules: rows.results as TitleRuleRow[], total: n, more: (data.page + 1) * RULES_PAGE < n }
+  })
+
+/** Creates or edits a rule you made. `old` is the payee text it had, when that changes. */
+export const saveTitleRule = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      old: z.string().max(100).optional(),
+      title: z.string().trim().min(1, "Type a payee").max(100),
+      exact: z.boolean(),
+      categoryId: z.string(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const uid = await userId()
+    if (isNeutral(data.categoryId)) throw new Error("Pick a spending or income category")
+    await loadCategory(uid, data.categoryId)
+    const DB = db()
+    await DB.batch([
+      ...(data.old && data.old.toLowerCase() !== data.title.toLowerCase()
+        ? [DB.prepare("DELETE FROM title_rules WHERE user_id = ? AND title = ?").bind(uid, data.old)]
+        : []),
+      DB.prepare(`INSERT INTO title_rules (user_id, title, category_id, exact, source) VALUES (?, ?, ?, ?, 'manual')
+        ON CONFLICT(user_id, title) DO UPDATE SET title = excluded.title, category_id = excluded.category_id,
+          exact = excluded.exact, source = 'manual'`).bind(uid, data.title, data.categoryId, data.exact ? 1 : 0),
+    ])
+  })
+
+export const deleteTitleRule = createServerFn({ method: "POST" })
+  .validator(z.object({ title: z.string().max(100) }))
+  .handler(async ({ data }) => {
+    const uid = await userId()
+    await db().prepare("DELETE FROM title_rules WHERE user_id = ? AND title = ?").bind(uid, data.title).run()
+  })
+
+// ---------- AI ----------
+
+const providerId = z.enum(AI_PROVIDERS)
+type ProviderRow = {
+  id: AiProviderId
+  base_url: string | null
+  model: string
+  key_cipher: string | null
+  key_iv: string | null
+  key_hint: string | null
+  is_default: number
+}
+const loadProviders = async (uid: string) =>
+  (
+    await db()
+      .prepare(
+        "SELECT id, base_url, model, key_cipher, key_iv, key_hint, is_default FROM ai_providers WHERE user_id = ?"
+      )
+      .bind(uid)
+      .all<ProviderRow>()
+  ).results
+
+/** Each provider's status. Never the key: only its last four characters. */
+export const listAiProviders = createServerFn({ method: "GET" }).handler(async () => {
+  const rows = await loadProviders(await userId())
+  return AI_PROVIDERS.map((id) => {
+    const r = rows.find((x) => x.id === id)
+    return {
+      id,
+      connected: !!r,
+      model: r?.model ?? "",
+      keyHint: r?.key_hint ?? null,
+      baseUrl: r?.base_url ?? null,
+      isDefault: !!r?.is_default,
+    }
+  })
+})
+export type AiProviderView = Awaited<ReturnType<typeof listAiProviders>>[number]
+
+const providerInput = z.object({
+  id: providerId,
+  key: z.string().trim().max(500).optional(),
+  baseUrl: z.string().trim().max(500).optional(),
+})
+
+/** The key and URL to use: what was typed, or what's stored when the field was left blank. */
+async function credentials(uid: string, data: z.infer<typeof providerInput>) {
+  const stored = (await loadProviders(uid)).find((r) => r.id === data.id)
+  const key =
+    data.key || (stored?.key_cipher && stored.key_iv ? await decryptKey(stored.key_cipher, stored.key_iv) : "")
+  const baseUrl = usesBaseUrl(data.id) ? checkBaseUrl(data.baseUrl || stored?.base_url || "") : null
+  if (!usesBaseUrl(data.id) && !key) throw new Error("Paste an API key")
+  return { key, baseUrl, stored }
+}
+
+/** Reaches the provider's model list with the typed (or stored) key: latency and models, or its error. */
+export const testAiProvider = createServerFn({ method: "POST" })
+  .validator(providerInput)
+  .handler(async ({ data }) => {
+    const { key, baseUrl } = await credentials(await userId(), data)
+    return listModels(data.id, key, baseUrl)
+  })
+
+/** Connects or updates a provider. The first one connected becomes the default. */
+export const saveAiProvider = createServerFn({ method: "POST" })
+  .validator(providerInput.extend({ model: z.string().trim().min(1, "Pick a model").max(200) }))
+  .handler(async ({ data }) => {
+    const uid = await userId()
+    const { key, baseUrl, stored } = await credentials(uid, data)
+    const enc = data.key ? await encryptKey(data.key) : null
+    const others = (await loadProviders(uid)).filter((r) => r.id !== data.id)
+    const isDefault = stored ? stored.is_default : others.some((r) => r.is_default) ? 0 : 1
+    await db()
+      .prepare(`INSERT INTO ai_providers (user_id, id, base_url, model, key_cipher, key_iv, key_hint, is_default, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, unixepoch())
+        ON CONFLICT(user_id, id) DO UPDATE SET base_url = excluded.base_url, model = excluded.model,
+          key_cipher = excluded.key_cipher, key_iv = excluded.key_iv, key_hint = excluded.key_hint, updated_at = unixepoch()`)
+      .bind(
+        uid,
+        data.id,
+        baseUrl,
+        data.model,
+        enc?.cipher ?? stored?.key_cipher ?? null,
+        enc?.iv ?? stored?.key_iv ?? null,
+        key ? key.slice(-4) : null,
+        isDefault
+      )
+      .run()
+  })
+
+export const setDefaultAiProvider = createServerFn({ method: "POST" })
+  .validator(z.object({ id: providerId }))
+  .handler(async ({ data }) => {
+    const uid = await userId()
+    const DB = db()
+    const row = await DB.prepare("SELECT 1 FROM ai_providers WHERE user_id = ? AND id = ?").bind(uid, data.id).first()
+    if (!row) throw new Error("Connect it first")
+    await DB.prepare("UPDATE ai_providers SET is_default = (id = ?) WHERE user_id = ?").bind(data.id, uid).run()
+  })
+
+/** Forgets a provider and its key. If it was the default, another connected one takes over. */
+export const disconnectAiProvider = createServerFn({ method: "POST" })
+  .validator(z.object({ id: providerId }))
+  .handler(async ({ data }) => {
+    const uid = await userId()
+    const DB = db()
+    await DB.batch([
+      DB.prepare("DELETE FROM ai_providers WHERE user_id = ? AND id = ?").bind(uid, data.id),
+      DB.prepare(`UPDATE ai_providers SET is_default = 1 WHERE user_id = ?1 AND id = (SELECT id FROM ai_providers
+        WHERE user_id = ?1 ORDER BY updated_at LIMIT 1) AND NOT EXISTS (SELECT 1 FROM ai_providers WHERE user_id = ?1 AND is_default = 1)`).bind(
+        uid
+      ),
+    ])
+  })
+
+/** Requests and tokens this month, and the last 30 days of the request log. */
+export const getAiUsage = createServerFn({ method: "GET" }).handler(async () => {
+  const uid = await userId()
+  const { tz } = await getSettings(uid)
+  const [from] = monthRange(monthOf(Date.now() / 1000, tz), tz)
+  const DB = db()
+  const [usage, log] = await DB.batch([
+    DB.prepare(`SELECT COUNT(*) AS requests, COALESCE(SUM(tokens_in + tokens_out), 0) AS tokens
+      FROM ai_log WHERE user_id = ? AND at >= ?`).bind(uid, from),
+    DB.prepare(`SELECT id, at, provider, model, feature, request, response, tokens_in, tokens_out FROM ai_log
+      WHERE user_id = ? AND at >= unixepoch() - 30 * 86400 ORDER BY at DESC LIMIT 100`).bind(uid),
+  ])
+  return {
+    ...(usage.results[0] as { requests: number; tokens: number }),
+    log: (
+      log.results as {
+        id: string
+        at: number
+        provider: string
+        model: string
+        feature: string
+        request: string
+        response: string
+        tokens_in: number
+        tokens_out: number
+      }[]
+    ).map((r) => ({
+      ...r,
+      day: dayOf(r.at, tz),
+    })),
+  }
+})
+
+// ---------- delete & reset ----------
+
+/**
+ * Deletes every transaction, transfer and valuation, and the recurring schedules too: settling would
+ * otherwise recreate their past payments on the next load. Accounts, categories, rules and settings stay.
+ */
+export const deleteAllTransactions = createServerFn({ method: "POST" }).handler(async () => {
+  const uid = await userId()
+  const DB = db()
+  await DB.batch(
+    ["transfers", "valuations", "transactions", "subscriptions"].map((t) =>
+      DB.prepare(`DELETE FROM ${t} WHERE user_id = ?`).bind(uid)
+    )
+  )
+})
+
 // ---------- account ----------
 
 /** What deleting the account would remove, for the confirmation step. */
@@ -1482,14 +1732,20 @@ export const accountSummary = createServerFn({ method: "GET" }).handler(async ()
   const n = (table: string) => `(SELECT COUNT(*) FROM ${table} WHERE user_id = ?1)`
   const row = await db()
     .prepare(`SELECT ${n("transactions")} AS transactions, ${n("wallets")} AS accounts,
-      ${n("subscriptions")} AS recurring, ${n("categories")} AS categories`)
+      ${n("subscriptions")} AS recurring, ${n("categories")} AS categories, ${n("title_rules")} AS rules`)
     .bind(uid)
-    .first<{ transactions: number; accounts: number; recurring: number; categories: number }>()
+    .first<{ transactions: number; accounts: number; recurring: number; categories: number; rules: number }>()
   const hasPassword = !!(await db()
     .prepare(`SELECT 1 FROM "account" WHERE "userId" = ? AND "providerId" = 'credential' AND "password" IS NOT NULL`)
     .bind(uid)
     .first())
-  return { ...row!, hasPassword }
+  const twoFa = await db()
+    .prepare(
+      `SELECT "twoFactorEnabled" AS on2fa, (SELECT COUNT(*) FROM "passkey" WHERE "userId" = ?1) AS passkeys FROM "user" WHERE "id" = ?1`
+    )
+    .bind(uid)
+    .first<{ on2fa: number | null; passkeys: number }>()
+  return { ...row!, hasPassword, twoFactor: !!twoFa?.on2fa, passkeys: twoFa?.passkeys ?? 0 }
 })
 
 /** Adds a password to an account that signs in with passkeys only. Changing an existing one goes through authClient.changePassword. */

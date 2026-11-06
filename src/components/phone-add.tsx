@@ -8,11 +8,11 @@ import { CategoryIcon } from "@/components/category-icon"
 import { TransactionForm } from "@/components/transaction-form"
 import { segment, segmentButton, useMeta } from "@/components/shell"
 import { deleteTransaction, saveTransaction, suggestPayees, type PayeeSuggestion } from "@/lib/api"
+import { WALLET_KEY, startWallet } from "@/lib/add-defaults"
 import { LOCALE, addDays, dayOf, fmt, guessCategory, isNeutral } from "@/lib/core"
 import { cn } from "@/lib/utils"
 
 type Kind = "expense" | "income" | "transfer"
-const WALLET_KEY = "kosha:wallet" // shared with TransactionForm and quick add: the last account used
 
 /** Keypad rules: one ".", at most 2 decimals, a leading "0" is replaced, at most 8 digits. */
 function pressKey(amount: string, key: string) {
@@ -36,20 +36,19 @@ export function PhoneAdd() {
   const navigate = useNavigate()
   const today = dayOf(Date.now() / 1000, meta.tz)
   const wallets = meta.wallets.filter((w) => !w.archived)
-  const [kind, setKind] = useState<Kind>("expense")
+  const [kind, setKind] = useState<Kind>(meta.prefs.add_kind)
   const [amount, setAmount] = useState("")
   const [payee, setPayee] = useState("")
   const [categoryId, setCategoryId] = useState<string | null>(null)
   const [walletId, setWalletId] = useState(wallets[0]?.id ?? "")
-  // The last account used; read after mount so server and client render the same first frame.
+  // The default or last account; read after mount so server and client render the same first frame.
   useEffect(() => {
-    try {
-      const last = localStorage.getItem(WALLET_KEY)
-      if (last && meta.wallets.some((w) => w.id === last && !w.archived)) setWalletId(last)
-    } catch {
-      // storage unavailable: keep the first account
-    }
-  }, [meta.wallets])
+    const id = startWallet(
+      meta.prefs.default_wallet,
+      meta.wallets.filter((w) => !w.archived)
+    )
+    if (id) setWalletId(id)
+  }, [meta.wallets, meta.prefs.default_wallet])
   const [day, setDay] = useState(today)
   const [sheetOpen, setSheetOpen] = useState<"account" | "date" | "category" | null>(null)
   const [match, setMatch] = useState<PayeeSuggestion | null>(null)
@@ -80,7 +79,11 @@ export function PhoneAdd() {
     (c) => !c.archived && !isNeutral(c.id) && !c.parent_id && !!c.income === (kind === "income")
   )
   const usual =
-    match && candidates.some((c) => c.id === match.category_id) ? match.category_id : guessCategory(payee, meta.rules)
+    meta.prefs.suggest_category !== "1"
+      ? null
+      : match && candidates.some((c) => c.id === match.category_id)
+        ? match.category_id
+        : guessCategory(payee, meta.rules)
   const pills = useMemo(() => {
     const top = [...candidates].sort((a, b) => b.uses - a.uses)
     const first = usual ? top.filter((c) => c.id === usual) : []
