@@ -35,7 +35,7 @@ function Consent() {
   if (!request)
     return (
       <Shell>
-        <KoshaMark className="h-10 self-start" />
+        <KoshaMark className="h-8 self-start" />
         <div>
           <h1 className="text-lg font-semibold tracking-tight">This link didn’t work</h1>
           <p className="text-sm text-muted-foreground">{error}</p>
@@ -64,11 +64,11 @@ function Consent() {
         <div className="flex items-center gap-3">
           {request.logo && (
             <>
-              <img src={request.logo} alt="" className="size-10 rounded-lg border object-cover" />
+              <img src={request.logo} alt="" className="size-8 rounded-lg border object-cover" />
               <ArrowsLeftRightIcon aria-hidden="true" className="size-4 text-muted-foreground" />
             </>
           )}
-          <KoshaMark className="h-10" />
+          <KoshaMark className="h-8" />
         </div>
         <div className="min-w-0">
           <h1 className="text-lg font-semibold tracking-tight">Connect {request.name} to Kosha?</h1>

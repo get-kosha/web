@@ -12,7 +12,7 @@ import {
 } from "@phosphor-icons/react/ssr"
 import { Button } from "@/components/ui/button"
 import { AccountMenu, ShortcutsDialog } from "@/components/account-menu"
-import { KoshaMark } from "@/components/kosha-mark"
+import { KoshaLogo } from "@/components/kosha-mark"
 import { useMarkHydrated } from "@/components/motion"
 import { SearchPalette } from "@/components/search-palette"
 import { QuickAdd } from "@/components/quick-add"
@@ -101,8 +101,8 @@ export function AppShell({ children }: { children: ReactNode }) {
     <ShortcutsContext value={() => setShortcuts(true)}>
       <div className="flex min-h-svh flex-col">
         <header className="hidden flex-wrap items-center gap-x-5 gap-y-3 border-b bg-card px-8 py-3 md:flex">
-          <Link to="/" className="flex items-center gap-2.5 text-[15px] font-semibold tracking-[-0.01em]">
-            <KoshaMark /> Kosha
+          <Link to="/">
+            <KoshaLogo className="text-xl" />
           </Link>
           <nav aria-label="Main" className="flex flex-wrap gap-0.5">
             {nav.map(({ to, label }) => (

@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from "react"
 import { createFileRoute } from "@tanstack/react-router"
 import { KeyIcon } from "@phosphor-icons/react/ssr"
 import { z } from "zod"
-import { KoshaMark } from "@/components/kosha-mark"
+import { KoshaLogo } from "@/components/kosha-mark"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -68,8 +68,9 @@ function Login() {
     <main className="flex min-h-svh items-center justify-center px-4 py-10">
       <div className="flex w-full max-w-sm flex-col gap-6">
         <div>
-          <KoshaMark className="mb-4 h-9" />
-          <h1 className="text-lg font-semibold tracking-tight">Kosha</h1>
+          <h1 className="mb-4">
+            <KoshaLogo className="text-[28px]" />
+          </h1>
           <p className="text-sm text-muted-foreground">
             {mode === "in" ? "Sign in to your account." : "Create an account."}
           </p>
@@ -161,7 +162,7 @@ function TwoFactorStep({ onDone, onBack }: { onDone: (data?: unknown) => void; o
     <main className="flex min-h-svh items-center justify-center px-4 py-10">
       <form onSubmit={submit} className="flex w-full max-w-sm flex-col gap-5">
         <div>
-          <KoshaMark className="mb-4 h-9" />
+          <KoshaLogo className="mb-4 text-[28px]" />
           <h1 className="text-lg font-semibold tracking-tight">Two-factor check</h1>
           <p className="text-sm text-muted-foreground">
             {backup
