@@ -84,7 +84,6 @@ export function Currencies() {
                 {refresh === "busy" && <SpinnerGapIcon className="animate-spin" />}
                 {refresh === "busy" ? "Refreshing…" : refresh === "done" ? "Up to date" : "Refresh"}
               </Button>
-              <span className="text-[13px] text-subtle-foreground">fawazahmed0 currency API · daily</span>
             </>
           }
         />
