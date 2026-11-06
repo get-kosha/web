@@ -22,13 +22,13 @@ const ACCENTS = [
 ] as const
 
 export function Appearance() {
-  const [theme, saveTheme] = usePref("theme", "theme", setTheme)
-  const [accent, saveAccent] = usePref("accent", "accent", (v) => setDevicePref("accent", v))
-  const [density, saveDensity] = usePref("density", "density", (v) => setDevicePref("density", v))
-  const [layout, saveLayout] = usePref("layout", "page-width")
-  const [figures, saveFigures] = usePref("figures", "number-font", (v) => setDevicePref("figures", v))
-  const [hidden, saveHidden] = usePref("hide_amounts", "hide-amounts", (v) => setDevicePref("hide_amounts", v))
-  const [motion, saveMotion] = usePref("motion", "animations", (v) => setDevicePref("motion", v))
+  const [theme, saveTheme] = usePref("theme", setTheme)
+  const [accent, saveAccent] = usePref("accent", (v) => setDevicePref("accent", v))
+  const [density, saveDensity] = usePref("density", (v) => setDevicePref("density", v))
+  const [layout, saveLayout] = usePref("layout")
+  const [figures, saveFigures] = usePref("figures", (v) => setDevicePref("figures", v))
+  const [hidden, saveHidden] = usePref("hide_amounts", (v) => setDevicePref("hide_amounts", v))
+  const [motion, saveMotion] = usePref("motion", (v) => setDevicePref("motion", v))
   return (
     <>
       <SettingGroup
@@ -147,8 +147,8 @@ export function Appearance() {
 
 // ponytail: a static sample, not the user's own figures; Settings has no transactions loaded.
 const SAMPLE = [
-  [ForkKnifeIcon, "Dosaking Indisches Restaurant", -2957],
-  [ShoppingCartIcon, "Rewe", -4112],
+  [ForkKnifeIcon, "McDonald's", -2957],
+  [ShoppingCartIcon, "Walmart", -4112],
   [CoinsIcon, "Salary", 420000],
 ] as const
 

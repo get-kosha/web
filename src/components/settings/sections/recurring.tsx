@@ -3,8 +3,8 @@ import { usePref } from "@/components/settings/saved"
 import { Switch } from "@/components/ui/switch"
 
 export function Recurring() {
-  const [auto, saveAuto] = usePref("default_auto_pay", "auto-record")
-  const [horizon, saveHorizon] = usePref("upcoming_horizon", "coming-up")
+  const [auto, saveAuto] = usePref("default_auto_pay")
+  const [horizon, saveHorizon] = usePref("upcoming_horizon")
   return (
     <SettingGroup label="Payments">
       <SettingRow

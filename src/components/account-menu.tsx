@@ -54,8 +54,8 @@ export const Kbd = ({ children }: { children: ReactNode }) => (
 
 /** The avatar menu: who you are, theme, the Settings pages you visit most, shortcuts, sign out. */
 export function AccountMenu({ user, onShortcuts }: { user: { name: string; email: string }; onShortcuts: () => void }) {
-  const [theme, saveTheme] = usePref("theme", "theme", setTheme)
-  const [hidden, saveHidden] = usePref("hide_amounts", "hide-amounts", (v) => setDevicePref("hide_amounts", v))
+  const [theme, saveTheme] = usePref("theme", setTheme)
+  const [hidden, saveHidden] = usePref("hide_amounts", (v) => setDevicePref("hide_amounts", v))
   return (
     <DropdownMenu>
       <DropdownMenuTrigger

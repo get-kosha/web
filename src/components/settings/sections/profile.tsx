@@ -39,7 +39,6 @@ export function Profile() {
                 const next = name.trim()
                 if (!next || next === user.name) return setName(user.name)
                 void save(
-                  "name",
                   () => authClient.updateUser({ name: next }),
                   () => setName(user.name)
                 )

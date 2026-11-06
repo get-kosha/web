@@ -9,7 +9,7 @@ import { CategoryIcon } from "@/components/category-icon"
 import { Pick } from "@/components/pick"
 import { useMeta } from "@/components/shell"
 import { Expand, Pill, Segmented, SettingGroup, SettingRow } from "@/components/settings/row"
-import { Saved, errorOf, usePref, useSave } from "@/components/settings/saved"
+import { errorOf, usePref, useSave } from "@/components/settings/saved"
 import { deleteTitleRule, listTitleRules, saveTitleRule, type TitleRuleRow } from "@/lib/api"
 import { isNeutral } from "@/lib/core"
 import { cn } from "@/lib/utils"
@@ -19,7 +19,7 @@ const COLS =
   "grid grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_52px_64px] items-center gap-4 max-md:grid-cols-[minmax(0,1fr)_auto]"
 
 export function Rules() {
-  const [learn, saveLearn] = usePref("learn_rules", "learn-rules")
+  const [learn, saveLearn] = usePref("learn_rules")
   const first = useFirstPage()
   const [q, setQ] = useState("")
   const [data, setData] = useState(first)
@@ -210,7 +210,6 @@ function RuleRow({ rule: r, open, onToggle }: { rule: TitleRuleRow; open: boolea
         {r.used}×
       </span>
       <span className="flex items-center justify-end gap-2 max-md:hidden">
-        <Saved k={`rule-${r.title}`} />
         <Pill tone={r.source === "manual" ? "brand" : "muted"}>{r.source === "manual" ? "yours" : "learned"}</Pill>
         <CaretRightIcon
           className={cn(
@@ -249,7 +248,7 @@ function RuleEditor({ rule: r, onDone }: { rule: TitleRuleRow | null; onDone: (r
       used: r?.used ?? 0,
     }
     setBusy(true)
-    const ok = await save(`rule-${next.title}`, () => saveTitleRule({ data: { old: r?.title, ...next } }), revert)
+    const ok = await save(() => saveTitleRule({ data: { old: r?.title, ...next } }), revert)
     setBusy(false)
     if (ok && (!r || r.title !== next.title || r.category_id !== next.categoryId || !!r.exact !== next.exact))
       onDone(row)

@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input"
 import { CATEGORY_ICONS, CategoryIcon, categoryIcon } from "@/components/category-icon"
 import { Pick } from "@/components/pick"
 import { Expand, Pill, Segmented, SettingGroup } from "@/components/settings/row"
-import { Saved, errorOf, useSave } from "@/components/settings/saved"
+import { errorOf, useSave } from "@/components/settings/saved"
 import { archiveCategory, deleteCategory, mergeCategory, saveCategory, type ManagedCategory as Cat } from "@/lib/api"
 import { isSystemCategory } from "@/lib/core"
 import { cn } from "@/lib/utils"
@@ -142,7 +142,6 @@ function CategoryGroup({
                     {usage(c)}
                   </span>
                 </span>
-                <Saved k={`cat-${c.id}`} />
                 <CaretRightIcon
                   className={cn(
                     "size-4 text-muted-foreground transition-transform duration-[250ms] ease-out",
@@ -203,7 +202,6 @@ function Editor({
   const picked = categoryIcon(icon)
   const icons = CATEGORY_ICONS.filter(([n]) => n.includes(iconQuery.trim().toLowerCase().replace(/\s+/g, "-")))
   const key = c ? `cat-${c.id}` : "categories"
-
   type Patch = { name?: string; icon?: string | null; income?: boolean; parentId?: string | null }
   const commit = async (patch: Patch, revert: () => void) => {
     const next = { name: name.trim(), icon, income, parentId, ...patch }
@@ -223,7 +221,7 @@ function Editor({
       }
       return
     }
-    await save(key, () => saveCategory({ data: { id: c.id, ...next } }), revert)
+    await save(() => saveCategory({ data: { id: c.id, ...next } }), revert)
   }
 
   async function run(fn: () => Promise<unknown>, done: string) {

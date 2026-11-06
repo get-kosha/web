@@ -19,7 +19,7 @@ import { Switch } from "@/components/ui/switch"
 import { Pick } from "@/components/pick"
 import { useMeta } from "@/components/shell"
 import { Pill, SettingGroup, SettingRow } from "@/components/settings/row"
-import { Saved, errorOf, usePref, useSave } from "@/components/settings/saved"
+import { errorOf, usePref, useSave } from "@/components/settings/saved"
 import {
   disconnectAiProvider,
   saveAiProvider,
@@ -53,7 +53,7 @@ const PROVIDERS: Record<AiProviderView["id"], { name: string; mono: string; kind
 const byUrl = (id: AiProviderView["id"]) => id === "ollama" || id === "compatible"
 
 export function Ai() {
-  const [enabled, saveEnabled] = usePref("ai_enabled", "ai-enabled")
+  const [enabled, saveEnabled] = usePref("ai_enabled")
   const on = enabled === "1"
   return (
     <>
@@ -99,7 +99,6 @@ function Providers() {
       label="Providers"
       actions={
         <span className="flex items-center gap-2 text-xs text-muted-foreground">
-          <Saved k="ai-providers" />
           {def ? `Default: ${PROVIDERS[def.id].name}` : "None connected yet"}
         </span>
       }
@@ -203,7 +202,7 @@ function ProviderCard({
               variant="ghost"
               size="sm"
               className="h-8 text-[13px] font-normal text-subtle-foreground"
-              onClick={() => void save("ai-providers", () => setDefaultAiProvider({ data: { id: p.id } }))}
+              onClick={() => void save(() => setDefaultAiProvider({ data: { id: p.id } }))}
             >
               Make default
             </Button>
@@ -216,7 +215,7 @@ function ProviderCard({
           onSubmit={async (e) => {
             e.preventDefault()
             setBusy("save")
-            const ok = await save("ai-providers", () =>
+            const ok = await save(() =>
               saveAiProvider({ data: { id: p.id, key: key || undefined, baseUrl: baseUrl || undefined, model } })
             )
             setBusy(null)
@@ -382,7 +381,7 @@ const SHARES = [
 
 function Visibility() {
   const meta = useMeta()
-  const [logOn, saveLog] = usePref("ai_log_enabled", "ai-log")
+  const [logOn, saveLog] = usePref("ai_log_enabled")
   const [viewing, setViewing] = useState(false)
   const shares = Object.fromEntries(SHARES.map(([k, s]) => [s, meta.prefs[k] === "1"])) as AiShares
   return (
@@ -442,7 +441,7 @@ function ShareRow({
   title: string
   description: string
 }) {
-  const [value, saveValue] = usePref(prefKey, `share-${prefKey}`)
+  const [value, saveValue] = usePref(prefKey)
   return (
     <SettingRow
       id={`share-${prefKey}`}

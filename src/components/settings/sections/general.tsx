@@ -20,10 +20,10 @@ export function General() {
   const meta = useMeta()
   const save = useSave()
   const [tz, setTz] = useState(meta.tz)
-  const [round, saveRound] = usePref("round_hero", "round-amounts")
-  const [wallet, saveWallet] = usePref("default_wallet", "default-account")
-  const [kind, saveKind] = usePref("add_kind", "add-kind")
-  const [suggest, saveSuggest] = usePref("suggest_category", "suggest-category")
+  const [round, saveRound] = usePref("round_hero")
+  const [wallet, saveWallet] = usePref("default_wallet")
+  const [kind, saveKind] = usePref("add_kind")
+  const [suggest, saveSuggest] = usePref("suggest_category")
   const wallets = meta.wallets.filter((w) => !w.archived)
   const example = fmt(143600, meta.primary)
   return (
@@ -39,7 +39,6 @@ export function General() {
               onChange={(next) => {
                 setTz(next)
                 void save(
-                  "time-zone",
                   () => saveCore(meta, { tz: next }),
                   () => setTz(meta.tz)
                 )

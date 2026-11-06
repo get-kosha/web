@@ -76,7 +76,7 @@ export function Security() {
   const [before, setBefore] = useState<Set<string> | null>(null)
   const addPasskey = async () => {
     const ids = new Set(passkeys.data?.map((p) => p.id))
-    if (await save("passkeys", () => authClient.passkey.addPasskey({ name: deviceName() }))) {
+    if (await save(() => authClient.passkey.addPasskey({ name: deviceName() }))) {
       setBefore(ids)
       passkeys.refetch()
     }
@@ -149,7 +149,7 @@ function Checklist({ actions }: { actions: Record<"password" | "passkey" | "two-
             return (
               <li
                 key={s.key}
-                className="flex min-h-[34px] items-center gap-2.5 text-[13.5px] text-subtle-foreground data-done:text-foreground"
+                className="flex min-h-[34px] items-center gap-2.5 text-[13.5px] text-subtle-foreground data-done:text-foreground max-md:min-h-11"
                 data-done={s.done || undefined}
               >
                 {s.done ? (
@@ -162,7 +162,7 @@ function Checklist({ actions }: { actions: Record<"password" | "passkey" | "two-
                   <Button
                     variant="outline"
                     size="sm"
-                    className="ml-auto h-7 bg-card text-xs font-normal max-md:h-9"
+                    className="relative ml-auto h-7 bg-card text-xs font-normal after:absolute after:inset-x-0 after:-inset-y-1.5 max-md:h-8 max-md:min-h-0"
                     onClick={actions[s.key]}
                   >
                     {label(s.key)}
@@ -412,9 +412,7 @@ function TwoFactor({ step, setStep }: { step: Step; setStep: (s: Step) => void }
           onDone={() => {
             close()
             // The checklist's last step: remember the codes were saved.
-            void save("two-factor", () =>
-              savePreferences({ data: { backup_codes_saved_at: String(Math.floor(Date.now() / 1000)) } })
-            )
+            void save(() => savePreferences({ data: { backup_codes_saved_at: String(Math.floor(Date.now() / 1000)) } }))
           }}
         />
       )}

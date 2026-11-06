@@ -2,7 +2,6 @@ import { useEffect, useRef, useState, type ReactNode } from "react"
 import { Link, useLocation, useNavigate, useParams } from "@tanstack/react-router"
 import { CaretLeftIcon, CaretRightIcon, MagnifyingGlassIcon, ShieldCheckIcon, XIcon } from "@phosphor-icons/react/ssr"
 import { groups, searchSettings, type Section, type SearchResult } from "@/components/settings/registry"
-import { SavedProvider } from "@/components/settings/saved"
 import { Kbd } from "@/components/account-menu"
 import { isTyping, useMeta, useShortcuts } from "@/components/shell"
 import { initials } from "@/components/account-menu"
@@ -68,88 +67,84 @@ export function SettingsLayout({ children }: { children: ReactNode }) {
   }
 
   return (
-    <SavedProvider>
-      <div className="mx-auto flex max-w-[1240px] flex-wrap items-start gap-x-12 gap-y-6 px-8 pt-7 pb-[72px] max-md:px-4 max-md:pt-5 max-md:pb-10">
-        {/* On phone the list page owns the title and search; a section page has its own back bar. */}
-        <aside
-          className={cn("min-w-0 flex-[1_1_236px] md:sticky md:top-6 md:max-w-[260px]", section && "max-md:hidden")}
+    <div className="mx-auto flex max-w-[1240px] flex-wrap items-start gap-x-12 gap-y-6 px-8 pt-7 pb-[72px] max-md:px-4 max-md:pt-5 max-md:pb-10">
+      {/* On phone the list page owns the title and search; a section page has its own back bar. */}
+      <aside className={cn("min-w-0 flex-[1_1_236px] md:sticky md:top-6 md:max-w-[260px]", section && "max-md:hidden")}>
+        <Link
+          to="/"
+          aria-label="Close settings"
+          className="mb-3 -ml-2.5 flex size-11 items-center justify-center rounded-full text-subtle-foreground md:hidden"
         >
-          <Link
-            to="/"
-            aria-label="Close settings"
-            className="mb-3 -ml-2.5 flex size-11 items-center justify-center rounded-full text-subtle-foreground md:hidden"
-          >
-            <XIcon className="size-[22px]" />
-          </Link>
-          <h1 className="text-[22px] font-semibold tracking-[-0.02em] max-md:text-[34px] max-md:tracking-[-0.03em]">
-            Settings
-          </h1>
-          <label className="mt-4 flex h-[38px] items-center gap-2 rounded-[10px] border bg-card pr-2.5 pl-3 text-muted-foreground transition-[border-color,box-shadow] duration-200 focus-within:border-brand focus-within:shadow-[0_0_0_3px_var(--brand-soft)] max-md:h-12 max-md:rounded-xl max-md:border-transparent max-md:bg-muted max-md:text-base">
-            <MagnifyingGlassIcon className="size-4 shrink-0" />
-            <input
-              ref={input}
-              value={query}
-              onChange={(e) => {
-                setQuery(e.target.value)
-                setActive(0)
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "ArrowDown" || e.key === "ArrowUp") {
-                  e.preventDefault()
-                  const n = results.length
-                  if (n) setActive((a) => (a + (e.key === "ArrowDown" ? 1 : n - 1)) % n)
-                } else if (e.key === "Enter" && results[active]) {
-                  e.preventDefault()
-                  open(results[active])
-                } else if (e.key === "Escape" && query) {
-                  e.preventDefault()
-                  setQuery("")
-                }
-              }}
-              placeholder="Search settings"
-              aria-label="Search settings"
-              aria-controls="settings-results"
-              aria-activedescendant={query && results[active] ? `sr-${active}` : undefined}
-              className="w-full min-w-0 bg-transparent text-[13.5px] text-foreground outline-none placeholder:text-muted-foreground"
+          <XIcon className="size-[22px]" />
+        </Link>
+        <h1 className="text-[22px] font-semibold tracking-[-0.02em] max-md:text-[34px] max-md:tracking-[-0.03em]">
+          Settings
+        </h1>
+        <label className="mt-4 flex h-[38px] items-center gap-2 rounded-[10px] border bg-card pr-2.5 pl-3 text-muted-foreground transition-[border-color,box-shadow] duration-200 focus-within:border-brand focus-within:shadow-[0_0_0_3px_var(--brand-soft)] max-md:h-12 max-md:rounded-xl max-md:border-transparent max-md:bg-muted max-md:text-base">
+          <MagnifyingGlassIcon className="size-4 shrink-0" />
+          <input
+            ref={input}
+            value={query}
+            onChange={(e) => {
+              setQuery(e.target.value)
+              setActive(0)
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+                e.preventDefault()
+                const n = results.length
+                if (n) setActive((a) => (a + (e.key === "ArrowDown" ? 1 : n - 1)) % n)
+              } else if (e.key === "Enter" && results[active]) {
+                e.preventDefault()
+                open(results[active])
+              } else if (e.key === "Escape" && query) {
+                e.preventDefault()
+                setQuery("")
+              }
+            }}
+            placeholder="Search settings"
+            aria-label="Search settings"
+            aria-controls="settings-results"
+            aria-activedescendant={query && results[active] ? `sr-${active}` : undefined}
+            className="w-full min-w-0 bg-transparent text-[13.5px] text-foreground outline-none placeholder:text-muted-foreground"
+          />
+          <kbd className="rounded-[5px] border px-[5px] font-mono text-[11px] leading-[1.4] text-muted-foreground max-md:hidden">
+            /
+          </kbd>
+        </label>
+        <nav aria-label="Settings" className="relative mt-2.5 max-md:hidden">
+          {indicator >= 0 && (
+            <span
+              aria-hidden="true"
+              className="absolute inset-x-0 top-0 h-9 rounded-lg bg-muted transition-[translate,opacity] duration-300 ease-out"
+              style={{ translate: `0 ${indicator}px`, opacity: query ? 0 : 1 }}
             />
-            <kbd className="rounded-[5px] border px-[5px] font-mono text-[11px] leading-[1.4] text-muted-foreground max-md:hidden">
-              /
-            </kbd>
-          </label>
-          <nav aria-label="Settings" className="relative mt-2.5 max-md:hidden">
-            {indicator >= 0 && (
-              <span
-                aria-hidden="true"
-                className="absolute inset-x-0 top-0 h-9 rounded-lg bg-muted transition-[translate,opacity] duration-300 ease-out"
-                style={{ translate: `0 ${indicator}px`, opacity: query ? 0 : 1 }}
-              />
-            )}
-            {groups.map((g) => (
-              <div key={g.label}>
-                <div className="flex h-[30px] items-end px-2.5 pb-[7px] text-[11px] font-medium tracking-[0.06em] text-muted-foreground uppercase">
-                  {g.label}
-                </div>
-                {g.sections.map((s) => (
-                  <RailItem key={s.id} section={s} current={!query && s.id === current} />
-                ))}
+          )}
+          {groups.map((g) => (
+            <div key={g.label}>
+              <div className="flex h-[30px] items-end px-2.5 pb-[7px] text-[11px] font-medium tracking-[0.06em] text-muted-foreground uppercase">
+                {g.label}
               </div>
-            ))}
-          </nav>
-          <div className="mt-6 border-t px-2.5 pt-3.5 text-xs text-muted-foreground max-md:hidden">
-            <button
-              type="button"
-              onClick={shortcuts}
-              className="flex w-full items-center justify-between transition-colors hover:text-foreground"
-            >
-              Keyboard shortcuts <Kbd>?</Kbd>
-            </button>
-          </div>
-        </aside>
-        <div className="min-w-0 flex-[999_1_560px] md:max-w-[760px]">
-          {query ? <Results query={query} results={results} active={active} onOpen={open} /> : children}
+              {g.sections.map((s) => (
+                <RailItem key={s.id} section={s} current={!query && s.id === current} />
+              ))}
+            </div>
+          ))}
+        </nav>
+        <div className="mt-6 border-t px-2.5 pt-3.5 text-xs text-muted-foreground max-md:hidden">
+          <button
+            type="button"
+            onClick={shortcuts}
+            className="flex w-full items-center justify-between transition-colors hover:text-foreground"
+          >
+            Keyboard shortcuts <Kbd>?</Kbd>
+          </button>
         </div>
+      </aside>
+      <div className="min-w-0 flex-[999_1_560px] md:max-w-[760px]">
+        {query ? <Results query={query} results={results} active={active} onOpen={open} /> : children}
       </div>
-    </SavedProvider>
+    </div>
   )
 }
 

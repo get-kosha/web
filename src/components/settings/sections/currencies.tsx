@@ -13,7 +13,7 @@ import {
 import { CSS } from "@dnd-kit/utilities"
 import { currencyOptions, useMeta } from "@/components/shell"
 import { Pill, SettingGroup, SettingRow } from "@/components/settings/row"
-import { Saved, useSave } from "@/components/settings/saved"
+import { useSave } from "@/components/settings/saved"
 import { saveCore } from "@/components/settings/sections/general"
 import { LOCALE, convert, fmt } from "@/lib/core"
 import { cn } from "@/lib/utils"
@@ -42,7 +42,6 @@ export function Currencies() {
   const change = (next: string[]) => {
     setItems(next)
     void save(
-      "currencies",
       () => saveCore(meta, { order: next }),
       () => setItems(order)
     )
@@ -54,11 +53,7 @@ export function Currencies() {
   return (
     <>
       <SettingGroup
-        label={
-          <span className="flex items-center gap-2">
-            Your currencies <Saved k="currencies" />
-          </span>
-        }
+        label="Your currencies"
         note={
           items.length > 1
             ? "Drag to reorder. The header’s currency switch steps through them in this order."
@@ -83,7 +78,7 @@ export function Currencies() {
                 disabled={refresh === "busy"}
                 onClick={async () => {
                   setRefresh("busy")
-                  setRefresh((await save("rates-source", () => refreshRatesNow())) ? "done" : "idle")
+                  setRefresh((await save(() => refreshRatesNow())) ? "done" : "idle")
                 }}
               >
                 {refresh === "busy" && <SpinnerGapIcon className="animate-spin" />}

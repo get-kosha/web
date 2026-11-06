@@ -1,5 +1,4 @@
 import { useEffect, useState, type ReactNode } from "react"
-import { Saved } from "@/components/settings/saved"
 import { cn } from "@/lib/utils"
 
 /**
@@ -39,11 +38,8 @@ export function SettingRow({
         {description && <p className="mt-0.5 text-[13px] leading-snug text-muted-foreground">{description}</p>}
         {hint && <p className="mt-1.5 flex items-center gap-1.5 text-xs text-brand [&_svg]:size-3.5">{hint}</p>}
       </div>
-      {(control || id) && (
-        <div className="flex flex-wrap items-center justify-end gap-2.5 max-md:has-[[data-full]]:w-full">
-          {id && <Saved k={id} />}
-          {control}
-        </div>
+      {control && (
+        <div className="flex flex-wrap items-center justify-end gap-2.5 max-md:has-[[data-full]]:w-full">{control}</div>
       )}
       {/* Dialogs portal away and leave this empty, so it collapses. */}
       {children && <div className="basis-full empty:hidden">{children}</div>}
