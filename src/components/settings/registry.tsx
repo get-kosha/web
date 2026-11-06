@@ -12,6 +12,7 @@ import {
   DatabaseIcon,
   SparkleIcon,
   CalendarStarIcon,
+  PlugsConnectedIcon,
 } from "@phosphor-icons/react/ssr"
 import type { Icon } from "@phosphor-icons/react"
 import { currencyOptions } from "@/components/shell"
@@ -26,6 +27,7 @@ import { Profile } from "@/components/settings/sections/profile"
 import { Recurring } from "@/components/settings/sections/recurring"
 import { Ai } from "@/components/settings/sections/ai"
 import { ImportExport } from "@/components/settings/sections/data"
+import { ApiAccess } from "@/components/settings/sections/api"
 import { Rules } from "@/components/settings/sections/rules"
 import { Security, securitySteps } from "@/components/settings/sections/security"
 
@@ -359,6 +361,39 @@ const GROUPS: Group[] = [
             title: "Export",
             description: "Transactions as CSV, or everything as JSON.",
             keywords: "download backup json csv spreadsheet",
+          },
+        ],
+      },
+      {
+        id: "api",
+        title: "API & MCP",
+        icon: PlugsConnectedIcon,
+        description: "Let AI assistants and your own scripts read and update Kosha. You choose what each one can do.",
+        component: ApiAccess,
+        rows: [
+          {
+            key: "mcp-url",
+            title: "MCP server URL",
+            description: "Connect Claude, ChatGPT or Cursor.",
+            keywords: "mcp ai assistant claude chatgpt cursor connector agent model context protocol",
+          },
+          {
+            key: "connected-apps",
+            title: "Connected apps",
+            description: "Apps you allowed in, and disconnecting them.",
+            keywords: "oauth apps revoke disconnect access",
+          },
+          {
+            key: "api-keys",
+            title: "API keys",
+            description: "Keys for scripts and shortcuts.",
+            keywords: "api key token developer rest script automation",
+          },
+          {
+            key: "api-docs",
+            title: "API reference",
+            description: "Every endpoint, with examples.",
+            keywords: "openapi swagger docs documentation endpoints rest",
           },
         ],
       },

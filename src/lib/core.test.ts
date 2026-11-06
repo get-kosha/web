@@ -226,3 +226,53 @@ assert.match(String(hidden.payee), /^payee_[0-9a-z]+$/)
 assert.equal(redactForAi({ ...aiTx, payee: "DOSAKING" }, none, "u1").payee, hidden.payee)
 assert.notEqual(redactForAi(aiTx, none, "u2").payee, hidden.payee)
 console.log("ai redaction ok")
+
+// ---------- public API contract ----------
+
+import { OPERATIONS, matchRoute, openApiSpec, operations, parseQuery } from "./api-contract.ts"
+
+const routes = new Set<string>()
+for (const [name, o] of operations) {
+  assert.match(name, /^[a-z]+(_[a-z]+)+$/, `${name}: tool names are snake_case verb_noun`)
+  assert.ok(name.length <= 64, `${name}: at most 64 characters for Claude's directory`)
+  assert.ok(!routes.has(`${o.method} ${o.path}`), `${name}: duplicate route`)
+  routes.add(`${o.method} ${o.path}`)
+  for (const p of o.path.matchAll(/\{(\w+)\}/g)) assert.ok(p[1] in o.input.shape, `${name}: path field ${p[1]}`)
+  // The documented examples must be true: inputs parse, outputs match their schema exactly.
+  const input = o.input.safeParse(o.example.input)
+  assert.ok(input.success, `${name} example input: ${input.error?.message}`)
+  for (const k of Object.keys(o.example.input)) assert.ok(k in o.input.shape, `${name} example input: unknown ${k}`)
+  assert.deepEqual(o.output.parse(o.example.output), o.example.output, `${name} example output has unknown fields`)
+  assert.equal(o.scope === "read", o.method === "GET", `${name}: GET reads, everything else writes`)
+}
+assert.ok(operations.length <= 40, "Cursor passes only the first 40 tools to its agent")
+
+assert.equal(matchRoute("POST", "/transactions")?.name, "create_transactions")
+assert.equal(matchRoute("POST", "/transactions/delete")?.name, "delete_transactions")
+assert.deepEqual(matchRoute("PATCH", "/recurring/s%201/payments/2026-11-15/"), {
+  name: "update_recurring_payment",
+  op: OPERATIONS.update_recurring_payment,
+  params: { id: "s 1", dueDay: "2026-11-15" },
+})
+assert.equal(matchRoute("DELETE", "/transactions"), null)
+
+const q = parseQuery(
+  OPERATIONS.search_transactions,
+  new URLSearchParams("limit=20&includeCorrections=true&query=12.50&from=2026-01-01")
+)
+assert.deepEqual(q, { limit: 20, includeCorrections: true, query: "12.50", from: "2026-01-01" })
+assert.ok(OPERATIONS.search_transactions.input.safeParse(q).success)
+
+const spec = openApiSpec("https://kosha.example")
+assert.equal(spec.servers[0].url, "https://kosha.example/api/v1")
+assert.equal(Object.values(spec.paths).flatMap((p) => Object.keys(p)).length, operations.length)
+const post = spec.paths["/transactions"].post as {
+  requestBody: { content: { "application/json": { example: unknown } } }
+}
+assert.deepEqual(post.requestBody.content["application/json"].example, OPERATIONS.create_transactions.example.input)
+const patch = spec.paths["/accounts/{id}"].patch as { parameters: { name: string; in: string }[]; requestBody: unknown }
+assert.deepEqual(
+  patch.parameters.map((p) => `${p.in}:${p.name}`),
+  ["path:id"]
+)
+console.log(`api contract ok (${operations.length} operations)`)

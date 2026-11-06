@@ -14,7 +14,17 @@ import {
 
 export const db = () => env.DB
 
-// Every query here and in lib/api.ts is scoped by user_id, joins included, because ids are only unique per user.
+/** An error with the HTTP status the public API answers with. The UI shows its message like any other. */
+export class HttpError extends Error {
+  constructor(
+    readonly status: number,
+    message: string
+  ) {
+    super(message)
+  }
+}
+
+// Every query here and in server/finance.server.ts is scoped by user_id, joins included, because ids are only unique per user.
 
 export async function getSettings(uid: string) {
   const DB = db()

@@ -1,7 +1,14 @@
 import { createFileRoute, redirect } from "@tanstack/react-router"
 import { SectionView } from "@/components/settings/layout"
 import { findSection } from "@/components/settings/registry"
-import { getAiUsage, listAiProviders, listCategories, listTitleRules, type ManagedCategory } from "@/lib/api"
+import {
+  getAiUsage,
+  getApiAccess,
+  listAiProviders,
+  listCategories,
+  listTitleRules,
+  type ManagedCategory,
+} from "@/lib/api"
 
 export const Route = createFileRoute("/_app/settings/$section")({
   beforeLoad: ({ params }) => {
@@ -12,6 +19,7 @@ export const Route = createFileRoute("/_app/settings/$section")({
     categories: params.section === "categories" ? await listCategories() : ([] as ManagedCategory[]),
     rules: params.section === "rules" ? await listTitleRules({ data: { q: "", page: 0 } }) : null,
     ai: params.section === "ai" ? { providers: await listAiProviders(), usage: await getAiUsage() } : null,
+    api: params.section === "api" ? await getApiAccess() : null,
   }),
   head: ({ params }) => ({ meta: [{ title: `${findSection(params.section)?.title ?? "Settings"} · Kosha` }] }),
   component: Section,

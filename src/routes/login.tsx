@@ -9,7 +9,8 @@ import { authClient } from "@/lib/auth-client"
 import { safeReturn } from "@/lib/core"
 
 export const Route = createFileRoute("/login")({
-  validateSearch: z.object({ returnTo: z.string().optional() }),
+  // Loose: an app signing in through MCP OAuth adds a signed query that must reach the sign-in request.
+  validateSearch: z.looseObject({ returnTo: z.string().optional() }),
   head: () => ({ meta: [{ title: "Sign in · Kosha" }] }),
   component: Login,
 })
@@ -21,14 +22,17 @@ function Login() {
   const [busy, setBusy] = useState(false)
   // Set after a correct password when the account has two-factor on. The next step asks for the code.
   const [twoFactor, setTwoFactor] = useState(false)
-  // Use a full page load so every loader runs again as the new user.
-  const done = () => window.location.assign(safeReturn(returnTo))
+  // Use a full page load so every loader runs again as the new user. When an app signs in through
+  // OAuth, Better Auth answers with { redirect, url } instead, and the auth client goes on to consent.
+  const done = (data?: unknown) => {
+    if (!(data as { redirect?: boolean } | null)?.redirect) window.location.assign(safeReturn(returnTo))
+  }
 
   // Offer saved passkeys in the email field's autofill (WebAuthn conditional UI).
   useEffect(() => {
     if (!window.PublicKeyCredential?.isConditionalMediationAvailable) return
     void PublicKeyCredential.isConditionalMediationAvailable().then((ok) => {
-      if (ok) void authClient.signIn.passkey({ autoFill: true }).then((r) => !r?.error && done())
+      if (ok) void authClient.signIn.passkey({ autoFill: true }).then((r) => !r?.error && done(r?.data))
     })
   }, [])
 
@@ -42,7 +46,7 @@ function Login() {
     setBusy(false)
     if (res?.error) setError(res.error.message || "Something went wrong")
     else if ((res?.data as { twoFactorRedirect?: boolean } | null)?.twoFactorRedirect) setTwoFactor(true)
-    else done()
+    else done(res?.data)
   }
 
   if (twoFactor) return <TwoFactorStep onDone={done} onBack={() => setTwoFactor(false)} />
@@ -131,7 +135,7 @@ function Login() {
 }
 
 /** Second step of sign-in: a code from the authenticator app, or one of the backup codes. */
-function TwoFactorStep({ onDone, onBack }: { onDone: () => void; onBack: () => void }) {
+function TwoFactorStep({ onDone, onBack }: { onDone: (data?: unknown) => void; onBack: () => void }) {
   const [backup, setBackup] = useState(false)
   const [code, setCode] = useState("")
   const [trust, setTrust] = useState(true)
@@ -148,7 +152,7 @@ function TwoFactorStep({ onDone, onBack }: { onDone: () => void; onBack: () => v
       : await authClient.twoFactor.verifyTotp({ code: value, trustDevice: trust })
     setBusy(false)
     if (res.error) setError(res.error.message || "That code didn't work. Try again.")
-    else onDone()
+    else onDone(res.data)
   }
 
   return (

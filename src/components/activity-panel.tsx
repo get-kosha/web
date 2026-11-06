@@ -300,7 +300,7 @@ export function ActivityPanel({
 
       <div className={cn(field, "py-1.5")}>
         <span className={fieldLabel}>Tags</span>
-        <TagInput value={draft.tags} onChange={(tags) => change({ tags }, 0)} />
+        <TagInput value={draft.tags} onChange={(tags) => change({ tags }, 0)} linked />
       </div>
 
       <div className={field}>

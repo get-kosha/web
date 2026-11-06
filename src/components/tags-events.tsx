@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from "react"
-import { useRouter } from "@tanstack/react-router"
+import { Link, useRouter } from "@tanstack/react-router"
 import { PlusIcon, XIcon } from "@phosphor-icons/react/ssr"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
@@ -60,15 +60,18 @@ export function Chip({
 /**
  * Hashtags as removable chips plus a field. Space, comma or Enter turns what was typed into tags;
  * Backspace in an empty field removes the last one. It suggests known tags as you type.
+ * With `linked`, each tag opens Activity filtered to it. Use it only where edits save as you go.
  */
 export function TagInput({
   value,
   onChange,
   autoFocus,
+  linked,
 }: {
   value: string[]
   onChange: (tags: string[]) => void
   autoFocus?: boolean
+  linked?: boolean
 }) {
   const meta = useMeta()
   const [text, setText] = useState("")
@@ -88,7 +91,18 @@ export function TagInput({
             key={t}
             className="inline-flex h-7 items-center gap-0.5 rounded-full bg-muted pr-0.5 pl-2.5 text-[13px] max-md:h-8"
           >
-            #{t}
+            {linked ? (
+              <Link
+                to="/transactions"
+                search={{ tag: t }}
+                aria-label={`All transactions tagged #${t}`}
+                className="rounded-sm hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              >
+                #{t}
+              </Link>
+            ) : (
+              `#${t}`
+            )}
             <button
               type="button"
               onClick={() => onChange(value.filter((x) => x !== t))}

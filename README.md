@@ -21,11 +21,12 @@ Kosha (कोश, "treasury") keeps every account in one place: bank accounts, c
 - **Net worth across currencies.** Totals convert at daily exchange rates. Credit cards count what you owe, and investments count what you put in plus their latest gain.
 - **The current month.** Spending so far against your usual pace, a projection to the end of the month, and the bills still to pay.
 - **Fast entry.** Type one line, like `12.50 groceries yesterday`, and Kosha fills in the amount, category, date and account. Categories are also guessed from payees you have entered before.
-- **Tags and events.** Tag entries with hashtags (`#work`, or type them in the one-line entry). Create an event such as a trip with its dates, and everything you add during it is filed under it, so Activity can show what the whole trip cost.
+- **Tags and events.** Tag entries with hashtags (`#work`, or type them in the one-line entry). Create an event such as a trip with its dates, and everything you add during it is filed under it, so Activity can show what the whole trip cost. Click a tag on any entry to see every transaction with it, from any month.
 - **Subscriptions and bills.** Set a schedule once. Payments are recorded when they fall due, and you can skip or edit a single one.
 - **Transfers and currency exchange.** Moving money between your own accounts never counts as spending. For exchanges through Wise or similar, Kosha shows the fee and the cost of the provider's rate against the market rate.
 - **One account per person.** Each person sees only their own data. Sign in with a password or a passkey, with optional two-factor codes.
 - **Import from Cashew.** Bring over accounts, categories, transactions and recurring payments.
+- **API and MCP.** Everything you can do in the app is also a REST endpoint and a tool for AI assistants such as Claude, ChatGPT and Cursor. Writes work in bulk, up to 500 entries at a time.
 
 ## Run it locally
 
@@ -71,6 +72,24 @@ Before you deploy, set these under `vars` in `wrangler.jsonc`:
 - `ALLOWED_EMAILS`: a comma-separated list of who may sign up. Leave it empty to let anyone sign up.
 
 To deploy on every push, connect the repository under the Worker's **Settings → Build**. Use `npm run deploy` as the deploy command and leave the build command empty. The build token needs **D1: Edit** for the migration step, which the token Cloudflare creates by default does not have.
+
+## API and MCP
+
+Settings › **API & MCP** has what you need:
+
+- **AI assistants.** Add `https://<your Kosha>/mcp` as a custom connector in Claude, ChatGPT or Cursor. The assistant opens Kosha's sign-in and asks you to allow it, read-only or with changes. Connected apps are listed there, and **Disconnect** cuts one off at once.
+- **Scripts.** Create an API key (read only, or read & write) and send it as `Authorization: Bearer kosha_…`. The key is shown once; only its hash is stored.
+- **Reference.** `/api/v1/docs` lists every operation with its fields and examples, and `/api/v1/openapi.json` is the OpenAPI 3.1 document.
+
+```sh
+curl https://<your Kosha>/api/v1/transactions -H "Authorization: Bearer kosha_…" \
+  -H "Content-Type: application/json" \
+  -d '{"transactions":[{"accountId":"main","payee":"Tesco","amount":-2350}]}'
+```
+
+Amounts are in cents, and negative means money out. Leave out `categoryId` and your payee rules choose it. Each user can make 120 requests a minute.
+
+The API leaves out sign-in and security settings, AI provider keys, full exports and Delete & reset. Use the app for those.
 
 ## Import from Cashew
 

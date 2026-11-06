@@ -5,8 +5,10 @@ Personal finance tracker: a TanStack Start app on one Cloudflare Worker with a D
 ## Where things live
 
 - `src/lib/core.ts`: pure helpers shared by client and server, covering money, dates, categorising and subscription schedules. Put new logic here when it has no I/O, so it can be tested.
-- `src/lib/api.ts`: every server function (`createServerFn` with a zod validator). Pages call these, never the database.
-- `src/server/db.server.ts`: database helpers, exchange rates, subscription settling and transfer legs. `src/server/auth.server.ts`: Better Auth setup and `userId()`.
+- `src/lib/api.ts`: every server function (`createServerFn` with a zod validator). Pages call these, never the database. They only validate and pass the signed-in user's id on.
+- `src/server/finance.server.ts`: what the app does with money data. Each function takes the user's id first, so the UI's server functions and the public API run the same code. Writes take lists and run as one batch.
+- `src/server/db.server.ts`: database helpers, exchange rates, subscription settling, transfer legs and `HttpError`. `src/server/auth.server.ts`: Better Auth setup, `userId()`, and the OAuth provider for MCP.
+- `src/lib/api-contract.ts`: the public API. Each entry in `OPERATIONS` is one REST endpoint under `/api/v1` and one MCP tool at `/mcp`, with its schemas, description and examples. It also builds the OpenAPI document. `src/server/api.server.ts` holds a handler per operation, API keys, token checks, the REST router and the MCP server. To add an operation, add an entry and its handler; `npm test` checks the examples against the schemas.
 - `src/routes/_app/*`: signed-in pages. `src/routes/_app.tsx` owns the app-wide `month` and `currency` search params and loads `getMeta()` once for every page. `/login` sits outside `_app`, so it loads no account data.
 - `src/components/ui/*`: shadcn/ui components on Base UI. App components sit beside them in `src/components/`.
 - `src/components/settings/*`: the Settings area. `registry.tsx` lists every section and its searchable rows; the rail, phone list and search read it. Each setting is a `SettingRow` that saves itself (`usePref` / `useSave`), and every preference key with its values and default lives in `PREFS` in `core.ts`.
@@ -23,10 +25,11 @@ These invariants hold across the codebase. Breaking one gives wrong totals witho
 - **Timestamps are unix seconds. Days and months are strings in the user's time zone** (`YYYY-MM-DD`, `YYYY-MM`). Convert with `dayOf`, `unixOf` and `monthRange`, not with `Date` arithmetic.
 - **Category `0` (corrections) and `transfer` are neutral.** Income and spending totals leave them out, using `isNeutral` or `NEUTRAL_SQL`. `transfer_fee` is a system category too, but it counts as spending. See `isSystemCategory`.
 - **A transfer is two rows linked by `transfer_id`**, one out and one in, each in its own account's currency. Keep both rows in sync on every create, edit and delete.
-- **Tags are a JSON array in `transactions.tags`** (lowercase, no `#`). Clean input with `parseTags`/`cleanTag`, read with `tagList`, and filter in SQL with `json_each`.
+- **Tags are a JSON array in `transactions.tags`** (lowercase, no `#`). Clean input with `parseTags`/`cleanTag`, read with `tagList`, and filter in SQL with `json_each`. A tag filter, like an event filter, covers every date unless a day range is given.
 - **Events are optional date ranges.** `saveTransaction` gives a new entry the event its day falls in (`eventFor`) when no `eventId` is sent; `undefined` keeps an edit's event and `null` clears it. `event_id` has no foreign key, so `deleteEvent` clears it.
 - **Subscriptions are schedules, not rows.** Upcoming payments are computed from the schedule. A transaction row is written only when a payment is paid, edited or skipped. Due payments are settled when the app loads (`ensureSettled`), and there is no cron job.
 - **Exchange rates are stored as units per 1 USD** and refresh at most once a day from the fawazahmed0 currency API. Convert with `convert(cents, from, to, rates)`.
+- **The public API speaks its own shapes.** It says account (not wallet) and payee (not name), and uses camelCase. Handlers in `api.server.ts` translate. Bulk writes are all-or-nothing and report every invalid field as `transactions.3.accountId`. Auth, AI keys, export and Delete & reset stay out of the API on purpose.
 - **Net worth depends on account type** (bank, credit card, investment). Use `accountWorth` and `netWorth` rather than summing balances.
 
 ## UI conventions

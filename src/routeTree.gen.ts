@@ -10,7 +10,10 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
+import { Route as ConsentRouteImport } from './routes/consent'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as McpRouteImport } from './routes/mcp'
+import { Route as DotwellKnownSplatRouteImport } from './routes/[.]well-known/$'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppAccountRouteImport } from './routes/_app/account'
 import { Route as AppAccountsRouteImport } from './routes/_app/accounts'
@@ -24,14 +27,30 @@ import { Route as AppSettingsSectionRouteImport } from './routes/_app/settings.$
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiExportKoshaDotjsonRouteImport } from './routes/api/export/kosha[.]json'
 import { Route as ApiExportTransactionsDotcsvRouteImport } from './routes/api/export/transactions[.]csv'
+import { Route as ApiV1SplatRouteImport } from './routes/api/v1/$'
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ConsentRoute = ConsentRouteImport.update({
+  id: '/consent',
+  path: '/consent',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const McpRoute = McpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DotwellKnownSplatRoute = DotwellKnownSplatRouteImport.update({
+  id: '/.well-known/$',
+  path: '/.well-known/$',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppIndexRoute = AppIndexRouteImport.update({
@@ -100,10 +119,18 @@ const ApiExportTransactionsDotcsvRoute =
     path: '/api/export/transactions.csv',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiV1SplatRoute = ApiV1SplatRouteImport.update({
+  id: '/api/v1/$',
+  path: '/api/v1/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
+  '/consent': typeof ConsentRoute
   '/login': typeof LoginRoute
+  '/mcp': typeof McpRoute
+  '/.well-known/$': typeof DotwellKnownSplatRoute
   '/account': typeof AppAccountRoute
   '/accounts': typeof AppAccountsRoute
   '/add': typeof AppAddRoute
@@ -115,10 +142,14 @@ export interface FileRoutesByFullPath {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/export/kosha.json': typeof ApiExportKoshaDotjsonRoute
   '/api/export/transactions.csv': typeof ApiExportTransactionsDotcsvRoute
+  '/api/v1/$': typeof ApiV1SplatRoute
   '/settings/': typeof AppSettingsIndexRoute
 }
 export interface FileRoutesByTo {
+  '/consent': typeof ConsentRoute
   '/login': typeof LoginRoute
+  '/mcp': typeof McpRoute
+  '/.well-known/$': typeof DotwellKnownSplatRoute
   '/account': typeof AppAccountRoute
   '/accounts': typeof AppAccountsRoute
   '/add': typeof AppAddRoute
@@ -130,12 +161,16 @@ export interface FileRoutesByTo {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/export/kosha.json': typeof ApiExportKoshaDotjsonRoute
   '/api/export/transactions.csv': typeof ApiExportTransactionsDotcsvRoute
+  '/api/v1/$': typeof ApiV1SplatRoute
   '/settings': typeof AppSettingsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
+  '/consent': typeof ConsentRoute
   '/login': typeof LoginRoute
+  '/mcp': typeof McpRoute
+  '/.well-known/$': typeof DotwellKnownSplatRoute
   '/_app/account': typeof AppAccountRoute
   '/_app/accounts': typeof AppAccountsRoute
   '/_app/add': typeof AppAddRoute
@@ -148,13 +183,17 @@ export interface FileRoutesById {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/export/kosha.json': typeof ApiExportKoshaDotjsonRoute
   '/api/export/transactions.csv': typeof ApiExportTransactionsDotcsvRoute
+  '/api/v1/$': typeof ApiV1SplatRoute
   '/_app/settings/': typeof AppSettingsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/consent'
     | '/login'
+    | '/mcp'
+    | '/.well-known/$'
     | '/account'
     | '/accounts'
     | '/add'
@@ -166,10 +205,14 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/api/export/kosha.json'
     | '/api/export/transactions.csv'
+    | '/api/v1/$'
     | '/settings/'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/consent'
     | '/login'
+    | '/mcp'
+    | '/.well-known/$'
     | '/account'
     | '/accounts'
     | '/add'
@@ -181,11 +224,15 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/api/export/kosha.json'
     | '/api/export/transactions.csv'
+    | '/api/v1/$'
     | '/settings'
   id:
     | '__root__'
     | '/_app'
+    | '/consent'
     | '/login'
+    | '/mcp'
+    | '/.well-known/$'
     | '/_app/account'
     | '/_app/accounts'
     | '/_app/add'
@@ -198,15 +245,20 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/api/export/kosha.json'
     | '/api/export/transactions.csv'
+    | '/api/v1/$'
     | '/_app/settings/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
+  ConsentRoute: typeof ConsentRoute
   LoginRoute: typeof LoginRoute
+  McpRoute: typeof McpRoute
+  DotwellKnownSplatRoute: typeof DotwellKnownSplatRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiExportKoshaDotjsonRoute: typeof ApiExportKoshaDotjsonRoute
   ApiExportTransactionsDotcsvRoute: typeof ApiExportTransactionsDotcsvRoute
+  ApiV1SplatRoute: typeof ApiV1SplatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -218,11 +270,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/consent': {
+      id: '/consent'
+      path: '/consent'
+      fullPath: '/consent'
+      preLoaderRoute: typeof ConsentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mcp': {
+      id: '/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.well-known/$': {
+      id: '/.well-known/$'
+      path: '/.well-known/$'
+      fullPath: '/.well-known/$'
+      preLoaderRoute: typeof DotwellKnownSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app/': {
@@ -316,6 +389,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiExportTransactionsDotcsvRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/v1/$': {
+      id: '/api/v1/$'
+      path: '/api/v1/$'
+      fullPath: '/api/v1/$'
+      preLoaderRoute: typeof ApiV1SplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -359,10 +439,14 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
+  ConsentRoute: ConsentRoute,
   LoginRoute: LoginRoute,
+  McpRoute: McpRoute,
+  DotwellKnownSplatRoute: DotwellKnownSplatRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiExportKoshaDotjsonRoute: ApiExportKoshaDotjsonRoute,
   ApiExportTransactionsDotcsvRoute: ApiExportTransactionsDotcsvRoute,
+  ApiV1SplatRoute: ApiV1SplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

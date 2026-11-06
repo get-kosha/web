@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState, type ReactNode } from "react"
+import { Fragment, useEffect, useRef, useState, type ReactNode } from "react"
 import { MagnifyingGlassIcon, SlidersHorizontalIcon, XIcon } from "@phosphor-icons/react/ssr"
-import { createFileRoute, useNavigate } from "@tanstack/react-router"
+import { Link, createFileRoute, useNavigate } from "@tanstack/react-router"
 import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -172,8 +172,12 @@ function Activity() {
         title="Activity"
         sub={
           <>
-            {event ? [event.name, eventDates(event)].filter(Boolean).join(" · ") : monthLabel(month)} ·{" "}
-            <span className="num">{data.total}</span> {data.total === 1 ? "transaction" : "transactions"}
+            {event
+              ? [event.name, eventDates(event)].filter(Boolean).join(" · ")
+              : s.tag
+                ? `#${s.tag} · all dates`
+                : monthLabel(month)}{" "}
+            · <span className="num">{data.total}</span> {data.total === 1 ? "transaction" : "transactions"}
           </>
         }
       />
@@ -414,19 +418,31 @@ function Row({
   const amount = isTransfer && !singleWallet ? Math.abs(t.amount) + (t.amount < 0 ? (t.fee ?? 0) : 0) : t.amount
   const foreign = currency !== cur
   const event = t.event_id ? meta.events.find((e) => e.id === t.event_id) : undefined
-  const sub = [!t.paid && (t.kind ?? "upcoming"), event?.name, ...tagList(t.tags).map((x) => `#${x}`), t.note]
-    .filter(Boolean)
-    .join(" · ")
+  const sub: ReactNode[] = [
+    !t.paid && (t.kind ?? "upcoming"),
+    event?.name,
+    ...tagList(t.tags).map((x) => (
+      <Link
+        key={x}
+        to="/transactions"
+        search={{ tag: x }}
+        aria-label={`All transactions tagged #${x}`}
+        className="relative z-10 rounded-sm after:absolute after:-inset-x-1.5 after:-inset-y-1 after:content-[''] hover:text-foreground hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none max-md:after:-inset-y-3.5"
+      >
+        #{x}
+      </Link>
+    )),
+    t.note,
+  ].filter(Boolean)
+  const shown = isTransfer ? fmt(amount, currency) : signed(amount, currency)
 
+  // The row opens with its title button, whose ::after covers the whole row; tags sit above it as links
+  // to every transaction with that tag. (A link can't go inside a button.)
   return (
-    <button
-      type="button"
-      data-tx={t.id}
+    <div
       data-row
-      aria-pressed={selected}
-      onClick={onClick}
       className={cn(
-        "grid min-h-12 w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-4 py-1.5 text-left text-sm transition-colors outline-none hover:bg-muted focus-visible:bg-muted min-[760px]:grid-cols-[minmax(0,1fr)_116px_104px_112px]",
+        "relative grid min-h-12 w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-4 py-1.5 text-left text-sm transition-colors hover:bg-muted has-[button:focus-visible]:bg-muted min-[760px]:grid-cols-[minmax(0,1fr)_116px_104px_112px]",
         selected && "bg-selected hover:bg-selected",
         isTransfer && "text-subtle-foreground",
         !t.paid && "opacity-60"
@@ -434,14 +450,33 @@ function Row({
     >
       <span className="min-w-0">
         <span className="flex min-w-0 items-center">
-          <span className="truncate">{title}</span>
+          <button
+            type="button"
+            data-tx={t.id}
+            aria-pressed={selected}
+            aria-label={[title, shown, c?.name].filter(Boolean).join(", ")}
+            onClick={onClick}
+            className="truncate text-left outline-none after:absolute after:inset-0 after:content-['']"
+          >
+            {title}
+          </button>
           {isTransfer && (
             <span className="ml-1.5 shrink-0 rounded-sm bg-muted px-1.5 text-[11px] text-muted-foreground">
               transfer
             </span>
           )}
         </span>
-        {sub && <span className="block truncate text-xs text-muted-foreground">{sub}</span>}
+        {sub.length > 0 && (
+          // clip, not hidden: the tags' taller tap areas may reach above and below the line.
+          <span className="block overflow-x-clip text-xs text-ellipsis whitespace-nowrap text-muted-foreground">
+            {sub.map((part, i) => (
+              <Fragment key={i}>
+                {i > 0 && " · "}
+                {part}
+              </Fragment>
+            ))}
+          </span>
+        )}
       </span>
       <span className="hidden min-w-0 items-center gap-2 text-[13px] text-subtle-foreground min-[760px]:flex">
         <CategoryIcon icon={c?.icon} className="size-[17px]" />
@@ -449,14 +484,14 @@ function Row({
       </span>
       <span className="hidden truncate text-[13px] text-subtle-foreground min-[760px]:block">{w?.name}</span>
       <span className={cn("num text-right", !isTransfer && t.amount > 0 && "text-positive")}>
-        {isTransfer ? fmt(amount, currency) : signed(amount, currency)}
+        {shown}
         {foreign && (
           <span className="block text-xs text-muted-foreground">
             ≈ {fmt(convert(amount, currency, cur, meta.rates), cur)}
           </span>
         )}
       </span>
-    </button>
+    </div>
   )
 }
 
@@ -555,7 +590,7 @@ function FiltersSheet({
         </FilterSection>
 
         {meta.tags.length > 0 && (
-          <FilterSection label="Tag">
+          <FilterSection label="Tag" note="A tag shows all of its transactions, whatever the month.">
             {meta.tags.map((t) => (
               <Chip key={t} on={t === s.tag} onClick={() => toggle("tag", t)}>
                 #{t}

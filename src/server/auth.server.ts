@@ -3,9 +3,18 @@ import { betterAuth } from "better-auth"
 import { APIError } from "better-auth/api"
 import { tanstackStartCookies } from "better-auth/tanstack-start"
 import { passkey } from "@better-auth/passkey"
-import { twoFactor } from "better-auth/plugins"
+import { jwt, twoFactor } from "better-auth/plugins"
+import { mcp } from "@better-auth/mcp"
 import { getRequest } from "@tanstack/react-start/server"
 import { DEFAULT_CATEGORIES } from "@/lib/defaults"
+
+const ORIGIN = env.BETTER_AUTH_URL.replace(/\/+$/, "")
+/** The MCP server's URL: what people paste into Claude or ChatGPT, and the audience of its access tokens. */
+export const MCP_RESOURCE = `${ORIGIN}/mcp`
+/** Who signs MCP access tokens: Better Auth, at its base path. */
+export const OAUTH_ISSUER = `${ORIGIN}/api/auth`
+/** What an MCP connection may do. A read-only connection sees only the read tools. */
+export const API_SCOPES = { read: "kosha:read", write: "kosha:write" } as const
 
 export const auth = betterAuth({
   database: env.DB,
@@ -36,8 +45,32 @@ export const auth = betterAuth({
       },
     },
   },
+  // MCP clients get tokens from /api/auth/oauth2/token, so the JWT plugin's own /token isn't needed.
+  disabledPaths: ["/token"],
   // tanstackStartCookies must stay last, because it forwards cookies set by server-side auth.api calls.
-  plugins: [passkey({ rpName: "Kosha" }), twoFactor({ issuer: "Kosha" }), tanstackStartCookies()],
+  plugins: [
+    passkey({ rpName: "Kosha" }),
+    twoFactor({ issuer: "Kosha" }),
+    // Signs MCP access tokens. It sets no set-auth-jwt header, because session JWTs would share the signing key.
+    jwt({ disableSettingJwtHeader: true }),
+    // Kosha is the OAuth 2.1 authorization server for its own MCP server. Clients register themselves
+    // (Claude, ChatGPT and Cursor all use dynamic registration), and every sign-in still goes through
+    // /login and the consent screen at /consent.
+    mcp({
+      resource: MCP_RESOURCE,
+      loginPage: "/login",
+      consentPage: "/consent",
+      scopes: ["openid", "profile", "email", "offline_access", API_SCOPES.read, API_SCOPES.write],
+      grantTypes: ["authorization_code", "refresh_token"],
+      allowDynamicClientRegistration: true,
+      allowUnauthenticatedClientRegistration: true,
+      // Claude Code and other local clients register http://localhost callbacks on a changing port.
+      clientRegistrationDefaultApplicationType: "infer",
+      // A retried refresh with a used token is replay, not a lost response.
+      refreshTokenReuseInterval: 0,
+    }),
+    tanstackStartCookies(),
+  ],
 })
 
 /** Every table that holds a user's data, children before parents so foreign keys hold. Auth tables follow the user row. */
@@ -53,6 +86,7 @@ export const USER_TABLES = [
   "categories",
   "wallets",
   "settings",
+  "api_keys",
 ]
 async function deleteUserData(id: string) {
   const DB = env.DB
