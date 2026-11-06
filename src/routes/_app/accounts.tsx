@@ -1,6 +1,6 @@
-import { useState, useSyncExternalStore } from "react"
+import { useId, useState, useSyncExternalStore } from "react"
 import { Link, createFileRoute, useRouter } from "@tanstack/react-router"
-import { Area, AreaChart, CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts"
+import { Area, CartesianGrid, ComposedChart, Line, LineChart, XAxis, YAxis } from "recharts"
 import { CaretRightIcon, PlusIcon, XIcon } from "@phosphor-icons/react/ssr"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
@@ -18,7 +18,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { PageHeader, PageSkeleton, segment, segmentButton, useGlobals, useMeta } from "@/components/shell"
-import { BigMoney, CompositionBar } from "@/components/net-worth"
+import { BigMoney, CompositionBar, HatchPattern, WorthSplit } from "@/components/net-worth"
 import { GainDialog } from "@/components/gain-dialog"
 import { Pick } from "@/components/pick"
 import {
@@ -94,6 +94,15 @@ const daysBetween = (a: string, b: string) => Math.round((Date.parse(b) - Date.p
 const shownWorth = (w: Wallet) =>
   w.type === "credit" ? -Math.max(0, (w.credit_limit ?? 0) - w.balance) : accountWorth(w)
 
+// Account colours in the net worth chart, in a fixed order.
+const SERIES = ["--series-1", "--series-2", "--series-3", "--series-4", "--series-5", "--series-6"]
+
+/** Each open account's colour slot, in the order this page lists them. Past six, accounts share "Other". */
+function colourSlots(wallets: Wallet[]) {
+  const order = GROUPS.flatMap((g) => wallets.filter((w) => !w.archived && g.types.includes(w.type)))
+  return new Map(order.slice(0, SERIES.length).map((w, i) => [w.id, i]))
+}
+
 const wideQuery = "(min-width: 1024px)"
 function useWide() {
   return useSyncExternalStore(
@@ -120,6 +129,7 @@ function Accounts() {
 
   const open = meta.wallets.filter((w) => !w.archived)
   const archived = meta.wallets.filter((w) => w.archived)
+  const slots = colourSlots(meta.wallets)
   const currencies = [...new Set(open.map((w) => w.currency.toUpperCase()))]
   // Wide screens always show a panel (the first account until you pick one); narrow ones open it as a dialog.
   const selected = meta.wallets.find((w) => w.id === picked) ?? (wide ? open[0] : undefined)
@@ -176,6 +186,7 @@ function Accounts() {
                       <AccountRow
                         key={w.id}
                         w={w}
+                        slot={slots.get(w.id)}
                         display={cur}
                         overview={overview}
                         selected={w.id === selected?.id}
@@ -268,7 +279,6 @@ function Accounts() {
 
 // ---------- net worth hero ----------
 
-const worthConfig = { netWorth: { label: "Net worth", color: "var(--chart-2)" } } satisfies ChartConfig
 const RANGES = [
   ["1Y", 13],
   ["2Y", 25],
@@ -282,6 +292,7 @@ function Hero({ overview }: { overview: AccountsOverview }) {
   const all = overview.series
   const points = all.slice(-RANGES.find((r) => r[0] === range)![1])
   const now = all.at(-1)?.netWorth ?? 0
+  const nowGains = all.at(-1)?.gains ?? 0
   const yearAgo = all.length > 1 ? all[Math.max(0, all.length - 13)].netWorth : null
   const change = yearAgo === null ? null : now - yearAgo
   const others = [...new Set(meta.wallets.filter((w) => !w.archived && w.currency !== cur).map((w) => w.currency))]
@@ -303,8 +314,11 @@ function Hero({ overview }: { overview: AccountsOverview }) {
               Net worth
             </h2>
             <BigMoney value={now} currency={cur} className="mt-2" />
+            <div className="mt-2.5">
+              <WorthSplit total={now} gains={nowGains} currency={cur} />
+            </div>
             {change !== null && (
-              <p className="mt-2 text-[13px]">
+              <p className="mt-1.5 text-[13px]">
                 <span className={cn("font-medium", change >= 0 ? "text-positive" : "text-destructive")}>
                   {signed(change, cur)} ({pct(change, yearAgo! || 1)})
                 </span>{" "}
@@ -330,44 +344,7 @@ function Hero({ overview }: { overview: AccountsOverview }) {
         </div>
         {points.length > 1 ? (
           <Reveal>
-            <ChartContainer config={worthConfig} className="aspect-auto h-44 w-full md:h-48">
-              <AreaChart data={points} margin={{ left: 0, right: 4, top: 8, bottom: 0 }}>
-                <CartesianGrid vertical={false} />
-                <XAxis
-                  dataKey="month"
-                  tickLine={false}
-                  axisLine={false}
-                  tickFormatter={(m) => monthShort(m, true)}
-                  minTickGap={40}
-                  interval="preserveStartEnd"
-                />
-                <YAxis
-                  tickLine={false}
-                  axisLine={false}
-                  width={44}
-                  tickFormatter={(v) => fmt(v, cur, true)}
-                  domain={["auto", "auto"]}
-                  tickCount={3}
-                />
-                <ChartTooltip
-                  content={
-                    <ChartTooltipContent
-                      labelFormatter={(m) => monthShort(String(m), true)}
-                      formatter={(v) => fmt(Number(v), cur)}
-                    />
-                  }
-                />
-                <Area
-                  dataKey="netWorth"
-                  type="monotone"
-                  stroke="var(--color-netWorth)"
-                  strokeWidth={1.75}
-                  fill="var(--color-netWorth)"
-                  fillOpacity={0.06}
-                  isAnimationActive={false}
-                />
-              </AreaChart>
-            </ChartContainer>
+            <WorthChart points={points} currency={cur} />
           </Reveal>
         ) : (
           <p className="py-10 text-sm text-muted-foreground">
@@ -393,16 +370,169 @@ function Hero({ overview }: { overview: AccountsOverview }) {
   )
 }
 
+/**
+ * Net worth over time, stacked by account in each account's colour, with all unrealized gains hatched on
+ * top and the net worth itself as a line. Card debt stacks below zero, so the line is the total, not the
+ * top of the stack.
+ */
+function WorthChart({ points, currency }: { points: AccountsOverview["series"]; currency: string }) {
+  const meta = useMeta()
+  const hatch = useId()
+  const slots = colourSlots(meta.wallets)
+  const rows = points.map((p) => {
+    const row: Record<string, number | string> = { month: p.month, netWorth: p.netWorth, gains: p.gains }
+    for (const [id, v] of Object.entries(p.byAccount)) {
+      const slot = slots.get(id)
+      const key = slot === undefined ? "other" : `a${slot}`
+      row[key] = (Number(row[key]) || 0) + v
+    }
+    return row
+  })
+  const names = new Map([...slots].map(([id, i]) => [`a${i}`, meta.wallets.find((w) => w.id === id)?.name ?? ""]))
+  const keys = [...SERIES.map((_, i) => `a${i}`), "other"].filter((k) => rows.some((r) => Math.round(Number(r[k]))))
+  const hasGains = rows.some((r) => Math.round(Number(r.gains)))
+  // Card debt stacks below zero. When it is a sliver, start the axis at zero instead of mirroring the scale
+  // below it; the line and the tooltip still give the true total.
+  const below = Math.min(...rows.map((r) => keys.reduce((sum, k) => sum + Math.min(0, Number(r[k]) || 0), 0)))
+  const above = Math.max(...rows.map((r) => Number(r.netWorth) - below))
+  const sliver = -below < above * 0.05
+  const config: ChartConfig = Object.fromEntries([
+    ...keys.map((k) => [
+      k,
+      {
+        label: names.get(k) ?? "Other accounts",
+        color: k === "other" ? "var(--chart-3)" : `var(${SERIES[+k.slice(1)]})`,
+      },
+    ]),
+    ["gains", { label: "Unrealized gains", color: "var(--chart-2)" }],
+    ["netWorth", { label: "Net worth", color: "var(--chart-2)" }],
+  ])
+
+  return (
+    <div className="flex flex-col gap-3">
+      <ChartContainer config={config} className="aspect-auto h-44 w-full md:h-48">
+        <ComposedChart data={rows} stackOffset="sign" margin={{ left: 0, right: 4, top: 8, bottom: 0 }}>
+          <HatchPattern id={hatch} />
+          <CartesianGrid vertical={false} />
+          <XAxis
+            dataKey="month"
+            tickLine={false}
+            axisLine={false}
+            tickFormatter={(m) => monthShort(m, true)}
+            minTickGap={40}
+            interval="preserveStartEnd"
+          />
+          <YAxis
+            tickLine={false}
+            axisLine={false}
+            width={44}
+            tickFormatter={(v) => fmt(v, currency, true)}
+            domain={[sliver ? 0 : "auto", "auto"]}
+            allowDataOverflow={sliver}
+            tickCount={3}
+          />
+          <ChartTooltip
+            content={({ active, payload, label }) =>
+              active && payload?.length ? (
+                <div className="grid min-w-48 gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 py-2 text-xs shadow-xl">
+                  <div className="flex justify-between gap-4 font-medium">
+                    <span>{monthShort(String(label), true)}</span>
+                    <span className="num">{fmt(Number(payload[0].payload.netWorth), currency)}</span>
+                  </div>
+                  {payload
+                    .filter((item) => item.dataKey !== "netWorth" && Math.round(Number(item.value)))
+                    .reverse()
+                    .map((item) => {
+                      const key = String(item.dataKey)
+                      return (
+                        <div key={key} className="flex items-center gap-2">
+                          <span
+                            aria-hidden="true"
+                            className={cn("size-2.5 shrink-0 rounded-[2px]", key === "gains" && "hatch")}
+                            style={key === "gains" ? undefined : { background: config[key]?.color }}
+                          />
+                          <span className="min-w-0 flex-1 truncate text-muted-foreground">{config[key]?.label}</span>
+                          <span className="num">{fmt(Number(item.value), currency)}</span>
+                        </div>
+                      )
+                    })}
+                </div>
+              ) : null
+            }
+          />
+          {keys.map((k) => (
+            <Area
+              key={k}
+              dataKey={k}
+              stackId="worth"
+              type="monotone"
+              stroke="var(--card)"
+              strokeWidth={1}
+              fill={`var(--color-${k})`}
+              fillOpacity={0.8}
+              isAnimationActive={false}
+            />
+          ))}
+          {hasGains && (
+            <Area
+              dataKey="gains"
+              stackId="worth"
+              type="monotone"
+              stroke="var(--chart-3)"
+              strokeWidth={1}
+              fill={`url(#${hatch})`}
+              isAnimationActive={false}
+            />
+          )}
+          <Line
+            dataKey="netWorth"
+            type="monotone"
+            stroke="var(--color-netWorth)"
+            strokeWidth={1.75}
+            dot={false}
+            isAnimationActive={false}
+          />
+        </ComposedChart>
+      </ChartContainer>
+      <ul aria-label="Chart key" className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
+        {keys.map((k) => (
+          <li key={k} className="inline-flex min-w-0 items-center gap-1.5">
+            <span
+              className="size-2.5 shrink-0 rounded-[3px]"
+              style={{ background: config[k].color }}
+              aria-hidden="true"
+            />
+            <span className="truncate">{config[k].label}</span>
+          </li>
+        ))}
+        {hasGains && (
+          <li className="inline-flex items-center gap-1.5">
+            <span className="size-2.5 shrink-0 rounded-[3px] hatch" aria-hidden="true" />
+            Unrealized gains
+          </li>
+        )}
+        <li className="inline-flex items-center gap-1.5">
+          <span className="h-0.5 w-3 rounded-full bg-chart-2" aria-hidden="true" />
+          Net worth
+        </li>
+      </ul>
+    </div>
+  )
+}
+
 // ---------- account list ----------
 
 function AccountRow({
   w,
+  slot,
   display,
   overview,
   selected,
   onSelect,
 }: {
   w: Wallet
+  /** Its colour in the net worth chart, if it has its own. */
+  slot?: number
   display: string
   overview: AccountsOverview
   selected: boolean
@@ -457,7 +587,16 @@ function AccountRow({
       )}
     >
       <span className="min-w-0">
-        <span className="block truncate text-[15px]">{w.name}</span>
+        <span className="flex items-center gap-2">
+          {slot !== undefined && (
+            <span
+              className="size-2.5 shrink-0 rounded-[3px]"
+              style={{ background: `var(${SERIES[slot]})` }}
+              aria-hidden="true"
+            />
+          )}
+          <span className="truncate text-[15px]">{w.name}</span>
+        </span>
         <span className="block truncate text-xs text-muted-foreground">{sub}</span>
       </span>
       <span className="hidden sm:block" aria-hidden="true">

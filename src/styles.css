@@ -8,6 +8,11 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Unrealized gains are drawn hatched, so they read as value that isn't cash yet. */
+@utility hatch {
+  background-image: repeating-linear-gradient(135deg, var(--chart-2) 0 1.5px, transparent 1.5px 4px);
+}
+
 @theme inline {
   --font-heading: var(--font-sans);
   --font-sans: "Geist Variable", sans-serif;
@@ -88,6 +93,15 @@
   --chart-3: #6b6b73;
   --chart-4: #cfcfca;
   --chart-5: #e4e4e0;
+  /* One colour per account in the net worth chart, in this fixed order. The order passes the colour-blind
+     checks on the card surface in both modes. No green, which means "positive" here; aqua comes last.
+     Yellow and pink are under 3:1 on white, so the chart always has a legend. */
+  --series-1: #2a78d6;
+  --series-2: #e87ba4;
+  --series-3: #eda100;
+  --series-4: #6250d6;
+  --series-5: #eb6834;
+  --series-6: #1baf7a;
   --radius: 0.625rem;
   /* The user's accent (Settings › Appearance). Not shadcn's --accent, which is the hover background. */
   --brand: #0f766e;
@@ -123,6 +137,12 @@
   --chart-3: #90909a;
   --chart-4: #3b3b41;
   --chart-5: #27272b;
+  --series-1: #3987e5;
+  --series-2: #d55181;
+  --series-3: #c98500;
+  --series-4: #9085e9;
+  --series-5: #d95926;
+  --series-6: #199e70;
   --brand: #2dd4bf;
   --brand-foreground: #0b0b0c;
 }

@@ -1,11 +1,11 @@
-import { useState, type ReactNode } from "react"
+import { useId, useState, type ReactNode } from "react"
 import { Link, createFileRoute, useRouter } from "@tanstack/react-router"
 import {
   Area,
+  AreaChart,
   CartesianGrid,
   ComposedChart,
   Line,
-  LineChart,
   ReferenceDot,
   ReferenceLine,
   XAxis,
@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { ChartContainer } from "@/components/ui/chart"
 import { CategoryIcon } from "@/components/category-icon"
-import { BigMoney, CompositionBar } from "@/components/net-worth"
+import { BigMoney, CompositionBar, HatchPattern, WorthSplit } from "@/components/net-worth"
 import { Reveal, RollingMoney } from "@/components/motion"
 import { GainDialog } from "@/components/gain-dialog"
 import { TransactionForm, TransactionSheet } from "@/components/transaction-form"
@@ -130,13 +130,20 @@ function NetWorthCard({ d }: { d: Dash }) {
   const thisMonth = at(d.month) === undefined ? null : at(d.month)! - (at(shiftMonth(d.month, -1)) ?? 0) // null means a future month
   const yearAgo = line.length > 1 ? line[0].netWorth : null
   const growth = yearAgo ? (line.at(-1)!.netWorth - yearAgo) / Math.abs(yearAgo) : null
+  // What is owned, with unrealized gains stacked on top, so the line shows how much of it is market value.
+  const points = line.map((x) => ({ month: x.month, owned: x.netWorth - x.gains, gains: x.gains }))
+  const hasGains = points.some((x) => Math.round(x.gains))
+  const hatch = useId()
 
   return (
     <Card className="min-w-0 flex-[1_1_360px] gap-5 px-6 max-md:hidden">
       <Head title="Net worth" aside={<More to="/accounts">Accounts →</More>} />
       <div>
         <BigMoney value={nw.total} currency={p} />
-        <div className="mt-2 flex flex-wrap gap-3 text-[13px]">
+        <div className="mt-2.5">
+          <WorthSplit total={nw.total} gains={nw.gains} currency={p} swatches={hasGains} />
+        </div>
+        <div className="mt-1.5 flex flex-wrap gap-3 text-[13px]">
           {thisMonth !== null && (
             <span className={cn("font-medium", thisMonth >= 0 ? "text-positive" : "text-destructive")}>
               {thisMonth >= 0 ? "+" : ""}
@@ -154,17 +161,32 @@ function NetWorthCard({ d }: { d: Dash }) {
       {line.length > 1 && (
         <Reveal className="flex min-h-[120px] flex-1">
           <ChartContainer config={{}} className="aspect-auto h-[120px] min-h-[120px] w-full flex-1">
-            <LineChart data={line} margin={{ top: 4, right: 2, bottom: 4, left: 2 }}>
+            <AreaChart data={points} margin={{ top: 4, right: 2, bottom: 4, left: 2 }}>
+              <HatchPattern id={hatch} />
               <YAxis hide domain={["dataMin", "dataMax"]} />
-              <Line
-                dataKey="netWorth"
+              <Area
+                dataKey="owned"
+                stackId="worth"
                 type="linear"
                 stroke="var(--chart-2)"
                 strokeWidth={2}
-                dot={false}
+                fill="var(--chart-2)"
+                fillOpacity={0.05}
                 isAnimationActive={false}
               />
-            </LineChart>
+              {hasGains && (
+                <Area
+                  dataKey="gains"
+                  stackId="worth"
+                  type="linear"
+                  stroke="var(--chart-3)"
+                  strokeWidth={1}
+                  fill={`url(#${hatch})`}
+                  fillOpacity={0.55}
+                  isAnimationActive={false}
+                />
+              )}
+            </AreaChart>
           </ChartContainer>
         </Reveal>
       )}

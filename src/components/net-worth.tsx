@@ -2,19 +2,23 @@ import { getRouteApi } from "@tanstack/react-router"
 import { Reveal, RollingMoney } from "@/components/motion"
 import type { Wallet } from "@/lib/api"
 import { fmt, netWorth, type Rates } from "@/lib/core"
+import { cn } from "@/lib/utils"
 
 /**
- * Investments and cash & bank in one bar, each as wide as its share of gross assets. The legend gives
- * each amount and share, plus a "Card balance" row when there are credit cards. It draws no card of
- * its own, so place it inside one.
+ * Cash & bank, money invested and unrealized gains in one bar, each as wide as its share of gross
+ * assets. Gains are hatched. A loss gets its own row and no segment, since the invested segment already
+ * shows what is left. The legend gives each amount and share, plus a "Card balance" row when there are
+ * credit cards. It draws no card of its own, so place it inside one.
  */
 export function CompositionBar({ wallets, currency, rates }: { wallets: Wallet[]; currency: string; rates: Rates }) {
   const nw = netWorth(wallets, currency, rates)
-  const gross = nw.investments + nw.cash
+  const loss = Math.min(0, nw.gains)
   const groups = [
-    { label: "Investments", value: nw.investments, color: "bg-chart-2" },
     { label: "Cash & bank", value: nw.cash, color: "bg-chart-4" },
+    { label: "Invested", value: nw.invested + loss, color: "bg-chart-2" },
+    { label: "Unrealized gains", value: Math.max(0, nw.gains), color: "hatch", signed: true },
   ].filter((g) => g.value > 0)
+  const gross = groups.reduce((sum, g) => sum + g.value, 0)
   const share = (v: number) => (gross > 0 ? Math.round((v / gross) * 100) : 0)
   const cards = wallets.some((w) => w.type === "credit")
 
@@ -32,13 +36,23 @@ export function CompositionBar({ wallets, currency, rates }: { wallets: Wallet[]
       <dl className="grid grid-cols-[10px_minmax(0,1fr)_auto] items-center gap-x-2.5 gap-y-2.5 text-[13px]">
         {groups.map((g) => (
           <div key={g.label} className="contents">
-            <span className={`size-2.5 rounded-[3px] ${g.color}`} aria-hidden="true" />
+            <span className={cn("size-2.5 rounded-[3px]", g.color)} aria-hidden="true" />
             <dt>
               {g.label} <span className="text-xs text-muted-foreground">{share(g.value)}%</span>
             </dt>
-            <dd className="num text-right">{fmt(g.value, currency)}</dd>
+            <dd className={cn("num text-right", g.signed && "text-positive")}>
+              {g.signed && "+"}
+              {fmt(g.value, currency)}
+            </dd>
           </div>
         ))}
+        {loss < 0 && (
+          <div className="contents">
+            <span className="h-0.5 w-2.5 bg-destructive" aria-hidden="true" />
+            <dt>Unrealized loss</dt>
+            <dd className="num text-right text-destructive">{fmt(loss, currency)}</dd>
+          </div>
+        )}
         {cards && (
           <div className="contents">
             <span className="h-0.5 w-2.5 bg-muted-foreground" aria-hidden="true" />
@@ -48,6 +62,52 @@ export function CompositionBar({ wallets, currency, rates }: { wallets: Wallet[]
         )}
       </dl>
     </div>
+  )
+}
+
+/**
+ * Splits a net worth into what is owned (cash, money put into investments, less card debt) and the
+ * investments' unrealized gain or loss. Renders nothing without a gain. `swatches` makes it the legend of
+ * a two-layer chart (owned solid, gains hatched).
+ */
+export function WorthSplit({
+  total,
+  gains,
+  currency,
+  swatches,
+}: {
+  total: number
+  gains: number
+  currency: string
+  swatches?: boolean
+}) {
+  if (!Math.round(gains)) return null
+  return (
+    <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-muted-foreground">
+      <span className="inline-flex items-center gap-1.5">
+        {swatches && <span className="h-0.5 w-3 rounded-full bg-chart-2" aria-hidden="true" />}
+        <span className="num text-foreground">{fmt(total - gains, currency)}</span> owned
+      </span>
+      <span className="inline-flex items-center gap-1.5">
+        {swatches && <span className="size-2.5 rounded-[3px] hatch" aria-hidden="true" />}
+        <span className={cn("num", gains > 0 ? "text-positive" : "text-destructive")}>
+          {gains > 0 && "+"}
+          {fmt(gains, currency)}
+        </span>
+        unrealized {gains > 0 ? "gains" : "loss"}
+      </span>
+    </p>
+  )
+}
+
+/** SVG hatch for a chart's unrealized-gains layer. Put it inside the chart and fill with `url(#id)`. */
+export function HatchPattern({ id }: { id: string }) {
+  return (
+    <defs>
+      <pattern id={id} width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+        <line x1="0" y1="0" x2="0" y2="4" stroke="var(--chart-2)" strokeWidth="1.5" />
+      </pattern>
+    </defs>
   )
 }
 

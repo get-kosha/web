@@ -279,10 +279,14 @@ export async function dashboard(uid: string, data: z.infer<typeof dashboardInput
       adjust.set(m, (adjust.get(m) ?? 0) - convert(a.credit_limit, a.currency, primary, rates))
     }
   const lastGain = new Map<string, number>()
+  // The change in unrealized gains per month, kept apart too, so the chart can show it on top of what is owned.
+  const gainChange = new Map<string, number>()
   for (const v of valuations.results as { wallet_id: string; day: string; gain: number; currency: string }[]) {
     const m = v.day.slice(0, 7)
     const g = convert(v.gain, v.currency, primary, rates)
-    adjust.set(m, (adjust.get(m) ?? 0) + g - (lastGain.get(v.wallet_id) ?? 0))
+    const delta = g - (lastGain.get(v.wallet_id) ?? 0)
+    adjust.set(m, (adjust.get(m) ?? 0) + delta)
+    gainChange.set(m, (gainChange.get(m) ?? 0) + delta)
     lastGain.set(v.wallet_id, g)
   }
   const months = new Map<string, { income: number; expense: number; net: number }>()
@@ -345,13 +349,15 @@ export async function dashboard(uid: string, data: z.infer<typeof dashboardInput
   }
 
   const keys = [...months.keys()].sort()
-  const series: { month: string; income: number; expense: number; netWorth: number }[] = []
+  const series: { month: string; income: number; expense: number; netWorth: number; gains: number }[] = []
   if (keys.length) {
-    let worth = 0
+    let worth = 0,
+      gains = 0
     for (let m = keys[0]; m <= nowMonth; m = shiftMonth(m, 1)) {
       const e = months.get(m) ?? { income: 0, expense: 0, net: 0 }
       worth += e.net + (adjust.get(m) ?? 0)
-      series.push({ month: m, income: e.income, expense: e.expense, netWorth: worth })
+      gains += gainChange.get(m) ?? 0
+      series.push({ month: m, income: e.income, expense: e.expense, netWorth: worth, gains })
     }
   }
   while (series.length && series[0].netWorth === 0) series.shift()
@@ -1297,8 +1303,9 @@ export async function accountsOverview(uid: string, data: z.infer<typeof dashboa
   for (const v of vals.results as { wallet_id: string; day: string; gain: number }[])
     (gains.get(v.wallet_id) ?? gains.set(v.wallet_id, []).get(v.wallet_id)!).push(v)
 
-  // An account's worth at each point, ascending. Before its first transaction it didn't exist yet, so its worth is 0.
-  const curve = (w: W, ends: { t: number; day: string }[]) => {
+  // An account's worth at each point, ascending, split into what it holds and an investment's unrealized gain.
+  // Before its first transaction it didn't exist yet, so both are 0.
+  const parts = (w: W, ends: { t: number; day: string }[]) => {
     const tx = byWallet.get(w.id) ?? [],
       vs = gains.get(w.id) ?? []
     let i = 0,
@@ -1308,10 +1315,12 @@ export async function accountsOverview(uid: string, data: z.infer<typeof dashboa
     return ends.map((e) => {
       while (i < tx.length && tx[i].date < e.t) bal += tx[i++].amount
       while (j < vs.length && vs[j].day <= e.day) gain = vs[j++].gain
-      if (!i) return 0
-      return w.type === "credit" ? bal - (w.credit_limit ?? 0) : w.type === "investment" ? bal + gain : bal
+      if (!i) return { owned: 0, gain: 0 }
+      if (w.type === "credit") return { owned: bal - (w.credit_limit ?? 0), gain: 0 }
+      return { owned: bal, gain: w.type === "investment" ? gain : 0 }
     })
   }
+  const curve = (w: W, ends: { t: number; day: string }[]) => parts(w, ends).map((p) => p.owned + p.gain)
   const monthEnd = (m: string) => ({ t: monthRange(m, tz)[1], day: addDays(`${shiftMonth(m, 1)}-01`, -1) })
   const first = (txs.results as T[])[0]
   const months: string[] = []
@@ -1322,12 +1331,21 @@ export async function accountsOverview(uid: string, data: z.infer<typeof dashboa
   const [from, to] = monthRange(selected, tz)
 
   const totals = months.map(() => 0)
+  // Per month: each account's owned part and all unrealized gains, in the display currency, for the stacked chart.
+  const owned = months.map(() => ({}) as Record<string, number>)
+  const gained = months.map(() => 0)
   const accounts: Record<
     string,
     { months: number[]; days: number[]; lastEntry: string | null; in: number; out: number; moved: number }
   > = {}
   for (const w of walletRows.results as W[]) {
-    curve(w, months.map(monthEnd)).forEach((v, k) => (totals[k] += convert(v, w.currency, display, rates)))
+    parts(w, months.map(monthEnd)).forEach((p, k) => {
+      const o = convert(p.owned, w.currency, display, rates),
+        g = convert(p.gain, w.currency, display, rates)
+      totals[k] += o + g
+      gained[k] += g
+      if (o) owned[k][w.id] = o
+    })
     const tx = byWallet.get(w.id) ?? []
     let inc = 0,
       out = 0,
@@ -1353,7 +1371,15 @@ export async function accountsOverview(uid: string, data: z.infer<typeof dashboa
     month: selected,
     today,
     ratesUpdated: settings.ratesUpdated,
-    series: start < 0 ? [] : months.slice(start).map((m, k) => ({ month: m, netWorth: totals[start + k] })),
+    series:
+      start < 0
+        ? []
+        : months.slice(start).map((m, k) => ({
+            month: m,
+            netWorth: totals[start + k],
+            gains: gained[start + k],
+            byAccount: owned[start + k],
+          })),
     days,
     last6,
     accounts,
