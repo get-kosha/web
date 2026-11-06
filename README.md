@@ -118,7 +118,10 @@ Running the import again updates accounts in place and keeps their type, credit 
 - **Events.** A new entry dated inside an event's dates joins that event unless you pick another one or none. Recurring payments never join one on their own. Filtering Activity by an event shows all of its entries, whatever the month. Deleting an event keeps its entries.
 - **Subscriptions.** Editing a subscription changes only future payments. Deleting a paid payment marks it as skipped, so it is not added back.
 
-Not built yet: bank statement reconciliation and offline entry.
+- **Offline.** The installed app opens without a connection and shows the pages and data from your last visit. New entries from **Add** wait on the device and sync when you're back online. Edits, transfers and deletes still need a connection. Signing out clears what the device saved.
+- **Updates.** When a new version is deployed, a card at the bottom offers to reload into it.
+
+Not built yet: bank statement reconciliation.
 
 ## Built with
 

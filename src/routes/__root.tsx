@@ -1,3 +1,4 @@
+import { useEffect } from "react"
 import { HeadContent, Link, Outlet, Scripts, createRootRoute } from "@tanstack/react-router"
 import { Toaster } from "@/components/ui/sonner"
 import { splashLinks } from "@/lib/splash"
@@ -50,12 +51,7 @@ export const Route = createRootRoute({
       </Link>
     </div>
   ),
-  errorComponent: ({ error }) => (
-    <div className="p-8 text-sm">
-      <p className="font-medium">Something went wrong</p>
-      <p className="mt-1 text-muted-foreground">{error instanceof Error ? error.message : String(error)}</p>
-    </div>
-  ),
+  errorComponent: RouteError,
   component: Outlet,
   shellComponent: ({ children }) => (
     <html lang="en" suppressHydrationWarning>
@@ -71,3 +67,32 @@ export const Route = createRootRoute({
     </html>
   ),
 })
+
+// fetch's network error in Chrome, Safari and Firefox.
+const NETWORK_ERROR = /failed to fetch|load failed|networkerror/i
+
+function RouteError({ error }: { error: unknown }) {
+  // Offline, moving to another page fails because its data can't be fetched. The service worker may
+  // still have the whole page saved, so load it as a document. Once per address, so it can't loop.
+  const offline = typeof navigator !== "undefined" && !navigator.onLine && NETWORK_ERROR.test(String(error))
+  useEffect(() => {
+    if (!offline) return
+    try {
+      if (sessionStorage.getItem("kosha:offline-reload") === location.href) return
+      sessionStorage.setItem("kosha:offline-reload", location.href)
+    } catch {}
+    location.reload()
+  }, [offline])
+  return (
+    <div className="p-8 text-sm">
+      <p className="font-medium">{offline ? "You're offline" : "Something went wrong"}</p>
+      <p className="mt-1 text-muted-foreground">
+        {offline
+          ? "This page wasn't saved on this device. Open it again once you're back online."
+          : error instanceof Error
+            ? error.message
+            : String(error)}
+      </p>
+    </div>
+  )
+}

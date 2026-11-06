@@ -16,6 +16,7 @@ import { KoshaLogo } from "@/components/kosha-mark"
 import { useMarkHydrated } from "@/components/motion"
 import { SearchPalette } from "@/components/search-palette"
 import { QuickAdd } from "@/components/quick-add"
+import { PwaPrompts } from "@/components/pwa-prompts"
 import { LOCALE, monthOf, shiftMonth } from "@/lib/core"
 import { syncPreferences } from "@/lib/theme"
 import { cn } from "@/lib/utils"
@@ -192,6 +193,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <SearchPalette open={searching} onOpenChange={setSearching} onAdd={add} />
         <QuickAdd open={adding} onOpenChange={setAdding} initial={addText} />
         <ShortcutsDialog open={shortcuts} onOpenChange={setShortcuts} />
+        <PwaPrompts uid={prefsUser.id} bare={bare} />
       </div>
     </ShortcutsContext>
   )

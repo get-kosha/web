@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { CategoryIcon } from "@/components/category-icon"
 import { useMeta } from "@/components/shell"
-import { deleteTransaction, saveTransaction, suggestPayees, type PayeeSuggestion } from "@/lib/api"
+import { suggestPayees, type PayeeSuggestion } from "@/lib/api"
+import { addTransaction } from "@/lib/offline"
 import { WALLET_KEY, startWallet } from "@/lib/add-defaults"
 import { LOCALE, addDays, dayOf, eventFor, fmt, guessCategory, isNeutral, parseAmount } from "@/lib/core"
 import { parseQuickAdd } from "@/lib/quick-add"
@@ -164,29 +165,27 @@ function Body({
     setBusy(true)
     try {
       const name = payee.value.trim()
-      const { id } = await saveTransaction({
-        data: {
-          walletId: wallet.id,
-          categoryId: category.id,
-          name,
-          note: "",
-          amount: signed,
-          day,
-          paid: true,
-          tags: p.tags,
-        },
+      const { queued, undo } = await addTransaction(meta.user.id, {
+        walletId: wallet.id,
+        categoryId: category.id,
+        name,
+        note: "",
+        amount: signed,
+        day,
+        paid: true,
+        tags: p.tags,
       })
       try {
         localStorage.setItem(WALLET_KEY, wallet.id)
       } catch {}
       onDone()
-      await router.invalidate()
-      toast(`Added ${fmt(signed, currency)} · ${name || category.name}`, {
+      if (!queued) await router.invalidate()
+      toast(`${queued ? "Saved offline" : "Added"} ${fmt(signed, currency)} · ${name || category.name}`, {
         action: {
           label: "Undo",
           onClick: async () => {
-            await deleteTransaction({ data: { id } })
-            await router.invalidate()
+            await undo()
+            if (!queued) await router.invalidate()
           },
         },
       })

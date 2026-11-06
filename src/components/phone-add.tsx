@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { CategoryStrip, Extras, TransactionForm } from "@/components/transaction-form"
 import { bottomSheet, segment, segmentButton, useMeta } from "@/components/shell"
-import { deleteTransaction, saveTransaction, suggestPayees, type PayeeSuggestion } from "@/lib/api"
+import { suggestPayees, type PayeeSuggestion } from "@/lib/api"
+import { addTransaction } from "@/lib/offline"
 import { WALLET_KEY, startWallet } from "@/lib/add-defaults"
 import { LOCALE, addDays, dayOf, eventFor, fmt, guessCategory, isNeutral } from "@/lib/core"
 import { cn } from "@/lib/utils"
@@ -106,21 +107,29 @@ export function PhoneAdd() {
     setSaving(true)
     try {
       const name = payee.trim()
-      const { id } = await saveTransaction({
-        data: { walletId: wallet.id, categoryId: chosen, name, note, amount: signed, day, paid: true, tags, eventId },
+      const { queued, undo } = await addTransaction(meta.user.id, {
+        walletId: wallet.id,
+        categoryId: chosen,
+        name,
+        note,
+        amount: signed,
+        day,
+        paid: true,
+        tags,
+        eventId,
       })
       try {
         localStorage.setItem(WALLET_KEY, wallet.id)
       } catch {
         // remembering the account is a convenience only
       }
-      await router.invalidate()
-      toast(`Added ${fmt(signed, currency)} · ${name || chosenCat?.name}`, {
+      if (!queued) await router.invalidate()
+      toast(`${queued ? "Saved offline" : "Added"} ${fmt(signed, currency)} · ${name || chosenCat?.name}`, {
         action: {
           label: "Undo",
           onClick: async () => {
-            await deleteTransaction({ data: { id } })
-            await router.invalidate()
+            await undo()
+            if (!queued) await router.invalidate()
           },
         },
       })

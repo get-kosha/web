@@ -4,7 +4,7 @@ import { initials } from "@/components/account-menu"
 import { Input } from "@/components/ui/input"
 import { SettingGroup, SettingRow } from "@/components/settings/row"
 import { useSave } from "@/components/settings/saved"
-import { authClient } from "@/lib/auth-client"
+import { authClient, signOut } from "@/lib/auth-client"
 
 export function Profile() {
   const { user } = useMeta()
@@ -67,10 +67,7 @@ export function Profile() {
       <SettingGroup className="md:hidden">
         <button
           type="button"
-          onClick={async () => {
-            await authClient.signOut()
-            window.location.assign("/login")
-          }}
+          onClick={signOut}
           className="flex min-h-[52px] w-full items-center px-4 text-left text-sm font-medium text-destructive"
         >
           Sign out

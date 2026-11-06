@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { usePref } from "@/components/settings/saved"
 import { Pill } from "@/components/settings/row"
-import { authClient } from "@/lib/auth-client"
+import { signOut } from "@/lib/auth-client"
 import { setDevicePref, setTheme } from "@/lib/theme"
 import { Switch } from "@/components/ui/switch"
 import { cn } from "@/lib/utils"
@@ -131,13 +131,7 @@ export function AccountMenu({ user, onShortcuts }: { user: { name: string; email
           </span>
         </DropdownMenuItem>
         <DropdownMenuSeparator className="-mx-1.5 my-1.5" />
-        <DropdownMenuItem
-          className={item}
-          onClick={async () => {
-            await authClient.signOut()
-            window.location.assign("/login")
-          }}
-        >
+        <DropdownMenuItem className={item} onClick={signOut}>
           <SignOutIcon /> Sign out
         </DropdownMenuItem>
       </DropdownMenuContent>
