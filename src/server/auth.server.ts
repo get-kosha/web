@@ -36,7 +36,7 @@ export const auth = betterAuth({
       },
     },
   },
-  // tanstackStartCookies must stay last: it forwards cookies set by server-side auth.api calls.
+  // tanstackStartCookies must stay last, because it forwards cookies set by server-side auth.api calls.
   plugins: [passkey({ rpName: "Kosha" }), twoFactor({ issuer: "Kosha" }), tanstackStartCookies()],
 })
 

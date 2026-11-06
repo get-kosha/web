@@ -44,7 +44,7 @@ export function Events() {
   return (
     <SettingGroup
       label="Events"
-      note="A trip or an occasion. Add entries to it from the add form; new ones dated inside it go there on their own."
+      note="A trip or an occasion. Add entries to it from the add form. New entries dated inside it join it automatically."
       actions={
         <Button
           variant="outline"
@@ -120,7 +120,7 @@ export function Events() {
           <DialogHeader>
             <DialogTitle>Delete {deleting?.name}?</DialogTitle>
             <DialogDescription>
-              Its {plural(deleting?.tx_count ?? 0)} stay; they just won’t belong to an event any more.
+              Its {plural(deleting?.tx_count ?? 0)} stay; they won't belong to an event any more.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

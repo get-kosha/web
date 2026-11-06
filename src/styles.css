@@ -139,6 +139,8 @@
 @layer base {
   html {
     -webkit-tap-highlight-color: transparent;
+    /* Native checkboxes, radios and range inputs take the user's accent instead of browser blue. */
+    accent-color: var(--brand);
   }
   ::selection {
     background: color-mix(in oklab, var(--positive) 22%, transparent);
@@ -361,9 +363,6 @@
 :root[data-accent="blue"] {
   --brand: #2563eb;
 }
-:root[data-accent="violet"] {
-  --brand: #7c3aed;
-}
 :root[data-accent="amber"] {
   --brand: #b45309;
 }
@@ -375,9 +374,6 @@
 }
 :root.dark[data-accent="blue"] {
   --brand: #60a5fa;
-}
-:root.dark[data-accent="violet"] {
-  --brand: #a78bfa;
 }
 :root.dark[data-accent="amber"] {
   --brand: #fbbf24;

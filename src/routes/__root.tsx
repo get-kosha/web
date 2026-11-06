@@ -1,4 +1,4 @@
-import { HeadContent, Outlet, Scripts, createRootRoute } from "@tanstack/react-router"
+import { HeadContent, Link, Outlet, Scripts, createRootRoute } from "@tanstack/react-router"
 import { Toaster } from "@/components/ui/sonner"
 import { themeScript } from "@/lib/theme"
 import appCss from "../styles.css?url"
@@ -24,7 +24,14 @@ export const Route = createRootRoute({
       { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
     ],
   }),
-  notFoundComponent: () => <p className="p-8 text-sm text-muted-foreground">Page not found.</p>,
+  notFoundComponent: () => (
+    <div className="p-8 text-sm text-muted-foreground">
+      <p>Page not found.</p>
+      <Link to="/" className="mt-2 inline-block text-foreground underline underline-offset-4">
+        Go to Overview
+      </Link>
+    </div>
+  ),
   errorComponent: ({ error }) => (
     <div className="p-8 text-sm">
       <p className="font-medium">Something went wrong</p>

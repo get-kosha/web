@@ -36,7 +36,7 @@ export function PhoneAdd() {
   const [payee, setPayee] = useState("")
   const [categoryId, setCategoryId] = useState<string | null>(null)
   const [walletId, setWalletId] = useState(wallets[0]?.id ?? "")
-  // The default or last account; read after mount so server and client render the same first frame.
+  // Start on the default or last used account. Read it after mount so server and client render the same first frame.
   useEffect(() => {
     const id = startWallet(
       meta.prefs.default_wallet,
@@ -48,7 +48,7 @@ export function PhoneAdd() {
   const [sheetOpen, setSheetOpen] = useState<"account" | "date" | null>(null)
   const [note, setNote] = useState("")
   const [tags, setTags] = useState<string[]>([])
-  // undefined until picked: follows the event the chosen day falls in.
+  // Until you pick an event this stays undefined, and the entry gets the event its day falls in.
   const [pickedEvent, setPickedEvent] = useState<string | null | undefined>(undefined)
   const eventId = pickedEvent !== undefined ? pickedEvent : eventFor(day, meta.events)
   const [match, setMatch] = useState<PayeeSuggestion | null>(null)
@@ -59,7 +59,7 @@ export function PhoneAdd() {
   const cents = Math.round(Number(amount || "0") * 100)
   const signed = kind === "income" ? cents : -cents
 
-  // The payee's past: usual amount, category and account.
+  // Look up the payee's usual amount, category and account.
   useEffect(() => {
     const q = payee.trim()
     if (q.length < 2) return setMatch(null)
@@ -84,7 +84,7 @@ export function PhoneAdd() {
       : match && candidates.some((c) => c.id === match.category_id)
         ? match.category_id
         : guessCategory(payee, meta.rules)
-  // Most used first, with this payee's usual category leading.
+  // Most used first, with this payee's usual category at the front.
   const ordered = useMemo(() => {
     const top = [...candidates].sort((a, b) => b.uses - a.uses)
     return [...top.filter((c) => c.id === usual), ...top.filter((c) => c.id !== usual)]
@@ -131,7 +131,7 @@ export function PhoneAdd() {
       setTags([])
       setPickedEvent(undefined)
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not add")
+      toast.error(e instanceof Error ? e.message : "Couldn't add")
     } finally {
       setSaving(false)
     }
@@ -241,7 +241,7 @@ export function PhoneAdd() {
 
           <div>
             <div className="mx-0.5 mb-2 text-xs text-muted-foreground">
-              Category{usual ? " · this payee’s usual first" : ""}
+              Category{usual ? " · this payee's usual first" : ""}
             </div>
             <CategoryStrip categories={ordered} value={chosen} onPick={setCategoryId} />
           </div>

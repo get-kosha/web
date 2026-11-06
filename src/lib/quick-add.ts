@@ -1,4 +1,4 @@
-// Quick add (⌘K): one line of text, parsed live into a transaction. Pure, so core.test.ts can check it.
+// Quick add (⌘K) parses one line of text into a transaction as you type. It is pure, so core.test.ts can check it.
 import { cleanTag } from "./core.ts"
 
 export type QuickParse = {
@@ -15,9 +15,9 @@ export type QuickParse = {
 }
 
 /**
- * `#word` is a tag; first number is the amount (`,` or `.` decimals, leading `+` = income); `today`/`yesterday` set the date;
- * a word equal to an account's name or its first word sets the account; a 3+ letter word that prefixes a
- * category name sets the category; the remaining words are the payee.
+ * `#word` is a tag. The first number is the amount, with `,` or `.` decimals and a leading `+` for income.
+ * `today` or `yesterday` sets the date. A word equal to an account's name or its first word sets the account.
+ * A word of 3 or more letters that starts a category name sets the category. The remaining words are the payee.
  */
 export function parseQuickAdd(
   q: string,

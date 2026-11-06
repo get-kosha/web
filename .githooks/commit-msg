@@ -1,5 +1,6 @@
 #!/bin/sh
-# Conventional Commits: type(optional-scope)!: subject — https://www.conventionalcommits.org
+# Checks the header follows Conventional Commits, type(optional-scope)!: subject.
+# See https://www.conventionalcommits.org
 header=$(head -n 1 "$1")
 
 # Messages git writes itself (merges, reverts, fixup!/squash! for autosquash).

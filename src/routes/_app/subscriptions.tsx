@@ -63,7 +63,7 @@ function relative(day: string, today: string) {
   const d = daysBetween(today, day)
   return d === 0 ? "today" : d === 1 ? "tomorrow" : d === -1 ? "yesterday" : d > 0 ? `in ${d} days` : `${-d} days ago`
 }
-/** "month", "3 months", "year". */
+/** Formats an interval as "month", "3 months" or "year". */
 const every = (n: number, unit: Unit) => (n === 1 ? unit : `${n} ${unit}s`)
 /** Next date in the list: "1 Dec", or "Oct '27" when it's most of a year away. */
 const nextLabel = (day: string, today: string) =>
@@ -98,7 +98,7 @@ function Subscriptions() {
   const selected = subs.find((x) => x.id === s.id)
   const shown = selected ?? active[0]
 
-  // Money going out on a schedule: bills and subscriptions count, transfers between your accounts don't.
+  // Committed counts scheduled money going out. That means bills and subscriptions, not transfers between your accounts.
   const costs = active.filter((x) => x.amount < 0 && !x.to_wallet_id && !isNeutral(x.category_id))
   const bills = costs.filter((x) => groupOf(x) === "Bills").reduce((t, x) => t + perMonth(x), 0)
   const subsCost = costs.filter((x) => groupOf(x) === "Subscriptions").reduce((t, x) => t + perMonth(x), 0)
@@ -116,10 +116,11 @@ function Subscriptions() {
         <PageHeader
           title="Recurring"
           sub={
-            <span className="num">
-              {active.length - transfersActive} active · {transfersActive} transfer{transfersActive === 1 ? "" : "s"} ·{" "}
-              {ended.length} ended
-            </span>
+            <>
+              <span className="num">{active.length - transfersActive}</span> active ·{" "}
+              <span className="num">{transfersActive}</span> transfer{transfersActive === 1 ? "" : "s"} ·{" "}
+              <span className="num">{ended.length}</span> ended
+            </>
           }
         >
           <Button
@@ -172,7 +173,12 @@ function Subscriptions() {
             aria-label="Recurring payments"
           >
             {groups.length === 0 && (
-              <p className="p-8 text-center text-sm text-muted-foreground">Nothing recurring yet.</p>
+              <div className="p-8 text-center text-sm text-muted-foreground">
+                <p>Nothing recurring yet. Add rent, a subscription or a regular transfer once and Kosha tracks it.</p>
+                <Button variant="outline" className="mt-3" onClick={() => setCreating(true)}>
+                  <PlusIcon /> New recurring
+                </Button>
+              </div>
             )}
             {groups.map(({ g, rows }, n) => {
               const total = rows.filter((x) => x.amount < 0).reduce((t, x) => t + perMonth(x), 0)
@@ -481,12 +487,12 @@ function Detail({ sub, today, displayCurrency }: { sub: SubscriptionView; today:
       await router.invalidate()
       toast.success(ok)
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Failed")
+      toast.error(e instanceof Error ? e.message : "Couldn't update the payment")
     }
   }
 
   async function setEnd(end: string | null) {
-    // Resuming continues the old rhythm from today on, without back-filling the gap.
+    // Resuming keeps the old schedule from today on and doesn't back-fill the gap.
     const nextDay = end
       ? sub.start_day
       : sub.start_day >= today
@@ -516,7 +522,7 @@ function Detail({ sub, today, displayCurrency }: { sub: SubscriptionView; today:
       setConfirm(null)
       toast.success(end ? `${sub.name} ended` : `${sub.name} resumed`)
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Failed")
+      toast.error(e instanceof Error ? e.message : "Couldn't update the schedule")
     }
   }
 
@@ -528,7 +534,7 @@ function Detail({ sub, today, displayCurrency }: { sub: SubscriptionView; today:
       await router.invalidate()
       toast.success("Deleted")
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Failed")
+      toast.error(e instanceof Error ? e.message : "Couldn't delete it")
     }
   }
 
@@ -592,7 +598,7 @@ function Detail({ sub, today, displayCurrency }: { sub: SubscriptionView; today:
             {next.edited && " · changed for this payment only"}
             {sub.end_day && ` · ends ${long(sub.end_day)}`}
           </p>
-          {/* Primary action full width; the rest share one row underneath, so nothing runs off a narrow panel. */}
+          {/* The primary action takes the full width. The rest share one row, so nothing overflows a narrow panel. */}
           <div className="mt-3.5 grid grid-cols-2 gap-2">
             {sub.variable ? (
               <Button size="lg" className="col-span-2" onClick={() => setInstance({ i: next, pay: true })}>
@@ -705,7 +711,7 @@ function Detail({ sub, today, displayCurrency }: { sub: SubscriptionView; today:
             <DialogTitle>{confirm === "delete" ? `Delete ${sub.name}?` : `End ${sub.name}?`}</DialogTitle>
             <DialogDescription>
               {confirm === "delete"
-                ? "The schedule is removed. Past payments stay in Activity as ordinary transactions."
+                ? "This removes the schedule. Past payments stay in Activity as ordinary transactions."
                 : "No payments after today. Past payments stay in Activity, and you can resume it later."}
             </DialogDescription>
           </DialogHeader>
@@ -753,7 +759,7 @@ function Detail({ sub, today, displayCurrency }: { sub: SubscriptionView; today:
   )
 }
 
-/** One label / value row; the value never wraps or clips, the label gives way. */
+/** One label and value row. The value never wraps or clips, so the label truncates instead. */
 function Mini({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-baseline justify-between gap-4">
@@ -807,7 +813,7 @@ function InstanceForm({
       toast.success(pay ? "Recorded" : "Payment updated")
       onDone()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed")
+      toast.error(err instanceof Error ? err.message : "Couldn't save the payment")
     }
   }
 

@@ -105,7 +105,7 @@ insert(
   ])
 )
 // Opening balances need category '0' and transfers need the other two, whatever the backup has.
-// Inserted before anything that points at them: D1 checks foreign keys as it goes.
+// Insert them before anything that points at them, because D1 checks foreign keys as it goes.
 insert(
   "categories",
   ["id", "name", "icon", "income", "sort"],

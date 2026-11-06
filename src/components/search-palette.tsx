@@ -29,10 +29,13 @@ const PAGES = [
   { to: "/accounts", label: "Accounts", icon: CreditCardIcon },
   { to: "/categories", label: "Categories", icon: TagIcon },
   { to: "/settings", label: "Settings", icon: GearSixIcon },
-  { to: "/account", label: "Account & security", icon: ShieldCheckIcon },
+  { to: "/account", label: "Sign-in & security", icon: ShieldCheckIcon, keywords: "account password passkey" },
 ] as const
 
-/** ⌘K: find payees, categories, accounts and pages. Opens instantly, no animation (keyboard-driven, used constantly). */
+/**
+ * ⌘K search for payees, categories, accounts and pages. It has no animation and opens instantly,
+ * since it is keyboard-driven and used constantly.
+ */
 export function SearchPalette({
   open,
   onOpenChange,
@@ -100,7 +103,7 @@ function Body({ close, onAdd }: { close: () => void; onAdd: (text: string) => vo
       id: "search",
       group: "Activity",
       icon: <MagnifyingGlassIcon />,
-      label: <>Search activity for “{text}”</>,
+      label: <>Search activity for "{text}"</>,
       run: activity({ q: text }),
     })
     for (const p of payees.slice(0, 5)) {
@@ -139,7 +142,9 @@ function Body({ close, onAdd }: { close: () => void; onAdd: (text: string) => vo
         run: activity({ wallet: w.id }),
       })
   }
-  for (const p of PAGES.filter((x) => !low || x.label.toLowerCase().includes(low)))
+  for (const p of PAGES.filter(
+    (x) => !low || `${x.label} ${"keywords" in x ? x.keywords : ""}`.toLowerCase().includes(low)
+  ))
     items.push({
       id: `page:${p.to}`,
       group: "Go to",
@@ -152,8 +157,8 @@ function Body({ close, onAdd }: { close: () => void; onAdd: (text: string) => vo
     id: "add",
     group: "Add",
     icon: <PlusIcon />,
-    label: text ? <>Add “{text}” as a transaction</> : "Add a transaction",
-    end: <Hint>quick add</Hint>,
+    label: text ? <>Add "{text}" as a transaction</> : "Add a transaction",
+    end: <Hint>Quick add</Hint>,
     run: go(() => onAdd(text)),
   })
 

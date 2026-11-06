@@ -11,13 +11,13 @@ export const CORRECTION_CATEGORY = "0"
 export const TRANSFER_CATEGORY = "transfer"
 /** Categories that are never income or spending. */
 export const isNeutral = (categoryId: string) => categoryId === CORRECTION_CATEGORY || categoryId === TRANSFER_CATEGORY
-/** Categories Kosha itself relies on: they can be renamed and re-iconed, never archived, merged or retyped.
+/** Categories Kosha itself relies on. They can be renamed and re-iconed, but never archived, merged or retyped.
  *  '0' and 'transfer' are neutral and stay out of category management. */
 export const isSystemCategory = (id: string) =>
   id === CORRECTION_CATEGORY || id === TRANSFER_CATEGORY || id === "transfer_fee"
 export const NEUTRAL_SQL = `('${CORRECTION_CATEGORY}', '${TRANSFER_CATEGORY}')`
 
-/** Only same-origin paths, never "//host". */
+/** Allows only same-origin paths, never "//host". */
 export const safeReturn = (p: string | null | undefined) => (p && p.startsWith("/") && !p.startsWith("//") ? p : "/")
 
 export function convert(cents: number, from: string, to: string, rates: Rates) {
@@ -44,7 +44,7 @@ export function fmt(cents: number, currency: string, compact = false) {
   return f.format(cents / 100)
 }
 
-/** "12,50" | "1.234,56" | "1,234.56" | "-45" | "€ 12.00" | "12.00 Dr" -> cents, or null */
+/** Parses "12,50", "1.234,56", "1,234.56", "-45", "€ 12.00" or "12.00 Dr" into cents, or returns null. */
 export function parseAmount(input: string): number | null {
   let s = input.trim()
   if (!s) return null
@@ -78,7 +78,7 @@ export function parseAmount(input: string): number | null {
 // --- time zones: stored dates are unix seconds; days and months are read in the user's zone ---
 
 const dayFormats = new Map<string, Intl.DateTimeFormat>()
-/** unix seconds -> "YYYY-MM-DD" in tz */
+/** Formats unix seconds as "YYYY-MM-DD" in `tz`. */
 export function dayOf(unix: number, tz: string) {
   let f = dayFormats.get(tz)
   if (!f) {
@@ -106,12 +106,12 @@ function offsetMs(utcMs: number, tz: string) {
   )
   return Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour, +p.minute, +p.second) - utcMs
 }
-/** "YYYY-MM-DD" (+hour) in tz -> unix seconds */
+/** Converts "YYYY-MM-DD" (plus an optional hour) in `tz` to unix seconds. */
 export function unixOf(day: string, tz: string, hour = 0) {
   const guess = Date.UTC(+day.slice(0, 4), +day.slice(5, 7) - 1, +day.slice(8, 10), hour)
   return Math.floor((guess - offsetMs(guess, tz)) / 1000)
 }
-/** "YYYY-MM" -> [start, end) unix seconds in tz */
+/** Returns the [start, end) unix seconds of a "YYYY-MM" month in `tz`. */
 export function monthRange(month: string, tz: string): [number, number] {
   const [y, m] = month.split("-").map(Number)
   const next = m === 12 ? `${y + 1}-01` : `${y}-${String(m + 1).padStart(2, "0")}`
@@ -152,7 +152,7 @@ export const cleanTag = (t: string) =>
     .replace(/[^\p{L}\p{N}_-]/gu, "")
     .slice(0, 32)
 
-/** Typed text ("#trip, food rome") to unique stored tags, in the order typed. */
+/** Turns typed text ("#trip, food rome") into unique stored tags, in the order typed. */
 export function parseTags(text: string) {
   const out: string[] = []
   for (const part of text.split(/[\s,]+/)) {
@@ -162,7 +162,7 @@ export function parseTags(text: string) {
   return out.slice(0, MAX_TAGS)
 }
 
-/** The stored JSON column to a list; anything unreadable is no tags. */
+/** Reads the stored JSON column as a list. Anything unreadable gives no tags. */
 export function tagList(json: string | null | undefined): string[] {
   try {
     const v: unknown = JSON.parse(json || "[]")
@@ -175,7 +175,7 @@ export function tagList(json: string | null | undefined): string[] {
 export type EventSpan = { id: string; start_day: string | null; end_day: string | null }
 
 /**
- * The event a new entry on `day` belongs to by default: one whose dates cover the day. A missing end
+ * By default, a new entry on `day` belongs to the event whose dates cover that day. A missing end
  * means it is still going. When events overlap, the one that started last (the more specific) wins.
  */
 export function eventFor(day: string, events: EventSpan[]) {
@@ -206,7 +206,7 @@ export function cumulative(daily: number[]) {
   return daily.map((v) => (sum += v))
 }
 
-/** Average of cumulative curves over `days` days; a shorter month holds its last value. Null without history. */
+/** Average of cumulative curves over `days` days; a shorter month holds its last value. Returns null without history. */
 export function usualCurve(curves: number[][], days: number) {
   if (!curves.length) return null
   return Array.from(
@@ -220,7 +220,7 @@ export function addDays(day: string, n: number) {
   return iso(Date.UTC(y, m - 1, d + n))
 }
 
-/** n-th occurrence (0 = start_day). Month steps keep the start's day, clamped to short months. */
+/** The n-th occurrence, where 0 is start_day. Month steps keep the start's day, clamped to short months. */
 export function occurrence(s: Schedule, n: number) {
   const [y, m, d] = ymd(s.start_day)
   if (s.unit === "day" || s.unit === "week") return addDays(s.start_day, n * s.every * (s.unit === "week" ? 7 : 1))
@@ -394,7 +394,7 @@ export const PREFS = {
   theme: pref(z.enum(["light", "dark", "system"]), "system"),
   layout: pref(z.enum(["boxed", "full"]), "boxed"),
   motion: pref(z.enum(["on", "reduced", "off"]), "on"),
-  accent: pref(z.enum(["teal", "blue", "violet", "amber", "rose", "graphite"]), "teal"),
+  accent: pref(z.enum(["teal", "blue", "amber", "rose", "graphite"]), "teal"),
   density: pref(z.enum(["comfortable", "compact"]), "comfortable"),
   figures: pref(z.enum(["mono", "proportional"]), "mono"),
   hide_amounts: pref(z.enum(["0", "1"]), "0"),
@@ -440,8 +440,8 @@ function fnv1a(s: string) {
 
 /**
  * Exactly what an AI request may contain for one transaction, per Settings › AI › What AI can see.
- * Payee off: a per-user stable code, so a model can still group them. Exact dates off: only YYYY-MM.
- * Notes and account names are left out entirely unless shared.
+ * With payee off, the payee becomes a stable per-user code, so a model can still group them. With exact
+ * dates off, only YYYY-MM is sent. Notes and account names are left out unless shared.
  */
 export function redactForAi(tx: AiTx, shares: AiShares, uid: string) {
   const out: Record<string, string | number | null> = {

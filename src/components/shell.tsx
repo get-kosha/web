@@ -22,13 +22,13 @@ import type { Meta } from "@/lib/api"
 
 const app = getRouteApi("/_app")
 
-/** Moving between the main pages: the content crossfades and rises a little; the header stays put. */
+/** Between the main pages, the content crossfades and rises a little while the header stays still. */
 const pageTransition = {
   types: () => (document.documentElement.dataset.motion === "off" ? false : ["page"]),
 }
 
 const ShortcutsContext = createContext<() => void>(() => {})
-/** Opens the keyboard shortcuts dialog (it lives in the shell). */
+/** Opens the keyboard shortcuts dialog, which the shell renders. */
 export const useShortcuts = () => useContext(ShortcutsContext)
 
 export const isTyping = (t: EventTarget | null) =>
@@ -67,13 +67,13 @@ export function AppShell({ children }: { children: ReactNode }) {
   }
   // Settings isn't about a month or a currency, so the header drops those controls there.
   const settings = useLocation({ select: (l) => l.pathname.startsWith("/settings") })
-  // /add and Settings are full-screen on phone: no top header or tab bar around them.
+  // /add and Settings are full-screen on phones, with no top header or tab bar around them.
   const bare = useLocation({ select: (l) => l.pathname === "/add" }) || settings
 
   const navigate = useNavigate()
   const [shortcuts, setShortcuts] = useState(false)
   // ⌘K / Ctrl+K opens search from anywhere (and closes it again). ⌘, opens Settings and ? lists the
-  // shortcuts; both wait while you're typing in a field.
+  // shortcuts, but neither works while you're typing in a field.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const mod = e.metaKey || e.ctrlKey
@@ -222,7 +222,7 @@ export const monthLabel = (m: string, year = true) =>
     timeZone: "UTC",
   })
 
-/** Bottom sheet: the Dialog popup pinned to the bottom edge on phones, sliding up with the drawer curve. */
+/** Makes the Dialog popup a bottom sheet on phones, pinned to the bottom edge and sliding up on the drawer curve. */
 export const bottomSheet =
   "top-auto bottom-0 left-0 max-w-none translate-x-0 translate-y-0 rounded-b-none p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:max-w-none ease-drawer data-open:duration-300 data-open:zoom-in-100 data-open:slide-in-from-bottom data-closed:zoom-out-100 data-closed:slide-out-to-bottom md:top-1/2 md:bottom-auto md:left-1/2 md:max-w-md md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-xl md:data-open:slide-in-from-bottom-0 md:data-closed:slide-out-to-bottom-0"
 
@@ -231,7 +231,7 @@ export const segment = "inline-flex h-9 items-center rounded-md border bg-card p
 export const segmentButton =
   "inline-flex h-[30px] min-w-[30px] items-center justify-center rounded-[6px] px-2 text-xs text-muted-foreground transition-colors hover:text-foreground aria-pressed:bg-muted aria-pressed:font-medium aria-pressed:text-foreground max-md:h-11 max-md:min-w-11"
 
-/** ‹ November 2026 › — drives the app-wide month. Links, so hovering an arrow preloads that month. */
+/** The ‹ November 2026 › stepper sets the app-wide month. Its arrows are links, so hovering one preloads it. */
 function MonthStepper() {
   const { month, current } = useGlobals()
   const to = (by: number) => {
@@ -263,7 +263,7 @@ export function currencyOptions({ primary, wallets, order }: Pick<Meta, "primary
   return [...order.filter((c) => used.has(c)), ...[...used].filter((c) => !order.includes(c))]
 }
 
-/** Shows the display currency; clicking moves to the next one. Hidden for single-currency users. */
+/** Shows the display currency; clicking moves to the next one. It renders nothing for single-currency users. */
 function CurrencySwitch() {
   const meta = useMeta()
   const { currency } = useGlobals()

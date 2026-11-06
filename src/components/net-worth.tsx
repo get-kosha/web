@@ -3,8 +3,11 @@ import { Reveal, RollingMoney } from "@/components/motion"
 import type { Wallet } from "@/lib/api"
 import { fmt, netWorth, type Rates } from "@/lib/core"
 
-/** Investments vs cash & bank as one bar (widths by share of gross assets), a legend with amount and share,
- *  and a "Card balance" row when there are credit cards. Render-only: place it inside a card. */
+/**
+ * Investments and cash & bank in one bar, each as wide as its share of gross assets. The legend gives
+ * each amount and share, plus a "Card balance" row when there are credit cards. It draws no card of
+ * its own, so place it inside one.
+ */
 export function CompositionBar({ wallets, currency, rates }: { wallets: Wallet[]; currency: string; rates: Rates }) {
   const nw = netWorth(wallets, currency, rates)
   const gross = nw.investments + nw.cash
@@ -48,7 +51,7 @@ export function CompositionBar({ wallets, currency, rates }: { wallets: Wallet[]
   )
 }
 
-/** Hero figure: Geist sans 40px (32px on phone), cents muted. */
+/** The hero figure in Geist sans at 40px (32px on phones), with the cents muted. */
 export function BigMoney({ value, currency, className }: { value: number; currency: string; className?: string }) {
   const round = getRouteApi("/_app").useLoaderData({ select: (m) => m.prefs.round_hero === "1" })
   return (

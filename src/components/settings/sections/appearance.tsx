@@ -15,7 +15,6 @@ const THEMES = [
 const ACCENTS = [
   ["teal", "Teal", "#0f766e"],
   ["blue", "Blue", "#2563eb"],
-  ["violet", "Violet", "#7c3aed"],
   ["amber", "Amber", "#b45309"],
   ["rose", "Rose", "#be123c"],
   ["graphite", "Graphite", "#3f3f46"],
@@ -38,7 +37,7 @@ export function Appearance() {
         <Preview />
       </SettingGroup>
       <SettingGroup label="Look">
-        <SettingRow id="theme" title="Theme" description="System follows your device’s light or dark setting.">
+        <SettingRow id="theme" title="Theme" description="System follows your device's light or dark setting.">
           <ThemeCards value={theme} onChange={saveTheme} />
         </SettingRow>
         <SettingRow
@@ -114,7 +113,7 @@ export function Appearance() {
         <SettingRow
           id="hide-amounts"
           title="Hide amounts"
-          description="Blur money until you hover. Handy on a train. Also in the account menu."
+          description="Blur money until you hover. The account menu has this switch too."
           control={
             <Switch
               aria-label="Hide amounts"
@@ -126,7 +125,7 @@ export function Appearance() {
         <SettingRow
           id="animations"
           title="Animations"
-          description="Charts drawing in, numbers rolling, pages sliding. Reduced keeps fades only."
+          description="Charts draw in, numbers roll and pages slide. Reduced keeps only fades."
           control={
             <Segmented
               label="Animations"

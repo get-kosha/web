@@ -3,13 +3,13 @@ import { PREFS, type Prefs } from "@/lib/core"
 
 export type Theme = Prefs["theme"]
 
-// The account holds the real values (settings table, see savePreferences). This device keeps a copy in
+// savePreferences stores the real values in the account's settings table. This device keeps a copy in
 // localStorage only so they apply before the first paint, before any data loads.
 const THEME = "theme"
 const QUERY = "(prefers-color-scheme: dark)"
 const listeners = new Set<() => void>()
 
-/** Preferences that show as a data attribute on <html> (styles.css keys off them). Default = no attribute. */
+/** Preferences that show as a data attribute on <html>, which styles.css selects on. The default sets no attribute. */
 const ATTRS = {
   motion: "motion",
   accent: "accent",
@@ -19,8 +19,8 @@ const ATTRS = {
 } as const
 type DevicePref = keyof typeof ATTRS
 
-// Runs before first paint (no flash). A literal string, not fn.toString(): server and client
-// bundles print functions differently, which breaks hydration of the <script> tag.
+// Runs before the first paint, so there is no flash. It is a literal string rather than fn.toString(),
+// because server and client bundles print functions differently and that breaks hydration of the <script> tag.
 export const themeScript = `(()=>{const q=matchMedia("${QUERY}"),d=document.documentElement,g=k=>{try{return localStorage.getItem(k)}catch{}};const a=()=>{const t=g("${THEME}");d.classList.toggle("dark",t==="dark"||(t!=="light"&&q.matches))};a();q.addEventListener("change",a);${Object.entries(
   ATTRS
 )
@@ -39,7 +39,7 @@ const write = (key: string, value: string | null) => {
     if (value === null) localStorage.removeItem(key)
     else localStorage.setItem(key, value)
   } catch {
-    // private mode or blocked storage: the account still has the value
+    // Storage fails in private mode or when blocked. The account still has the value.
   }
 }
 

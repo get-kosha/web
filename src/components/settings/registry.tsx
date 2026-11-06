@@ -40,7 +40,7 @@ export type Section = {
   rows: SettingKey[]
   /** The value shown on the right of the phone list (a zone, "EUR · INR", a count). */
   summary?: (d: SummaryData) => ReactNode
-  /** A pill beside the section in the rail and phone list: open security steps, "Beta". */
+  /** A pill beside the section in the rail and phone list, such as the count of open security steps or "Beta". */
   badge?: (d: SummaryData) => { label: string; tone: "brand" | "warning" } | null
 }
 type SummaryData = { meta: Meta; account: Awaited<ReturnType<typeof accountSummary>> }
@@ -106,7 +106,7 @@ const GROUPS: Group[] = [
         id: "general",
         title: "General",
         icon: SlidersHorizontalIcon,
-        description: "Region, calendar and the defaults Kosha uses when you add things.",
+        description: "Time zone and the defaults Kosha uses when you add things.",
         component: General,
         summary: ({ meta }) => meta.tz.split("/").pop()?.replace(/_/g, " "),
         rows: [
@@ -209,9 +209,9 @@ const GROUPS: Group[] = [
           },
           {
             key: "rates-source",
-            title: "Exchange rates",
+            title: "Exchange rate source",
             description: "Where conversion rates come from.",
-            keywords: "fx forex conversion rate",
+            keywords: "exchange rates fx forex conversion rate",
           },
         ],
       },
@@ -219,7 +219,7 @@ const GROUPS: Group[] = [
         id: "categories",
         title: "Categories",
         icon: TagIcon,
-        description: "Rename, re-icon, nest or merge the categories your transactions use.",
+        description: "Rename, nest or merge the categories your transactions use, and change their icons.",
         component: Categories,
         summary: ({ account }) => account.categories,
         rows: [
@@ -251,7 +251,8 @@ const GROUPS: Group[] = [
         id: "rules",
         title: "Payee rules",
         icon: FunnelIcon,
-        description: "When a payee matches a rule, Kosha fills in the category for you. Rules always win.",
+        description:
+          "When a payee matches a rule, Kosha fills in the category for you. A rule takes priority over any other suggestion.",
         component: Rules,
         summary: ({ account }) => account.rules,
         rows: [
@@ -284,9 +285,9 @@ const GROUPS: Group[] = [
           },
           {
             key: "coming-up",
-            title: "“Coming up” range",
+            title: '"Coming up" shows',
             description: "Until month end or the next 30 days.",
-            keywords: "upcoming horizon overview",
+            keywords: "upcoming horizon overview range",
           },
         ],
       },
@@ -324,14 +325,14 @@ const GROUPS: Group[] = [
           {
             key: "ai-privacy",
             title: "What AI can see",
-            description: "Choose exactly which fields are sent.",
+            description: "Choose which fields Kosha sends.",
             keywords: "privacy data sharing redact",
           },
           {
             key: "ai-log",
-            title: "Request log",
+            title: "Keep a request log",
             description: "Every AI request for 30 days.",
-            keywords: "history audit log",
+            keywords: "request log history audit",
           },
           {
             key: "ai-usage",
@@ -350,7 +351,7 @@ const GROUPS: Group[] = [
         id: "data",
         title: "Import & export",
         icon: DatabaseIcon,
-        description: "Take all of your data out, whenever you like. Your data is yours.",
+        description: "Download all of your data, whenever you like.",
         component: ImportExport,
         rows: [
           {

@@ -60,9 +60,9 @@ export function Ai() {
       <div className="mt-7 flex items-start gap-3.5 rounded-xl bg-brand-soft px-[18px] py-4 text-[13.5px] leading-normal">
         <LockSimpleIcon className="mt-px size-5 shrink-0 text-brand" />
         <p>
-          Your data stays in Kosha. When a feature needs a model, only the fields you allow under{" "}
-          <strong className="font-semibold">What AI can see</strong> are sent, to the provider you pick. Nothing is sent
-          while AI is off.
+          Your data stays in Kosha. When a feature needs a model, Kosha sends only the fields you allow under{" "}
+          <strong className="font-semibold">What AI can see</strong>, to the provider you pick. It sends nothing while
+          AI is off.
         </p>
       </div>
       <SettingGroup>
@@ -75,7 +75,7 @@ export function Ai() {
           }
         />
       </SettingGroup>
-      {/* Off: everything below is dimmed and inert, so nothing can be changed or sent. */}
+      {/* When AI is off, everything below is dimmed and inert, so nothing can be changed or sent. */}
       <div
         inert={!on}
         className={cn("transition-[opacity,filter] duration-300 ease-out", !on && "opacity-40 saturate-[.4]")}
@@ -330,7 +330,7 @@ function ProviderCard({
           <p className="max-w-[60ch] text-xs text-muted-foreground">
             {byUrl(p.id)
               ? "Kosha calls this address from Cloudflare, not from your device."
-              : "Stored encrypted on the server and never shown again. Kosha only sends what “What AI can see” allows."}
+              : 'Kosha stores your key encrypted on the server and never shows it again. It only sends what "What AI can see" allows.'}
           </p>
         </form>
       )}
@@ -343,7 +343,7 @@ const FEATURES = [
   [
     LightningIcon,
     "Natural-language add",
-    "Type “29.57 dosaking yesterday visa” in quick add and Kosha fills the form.",
+    'Type "29.57 dosaking yesterday visa" in quick add and Kosha fills the form.',
   ],
   [ArticleIcon, "Monthly recap", "A short note on the 1st: what changed, and why."],
   [ChatCircleDotsIcon, "Ask Kosha", "Questions about your money, answered from your data."],
@@ -373,8 +373,8 @@ function Features() {
 
 const SHARES = [
   ["ai_share_amount", "amount", "Amounts", "Needed for most suggestions."],
-  ["ai_share_payee", "payee", "Payee names", "Off: replaced with a stable code."],
-  ["ai_share_date", "date", "Exact dates", "Off: only the month is sent."],
+  ["ai_share_payee", "payee", "Payee names", "When off, Kosha sends a stable code instead."],
+  ["ai_share_date", "date", "Exact dates", "When off, Kosha sends only the month."],
   ["ai_share_note", "note", "Notes", "Your own words. Off by default."],
   ["ai_share_account", "account", "Account names", "Which card or bank paid."],
 ] as const
@@ -398,8 +398,8 @@ function Visibility() {
         <div className="min-w-0 border-l p-4 max-[860px]:border-t max-[860px]:border-l-0">
           <Payload shares={shares} />
           <p className="mt-3 text-xs leading-normal text-muted-foreground">
-            Payee names can be swapped for a stable code, so the model can still group them without knowing who they
-            are.
+            With Payee names off, Kosha swaps each name for a stable code, so the model can still group them without
+            knowing who they are.
           </p>
         </div>
       </div>
@@ -407,7 +407,7 @@ function Visibility() {
         id="ai-log"
         className="border-t"
         title="Keep a request log"
-        description="Every AI request and response for 30 days, so you can check what was sent."
+        description="Keeps every AI request and response for 30 days, so you can check what was sent."
         control={
           <>
             <Button
@@ -458,7 +458,7 @@ function ShareRow({
   )
 }
 
-/** The JSON one transaction would be sent as, built with the same redactForAi the AI calls will use. */
+/** One sample transaction as JSON, redacted by the same redactForAi that AI calls will use. */
 function Payload({ shares }: { shares: AiShares }) {
   const meta = useMeta()
   const tx = {
@@ -514,7 +514,9 @@ function LogDialog({ onClose }: { onClose: () => void }) {
           <DialogDescription>Exactly what was sent and what came back, for the last 30 days.</DialogDescription>
         </DialogHeader>
         {log.length === 0 ? (
-          <p className="py-6 text-center text-sm text-muted-foreground">No requests yet. AI features come soon.</p>
+          <p className="py-6 text-center text-sm text-muted-foreground">
+            No requests yet. AI features are coming soon.
+          </p>
         ) : (
           <ul className="max-h-[60vh] overflow-y-auto">
             {log.map((r) => (

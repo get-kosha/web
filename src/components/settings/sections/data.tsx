@@ -41,7 +41,7 @@ export function ImportExport() {
   )
 }
 
-/** Fetches the file, then saves it: "Preparing…" while the server builds it, then "Downloaded". */
+/** Fetches the file, then saves it. The label reads "Preparing…" while the server builds it, then "Downloaded". */
 function ExportTile({
   href,
   file,

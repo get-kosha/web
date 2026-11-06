@@ -10,7 +10,7 @@ export function Recurring() {
       <SettingRow
         id="auto-record"
         title="Record payments automatically"
-        description="The default for new bills: record fixed amounts on their due date. Each bill keeps its own choice."
+        description="Sets the default for new bills. When on, Kosha records fixed amounts on their due date. Each bill keeps its own choice."
         control={
           <Switch
             aria-label="Record payments automatically"
@@ -21,7 +21,7 @@ export function Recurring() {
       />
       <SettingRow
         id="coming-up"
-        title="“Coming up” shows"
+        title='"Coming up" shows'
         description="What the Coming up card on Overview lists."
         control={
           <Segmented

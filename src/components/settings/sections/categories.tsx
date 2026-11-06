@@ -206,7 +206,7 @@ function Editor({
   const commit = async (patch: Patch, revert: () => void) => {
     const next = { name: name.trim(), icon, income, parentId, ...patch }
     if (!c) {
-      // A new category exists once it has a name; until then picks are kept locally.
+      // A new category exists once it has a name; until then the editor keeps its picks in local state.
       if (!next.name) return
       setBusy(true)
       try {
@@ -344,7 +344,7 @@ function Editor({
             </button>
           ))}
           {icons.length === 0 && (
-            <p className="col-span-full px-1 py-2 text-[13px] text-muted-foreground">No icon called “{iconQuery}”.</p>
+            <p className="col-span-full px-1 py-2 text-[13px] text-muted-foreground">No icon called "{iconQuery}".</p>
           )}
         </div>
       </div>
@@ -492,7 +492,8 @@ function MergeDialog({
   onMerge: (into: Cat) => void
 }) {
   const [into, setInto] = useState("")
-  // Same type; not itself or one of its subcategories; with subcategories of its own, only into a top-level category.
+  // Targets share the category's type and aren't the category or one of its subcategories. A category with
+  // subcategories can only merge into a top-level category.
   const targets = tree(
     all.filter(
       (x) =>
@@ -520,7 +521,7 @@ function MergeDialog({
             ]
               .filter(Boolean)
               .join(", ")}{" "}
-            move to the category you pick. Then {c.name} is deleted. This can’t be undone.
+            move to the category you pick. Then Kosha deletes {c.name}. This can't be undone.
           </DialogDescription>
         </DialogHeader>
         <Pick

@@ -65,7 +65,7 @@ export function General() {
         <SettingRow
           id="default-account"
           title="Default account"
-          description="Pre-selected when you add something. Last used follows this device."
+          description="Pre-selected when you add something. Last used picks the last account you used on this device."
           control={
             <Pick
               value={wallet === "last" ? "" : wallet}
@@ -95,7 +95,7 @@ export function General() {
         <SettingRow
           id="suggest-category"
           title="Suggest a category"
-          description="From your payee rules and the payee’s past transactions."
+          description="From your payee rules and the payee's past transactions."
           control={
             <Switch
               aria-label="Suggest a category"

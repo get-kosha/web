@@ -35,7 +35,7 @@ export function Currencies() {
   const [items, setItems] = useState(order)
   const [prev, setPrev] = useState(order.join())
   if (prev !== order.join()) {
-    // The saved order changed (or a save failed and reverted): follow it.
+    // The saved order changed (or a save failed and reverted), so follow it.
     setPrev(order.join())
     setItems(order)
   }
@@ -56,7 +56,7 @@ export function Currencies() {
         label="Your currencies"
         note={
           items.length > 1
-            ? "Drag to reorder. The header’s currency switch steps through them in this order."
+            ? "Drag to reorder. The header's currency switch steps through them in this order."
             : "Add an account in another currency and it shows up here."
         }
       >
@@ -68,7 +68,7 @@ export function Currencies() {
       <SettingGroup label="Exchange rates">
         <SettingRow
           id="rates-source"
-          title="Source"
+          title="Exchange rate source"
           description={`Updated ${ago(meta.ratesUpdated)}. Kosha checks for new rates once a day.`}
           control={
             <>
@@ -181,7 +181,7 @@ function CurrencyRow({
   return (
     <li
       ref={setNodeRef}
-      // Vertical only: the row never drifts sideways while dragging.
+      // Lock the drag to vertical so the row never drifts sideways.
       style={{ transform: CSS.Translate.toString(transform && { ...transform, x: 0 }), transition }}
       className={cn(
         "relative flex min-h-12 items-center gap-3 border-t bg-card pr-5 pl-2 first:border-t-0 max-md:pr-4",

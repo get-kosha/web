@@ -61,7 +61,7 @@ export function SettingGroup({
   actions?: ReactNode
   note?: ReactNode
   danger?: boolean
-  /** Children lay out themselves (tiles), no card around them. */
+  /** Children lay themselves out (tiles) with no card around them. */
   plain?: boolean
   children: ReactNode
   className?: string
@@ -88,7 +88,7 @@ export function SettingGroup({
   )
 }
 
-/** Segmented choice on a soft track. Buttons use aria-pressed. Full width under the label on phone. */
+/** Segmented choice on a soft track. Buttons use aria-pressed. On phone it goes full width under the label. */
 export function Segmented<T extends string>({
   value,
   options,
@@ -100,7 +100,7 @@ export function Segmented<T extends string>({
   options: readonly (readonly [T, string])[]
   onChange: (v: T) => void
   label: string
-  /** On a muted surface (inline editors) the track needs to stand apart. */
+  /** On a muted surface (inline editors), the track needs its own background to stay visible. */
   className?: string
 }) {
   return (
@@ -143,7 +143,7 @@ export function Pill({ children, tone = "brand" }: { children: ReactNode; tone?:
 
 /**
  * Opens and closes its content by height and opacity (300ms). Content mounts on open and unmounts
- * once the close has played, so closed editors cost nothing.
+ * when the close animation ends, so closed editors don't render.
  */
 export function Expand({ open, children }: { open: boolean; children: ReactNode }) {
   const [mounted, setMounted] = useState(open)

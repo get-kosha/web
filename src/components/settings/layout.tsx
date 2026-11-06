@@ -18,7 +18,7 @@ const scrollBehavior = (): ScrollBehavior =>
     ? "auto"
     : "smooth"
 
-/** Rail and content side by side at md and up. While the rail search has text, results replace the content. */
+/** The rail and content sit side by side at md and up. While the rail search has text, results replace the content. */
 export function SettingsLayout({ children }: { children: ReactNode }) {
   const section = useParams({ strict: false, select: (p) => p.section })
   const current = section ?? "general"
@@ -190,7 +190,7 @@ function Results({
           {results.length ? `${results.length} ${results.length === 1 ? "result" : "results"}` : "No results"}
         </h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          {results.length ? "Pick a result to jump straight to the setting." : `Nothing matches “${query.trim()}”.`}
+          {results.length ? "Pick a result to jump straight to the setting." : `Nothing matches "${query.trim()}".`}
         </p>
       </header>
       {results.length > 0 && (
@@ -257,8 +257,8 @@ export function SectionView({ section: s }: { section: Section & { group: string
 }
 
 /**
- * /settings/general#time-zone, or a search result: scroll that row to the centre and flash it.
- * `tick` replays it when the same row is opened twice.
+ * Scrolls the row named in the URL hash (/settings/general#time-zone, or a search result) to the centre
+ * and flashes it. `tick` replays it when you open the same row twice.
  */
 function useRowFlash(tick: number) {
   const { hash, pathname } = useLocation({ select: (l) => ({ hash: l.hash, pathname: l.pathname }) })
@@ -267,7 +267,7 @@ function useRowFlash(tick: number) {
     let frame = 0
     let tries = 0
     let el: HTMLElement | null = null
-    // The new section may still be loading when the URL changes: wait for its row to exist.
+    // The new section may still be loading when the URL changes, so wait for its row to exist.
     const find = () => {
       el = document.getElementById(hash)
       if (!el) {
@@ -289,15 +289,15 @@ function useRowFlash(tick: number) {
 }
 
 /**
- * Phone push and back: a view transition typed with the direction (styles.css slides by type).
- * Skipped on wider screens and when animations are off, so those just swap.
+ * Phone push and back use a view transition typed with the direction, and styles.css slides by that type.
+ * Wider screens and animations set to off skip it, so the page just swaps.
  */
 const slide = (dir: "forward" | "back") => ({
   types: () =>
     matchMedia("(max-width: 767px)").matches && document.documentElement.dataset.motion !== "off" ? [dir] : false,
 })
 
-// Phone order: You comes after the money and AI groups, under the profile card.
+// On phone, the You group comes after the money and AI groups, under the profile card.
 const PHONE_ORDER = ["Preferences", "Money", "Intelligence", "You", "Data"]
 
 /** The phone settings list: profile card, then each group as a card of rows that push into a section. */

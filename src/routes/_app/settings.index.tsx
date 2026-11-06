@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router"
 import { PhoneList, SectionView } from "@/components/settings/layout"
 import { findSection } from "@/components/settings/registry"
 
-// Phone: the list of sections. md and up: General, with the rail marking it.
+// Phones get the list of sections. From md up, General shows and the rail marks it.
 export const Route = createFileRoute("/_app/settings/")({
   component: () => (
     <>

@@ -5,7 +5,7 @@ import { safeReturn } from "@/lib/core"
 const redirect = (to: string) => new Response(null, { status: 302, headers: { Location: to } }) as never
 
 // Every SSR page, server function and server route goes through here.
-// Static files in /public are served by Cloudflare's asset layer before the Worker runs.
+// Cloudflare's asset layer serves static files in /public before the Worker runs.
 const requireUser = createMiddleware().server(async ({ next, request }) => {
   const url = new URL(request.url)
   if (url.pathname.startsWith("/api/auth/")) return next()
@@ -17,7 +17,7 @@ const requireUser = createMiddleware().server(async ({ next, request }) => {
   return new Response("Unauthorized", { status: 401 }) as never
 })
 
-// Server functions are same-origin RPC; reject cross-site calls. POST server routes (/api/auth) too.
+// Server functions are same-origin RPC, so reject cross-site calls to them and to POST server routes (/api/auth).
 const csrf = createCsrfMiddleware({
   filter: (ctx) => ctx.handlerType === "serverFn" || ctx.request.method === "POST",
 })

@@ -3,7 +3,7 @@ import { z } from "zod"
 import { getMeta } from "@/lib/api"
 import { AppShell } from "@/components/shell"
 
-// Month and display currency are app-wide: the shell's stepper and switch set them, every page reads them.
+// Month and display currency are app-wide. The shell's stepper and switch set them, and every page reads them.
 const appSearch = z.object({
   month: z
     .string()
@@ -15,7 +15,7 @@ const appSearch = z.object({
     .optional(),
 })
 
-// Every signed-in page. /login sits outside it, so it never loads account data.
+// This layout wraps every signed-in page. /login sits outside it, so it never loads account data.
 export const Route = createFileRoute("/_app")({
   validateSearch: appSearch,
   search: { middlewares: [retainSearchParams(["month", "currency"])] },

@@ -34,7 +34,10 @@ import { cn } from "@/lib/utils"
 
 type Mode = "expense" | "income" | "transfer"
 
-/** Initial state for editing either half of a transfer: always shown as from → to, total sent including the fee. */
+/**
+ * Initial state for editing either half of a transfer. Either half opens in the from-to direction,
+ * and the amount sent includes the fee.
+ */
 function transferSides(t: Tx) {
   const fee = t.fee ?? 0
   return t.amount < 0
@@ -59,7 +62,7 @@ const PROVIDERS = ["Wise", "Xe", "Revolut", "Remitly", "Bank"]
 const cents2 = (v: number) => (Math.abs(v) / 100).toFixed(2)
 
 /**
- * Add or edit a transaction or transfer. Ends in a sticky footer: delete (when editing), Cancel, Save.
+ * Add or edit a transaction or transfer. It ends in a sticky footer with Delete (when editing), Cancel and Save.
  * `preset` starts a new transfer into `transferTo` (e.g. paying off a card) with `amount` cents prefilled.
  */
 export function TransactionForm({
@@ -96,7 +99,7 @@ export function TransactionForm({
   const [amount, setAmount] = useState(
     sides ? cents2(sides.sent) : initial ? cents2(initial.amount) : preset?.amount ? cents2(preset.amount) : ""
   )
-  // Exchange details. Either the rate or the received amount is typed; the other follows.
+  // Exchange details. You type either the rate or the received amount, and the form works out the other.
   const [fee, setFee] = useState(sides?.fee ? cents2(sides.fee) : "")
   const [provider, setProvider] = useState(initial?.provider ?? "")
   const [rateText, setRateText] = useState("")
@@ -118,7 +121,8 @@ export function TransactionForm({
   const [day, setDay] = useState(initial ? dayOf(initial.date, meta.tz) : today)
   const [paid, setPaid] = useState(initial ? !!initial.paid : true)
   const [tags, setTags] = useState(() => tagList(initial?.tags))
-  // undefined until picked: an edit keeps its event, a new entry follows the event its day falls in.
+  // Until you pick an event this stays undefined. An edit keeps its event, and a new entry gets the
+  // event its day falls in.
   const [pickedEvent, setPickedEvent] = useState<string | null | undefined>(undefined)
   const eventId =
     pickedEvent !== undefined ? pickedEvent : initial ? (initial.event_id ?? null) : eventFor(day, meta.events)
@@ -127,7 +131,7 @@ export function TransactionForm({
   const income = mode === "income"
   const transfer = mode === "transfer"
 
-  // Remember the last used account for quick entry.
+  // A new entry starts on the default or last used account.
   useEffect(() => {
     if (initial) return
     const saved = startWallet(meta.prefs.default_wallet, activeWallets, presetTo)
@@ -201,7 +205,7 @@ export function TransactionForm({
         toast.success(`${fmt(Math.abs(cents), wallet?.currency ?? meta.primary)} · ${wallet?.name} → ${toWallet?.name}`)
       } else {
         const signed = Math.abs(cents) * (income ? 1 : -1)
-        // Switching an existing transfer to expense/income: replace it.
+        // When an existing transfer becomes an expense or income, delete it and save a new transaction.
         if (initial?.transfer_id) await deleteTransaction({ data: { id: initial.id } })
         await saveTransaction({
           data: {
@@ -240,7 +244,7 @@ export function TransactionForm({
         onDone?.()
       }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not save")
+      toast.error(err instanceof Error ? err.message : "Couldn't save")
     } finally {
       setBusy(false)
     }
@@ -255,7 +259,7 @@ export function TransactionForm({
       await router.invalidate()
       onDone?.()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not delete")
+      toast.error(err instanceof Error ? err.message : "Couldn't delete")
     }
   }
 
@@ -392,13 +396,13 @@ export function TransactionForm({
             )}
           </div>
           <p className="text-xs text-muted-foreground">
-            Moves money between your accounts. Not counted as spending or income; the fee is.
+            Moves money between your accounts. It doesn't count as spending or income, but the fee does.
           </p>
         </>
       ) : (
         <>
           <label className="grid gap-1">
-            <span className="text-xs text-muted-foreground">Title</span>
+            <span className="text-xs text-muted-foreground">Payee</span>
             <Input
               value={name}
               onChange={(e) => onName(e.target.value)}
@@ -476,7 +480,7 @@ export function TransactionForm({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{initial?.transfer_id ? "Delete this transfer?" : "Delete this transaction?"}</DialogTitle>
-            {initial?.transfer_id && <DialogDescription>It is removed from both accounts.</DialogDescription>}
+            {initial?.transfer_id && <DialogDescription>This removes it from both accounts.</DialogDescription>}
           </DialogHeader>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setConfirming(false)}>
@@ -520,11 +524,11 @@ function WalletChips({
   )
 }
 
-// Full-screen page on phones (slides up), a centred dialog from md up.
+// A full-screen page that slides up on phones, and a centred dialog from md up.
 const pageSheet =
   "inset-0 flex h-dvh max-h-none w-full max-w-none translate-x-0 translate-y-0 flex-col gap-5 rounded-none pt-0 ring-0 sm:max-w-none data-open:zoom-in-100 data-open:slide-in-from-bottom-6 data-closed:zoom-out-100 data-closed:slide-out-to-bottom-6 md:inset-auto md:top-1/2 md:left-1/2 md:h-auto md:max-h-[calc(100svh-4rem)] md:max-w-lg md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-xl md:ring-1 md:data-open:zoom-in-[0.97] md:data-open:slide-in-from-bottom-0 md:data-closed:zoom-out-[0.97] md:data-closed:slide-out-to-bottom-0"
 
-/** The add/edit form as its own page: title bar with a close button, the form, its footer. */
+/** The add and edit form as its own page, with a title bar and close button above the form and its footer. */
 export function TransactionSheet({
   open,
   title,
@@ -551,7 +555,7 @@ export function TransactionSheet({
   )
 }
 
-/** Categories as a two-row strip that scrolls sideways; the chosen one is scrolled into view on open. */
+/** Categories in a two-row strip that scrolls sideways. On open, it scrolls the chosen one into view. */
 export function CategoryStrip({
   categories,
   value,
@@ -591,8 +595,8 @@ export function CategoryStrip({
 }
 
 /**
- * Note, tags and event, each hidden behind an "Add …" link until it has a value or is opened.
- * Leave out `onTags` (transfers) and only the note is offered. `auto` marks an event picked by date.
+ * Note, tags and event. Each stays behind an "Add …" link until it has a value or you open it.
+ * Without `onTags` (transfers), it offers only the note. `auto` marks an event picked by date.
  */
 export function Extras({
   note,

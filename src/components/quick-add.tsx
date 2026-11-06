@@ -13,10 +13,10 @@ import { parseQuickAdd } from "@/lib/quick-add"
 import { cn } from "@/lib/utils"
 
 /**
- * ⌘K quick add: one monospace line parsed live into a transaction.
- * No open/close animation: it's keyboard-driven and opened many times a day, so it must appear instantly.
+ * Quick add parses one monospace line into a transaction as you type. It has no open or close
+ * animation because it is keyboard-driven and opened many times a day, so it must appear instantly.
+ * `initial` prefills the line, e.g. text carried over from search.
  */
-/** `initial` prefills the line, e.g. text carried over from search. */
 export function QuickAdd({
   open,
   onOpenChange,
@@ -113,7 +113,7 @@ function Body({
     value: over.payee ?? best?.name ?? p.payee,
     state: over.payee || (p.payee && !best) ? "set" : best ? "guess" : "missing",
   } as const
-  // Settings › General › Suggest a category off: nothing is guessed, the category waits for you.
+  // With Settings › General › Suggest a category off, Kosha guesses nothing and leaves the category to you.
   const guessedCat =
     meta.prefs.suggest_category === "1" ? (guessCategory(payee.value, meta.rules) ?? best?.category_id) : undefined
   const categoryId =
@@ -124,12 +124,12 @@ function Body({
   const walletId = over.walletId ?? p.walletId ?? best?.wallet_id ?? remembered ?? wallets[0]?.id
   const wallet = meta.wallets.find((w) => w.id === walletId)
   const day = over.day ?? (p.date === "yesterday" ? addDays(today, -1) : today)
-  // The server files a new entry under the event its day falls in; show which.
+  // The server files a new entry under the event its day falls in, so show that event here.
   const event = meta.events.find((e) => e.id === eventFor(day, meta.events))
 
   const overAmount = over.amount !== undefined ? parseAmount(over.amount.replace(/^\+/, "")) : undefined
   const cents = overAmount !== undefined ? (overAmount === null ? null : Math.abs(overAmount)) : p.amount
-  // With no amount typed yet, Add opens as Settings › General › Add opens as.
+  // With no amount typed yet, Settings › General › Add opens as decides between income and expense.
   const income =
     (over.amount !== undefined
       ? over.amount.trim().startsWith("+")
@@ -147,8 +147,8 @@ function Body({
   const hint = !cents
     ? "Start with an amount, then a few words."
     : !category
-      ? "No category yet: type one, or Tab to pick."
-      : "Grey values are guesses from your history. Tab to change one."
+      ? "No category yet. Type one, or press Tab to pick."
+      : "Grey values are guesses from your history. Press Tab to change one."
 
   const searchTerm = (payee.value || q).trim()
   const searchActivity = () => {
@@ -191,7 +191,7 @@ function Body({
         },
       })
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not add")
+      toast.error(e instanceof Error ? e.message : "Couldn't add")
       setBusy(false)
     }
   }
@@ -367,7 +367,7 @@ function Body({
             <Section>Go to</Section>
             <Option onClick={searchActivity} end={<Kbd>⌘↵</Kbd>}>
               <MagnifyingGlassIcon aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
-              <span className="truncate">Search activity for “{searchTerm || "…"}”</span>
+              <span className="truncate">Search activity for "{searchTerm || "…"}"</span>
             </Option>
             <Option
               onClick={() => {
@@ -421,7 +421,7 @@ function Option({ children, end, onClick }: { children: ReactNode; end?: ReactNo
   )
 }
 
-/** Searchable category list: type to filter, ↑/↓ to move, Enter to pick. */
+/** Searchable category list. Type to filter, use the arrow keys to move and press Enter to pick. */
 function CategoryList({
   categories,
   onPick,

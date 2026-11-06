@@ -102,13 +102,13 @@ export function ActivityPanel({
       setStatus("saved")
       await router.invalidate()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not save")
+      toast.error(err instanceof Error ? err.message : "Couldn't save")
       setDraft(saved.current)
       setStatus("error")
     }
   }
 
-  /** Update the draft and save after a pause; typing waits longer than picking. */
+  /** Update the draft and save after a pause, which is longer after typing than after a pick. */
   function change(patch: Partial<Draft>, wait = 250) {
     const next = { ...(pending.current?.next ?? draft), ...patch }
     setDraft(next)
@@ -116,7 +116,7 @@ export function ActivityPanel({
     pending.current = { next, timer: setTimeout(() => void persist(next), wait) }
   }
 
-  // Switching rows or closing the panel saves whatever is still waiting.
+  // Switching rows or closing the panel saves any pending change.
   useEffect(
     () => () => {
       if (!pending.current) return
@@ -146,7 +146,7 @@ export function ActivityPanel({
       onClose()
       await router.invalidate()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not delete")
+      toast.error(err instanceof Error ? err.message : "Couldn't delete")
     }
   }
 
@@ -158,7 +158,7 @@ export function ActivityPanel({
       await router.invalidate()
       onSelect(id)
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not duplicate")
+      toast.error(err instanceof Error ? err.message : "Couldn't duplicate")
     }
   }
 
@@ -187,7 +187,7 @@ export function ActivityPanel({
   const sign = draft.amount < 0 ? -1 : 1
   const accounts = meta.wallets.filter((w) => !w.archived || w.id === draft.walletId)
 
-  // At this payee: recent payments as bars, this one highlighted.
+  // "At this payee" draws recent payments as bars and highlights this one.
   const recent = history?.recent ?? []
   const peak = Math.max(1, ...recent.map((r) => Math.abs(convert(r.amount, r.currency, cur, meta.rates))))
   const yearTotal = (history?.thisYear ?? []).reduce((t, r) => t + convert(r.amount, r.currency, cur, meta.rates), 0)
@@ -406,7 +406,7 @@ const Stat = ({ label, value }: { label: string; value: string }) => (
   </div>
 )
 
-/** The event row: a popover listing events, "No event", and a "New event" editor. */
+/** The event row. Its popover lists every event, "No event", and a "New event" editor. */
 function EventField({
   value,
   day,

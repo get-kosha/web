@@ -14,7 +14,7 @@ import {
 
 export const db = () => env.DB
 
-// Every query here and in lib/api.ts is scoped by user_id, joins included: ids are only unique per user.
+// Every query here and in lib/api.ts is scoped by user_id, joins included, because ids are only unique per user.
 
 export async function getSettings(uid: string) {
   const DB = db()
@@ -177,7 +177,7 @@ async function settle(uid: string) {
       uid,
       now
     ),
-    // The other half of a transfer follows its paid half.
+    // Once one half of a transfer is paid, mark the other half paid too.
     DB.prepare(`UPDATE transactions SET paid = 1, updated_at = unixepoch() WHERE user_id = ?1 AND paid = 0 AND transfer_id IN
       (SELECT transfer_id FROM transactions WHERE user_id = ?1 AND paid = 1 AND transfer_id IS NOT NULL)`).bind(uid),
   ]
@@ -221,7 +221,7 @@ async function settle(uid: string) {
 const settled = new Map<string, { at: number; run: Promise<void> }>()
 /**
  * Lazily settles a user's subscriptions at most every 10 minutes per isolate (no cron needed).
- * Safe to run concurrently anywhere: inserts are idempotent via the (user_id, subscription_id, due_day) index.
+ * It is safe to run concurrently anywhere, because the (user_id, subscription_id, due_day) index makes inserts idempotent.
  */
 export function ensureSettled(uid: string, force = false) {
   const last = settled.get(uid)

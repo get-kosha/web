@@ -13,8 +13,8 @@ export function categoryPath(c: Category | undefined, all: Category[]) {
 }
 
 /**
- * Searchable category list for a popover: most used first, subcategories under their parent.
- * ↑/↓ move, Enter picks. `filter` narrows which categories are offered.
+ * Searchable category list for a popover, most used first, with subcategories under their parent.
+ * The arrow keys move and Enter picks. `filter` narrows which categories it offers.
  */
 export function CategoryPicker({
   value,
@@ -67,7 +67,7 @@ export function CategoryPicker({
         />
       </label>
       <div id="category-options" role="listbox" aria-label="Categories" className="max-h-72 overflow-y-auto p-1">
-        {options.length === 0 && <p className="px-2 py-3 text-sm text-muted-foreground">No match.</p>}
+        {options.length === 0 && <p className="px-2 py-3 text-sm text-muted-foreground">No category matches.</p>}
         {options.map((c, i) => {
           const sub = !!c.parent_id && !q
           return (

@@ -35,7 +35,7 @@ const PRIVATE_HOST =
   /^(localhost|.*\.local|.*\.internal|127\.\d+\.\d+\.\d+|10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+|169\.254\.\d+\.\d+|0\.0\.0\.0|\[?::1\]?|\[?f[cd][0-9a-f]*:.*)$/i
 
 /**
- * A self-hosted endpoint, checked: Kosha calls it from Cloudflare, so loopback and LAN addresses can never
+ * Checks a self-hosted endpoint's URL. Kosha calls it from Cloudflare, so loopback and LAN addresses can never
  * answer. ponytail: checks the hostname only; a public name that resolves to a private IP isn't caught.
  */
 export function checkBaseUrl(raw: string) {
@@ -47,11 +47,13 @@ export function checkBaseUrl(raw: string) {
   }
   if (url.protocol !== "https:" && url.protocol !== "http:") throw new Error("Use an http or https URL")
   if (PRIVATE_HOST.test(url.hostname))
-    throw new Error("Self-hosted. Use a URL Cloudflare can reach, such as a Cloudflare Tunnel.")
+    throw new Error(
+      "Cloudflare can't reach a local or private address. Use a URL it can reach, such as a Cloudflare Tunnel."
+    )
   return url.toString().replace(/\/+$/, "")
 }
 
-/** Calls the provider's model list (8s timeout): proves the key or URL works and gives the models to pick from. */
+/** Calls the provider's model list with an 8s timeout. This proves the key or URL works and gives the models to pick from. */
 export async function listModels(id: AiProviderId, key: string, baseUrl: string | null) {
   const started = Date.now()
   let url: string

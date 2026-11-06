@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router"
 import { userId } from "@/server/auth.server"
 import { transactionsCsv } from "@/server/export.server"
 
-// Settings › Import & export › Transactions. The request middleware has already checked the session.
+// Serves the Transactions download in Settings › Import & export. The request middleware has already checked the session.
 export const Route = createFileRoute("/api/export/transactions.csv")({
   server: {
     handlers: {

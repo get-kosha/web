@@ -103,7 +103,7 @@ export function SubscriptionForm({
       )
       onDone(id)
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not save")
+      toast.error(err instanceof Error ? err.message : "Couldn't save")
     } finally {
       setBusy(false)
     }
@@ -287,7 +287,7 @@ export function SubscriptionForm({
         </div>
       </div>
       {autoPay && !variable && nextDay < today && (
-        <p className="-mt-2 text-xs text-muted-foreground">Payments from {nextDay} until today will be recorded.</p>
+        <p className="-mt-2 text-xs text-muted-foreground">Kosha will record payments from {nextDay} until today.</p>
       )}
 
       <div className="grid gap-1.5">
@@ -310,7 +310,7 @@ export function SubscriptionForm({
         </p>
       )}
       <Button type="submit" disabled={busy}>
-        {initial ? "Save changes" : "Add"}
+        {initial ? "Save changes" : `Add ${transfer ? "transfer" : kind === "repetitive" ? "bill" : "subscription"}`}
       </Button>
     </form>
   )

@@ -20,7 +20,7 @@ import { cn } from "@/lib/utils"
 const PAGE = 100
 
 const search = z.object({
-  // coerce: the router JSON-parses search values, so ?category=1 arrives as a number
+  // Coerce, because the router JSON-parses search values and ?category=1 arrives as a number.
   q: z.coerce.string().optional(),
   wallet: z.coerce.string().optional(),
   category: z.coerce.string().optional(),
@@ -81,7 +81,7 @@ function Activity() {
     const t = setTimeout(() => q !== (s.q ?? "") && set({ q: q || undefined }), 250)
     return () => clearTimeout(t)
   }, [q])
-  // Follow outside changes (e.g. "See all" at a payee), but never overwrite what is being typed.
+  // Follow outside changes (e.g. "See all" at a payee), but never overwrite what the user is typing.
   useEffect(() => {
     if (document.activeElement?.id !== "activity-search") setQ(s.q ?? "")
   }, [s.q])
@@ -96,7 +96,7 @@ function Activity() {
     if (selectedId && !selected) setSelectedId(null)
   }, [selectedId, selected])
 
-  // ↑/↓ move the selection, Esc closes the panel. Instant on purpose: list navigation never animates.
+  // Arrow keys move the selection and Esc closes the panel. List navigation never animates, on purpose.
   useEffect(() => {
     if (!selectedId) return
     const onKey = (e: KeyboardEvent) => {
@@ -235,7 +235,7 @@ function Activity() {
                 <button
                   type="button"
                   onClick={() => set(c.clear)}
-                  aria-label={`Remove ${c.key} filter`}
+                  aria-label={`Remove ${c.label} filter`}
                   className="inline-flex size-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground max-md:size-8"
                 >
                   <XIcon className="size-3.5" />
@@ -271,9 +271,26 @@ function Activity() {
             aria-label="Transactions"
             className="min-w-0 flex-[999_1_560px] overflow-hidden rounded-xl border bg-card"
           >
-            {groups.length === 0 && (
-              <p className="px-4 py-12 text-center text-sm text-muted-foreground">No transactions match.</p>
-            )}
+            {groups.length === 0 &&
+              (chips.length || s.q || s.type ? (
+                <div className="px-4 py-12 text-center text-sm text-muted-foreground">
+                  <p>No transactions match these filters.</p>
+                  <Button
+                    variant="outline"
+                    className="mt-3"
+                    onClick={() => {
+                      setQ("")
+                      set({ ...NO_FILTERS, q: undefined, type: undefined })
+                    }}
+                  >
+                    Clear filters
+                  </Button>
+                </div>
+              ) : (
+                <p className="px-4 py-12 text-center text-sm text-muted-foreground">
+                  No transactions this month. Entries you add show up here.
+                </p>
+              ))}
             {groups.map((g, gi) => {
               const dayTotal = g.rows.reduce(
                 (n, t) =>
@@ -387,7 +404,8 @@ function Row({
   const other = t.counter_wallet_id ? meta.wallets.find((x) => x.id === t.counter_wallet_id) : undefined
   const currency = w?.currency ?? meta.primary
   const isTransfer = !!t.transfer_id
-  // Transfers read from → to; on a single account they keep their sign, otherwise they're neutral and show what was sent.
+  // A transfer's title reads "from → to". In a list filtered to one account, it keeps its sign.
+  // Otherwise it is neutral and shows what was sent.
   const title = isTransfer
     ? t.amount < 0
       ? `${w?.name} → ${other?.name}`
@@ -459,7 +477,7 @@ const Total = ({ label, value, className }: { label: string; value: string; clas
   </div>
 )
 
-/** Every filter in one place. Changes apply as you make them; the button shows how many match. */
+/** The sheet holds every filter. Changes apply as you make them, and the button shows how many match. */
 function FiltersSheet({
   open,
   onClose,
@@ -588,7 +606,7 @@ function FilterSection({ label, note, children }: { label: string; note?: string
   )
 }
 
-/** At least / at most, applied when a field loses focus or on Enter. */
+/** The "At least" and "At most" fields. Each applies when it loses focus or on Enter. */
 function AmountRange({
   min,
   max,

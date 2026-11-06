@@ -1,5 +1,5 @@
-// Starting categories for a new account. Shared by sign-up and scripts/seed-demo.ts, so no imports.
-// '0', 'transfer' and 'transfer_fee' are used by the app itself and must exist for every user.
+// Starting categories for a new account. Sign-up and scripts/seed-demo.ts both use this file, so it has no imports.
+// The app itself uses '0', 'transfer' and 'transfer_fee', so they must exist for every user.
 
 export const DEFAULT_CATEGORIES: { id: string; name: string; icon: string; income: 0 | 1 }[] = [
   { id: "groceries", name: "Groceries", icon: "🛒", income: 0 },

@@ -33,7 +33,7 @@ const monthDay = (monthsAgo: number, day: number) => {
   const now = new Date()
   return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - monthsAgo, day)).toISOString().slice(0, 10)
 }
-/** Unix seconds at `hour` o'clock Berlin time (ignoring summer time: good enough for a day). */
+/** Unix seconds at `hour` o'clock Berlin time. It ignores summer time, which is close enough for a day. */
 const unix = (day: string, hour = 12) => Date.parse(`${day}T00:00:00Z`) / 1000 + (hour - 1) * 3600
 
 const lit = (v: unknown): string =>
@@ -602,7 +602,7 @@ insert(
     variable: s.variable ?? 0,
   }))
 )
-// Fixed-amount subscriptions with auto-pay are recorded by the app on first load. Seed the exceptions:
+// The app records fixed-amount subscriptions with auto-pay on first load. Seed the exceptions:
 // a skipped gym month, a one-off Netflix price, and the variable rupee transfers (paid by hand, through Wise).
 const gymSkip = monthDay(4, 5)
 tx({
@@ -738,7 +738,7 @@ for (const t of [
   "wallets",
 ])
   console.log(`DELETE FROM ${t} WHERE user_id = '${UID}';`)
-// Sessions, accounts and passkeys cascade. Only ever the demo id: if someone else owns the email, the insert fails.
+// Sessions, accounts and passkeys cascade. This only ever deletes the demo id. If someone else owns the email, the insert fails.
 console.log(`DELETE FROM "user" WHERE id = '${UID}';`)
 console.log(
   `INSERT INTO "user" (id, name, email, emailVerified, image, createdAt, updatedAt) VALUES ('${UID}', 'Demo', '${EMAIL}', 1, NULL, '${now}', '${now}');`

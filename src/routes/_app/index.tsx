@@ -49,7 +49,7 @@ function Overview() {
   const [gainFor, setGainFor] = useState<Wallet | null>(null)
   const p = d.primary
   const monthEnd = `${d.month}-${String(d.pace.daysInMonth).padStart(2, "0")}`
-  // Upcoming is relative to today: only the current month has anything still to pay.
+  // Upcoming is relative to today, so only the current month has anything still to pay.
   const dueThisMonth = d.month === current ? d.upcoming.filter((u) => u.day <= monthEnd) : []
   const outflow = (u: Upcoming) => (u.amount < 0 && !u.to_wallet_id ? -convert(u.amount, u.currency, p, meta.rates) : 0)
   const stillToPay = dueThisMonth.reduce((t, u) => t + outflow(u), 0)
@@ -125,7 +125,7 @@ function NetWorthCard({ d }: { d: Dash }) {
   const nw = netWorth(meta.wallets, p, meta.rates)
   const line = d.series.filter((x) => x.month <= d.month).slice(-12)
   const at = (m: string) => d.series.find((x) => x.month === m)?.netWorth
-  const thisMonth = at(d.month) === undefined ? null : at(d.month)! - (at(shiftMonth(d.month, -1)) ?? 0) // null: a future month
+  const thisMonth = at(d.month) === undefined ? null : at(d.month)! - (at(shiftMonth(d.month, -1)) ?? 0) // null means a future month
   const yearAgo = line.length > 1 ? line[0].netWorth : null
   const growth = yearAgo ? (line.at(-1)!.netWorth - yearAgo) / Math.abs(yearAgo) : null
 
@@ -193,12 +193,12 @@ function PaceCard({
   const usualBy = pace.usual?.[dayN - 1] ?? null
   const usualMonth = pace.usual?.[pace.daysInMonth - 1] ?? null
   const projected = live && usualBy !== null && usualMonth !== null ? spent + Math.max(0, usualMonth - usualBy) : null
-  const diff = usualBy !== null ? usualBy - spent : null // positive: under the usual
+  const diff = usualBy !== null ? usualBy - spent : null // positive means under the usual
   const saved = d.current.income - d.current.expense
   const name = monthName(d.month)
 
   const sentence = future ? (
-    <span className="text-muted-foreground">This month hasn’t started yet</span>
+    <span className="text-muted-foreground">This month hasn't started yet</span>
   ) : diff === null ? (
     <span className="text-muted-foreground">Not enough history yet</span>
   ) : diff >= 0 ? (
@@ -421,7 +421,7 @@ type Cat = Dash["categories"][number]
 
 function vsUsual(total: number, usual: number | null, fixed = false) {
   if (fixed) return { text: "fixed", tone: "" }
-  // A baseline under a tenth of this month's spend says "new here", not "+3766%".
+  // Show "new", not "+3766%", when the baseline is under a tenth of this month's spend.
   if (!usual || usual * 10 < total) return { text: "new", tone: "" }
   const r = (total - usual) / usual
   return { text: pct(r), tone: r > 0.2 ? "text-warning" : r < -0.05 ? "text-positive" : "" }
@@ -477,7 +477,9 @@ function WhereItWent({ d }: { d: Dash }) {
       >
         <span className="max-md:hidden">vs your usual by day {byDay}</span>
       </Head>
-      {rows.length === 0 && <p className="py-6 text-sm text-muted-foreground">No spending this month.</p>}
+      {rows.length === 0 && (
+        <p className="py-6 text-sm text-muted-foreground">No spending this month. Expenses you add show up here.</p>
+      )}
 
       {/* Desktop: category | share | spent | vs usual */}
       {rows.length > 0 && (
@@ -547,7 +549,7 @@ function WhereItWent({ d }: { d: Dash }) {
         </Reveal>
       )}
 
-      {/* Phone: top 4, bar under each row */}
+      {/* Phones show the top 4, with a bar under each row */}
       <Reveal kind="bars" className="md:hidden">
         {rows.slice(0, 4).map((r, i) => (
           <Link
@@ -642,7 +644,7 @@ function NeedsAttention({
   }
 
   for (const c of d.categories) {
-    // Over 20% above its usual pace, ignoring tiny baselines and overspends under 2% of the usual month so far.
+    // Flag a category over 20% above its usual pace. Skip tiny baselines and overspends under 2% of the usual month so far.
     const usualSoFar = d.pace.usual?.[(d.pace.today ?? d.pace.daysInMonth) - 1] ?? 0
     if (
       c.fixed ||
@@ -728,7 +730,7 @@ function ComingUp({
   outflow: (u: Upcoming) => number
 }) {
   const meta = useMeta()
-  // Settings › Recurring › "Coming up" shows: until month end, or the next 30 days.
+  // Settings › Recurring › "Coming up" picks month end or the next 30 days as the cutoff.
   const thirty = meta.prefs.upcoming_horizon === "30d"
   const end = d.month >= today.slice(0, 7) ? (thirty ? addDays(today, 30) : monthEnd) : `${today.slice(0, 7)}-31`
   const soon = items.filter((u) => u.day <= end)

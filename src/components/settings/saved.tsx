@@ -7,7 +7,7 @@ import type { Prefs } from "@/lib/core"
 export const errorOf = (e: unknown) => (e instanceof Error ? e.message : "Something went wrong")
 
 /**
- * Saves one setting in the background: the caller has already updated its own state (optimistic).
+ * Saves one setting in the background. The caller has already updated its own state (optimistic).
  * On success every loader refreshes; on failure `revert` runs and a toast says why.
  */
 export function useSave() {
@@ -31,7 +31,7 @@ export function useSave() {
 const app = getRouteApi("/_app")
 
 /**
- * One preference as local state that saves itself: the new value shows at once, `apply` runs any
+ * One preference as local state that saves itself. The new value shows at once, `apply` runs any
  * device-side effect (theme, motion), and a failed save puts both back.
  */
 export function usePref<K extends keyof Prefs>(key: K, apply?: (v: Prefs[K]) => void) {
@@ -39,7 +39,7 @@ export function usePref<K extends keyof Prefs>(key: K, apply?: (v: Prefs[K]) => 
   const [value, setValue] = useState(stored)
   const [prev, setPrev] = useState(stored)
   if (prev !== stored) {
-    // Saved elsewhere (another device, the account menu) or reverted: follow it.
+    // Another device or the account menu saved it, or a save reverted, so follow the stored value.
     setPrev(stored)
     setValue(stored)
   }

@@ -19,9 +19,9 @@ function Login() {
   const [mode, setMode] = useState<"in" | "up">("in")
   const [error, setError] = useState("")
   const [busy, setBusy] = useState(false)
-  // Set after a correct password when the account has two-factor on: the code is asked for next.
+  // Set after a correct password when the account has two-factor on. The next step asks for the code.
   const [twoFactor, setTwoFactor] = useState(false)
-  // A full page load, so every loader runs again as the new user.
+  // Use a full page load so every loader runs again as the new user.
   const done = () => window.location.assign(safeReturn(returnTo))
 
   // Offer saved passkeys in the email field's autofill (WebAuthn conditional UI).
@@ -147,7 +147,7 @@ function TwoFactorStep({ onDone, onBack }: { onDone: () => void; onBack: () => v
       ? await authClient.twoFactor.verifyBackupCode({ code: value, trustDevice: trust })
       : await authClient.twoFactor.verifyTotp({ code: value, trustDevice: trust })
     setBusy(false)
-    if (res.error) setError(res.error.message || "That code didn’t work")
+    if (res.error) setError(res.error.message || "That code didn't work. Try again.")
     else onDone()
   }
 

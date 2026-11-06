@@ -4,8 +4,9 @@ import { getRouteApi } from "@tanstack/react-router"
 import { LOCALE } from "@/lib/core"
 import { cn } from "@/lib/utils"
 
-// Set once the first (hydration) render has committed. Numbers on a hard load render final and still;
-// numbers that mount later (client navigation) roll in, so the server never sends a misleading €0.00.
+// Set once the first (hydration) render has committed. On a hard load, numbers render at their final
+// value with no animation. Numbers that mount later (client navigation) roll up from zero, so the
+// server never sends a misleading €0.00.
 let hydrated = false
 export function useMarkHydrated() {
   useEffect(() => {
@@ -28,8 +29,8 @@ function useInView<T extends Element>(initial = false) {
 }
 
 /**
- * Entrance for charts: `x` wipes in left to right (lines, areas), `bars` grows children marked
- * `bar-grow` / `bar-grow-x` with a stagger from their `--i`. Plays once, when first in view.
+ * Entrance animation for charts. `x` wipes in from left to right (lines, areas). `bars` grows children
+ * marked `bar-grow` / `bar-grow-x`, staggered by their `--i`. It plays once, when the chart first scrolls into view.
  */
 export function Reveal({ kind = "x", className, ...props }: ComponentProps<"div"> & { kind?: "x" | "bars" }) {
   const [ref, seen] = useInView<HTMLDivElement>()

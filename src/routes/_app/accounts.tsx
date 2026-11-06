@@ -89,7 +89,7 @@ const signed = (v: number, cur: string) => `${v > 0 ? "+" : ""}${fmt(v, cur)}`
 const pct = (part: number, whole: number) =>
   whole ? `${part >= 0 ? "+" : ""}${((part / whole) * 100).toFixed(1)}%` : ""
 const daysBetween = (a: string, b: string) => Math.round((Date.parse(b) - Date.parse(a)) / 86_400_000)
-/** What an account is worth as shown in lists: cards show what's owed. */
+/** What an account is worth in lists. A card shows what's owed. */
 const shownWorth = (w: Wallet) =>
   w.type === "credit" ? -Math.max(0, (w.credit_limit ?? 0) - w.balance) : accountWorth(w)
 
@@ -137,9 +137,12 @@ function Accounts() {
       <PageHeader
         title="Accounts"
         sub={
-          open.length
-            ? `${open.length} account${open.length === 1 ? "" : "s"} · ${new Intl.ListFormat(LOCALE).format(currencies)}`
-            : undefined
+          open.length ? (
+            <>
+              <span className="num">{open.length}</span> account{open.length === 1 ? "" : "s"} ·{" "}
+              {new Intl.ListFormat(LOCALE).format(currencies)}
+            </>
+          ) : undefined
         }
       >
         <Button
@@ -430,7 +433,7 @@ function AccountRow({
       `last entry ${short(data.lastEntry)}`
     ) : null
 
-  // Months after the last valuation are a guess: draw them dashed.
+  // Months after the last valuation are a guess, so draw them dashed.
   const gainMonth = w.gain_day?.slice(0, 7)
   const dashFrom =
     stale && gainMonth
@@ -568,7 +571,7 @@ function AccountDetail({
       await router.invalidate()
       toast.success(w.archived ? `${w.name} restored` : `${w.name} archived`)
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not save")
+      toast.error(err instanceof Error ? err.message : "Couldn't save")
     }
   }
 
@@ -713,7 +716,7 @@ function AccountDetail({
   )
 }
 
-/** The bank shows a different balance: book the difference as a balance correction. */
+/** When the bank shows a different balance, book the difference as a balance correction. */
 function FixBalanceForm({ w, onDone }: { w: Wallet; onDone: () => void }) {
   const router = useRouter()
   const credit = w.type === "credit"
@@ -742,7 +745,7 @@ function FixBalanceForm({ w, onDone }: { w: Wallet; onDone: () => void }) {
       toast.success(correction ? `Corrected by ${signed(correction, w.currency)}` : "Balance already matches")
       onDone()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not save")
+      toast.error(err instanceof Error ? err.message : "Couldn't save")
     }
   }
 
@@ -794,7 +797,7 @@ function AccountForm({
   const [type, setType] = useState<AccountType>(initial?.type ?? "bank")
   const [currency, setCurrency] = useState(initial?.currency ?? meta.primary)
   const [limit, setLimit] = useState(initial?.credit_limit ? (initial.credit_limit / 100).toFixed(2) : "")
-  // Cards: people know what they owe; the account itself tracks what's left (limit - owed).
+  // For a card, people know what they owe, but the account tracks what's left (limit minus owed).
   const [balance, setBalance] = useState(() => {
     if (!initial) return ""
     const shown = initial.type === "credit" ? (initial.credit_limit ?? 0) - initial.balance : initial.balance
@@ -829,7 +832,7 @@ function AccountForm({
       toast.success(initial ? "Account updated" : "Account added")
       onDone()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not save")
+      toast.error(err instanceof Error ? err.message : "Couldn't save")
     }
   }
 
@@ -841,7 +844,7 @@ function AccountForm({
       setConfirming(false)
       onDone()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not delete")
+      toast.error(err instanceof Error ? err.message : "Couldn't delete")
     }
   }
 
@@ -979,7 +982,9 @@ function AccountForm({
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
             <DialogTitle>Delete {initial?.name}?</DialogTitle>
-            <DialogDescription>This account has no transactions. Its gains history is deleted too.</DialogDescription>
+            <DialogDescription>
+              This account has no transactions. Deleting it also deletes its gains history.
+            </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setConfirming(false)}>
@@ -1074,7 +1079,7 @@ function Exchanges({ list, display }: { list: Exchange[]; display: string }) {
         </table>
       </div>
       <p className="text-xs text-muted-foreground">
-        Cost = fee + what the provider's rate gave up against the market rate that day. Negative means you beat the
+        Cost is the fee plus what the provider's rate lost against the market rate that day. Negative means you beat the
         market. Edit a transfer from Activity to add its fee or provider.
       </p>
     </Card>

@@ -75,7 +75,7 @@ function ResetDialog({ count, onClose }: { count: number; onClose: () => void })
           </DialogTitle>
           <DialogDescription>
             {n}, their transfers and investment values, and every recurring payment go. Accounts, categories, rules and
-            settings stay. This can’t be undone, so export first if you might want them.
+            settings stay. This can't be undone, so export first if you might want them.
           </DialogDescription>
         </DialogHeader>
         <form
@@ -152,7 +152,7 @@ function DeleteFlow({ onClose }: { onClose: () => void }) {
         {step === 1 && (
           <>
             <DialogDescription>
-              This deletes everything in Kosha for {meta.user.email}. There is no backup and it can’t be undone.
+              This deletes everything in Kosha for {meta.user.email}. There is no backup and it can't be undone.
             </DialogDescription>
             <ul className="grid gap-1.5 rounded-lg bg-muted px-4 py-3 text-sm">
               {items.map(([n, one, many]) => (
@@ -233,8 +233,8 @@ function DeleteFlow({ onClose }: { onClose: () => void }) {
           >
             <DialogDescription>
               {summary.hasPassword
-                ? "Last step: enter your password. Your account is deleted as soon as you press the button."
-                : "Last step. Your account is deleted as soon as you press the button."}
+                ? "Enter your password to confirm. Kosha deletes your account as soon as you press the button."
+                : "Kosha deletes your account as soon as you press the button."}
             </DialogDescription>
             {summary.hasPassword && (
               <Field name="password" label="Password" autoComplete="current-password" autoFocus />

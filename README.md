@@ -19,12 +19,12 @@ Kosha (कोश, "treasury") keeps every account in one place: bank accounts, c
 ## What it does
 
 - **Net worth across currencies.** Totals convert at daily exchange rates. Credit cards count what you owe, and investments count what you put in plus their latest gain.
-- **This month at a glance.** Spending so far against your usual pace, a projection to the end of the month, and the bills still to pay.
+- **The current month.** Spending so far against your usual pace, a projection to the end of the month, and the bills still to pay.
 - **Fast entry.** Type one line, like `12.50 groceries yesterday`, and Kosha fills in the amount, category, date and account. Categories are also guessed from payees you have entered before.
 - **Tags and events.** Tag entries with hashtags (`#work`, or type them in the one-line entry). Create an event such as a trip with its dates, and everything you add during it is filed under it, so Activity can show what the whole trip cost.
 - **Subscriptions and bills.** Set a schedule once. Payments are recorded when they fall due, and you can skip or edit a single one.
 - **Transfers and currency exchange.** Moving money between your own accounts never counts as spending. For exchanges through Wise or similar, Kosha shows the fee and the cost of the provider's rate against the market rate.
-- **Private by design.** Each person's data is separate. Sign in with a password or a passkey, with optional two-factor codes.
+- **One account per person.** Each person sees only their own data. Sign in with a password or a passkey, with optional two-factor codes.
 - **Import from Cashew.** Bring over accounts, categories, transactions and recurring payments.
 
 ## Run it locally
@@ -91,11 +91,11 @@ Running the import again updates accounts in place and keeps their type, credit 
 | Credit card  | credit left to spend | balance minus the credit limit (what you owe) |
 | Investment   | money put in         | balance plus the latest recorded gain         |
 
-- **Gains:** on **Accounts**, use **Update gains** and enter either today's value from your broker or the gain itself. Gains are kept as a dated history, so the net worth chart moves on the day you record each one.
+- **Gains.** On **Accounts**, use **Update gains** and enter either today's value from your broker or the gain itself. Gains are kept as a dated history, so the net worth chart moves on the day you record each one.
 - **Transfers** are two linked rows, one out and one in. When the currencies differ, each side keeps its own amount. An exchange fee is saved as its own expense under **Transfer fees**.
 - **Recurring transfers** with a fixed amount are recorded automatically. If the amount changes each time, Kosha lists it as due and asks you for the amount.
-- **Events:** a new entry dated inside an event's dates joins that event unless you pick another one or none. Recurring payments never join one on their own. Filtering Activity by an event shows all of its entries, whatever the month. Deleting an event keeps its entries.
-- **Subscriptions:** editing a subscription changes only future payments. Deleting a paid payment marks it as skipped, so it is not added back.
+- **Events.** A new entry dated inside an event's dates joins that event unless you pick another one or none. Recurring payments never join one on their own. Filtering Activity by an event shows all of its entries, whatever the month. Deleting an event keeps its entries.
+- **Subscriptions.** Editing a subscription changes only future payments. Deleting a paid payment marks it as skipped, so it is not added back.
 
 Not built yet: bank statement reconciliation and offline entry.
 

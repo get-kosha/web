@@ -135,7 +135,7 @@ export const getMeta = createServerFn({ method: "GET" }).handler(async () => {
     DB.prepare(
       "SELECT name FROM transactions WHERE user_id = ? AND name <> '' GROUP BY name ORDER BY COUNT(*) DESC, MAX(date) DESC LIMIT 300"
     ).bind(uid),
-    // Newest first: the picker and Settings both lead with the current trip.
+    // Newest first, so the picker and Settings both lead with the current trip.
     DB.prepare(`SELECT e.id, e.name, e.start_day, e.end_day,
       (SELECT COUNT(*) FROM transactions WHERE user_id = e.user_id AND event_id = e.id) AS tx_count
       FROM events e WHERE e.user_id = ? ORDER BY COALESCE(e.start_day, '') DESC, e.created_at DESC`).bind(uid),
@@ -250,7 +250,7 @@ export const getDashboard = createServerFn({ method: "GET" })
       wallet_id: string
       subscription_id: string | null
     }
-    // Net worth adjustments by month: credit limits count from a card's first month, gains from their entry date.
+    // Net worth adjustments by month. Credit limits count from a card's first month, and gains from their entry date.
     const adjust = new Map<string, number>()
     const firstMonth = new Map<string, string>()
     for (const r of all.results as Row[]) {
@@ -400,7 +400,7 @@ export const listTransactions = createServerFn({ method: "GET" })
   .handler(async ({ data }) => {
     const uid = await userId()
     const { tz } = await getSettings(uid)
-    // Future scheduled entries live on the dashboard; the list shows what has happened (and overdue items).
+    // Future scheduled entries show on the dashboard. The list shows what has happened, plus overdue items.
     await ensureSettled(uid)
     // Month, account and search scope everything; the type, category, amount and correction filters only scope the list.
     const where: string[] = [
@@ -455,7 +455,7 @@ export const listTransactions = createServerFn({ method: "GET" })
     const [rows, count, totals, corrections] = await DB.batch([
       DB.prepare(`SELECT t.*, ${COUNTERPART} ${w} ORDER BY t.date DESC LIMIT ?`).bind(...binds, data.limit + 1),
       DB.prepare(`SELECT COUNT(*) AS n FROM transactions t ${w}`).bind(...binds),
-      // Out / in / transfers per currency for the filtered list; the client converts to the display currency.
+      // Money out, money in and transfers per currency for the filtered list. The client converts them to the display currency.
       DB.prepare(`SELECT w.currency,
           SUM(CASE WHEN t.amount < 0 AND t.category_id NOT IN ${NEUTRAL_SQL} THEN t.amount ELSE 0 END) AS out,
           SUM(CASE WHEN t.amount > 0 AND t.category_id NOT IN ${NEUTRAL_SQL} THEN t.amount ELSE 0 END) AS inn,
@@ -503,7 +503,7 @@ export const saveEvent = createServerFn({ method: "POST" })
     return { id }
   })
 
-/** Deletes an event. Its transactions stay; they just no longer belong to it. */
+/** Deletes an event. Its transactions stay but no longer belong to it. */
 export const deleteEvent = createServerFn({ method: "POST" })
   .validator(z.object({ id: z.string() }))
   .handler(async ({ data }) => {
@@ -551,11 +551,11 @@ const saveInput = z.object({
     .refine((n) => n !== 0, "Amount is required"),
   day,
   paid: z.boolean().default(true),
-  /** A subcategory of `categoryId`. Left out: kept while the category stays the same. */
+  /** A subcategory of `categoryId`. When left out, it is kept while the category stays the same. */
   subcategoryId: z.string().nullable().optional(),
-  /** Left out: kept on an edit, none on a new entry. */
+  /** When left out, an edit keeps its tags and a new entry gets none. */
   tags: tags.optional(),
-  /** null = no event. Left out: kept on an edit; a new entry gets the event its day falls in. */
+  /** null means no event. When left out, an edit keeps its event and a new entry gets the event its day falls in. */
   eventId: z.string().nullable().optional(),
 })
 
@@ -849,7 +849,7 @@ export const saveSettings = createServerFn({ method: "POST" })
     ])
   })
 
-/** Settings › Currencies › Refresh: fetch rates now, at most once every 10 minutes. */
+/** Fetches rates now for Settings › Currencies › Refresh, at most once every 10 minutes. */
 export const refreshRatesNow = createServerFn({ method: "POST" }).handler(async () => {
   const { ratesUpdated } = await getSettings(await userId())
   if (Date.now() / 1000 - ratesUpdated >= 600) await refreshRates()
@@ -1053,7 +1053,7 @@ export const updateOccurrence = createServerFn({ method: "POST" })
     )
       .bind(uid, data.id, data.dueDay)
       .first<Tx>()
-    if (existing?.paid && data.action !== "edit") throw new Error("Already paid — edit it from the history instead")
+    if (existing?.paid && data.action !== "edit") throw new Error("Already paid. Edit it from the history instead")
 
     const otherHalf = existing?.transfer_id
       ? await DB.prepare("SELECT * FROM transactions WHERE user_id = ? AND transfer_id = ? AND id <> ?")
@@ -1138,7 +1138,7 @@ const accountInput = z.object({
   creditLimit: z.number().int().min(0).nullable(),
   archived: z.boolean(),
   /** Balance the account should have now, in cents (available credit for cards, amount invested for investments).
-   *  The difference to the current balance is booked as a balance correction. null = leave as is. */
+   *  The difference from the current balance becomes a balance correction. null leaves it as is. */
   balance: z.number().int().nullable().default(null),
 })
 
@@ -1294,7 +1294,7 @@ export const getAccountsOverview = createServerFn({ method: "GET" })
     for (const v of vals.results as { wallet_id: string; day: string; gain: number }[])
       (gains.get(v.wallet_id) ?? gains.set(v.wallet_id, []).get(v.wallet_id)!).push(v)
 
-    // Worth of an account at each point (ascending): before its first transaction it didn't exist yet, so 0.
+    // An account's worth at each point, ascending. Before its first transaction it didn't exist yet, so its worth is 0.
     const curve = (w: W, ends: { t: number; day: string }[]) => {
       const tx = byWallet.get(w.id) ?? [],
         vs = gains.get(w.id) ?? []
@@ -1487,7 +1487,7 @@ export const saveCategory = createServerFn({ method: "POST" })
             data.parentId
           ),
         ]
-    // Re-parenting moves its transactions: they store the top-level category plus the subcategory.
+    // Re-parenting moves its transactions, because they store the top-level category plus the subcategory.
     if (old && old.parent_id !== data.parentId) {
       if (!old.parent_id)
         writes.push(
@@ -1541,7 +1541,7 @@ export const mergeCategory = createServerFn({ method: "POST" })
     if (into.parent_id === from.id) throw new Error("Can't merge a category into its own subcategory")
     const fromHasChildren = await hasChildren(uid, from.id)
     if (into.parent_id && fromHasChildren)
-      throw new Error("Merge into a top-level category: this one has subcategories")
+      throw new Error("This category has subcategories, so it can only merge into a top-level category")
     const top = into.parent_id ?? into.id
     const sub = into.parent_id ? into.id : null
     const writes = [
@@ -1582,7 +1582,7 @@ export const deleteCategory = createServerFn({ method: "POST" })
       + (SELECT COUNT(*) FROM categories WHERE user_id = ?1 AND parent_id = ?2) AS n`)
       .bind(uid, data.id)
       .first<{ n: number }>()
-    if (used?.n) throw new Error("This category is in use: merge it into another instead")
+    if (used?.n) throw new Error("This category is in use. Merge it into another instead")
     await DB.batch([
       DB.prepare("DELETE FROM title_rules WHERE user_id = ? AND category_id = ?").bind(uid, data.id),
       DB.prepare("DELETE FROM categories WHERE user_id = ? AND id = ?").bind(uid, data.id),
@@ -1678,7 +1678,7 @@ const loadProviders = async (uid: string) =>
       .all<ProviderRow>()
   ).results
 
-/** Each provider's status. Never the key: only its last four characters. */
+/** Each provider's status. It never includes the key, only its last four characters. */
 export const listAiProviders = createServerFn({ method: "GET" }).handler(async () => {
   const rows = await loadProviders(await userId())
   return AI_PROVIDERS.map((id) => {
@@ -1711,7 +1711,7 @@ async function credentials(uid: string, data: z.infer<typeof providerInput>) {
   return { key, baseUrl, stored }
 }
 
-/** Reaches the provider's model list with the typed (or stored) key: latency and models, or its error. */
+/** Calls the provider's model list with the typed (or stored) key. Returns the latency and models, or the error. */
 export const testAiProvider = createServerFn({ method: "POST" })
   .validator(providerInput)
   .handler(async ({ data }) => {
@@ -1807,8 +1807,8 @@ export const getAiUsage = createServerFn({ method: "GET" }).handler(async () => 
 // ---------- delete & reset ----------
 
 /**
- * Deletes every transaction, transfer and valuation, and the recurring schedules too: settling would
- * otherwise recreate their past payments on the next load. Accounts, categories, rules and settings stay.
+ * Deletes every transaction, transfer and valuation, and the recurring schedules too, because settling
+ * would otherwise recreate their past payments on the next load. Accounts, categories, rules and settings stay.
  */
 export const deleteAllTransactions = createServerFn({ method: "POST" }).handler(async () => {
   const uid = await userId()

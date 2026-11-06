@@ -89,7 +89,10 @@ import {
 import type { Icon } from "@phosphor-icons/react"
 import { cn } from "@/lib/utils"
 
-/** Icons a category can pick, by stored name (`ph:<name>` in the category's icon column). Order is the picker's order. */
+/**
+ * Icons you can give a category, by stored name (`ph:<name>` in the category's icon column).
+ * The picker shows them in this order.
+ */
 export const CATEGORY_ICONS: [name: string, icon: Icon][] = [
   ["shopping-cart", ShoppingCartIcon],
   ["basket", BasketIcon],
@@ -227,7 +230,7 @@ export const categoryIcon = (icon: string | null | undefined): Icon =>
     ? (BY_NAME.get(icon.slice(3)) ?? TagIcon)
     : (BY_EMOJI[(icon ?? "").replace(/️/g, "")] ?? TagIcon)
 
-/** A category's icon: 18px, subtle ink, decorative (the name is always next to it). */
+/** A category's icon at 18px in the subtle text colour. It is decorative because the name is always next to it. */
 export function CategoryIcon({ icon, className }: { icon: string | null | undefined; className?: string }) {
   const I = categoryIcon(icon)
   return <I aria-hidden="true" className={cn("size-[18px] shrink-0 text-subtle-foreground", className)} />

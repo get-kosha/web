@@ -198,6 +198,8 @@ assert.equal(parsePrefs({ backup_codes_saved_at: "1767225600" }).backup_codes_sa
 assert.equal(parsePrefs({ backup_codes_saved_at: "soon" }).backup_codes_saved_at, null)
 assert.equal(parsePrefs({ motion: "reduced", accent: "pink" }).motion, "reduced")
 assert.equal(parsePrefs({ accent: "pink" }).accent, "teal")
+// Violet was removed as an accent, so accounts that picked it fall back to teal.
+assert.equal(parsePrefs({ accent: "violet" }).accent, "teal")
 assert.equal(parsePrefs({ theme: "dark", layout: "wide" }).layout, "boxed")
 assert.equal(parsePrefs({ theme: "dark" }).theme, "dark")
 console.log("prefs ok")

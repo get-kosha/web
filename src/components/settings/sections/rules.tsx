@@ -75,7 +75,7 @@ export function Rules() {
         <SettingRow
           id="learn-rules"
           title="Learn from my edits"
-          description="When you save a transaction, Kosha remembers its payee’s category. Rules you make are never overwritten."
+          description="When you save a transaction, Kosha remembers its payee's category. Kosha never overwrites rules you make."
           control={
             <Switch
               aria-label="Learn from my edits"
@@ -139,7 +139,7 @@ export function Rules() {
           </Expand>
           {data.rules.length === 0 && open !== "" && (
             <p className="px-5 py-4 text-sm text-muted-foreground">
-              {q ? `No rule matches “${q}”.` : "No rules yet. Save a transaction and Kosha learns one."}
+              {q ? `No rule matches "${q}".` : "No rules yet. Save a transaction and Kosha learns one."}
             </p>
           )}
           {data.rules.map((r) => (
@@ -222,7 +222,7 @@ function RuleRow({ rule: r, open, onToggle }: { rule: TitleRuleRow; open: boolea
   )
 }
 
-/** Payee text, is / contains, and the category. Each change saves; a new rule saves once it has text and a category. */
+/** Edits a rule's payee text, match type and category. Each change saves; a new rule saves once it has text and a category. */
 function RuleEditor({ rule: r, onDone }: { rule: TitleRuleRow | null; onDone: (r: TitleRuleRow | null) => void }) {
   const meta = useMeta()
   const save = useSave()

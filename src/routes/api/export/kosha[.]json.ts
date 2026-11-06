@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router"
 import { userId } from "@/server/auth.server"
 import { everythingJson } from "@/server/export.server"
 
-// Settings › Import & export › Everything. The request middleware has already checked the session.
+// Serves the Everything download in Settings › Import & export. The request middleware has already checked the session.
 export const Route = createFileRoute("/api/export/kosha.json")({
   server: {
     handlers: {

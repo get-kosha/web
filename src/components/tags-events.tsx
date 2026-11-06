@@ -59,7 +59,7 @@ export function Chip({
 
 /**
  * Hashtags as removable chips plus a field. Space, comma or Enter turns what was typed into tags;
- * Backspace in an empty field removes the last one. Known tags are offered as you type.
+ * Backspace in an empty field removes the last one. It suggests known tags as you type.
  */
 export function TagInput({
   value,
@@ -136,7 +136,7 @@ export function TagInput({
 
 /**
  * Pick one event, or none (tap the chosen one again). "New event" opens the editor in place and selects
- * what it creates. `day` seeds a new event's start.
+ * what it creates. `day` is the default start for a new event.
  */
 export function EventPicker({
   value,
@@ -175,7 +175,7 @@ export function EventPicker({
   )
 }
 
-/** Name and optional dates. Creates an event, or edits `event`. */
+/** Form for an event's name and optional dates. It creates an event, or edits `event` when passed one. */
 export function EventEditor({
   event,
   defaultDay,
@@ -203,14 +203,14 @@ export function EventEditor({
       await router.invalidate()
       onSaved(id)
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not save the event")
+      toast.error(e instanceof Error ? e.message : "Couldn't save the event")
     } finally {
       setBusy(false)
     }
   }
 
   return (
-    // Not a <form>: this sits inside the transaction form.
+    // Not a <form>, because it sits inside the transaction form.
     <div className="grid gap-3 rounded-lg border bg-card p-3">
       <label className="grid gap-1">
         <span className="text-xs text-muted-foreground">Name</span>
@@ -245,7 +245,7 @@ export function EventEditor({
         </label>
       </div>
       <p className="text-xs text-muted-foreground">
-        New entries between these dates go to this event on their own. Recurring payments don’t.
+        New entries between these dates go to this event on their own. Recurring payments don't.
       </p>
       <div className="flex justify-end gap-2">
         <Button type="button" variant="ghost" onClick={onCancel}>

@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils"
 const pct = (part: number, whole: number) =>
   whole ? `${part >= 0 ? "+" : ""}${((part / whole) * 100).toFixed(1)}%` : ""
 
-/** Record an investment's value. Open while `wallet` is set. */
+/** Record an investment's value. The dialog is open while `wallet` is set. */
 export function GainDialog({ wallet, onClose }: { wallet: Wallet | null; onClose: () => void }) {
   return (
     <Dialog open={!!wallet} onOpenChange={(o) => !o && onClose()}>
@@ -24,7 +24,7 @@ export function GainDialog({ wallet, onClose }: { wallet: Wallet | null; onClose
   )
 }
 
-/** Enter either today's market value or the gain; the other is derived from the amount invested. */
+/** Enter either today's market value or the gain, and the form works out the other from the amount invested. */
 function GainForm({ w, onDone }: { w: Wallet; onDone: () => void }) {
   const meta = useMeta()
   const router = useRouter()
@@ -44,7 +44,7 @@ function GainForm({ w, onDone }: { w: Wallet; onDone: () => void }) {
       toast.success("Gains updated")
       onDone()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not save")
+      toast.error(err instanceof Error ? err.message : "Couldn't save")
     }
   }
 

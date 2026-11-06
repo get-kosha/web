@@ -103,7 +103,7 @@ export function Security() {
 
 const RING = 138.2 // 2πr for r = 22
 
-/** "1 of 4 done": a ring and the steps still open, each with the flow that finishes it. Gone once all are done. */
+/** Shows "1 of 4 done" as a ring, with each open step and the flow that finishes it. Hidden once all are done. */
 function Checklist({ actions }: { actions: Record<"password" | "passkey" | "two-factor" | "codes", () => void> }) {
   const account = useAccount()
   const backupSavedAt = getRouteApi("/_app").useLoaderData({ select: (m) => m.prefs.backup_codes_saved_at })
@@ -137,7 +137,7 @@ function Checklist({ actions }: { actions: Record<"password" | "passkey" | "two-
           <div>
             <div className="text-[15px] font-semibold">{done} of 4 done</div>
             <p className="mt-0.5 text-[13px] text-muted-foreground">
-              Two minutes to finish: each step makes your account harder to take.
+              Two minutes to finish. Each step makes your account harder to take over.
             </p>
           </div>
         </div>
@@ -271,7 +271,7 @@ function Passkeys({
             <DialogHeader>
               <DialogTitle>Remove {removing.name}?</DialogTitle>
               <DialogDescription>
-                You won’t be able to sign in with it any more. Your other sign-in methods keep working.
+                You won't be able to sign in with it any more. Your other sign-in methods keep working.
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
@@ -352,7 +352,7 @@ function TwoFactor({ step, setStep }: { step: Step; setStep: (s: Step) => void }
       title="Two-factor authentication"
       description={
         !hasPassword && !enabled
-          ? "Set a password first: two-factor protects password sign-in."
+          ? "Set a password first. Two-factor protects password sign-in."
           : enabled
             ? "On. Signing in with your password also asks for a code from your authenticator app."
             : "After your password, ask for a code from an authenticator app (1Password, Authy…)."
@@ -365,7 +365,7 @@ function TwoFactor({ step, setStep }: { step: Step; setStep: (s: Step) => void }
               className="h-9 px-3 text-[13px] font-normal text-subtle-foreground"
               onClick={() => setStep("regenerate")}
             >
-              New backup codes
+              Get new backup codes
             </Button>
           )}
           <Switch
@@ -380,13 +380,13 @@ function TwoFactor({ step, setStep }: { step: Step; setStep: (s: Step) => void }
       {step === "password" && (
         <PasswordPrompt
           title="Turn on two-factor"
-          description="Confirm it’s you. Next you’ll scan a QR code with your authenticator app."
+          description="Confirm it's you. Next you'll scan a QR code with your authenticator app."
           action="Continue"
           onCancel={close}
           onSubmit={async (password) => {
             const res = await authClient.twoFactor.enable({ password, issuer: "Kosha" })
             if (res.error || !res.data || !("totpURI" in res.data)) {
-              toast.error(res.error?.message || "Couldn’t start two-factor")
+              toast.error(res.error?.message || "Couldn't start two-factor")
               return false
             }
             setSetup({ uri: res.data.totpURI, codes: res.data.backupCodes })
@@ -411,7 +411,7 @@ function TwoFactor({ step, setStep }: { step: Step; setStep: (s: Step) => void }
           codes={setup.codes}
           onDone={() => {
             close()
-            // The checklist's last step: remember the codes were saved.
+            // Record when the codes were saved, which ticks off the checklist's last step.
             void save(() => savePreferences({ data: { backup_codes_saved_at: String(Math.floor(Date.now() / 1000)) } }))
           }}
         />
@@ -425,7 +425,7 @@ function TwoFactor({ step, setStep }: { step: Step; setStep: (s: Step) => void }
           onSubmit={async (password) => {
             const res = await authClient.twoFactor.generateBackupCodes({ password })
             if (res.error || !res.data) {
-              toast.error(res.error?.message || "Couldn’t make new codes")
+              toast.error(res.error?.message || "Couldn't make new codes")
               return false
             }
             setSetup({ uri: "", codes: res.data.backupCodes })
@@ -474,7 +474,7 @@ function PasswordDialog({
     e.preventDefault()
     const f = new FormData(e.currentTarget)
     const next = String(f.get("new"))
-    if (next !== String(f.get("confirm"))) return setError("The two new passwords don’t match")
+    if (next !== String(f.get("confirm"))) return setError("The two new passwords don't match")
     setBusy(true)
     setError("")
     const ok = hasPassword
@@ -604,7 +604,7 @@ function ScanStep({ uri, onCancel, onVerified }: { uri: string; onCancel: () => 
           <DialogTitle>Scan with your authenticator app</DialogTitle>
           <DialogDescription>Then type the 6-digit code it shows to finish.</DialogDescription>
         </DialogHeader>
-        {/* The QR is drawn here from the secret; it never leaves the page. */}
+        {/* uqr draws the QR here from the secret; it never leaves the page. */}
         <div
           className="mx-auto size-48 rounded-lg bg-white p-2 text-black [&_svg]:size-full"
           aria-label="QR code for your authenticator app"
@@ -612,7 +612,7 @@ function ScanStep({ uri, onCancel, onVerified }: { uri: string; onCancel: () => 
           dangerouslySetInnerHTML={{ __html: renderSVG(uri, { border: 1 }) }}
         />
         <details className="text-xs text-muted-foreground">
-          <summary className="cursor-pointer">Can’t scan? Enter this key instead</summary>
+          <summary className="cursor-pointer">Can't scan? Enter this key instead</summary>
           <code className="num mt-2 block rounded-md bg-muted px-3 py-2 break-all text-foreground select-all">
             {secret.match(/.{1,4}/g)?.join(" ")}
           </code>
@@ -666,7 +666,7 @@ function BackupCodes({ codes, onDone }: { codes: string[]; onDone: () => void })
         <DialogHeader>
           <DialogTitle>Save your backup codes</DialogTitle>
           <DialogDescription>
-            If you lose your phone, each of these lets you sign in once. They won’t be shown again.
+            If you lose your phone, each of these lets you sign in once. Kosha won't show them again.
           </DialogDescription>
         </DialogHeader>
         <ol className="num grid grid-cols-2 gap-x-6 gap-y-1.5 rounded-lg bg-muted px-4 py-3 text-sm select-all">
@@ -693,7 +693,7 @@ function BackupCodes({ codes, onDone }: { codes: string[]; onDone: () => void })
             </Button>
           </div>
           <Button onClick={onDone}>
-            <CheckCircleIcon /> I’ve saved them
+            <CheckCircleIcon /> I've saved them
           </Button>
         </DialogFooter>
       </DialogContent>
