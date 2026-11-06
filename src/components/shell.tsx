@@ -167,6 +167,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
         <nav
           aria-label="Main"
+          data-tabbar
           className={cn(
             "fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 items-center border-t bg-card/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden",
             bare && "hidden"

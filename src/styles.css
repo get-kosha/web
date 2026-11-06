@@ -473,6 +473,18 @@
 :root:active-view-transition-type(page)::view-transition-group(page) {
   animation: none;
 }
+/* The phone tab bar gets its own layer above the page, so the page snapshot never paints over it.
+   It swaps to the new active tab at once instead of crossfading. */
+nav[data-tabbar] {
+  view-transition-name: tabbar;
+}
+::view-transition-group(tabbar),
+::view-transition-new(tabbar) {
+  animation: none;
+}
+::view-transition-old(tabbar) {
+  display: none;
+}
 :root:active-view-transition-type(page)::view-transition-old(page) {
   animation: kosha-fade-out 120ms ease-out both;
 }
