@@ -123,7 +123,8 @@ function offsetOf(zone: string, now: Date) {
   return (name ?? "GMT").replace("GMT", "UTC")
 }
 
-function TimeZonePicker({ value, onChange }: { value: string; onChange: (zone: string) => void }) {
+/** A searchable zone picker, styled for a setting row. The welcome screen asks for the zone with it too. */
+export function TimeZonePicker({ value, onChange }: { value: string; onChange: (zone: string) => void }) {
   const [open, setOpen] = useState(false)
   const [q, setQ] = useState("")
   const zones = useMemo(() => (open ? Intl.supportedValuesOf("timeZone") : []), [open])

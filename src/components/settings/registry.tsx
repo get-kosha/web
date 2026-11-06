@@ -401,7 +401,7 @@ const GROUPS: Group[] = [
           {
             key: "statements",
             title: "Bank statements",
-            description: "Import a statement and check an account against it.",
+            description: "Import statements from all your banks and cards at once.",
             keywords: "import csv ofx qfx pdf bank statement reconcile reconciliation",
           },
           {

@@ -974,13 +974,15 @@ const base64 = z
   .min(100)
   .regex(/^[A-Za-z0-9+/]+=*$/, "That isn't a file Kosha can read")
 export const pdfInput = z.object({
-  walletId: z.string().min(1),
+  /** The account it's for, when known; a first import reads the account from the statement instead. */
+  walletId: z.string().min(1).optional(),
   name: z.string().trim().max(200),
   data: base64.max(15_000_000),
 })
 
 const STATEMENT_SYSTEM = `You read a bank or credit card statement and list every transaction on it. Reply with only a JSON object:
-{"currency": "EUR", "from": "YYYY-MM-DD", "to": "YYYY-MM-DD", "opening": 0, "closing": 0, "lines": [{"date": "YYYY-MM-DD", "description": "...", "payee": "...", "amount": -12.5}]}
+{"account": {"name": "...", "type": "bank", "last4": "1234"}, "currency": "EUR", "from": "YYYY-MM-DD", "to": "YYYY-MM-DD", "opening": 0, "closing": 0, "lines": [{"date": "YYYY-MM-DD", "description": "...", "payee": "...", "amount": -12.5}]}
+- account: the account it is for: its name as printed ("Current Account", "Platinum Card"), type "credit" for a credit card or "bank" otherwise, and the last four digits of its number, or null for any you can't see.
 - lines: every transaction, in the order printed. Leave out balances brought forward, subtotals, and pending or authorised items.
 - date: the date the line is listed under. Statements often leave out the year; take it from the statement period.
 - description: the line's text as printed, on one line.
@@ -1031,17 +1033,23 @@ export async function readStatement(uid: string, input: z.infer<typeof pdfInput>
   // A model can misread a line, so the lines must take the opening balance to the closing one, to the cent.
   // A card's balances are what is owed, which spending raises.
   const total = lines.reduce((t, l) => t + l.amount, 0)
-  const card =
-    (
-      await db()
+  const acc = (raw?.account ?? {}) as Record<string, unknown>
+  const wallet = input.walletId
+    ? await db()
         .prepare("SELECT type FROM wallets WHERE user_id = ? AND id = ?")
         .bind(uid, input.walletId)
         .first<{ type: string }>()
-    )?.type === "credit"
+    : null
+  const card = wallet ? wallet.type === "credit" : acc.type === "credit"
   const off = opening === null || closing === null ? null : closing - (card ? opening - total : opening + total)
   return {
     /** How far the lines miss the closing balance, in the account's direction. 0 when they add up, null without both balances. */
     off: off === null ? null : card ? -off : off,
+    account: {
+      name: str(acc.name, 80) || null,
+      type: card ? ("credit" as const) : ("bank" as const),
+      last4: /^\d{4}$/.test(str(acc.last4, 4)) ? str(acc.last4, 4) : null,
+    },
     lines: withRefs(lines).map((l, i) => ({ ...l, payee: lines[i].payee })),
     opening,
     closing,

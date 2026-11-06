@@ -33,8 +33,10 @@ function Login() {
   const [twoFactor, setTwoFactor] = useState(false)
   // Use a full page load so every loader runs again as the new user. When an app signs in through
   // OAuth, Better Auth answers with { redirect, url } instead, and the auth client goes on to consent.
+  // A new account with nowhere else to go starts on the welcome screen.
   const done = (data?: unknown) => {
-    if (!(data as { redirect?: boolean } | null)?.redirect) window.location.assign(safeReturn(returnTo))
+    if ((data as { redirect?: boolean } | null)?.redirect) return
+    window.location.assign(mode === "up" && !returnTo ? "/welcome" : safeReturn(returnTo))
   }
 
   // Offer saved passkeys in the email field's autofill (WebAuthn conditional UI).

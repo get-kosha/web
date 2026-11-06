@@ -225,7 +225,7 @@ export function readCsv(rows: string[][], layout: Layout) {
     }
     const description = layout.description
       .map((i) => (r[i] ?? "").trim())
-      .filter((v, i, all) => v && all.indexOf(v) === i)
+      .filter((v, i, all) => v && !all.slice(0, i).some((x) => x.toLowerCase().includes(v.toLowerCase())))
       .join(" · ")
     const balance = layout.balance === null ? null : parseAmount(r[layout.balance] ?? "")
     lines.push({ day, amount: layout.invert ? -amount : amount, description, balance, ref: null })
@@ -277,12 +277,32 @@ export function parseOfx(text: string) {
   }
   const ledger = text.match(/<LEDGERBAL>([\s\S]*?)(?:<\/LEDGERBAL>|<AVAILBAL>|$)/i)?.[1] ?? ""
   const balance = ledger ? parseAmount(tag(ledger, "BALAMT")) : null
+  const accountId = tag(text, "ACCTID")
   return {
     lines: withRefs(lines),
     closing: balance,
     closingDay: ledger ? ofxDay(tag(ledger, "DTASOF")) : null,
     currency: tag(text, "CURDEF").toLowerCase() || null,
+    /** Which account it is: a card statement (CCSTMTRS) or a bank one, and the bank's account number. */
+    account: {
+      id: accountId || null,
+      type: /<CCSTMTRS>|<CCACCTFROM>/i.test(text) ? ("credit" as const) : ("bank" as const),
+    },
   }
+}
+
+/** The account number a CSV's lines above its header name, as its last four digits ("Account ****5678"). */
+export function csvAccountHint(rows: string[][], layout: Layout) {
+  // Dates in the preamble ("Statement 01/10/2026") aren't account numbers.
+  const above = rows
+    .slice(0, Math.max(0, layout.header))
+    .flat()
+    .join(" ")
+    .replace(/\b\d{1,4}[./-]\d{1,2}[./-]\d{1,4}\b/g, " ")
+  const masked = above.match(/(?:\*|x|X|•){2,}\s?(\d{4})\b/)?.[1]
+  if (masked) return masked
+  const runs = (above.match(/\d[\d -]*\d/g) ?? []).map((r) => r.replace(/\D/g, "")).filter((r) => r.length >= 4)
+  return runs.sort((x, y) => y.length - x.length)[0]?.slice(-4) ?? null
 }
 
 // ---------- bank text to payees ----------
@@ -333,7 +353,8 @@ export function payeeFor(description: string, known: string[], aliases: Record<s
     if (k && words.includes(` ${k} `) && k.length > descriptorKey(best).length) best = name
   }
   if (best) return best
-  return title(key) || description.trim().slice(0, 60)
+  // "Boots · BOOTS 1123" names the merchant twice.
+  return title([...new Set(key.split(" "))].join(" ")) || description.trim().slice(0, 60)
 }
 
 /** How alike two payee texts are, from 0 to 1: the share of the shorter one's words found in the other. */
@@ -556,4 +577,143 @@ export function planReconciliation(o: {
     inPeriod,
     ticks,
   }
+}
+
+// ---------- getting started: many statements at once ----------
+
+// Common merchants and words, mapped to Kosha's starting categories, so a first import sorts much of itself
+// even without AI or any rules yet. Only categories the person still has are used.
+const STARTER: [RegExp, string, "in" | "out"][] = [
+  [
+    /\b(tesco|sainsbury|asda|aldi|lidl|morrisons|waitrose|co ?op|ocado|rewe|edeka|kaufland|netto|penny|carrefour|auchan|leclerc|intermarche|mercadona|albert heijn|jumbo|whole foods|trader joe|safeway|kroger|publix|supermarket|grocer)/,
+    "groceries",
+    "out",
+  ],
+  [
+    /\b(restaurant|cafe|caffe|coffee|starbucks|costa|pret|mcdonald|burger king|kfc|subway|nando|pizza|domino|deliveroo|uber ?eats|just ?eat|doordash|grubhub|wolt|bistro|sushi|trattoria|bakery|pub)/,
+    "dining",
+    "out",
+  ],
+  [
+    /\b(amazon|amzn|ebay|etsy|zara|primark|uniqlo|ikea|argos|john lewis|decathlon|zalando|asos|apple store|best buy|target)/,
+    "shopping",
+    "out",
+  ],
+  [
+    /\b(uber|lyft|bolt|free ?now|taxi|tfl|transport for london|trainline|railway|deutsche bahn|sncf|renfe|metro|bus|shell|esso|texaco|fuel|petrol|parking|citymapper)/,
+    "transit",
+    "out",
+  ],
+  [/\b(rent|landlord|mortgage|letting)/, "home", "out"],
+  [
+    /\b(electric|energy|octopus|british gas|edf|eon|water|council tax|broadband|vodafone|o2|ee|three|verizon|t mobile|insurance|account fee|monthly fee|service charge|overdraft)/,
+    "bills",
+    "out",
+  ],
+  [
+    /\b(netflix|spotify|disney|hbo|prime video|youtube|apple tv|audible|cinema|odeon|steam|playstation|xbox|nintendo|ticketmaster)/,
+    "entertainment",
+    "out",
+  ],
+  [/\b(pharmacy|boots|chemist|apotheke|doctor|dentist|hospital|clinic|optician|gym|puregym|fitness)/, "health", "out"],
+  [
+    /\b(airline|airways|ryanair|easyjet|wizz|lufthansa|klm|air france|vueling|hotel|airbnb|booking com|expedia|hostel)/,
+    "travel",
+    "out",
+  ],
+  [/\b(salary|payroll|wages|gehalt|salaire)/, "salary", "in"],
+  [/\b(interest|refund|cashback|dividend|reimburse)/, "other_income", "in"],
+]
+
+/** A starting category for a payee from a few well-known names and words, or null. */
+export function starterCategory(text: string, income: boolean, have: Set<string>) {
+  const t = ` ${text.toLowerCase().replace(/[^\p{L}\p{N}&]+/gu, " ")} `
+  for (const [re, id, way] of STARTER) if ((way === "in") === income && have.has(id) && re.test(t)) return id
+  return null
+}
+
+/**
+ * Lines of different accounts that look like one transfer: money out of one and the same amount into the
+ * other within `days` days, closest first, each line used once. Returns pairs of line keys, out first.
+ */
+export function pairTransfers(
+  lines: { key: string; account: string; day: string; amount: number }[],
+  days = 3
+): [string, string][] {
+  const outs = lines.filter((l) => l.amount < 0)
+  const ins = lines.filter((l) => l.amount > 0)
+  const cands: { o: string; i: string; d: number }[] = []
+  for (const o of outs)
+    for (const i of ins) {
+      if (i.account === o.account || i.amount !== -o.amount) continue
+      const d = Math.abs(dayDiff(o.day, i.day))
+      if (d <= days) cands.push({ o: o.key, i: i.key, d })
+    }
+  const used = new Set<string>()
+  const out: [string, string][] = []
+  for (const c of cands.sort((a, b) => a.d - b.d)) {
+    if (used.has(c.o) || used.has(c.i)) continue
+    used.add(c.o)
+    used.add(c.i)
+    out.push([c.o, c.i])
+  }
+  return out
+}
+
+/**
+ * Checks one account's statements join up: a gap of more than a few days between one and the next, or a
+ * statement that doesn't open where the one before closed, means one is likely missing.
+ */
+export function statementGaps(
+  files: { name: string; from: string; to: string; opening: number | null; closing: number | null }[],
+  money: (cents: number) => string,
+  label: (day: string) => string
+) {
+  const sorted = [...files].sort((a, b) => a.from.localeCompare(b.from))
+  const out: string[] = []
+  for (let i = 1; i < sorted.length; i++) {
+    const [a, b] = [sorted[i - 1], sorted[i]]
+    if (dayDiff(a.to, b.from) > 5)
+      out.push(`No statement covers ${label(addDays(a.to, 1))} to ${label(addDays(b.from, -1))}.`)
+    else if (a.closing !== null && b.opening !== null && a.closing !== b.opening)
+      out.push(
+        `${b.name} opens at ${money(b.opening)}, but ${a.name} closes at ${money(a.closing)}. A statement may be missing.`
+      )
+  }
+  return out
+}
+
+/**
+ * One account's lines from several statements, each line once. Statements that overlap (a yearly export and
+ * a monthly one, or the same file twice) share lines: the same bank id, or in days an earlier statement
+ * covers, the same day and amount. Within one statement, two equal lines are two payments.
+ */
+export function mergeStatements<L extends Line>(files: { lines: L[] }[]) {
+  const span = (f: { lines: L[] }) => [
+    Math.min(...f.lines.map((l) => +l.day.replace(/-/g, ""))),
+    Math.max(...f.lines.map((l) => +l.day.replace(/-/g, ""))),
+  ]
+  const sorted = files.filter((f) => f.lines.length).sort((a, b) => span(a)[0] - span(b)[0])
+  const refs = new Set<string>()
+  const counts = new Map<string, number>()
+  const covered: number[][] = []
+  const out: L[] = []
+  for (const f of sorted) {
+    const kept: L[] = []
+    for (const l of f.lines) {
+      const k = `${l.day}|${l.amount}`
+      const d = +l.day.replace(/-/g, "")
+      const seen = covered.some(([a, b]) => d >= a && d <= b) ? (counts.get(k) ?? 0) : 0
+      if (seen) counts.set(k, seen - 1)
+      if (seen || (l.ref && refs.has(l.ref))) continue
+      kept.push(l)
+    }
+    for (const l of kept) {
+      if (l.ref) refs.add(l.ref)
+      counts.set(`${l.day}|${l.amount}`, (counts.get(`${l.day}|${l.amount}`) ?? 0) + 1)
+    }
+    covered.push(span(f))
+    out.push(...kept)
+  }
+  return out
 }

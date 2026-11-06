@@ -39,13 +39,13 @@ export function ImportExport() {
         <SettingRow
           id="statements"
           title="Bank statements"
-          description={`Import a CSV, OFX or QFX file from your bank${meta.ai.statements ? ", or a PDF statement," : ""} and Kosha adds what's missing and checks the account against it.`}
+          description={`Import CSV, OFX or QFX files${meta.ai.statements ? " or PDF statements" : ""} from all your banks and cards at once. Kosha sets up the accounts, sorts the payees and checks each account against its statement.`}
           control={
             <Link
-              to="/reconcile"
+              to="/import"
               className="inline-flex h-8 items-center rounded-md border bg-card px-3 text-[13px] transition-colors hover:bg-muted max-md:h-11"
             >
-              Import a statement
+              Import statements
             </Link>
           }
         />

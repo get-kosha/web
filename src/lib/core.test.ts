@@ -125,6 +125,28 @@ assert.equal(nw.debt, 141443)
 assert.equal(nw.gains, 120000)
 console.log("net worth ok")
 
+// new accounts from what people know today
+import { guessCurrency, openingFigures } from "./core.ts"
+// A card owing 500 with a 2,000 limit keeps 1,500 of credit; its worth is minus what is owed, sign typed or not.
+assert.deepEqual(openingFigures("credit", 50000, 200000), { balance: 150000, credit_limit: 200000, gain: null })
+assert.equal(accountWorth({ ...openingFigures("credit", -50000, 200000), type: "credit", currency: "eur" }), -50000)
+// Without a limit, the debt still counts.
+assert.equal(accountWorth({ ...openingFigures("credit", 50000, null), type: "credit", currency: "eur" }), -50000)
+// 10,000 put in, worth 12,500 today: a 2,500 gain. Only a value counts it all as money put in.
+assert.deepEqual(openingFigures("investment", 1000000, 1250000), { balance: 1000000, credit_limit: null, gain: 250000 })
+assert.deepEqual(openingFigures("investment", null, 800000), { balance: 800000, credit_limit: null, gain: 0 })
+assert.deepEqual(openingFigures("investment", 500000, null), { balance: 500000, credit_limit: null, gain: null })
+assert.deepEqual(openingFigures("bank", -2500, null), { balance: -2500, credit_limit: null, gain: null })
+assert.equal(openingFigures("cash", null, null).balance, 0)
+const rates = { eur: 1, gbp: 1, usd: 1, inr: 1 }
+assert.equal(guessCurrency(["en", "en-GB"], rates, "eur"), "gbp")
+assert.equal(guessCurrency(["de-DE"], rates, "usd"), "eur")
+assert.equal(guessCurrency(["hi"], rates, "eur"), "inr")
+assert.equal(guessCurrency(["en"], rates, "eur"), "usd")
+assert.equal(guessCurrency(["ja-JP"], rates, "eur"), "eur")
+assert.equal(guessCurrency(["not a tag"], rates, "eur"), "eur")
+console.log("new accounts ok")
+
 // currency exchange: send €1,000 via Wise, €5 fee, €995 converted at 106.00 (market 106.50)
 import { exchange } from "./core.ts"
 const fx = exchange(100000, 500, 10547000, 106.5)
@@ -654,3 +676,70 @@ assert.equal(manual.periodStart, "2026-11-01")
 assert.equal(manual.ticks({ id: "a", day: "2026-11-12", paid: 1 }), true)
 assert.equal(manual.ticks({ id: "a", day: "2026-11-12", paid: 0 }), false)
 console.log("reconciliation plan ok")
+
+// ---------- getting started ----------
+
+import { csvAccountHint, mergeStatements, pairTransfers, starterCategory, statementGaps } from "./statement.ts"
+assert.deepEqual(parseOfx(ofx).account, { id: null, type: "bank" })
+assert.deepEqual(parseOfx("<OFX><CCSTMTRS><CCACCTFROM><ACCTID>4111222233334444</CCACCTFROM></OFX>").account, {
+  id: "4111222233334444",
+  type: "credit",
+})
+assert.equal(csvAccountHint(uk, ukLayout.layout), "1234")
+const have = new Set(["groceries", "dining", "salary", "transit"])
+assert.equal(starterCategory("CARD PAYMENT TO TESCO STORES 3211", false, have), "groceries")
+assert.equal(starterCategory("Uber Trip", false, have), "transit")
+assert.equal(starterCategory("SALARY NORTHWIND", true, have), "salary")
+assert.equal(starterCategory("SALARY NORTHWIND", false, have), null)
+assert.equal(starterCategory("Netflix", false, have), null) // no Entertainment category any more
+assert.deepEqual(
+  pairTransfers([
+    { key: "a", account: "main", day: "2026-10-02", amount: -50000 },
+    { key: "b", account: "savings", day: "2026-10-03", amount: 50000 },
+    { key: "c", account: "main", day: "2026-10-02", amount: -50000 },
+    { key: "d", account: "main", day: "2026-10-09", amount: 50000 },
+  ]),
+  [["a", "b"]]
+)
+const gaps = statementGaps(
+  [
+    { name: "Jan", from: "2026-01-01", to: "2026-01-31", opening: 1000, closing: 2000 },
+    { name: "Feb", from: "2026-02-01", to: "2026-02-28", opening: 2500, closing: 3000 },
+    { name: "Apr", from: "2026-04-01", to: "2026-04-30", opening: 3000, closing: 3500 },
+  ],
+  (c) => (c / 100).toFixed(2),
+  (d) => d
+)
+assert.deepEqual(gaps, [
+  "Feb opens at 25.00, but Jan closes at 20.00. A statement may be missing.",
+  "No statement covers 2026-03-01 to 2026-03-31.",
+])
+// A payee column and a description column that says the same thing in capitals read as one.
+const monzo = parseCsv(
+  "Date,Name,Amount,Description\n09/10/2026,Sam Lee,40.00,SAM LEE\n12/10/2026,Spotify,-11.99,SPOTIFY STOCKHOLM"
+)
+const monzoLines = readCsv(monzo, guessLayout(monzo).layout).lines
+assert.deepEqual(
+  monzoLines.map((l) => l.description),
+  ["Sam Lee", "Spotify · SPOTIFY STOCKHOLM"]
+)
+assert.equal(payeeFor("Boots · BOOTS 1123", [], {}), "Boots")
+// A yearly export and a monthly one overlap: the monthly lines are already there, even with other bank ids.
+const ln = (day: string, amount: number, ref: string) => ({ day, amount, description: "", balance: null, ref })
+const merged = mergeStatements([
+  { lines: [ln("2026-03-02", -450, "m1"), ln("2026-03-02", -450, "m2"), ln("2026-03-09", -900, "m3")] },
+  {
+    lines: [
+      ln("2026-01-05", -100, "y1"),
+      ln("2026-03-02", -450, "y2"),
+      ln("2026-03-02", -450, "y3"),
+      ln("2026-12-01", -70, "y4"),
+    ],
+  },
+  { lines: [ln("2026-01-05", -100, "y1")] }, // the yearly file again
+])
+assert.deepEqual(
+  merged.map((l) => l.ref),
+  ["y1", "y2", "y3", "y4", "m3"]
+)
+console.log("getting started ok")

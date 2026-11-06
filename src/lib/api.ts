@@ -176,6 +176,11 @@ export const saveAccount = createServerFn({ method: "POST" })
   .validator(finance.accountInput)
   .handler(async ({ data }) => ({ id: await finance.saveAccount(await userId(), data) }))
 
+/** Several accounts at once, from the welcome screen. They all save, or none do. */
+export const saveAccounts = createServerFn({ method: "POST" })
+  .validator(z.object({ accounts: z.array(finance.accountInput).min(1).max(50) }))
+  .handler(async ({ data }) => ({ ids: await finance.saveAccounts(await userId(), data.accounts) }))
+
 export const deleteAccount = createServerFn({ method: "POST" })
   .validator(z.object({ id: z.string() }))
   .handler(async ({ data }) => finance.deleteAccount(await userId(), data.id))
@@ -228,6 +233,28 @@ export const undoReconcile = createServerFn({ method: "POST" })
 export const importLines = createServerFn({ method: "POST" })
   .validator(statements.importInput)
   .handler(async ({ data }) => statements.importLines(await userId(), data))
+
+// Getting started: importing many statements at once.
+
+/** CSV layouts and payee names remembered from earlier imports. */
+export const getImportMemory = createServerFn({ method: "GET" }).handler(async () =>
+  statements.importMemory(await userId())
+)
+
+/** An account's entries over a statement's days, to leave out the lines it already has. */
+export const getImportEntries = createServerFn({ method: "GET" })
+  .validator(statements.entriesInput)
+  .handler(async ({ data }) => statements.importEntries(await userId(), data))
+
+/** Statement lines from two accounts that are one transfer, saved as transfers. */
+export const importTransferPairs = createServerFn({ method: "POST" })
+  .validator(statements.pairsInput)
+  .handler(async ({ data }) => statements.importTransferPairs(await userId(), data))
+
+/** Opening balance and reconciliation for one account after an import. */
+export const finishImport = createServerFn({ method: "POST" })
+  .validator(statements.finishImportInput)
+  .handler(async ({ data }) => statements.finishImport(await userId(), data))
 
 // AI help with statements: reading a PDF, a CSV's columns, payee names, and a reconciliation difference.
 export const readStatementPdf = createServerFn({ method: "POST" })

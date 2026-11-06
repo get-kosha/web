@@ -469,6 +469,48 @@ export function accountWorth(a: AccountLike) {
   return a.balance
 }
 
+/**
+ * What a new account stores, from the figures people know about it today. `amount` is the balance, what a
+ * card owes, or the money put into an investment. `extra` is a card's credit limit or an investment's value
+ * today. A card keeps the credit left; without a limit that is minus what is owed, so its worth still holds.
+ * An investment with only a value counts it all as money put in. Blank figures are null.
+ */
+export function openingFigures(type: AccountType, amount: number | null, extra: number | null) {
+  if (type === "credit") return { balance: (extra ?? 0) - Math.abs(amount ?? 0), credit_limit: extra, gain: null }
+  if (type === "investment") {
+    const put = amount ?? extra ?? 0
+    return { balance: put, credit_limit: null, gain: extra === null ? null : extra - put }
+  }
+  return { balance: amount ?? 0, credit_limit: null, gain: null }
+}
+
+// ponytail: about 80 common regions; anywhere else keeps the current default currency.
+const REGION_CURRENCY: Record<string, string> = Object.fromEntries([
+  ..."AD AT BE BG CY DE EE ES FI FR GR HR IE IT LT LU LV MC ME MT NL PT SI SK SM VA".split(" ").map((r) => [r, "eur"]),
+  ...`US:usd GB:gbp IN:inr CA:cad AU:aud NZ:nzd CH:chf LI:chf JP:jpy CN:cny HK:hkd SG:sgd SE:sek NO:nok DK:dkk
+    IS:isk PL:pln CZ:czk HU:huf RO:ron RS:rsd TR:try IL:ils AE:aed SA:sar QA:qar KW:kwd BH:bhd OM:omr EG:egp MA:mad
+    ZA:zar NG:ngn KE:kes GH:ghs BR:brl MX:mxn AR:ars CL:clp CO:cop PE:pen KR:krw TW:twd TH:thb MY:myr ID:idr PH:php
+    VN:vnd PK:pkr BD:bdt LK:lkr NP:npr UA:uah RU:rub KZ:kzt GE:gel`
+    .split(/\s+/)
+    .map((p) => p.split(":")),
+])
+
+/**
+ * A likely main currency from the browser's languages (navigator.languages). A tag that names its region
+ * ("en-GB") beats one whose region is only likely ("en" is most often US). Only currencies in `known` count.
+ */
+export function guessCurrency(languages: readonly string[], known: Record<string, unknown>, fallback: string) {
+  const locales = languages.flatMap((tag) => {
+    try {
+      return [new Intl.Locale(tag)]
+    } catch {
+      return []
+    }
+  })
+  const regions = [...locales.map((l) => l.region), ...locales.map((l) => l.maximize().region)]
+  return regions.map((r) => r && REGION_CURRENCY[r]).find((c) => c && known[c]) ?? fallback
+}
+
 export function netWorth(accounts: AccountLike[], to: string, rates: Rates) {
   const c = (v: number, from: string) => convert(v, from, to, rates)
   let total = 0,

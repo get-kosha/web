@@ -78,9 +78,12 @@ export function AppShell({ children }: { children: ReactNode }) {
     setAddText(text)
     setAdding(true)
   }
-  // Settings, Ask and Reconcile aren't about a month or a currency, so the header drops those controls there.
+  // Settings, Ask, Reconcile, Import and Welcome aren't about a month or a currency, so the header drops those
+  // controls. The three with a button at the bottom also keep the install card away.
   const settings = useLocation({ select: (l) => l.pathname.startsWith("/settings") })
-  const reconciling = useLocation({ select: (l) => l.pathname === "/reconcile" })
+  const reconciling = useLocation({
+    select: (l) => l.pathname === "/reconcile" || l.pathname === "/import" || l.pathname === "/welcome",
+  })
   const asking = useLocation({ select: (l) => l.pathname === "/ask" }) || reconciling
   // /add, Ask and Settings are full-screen on phones, with no top header or tab bar around them.
   const bare = useLocation({ select: (l) => l.pathname === "/add" }) || settings || asking

@@ -17,6 +17,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { GetStarted, useStarting } from "@/components/get-started"
 import { PageHeader, PageSkeleton, segment, segmentButton, useGlobals, useMeta } from "@/components/shell"
 import { BigMoney, CompositionBar, HatchPattern, WorthSplit } from "@/components/net-worth"
 import { GainDialog } from "@/components/gain-dialog"
@@ -126,6 +127,7 @@ function Accounts() {
   const [gainFor, setGainFor] = useState<Wallet | null>(null)
   const [showArchived, setShowArchived] = useState(false)
   const [picked, setPicked] = useState<string | null>(null)
+  const starting = useStarting()
 
   const open = meta.wallets.filter((w) => !w.archived)
   const archived = meta.wallets.filter((w) => w.archived)
@@ -167,6 +169,7 @@ function Accounts() {
       </PageHeader>
 
       <div className="flex flex-col gap-5 px-4 md:px-8">
+        {starting && <GetStarted />}
         <Hero overview={overview} />
 
         {meta.wallets.length > 0 && (

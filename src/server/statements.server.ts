@@ -8,6 +8,7 @@ import {
   convert,
   dayOf,
   findRecurring,
+  addDays,
   fmt,
   guessCategory,
   unixOf,
@@ -237,8 +238,11 @@ const layoutSchema = z.object({
 
 export const importInput = z.object({
   walletId: z.string().min(1),
-  /** A CSV's layout, remembered under its header so the next file from that bank reads straight away. */
-  layout: z.object({ signature: z.string().max(2000), layout: layoutSchema }).optional(),
+  /** CSV layouts, remembered under their header so the next file from that bank reads straight away. */
+  layouts: z
+    .array(z.object({ signature: z.string().max(2000), layout: layoutSchema }))
+    .max(50)
+    .default([]),
   /** Payees chosen for bank descriptions, remembered for next time. */
   aliases: z.array(z.object({ key: z.string().min(1).max(200), payee: z.string().trim().min(1).max(200) })).max(2000),
   lines: z
@@ -328,16 +332,14 @@ export async function importLines(uid: string, data: z.infer<typeof importInput>
     )
   }
   const remember = [
-    ...(data.layout
-      ? [
-          DB.prepare(`INSERT INTO import_layouts (user_id, signature, layout) VALUES (?, ?, ?)
-            ON CONFLICT(user_id, signature) DO UPDATE SET layout = excluded.layout, updated_at = unixepoch()`).bind(
-            uid,
-            data.layout.signature,
-            JSON.stringify(data.layout.layout)
-          ),
-        ]
-      : []),
+    ...data.layouts.map((l) =>
+      DB.prepare(`INSERT INTO import_layouts (user_id, signature, layout) VALUES (?, ?, ?)
+        ON CONFLICT(user_id, signature) DO UPDATE SET layout = excluded.layout, updated_at = unixepoch()`).bind(
+        uid,
+        l.signature,
+        JSON.stringify(l.layout)
+      )
+    ),
     ...data.aliases.map((a) =>
       DB.prepare(`INSERT INTO payee_aliases (user_id, descriptor, payee) VALUES (?, ?, ?)
         ON CONFLICT(user_id, descriptor) DO UPDATE SET payee = excluded.payee`).bind(uid, a.key, a.payee)
@@ -707,4 +709,169 @@ export async function undoLatest(uid: string, walletId: string) {
   if (!last) throw new HttpError(404, "That account has no reconciliation to undo.")
   await undoReconcile(uid, last.id)
   return { statementDay: last.statement_day, entries: last.entries }
+}
+
+// ---------- getting started: importing many statements ----------
+
+/** What earlier imports taught Kosha: CSV layouts by header, and payees for bank descriptions. */
+export async function importMemory(uid: string) {
+  const DB = db()
+  const [layouts, aliases] = await DB.batch([
+    DB.prepare("SELECT signature, layout FROM import_layouts WHERE user_id = ?").bind(uid),
+    DB.prepare("SELECT descriptor, payee FROM payee_aliases WHERE user_id = ?").bind(uid),
+  ])
+  return {
+    layouts: Object.fromEntries(
+      (layouts.results as { signature: string; layout: string }[]).map((l) => [
+        l.signature,
+        JSON.parse(l.layout) as Layout,
+      ])
+    ),
+    aliases: Object.fromEntries(
+      (aliases.results as { descriptor: string; payee: string }[]).map((a) => [a.descriptor, a.payee])
+    ),
+  }
+}
+
+export const entriesInput = z.object({ walletId: z.string().min(1), from: day, to: day })
+
+/** An account's entries over some days, so an import can leave out the statement lines it already has. */
+export async function importEntries(uid: string, { walletId, from, to }: z.infer<typeof entriesInput>) {
+  const { tz } = await getSettings(uid)
+  const { results } = await db()
+    .prepare(`SELECT id, date, amount, name, bank_ref FROM transactions WHERE user_id = ? AND wallet_id = ?
+      AND category_id <> '${CORRECTION_CATEGORY}' AND COALESCE(kind, '') <> 'skipped' AND date >= ? AND date < ?`)
+    .bind(uid, walletId, unixOf(addDays(from, -7), tz), unixOf(addDays(to, 8), tz))
+    .all<{ id: string; date: number; amount: number; name: string; bank_ref: string | null }>()
+  return results.map((r) => ({ id: r.id, day: dayOf(r.date, tz), amount: r.amount, name: r.name, ref: r.bank_ref }))
+}
+
+export const pairsInput = z.object({
+  pairs: z
+    .array(
+      z.object({
+        fromWalletId: z.string().min(1),
+        toWalletId: z.string().min(1),
+        /** What left the first account and what arrived in the second, both positive. */
+        sent: z.number().int().positive(),
+        received: z.number().int().positive(),
+        day,
+        refFrom: z.string().max(200),
+        refTo: z.string().max(200),
+      })
+    )
+    .min(1)
+    .max(200),
+})
+
+/** Saves statement lines from two accounts that are one transfer, as one transfer, each half keeping its bank id. */
+export async function importTransferPairs(uid: string, data: z.infer<typeof pairsInput>) {
+  const DB = db()
+  const ids = await saveTransfers(
+    uid,
+    data.pairs.map((p) => ({
+      fromWalletId: p.fromWalletId,
+      toWalletId: p.toWalletId,
+      sent: p.sent,
+      fee: 0,
+      received: p.received,
+      provider: "",
+      day: p.day,
+      note: "",
+    }))
+  )
+  await DB.batch(
+    data.pairs.flatMap((p, i) => [
+      DB.prepare("UPDATE transactions SET bank_ref = ? WHERE user_id = ? AND transfer_id = ? AND amount < 0").bind(
+        p.refFrom,
+        uid,
+        ids[i]
+      ),
+      DB.prepare("UPDATE transactions SET bank_ref = ? WHERE user_id = ? AND transfer_id = ? AND amount > 0").bind(
+        p.refTo,
+        uid,
+        ids[i]
+      ),
+    ])
+  )
+  return ids.length
+}
+
+export const finishImportInput = z.object({
+  walletId: z.string().min(1),
+  /** The first imported day; an opening balance goes at its start. */
+  firstDay: day,
+  /** The latest statement's closing balance as Kosha keeps it (available credit for a card), and its day. */
+  closing: z.object({ day, balance: z.number().int() }).nullable(),
+  /** For an account that existed before the import, its balance then, which it keeps. Null for a new account. */
+  keep: z.number().int().nullable(),
+})
+
+/**
+ * Finishes one account after an import. An opening balance, dated at its first line, makes the account meet
+ * the latest statement's closing balance, and everything up to that statement is reconciled to it. An account
+ * that existed keeps today's balance: one correction now replaces those made after the statement, since the
+ * statements fill in its past, not its present. An account reconciled before keeps its history as it is.
+ */
+export async function finishImport(uid: string, data: z.infer<typeof finishImportInput>) {
+  const DB = db()
+  const { tz } = await getSettings(uid)
+  const account = await DB.prepare(`SELECT id, (SELECT COUNT(*) FROM reconciliations
+    WHERE user_id = wallets.user_id AND wallet_id = wallets.id) AS done FROM wallets WHERE user_id = ? AND id = ?`)
+    .bind(uid, data.walletId)
+    .first<{ id: string; done: number }>()
+  if (!account) throw new HttpError(404, "Account not found")
+  let opening = 0
+  let reconciled = false
+  if (data.closing && !account.done) {
+    const end = unixOf(addDays(data.closing.day, 1), tz)
+    const sum = await DB.prepare(
+      "SELECT COALESCE(SUM(amount), 0) AS total FROM transactions WHERE user_id = ? AND wallet_id = ? AND paid = 1 AND date < ?"
+    )
+      .bind(uid, data.walletId, end)
+      .first<{ total: number }>()
+    opening = data.closing.balance - (sum?.total ?? 0)
+    await DB.batch([
+      ...(opening
+        ? [
+            DB.prepare(`INSERT INTO transactions (user_id, id, wallet_id, category_id, name, amount, date)
+            VALUES (?, ?, ?, '${CORRECTION_CATEGORY}', 'Opening balance', ?, ?)`).bind(
+              uid,
+              crypto.randomUUID(),
+              data.walletId,
+              opening,
+              unixOf(data.firstDay, tz)
+            ),
+          ]
+        : []),
+      ...(data.keep !== null
+        ? [
+            DB.prepare(`DELETE FROM transactions WHERE user_id = ? AND wallet_id = ? AND category_id = '${CORRECTION_CATEGORY}'
+            AND transfer_id IS NULL AND date >= ?`).bind(uid, data.walletId, end),
+          ]
+        : []),
+    ])
+    const { results } = await DB.prepare(`SELECT id FROM transactions WHERE user_id = ? AND wallet_id = ?
+      AND reconciled_id IS NULL AND paid = 1 AND date < ?`)
+      .bind(uid, data.walletId, end)
+      .all<{ id: string }>()
+    try {
+      await finishReconcile(uid, {
+        walletId: data.walletId,
+        statementDay: data.closing.day,
+        balance: data.closing.balance,
+        ids: results.map((r) => r.id),
+        adjust: false,
+      })
+      reconciled = true
+    } catch {} // it stays open, to reconcile by hand
+  }
+  if (data.keep !== null)
+    await DB.prepare(`INSERT INTO transactions (user_id, id, wallet_id, category_id, name, amount, date)
+      SELECT ?1, ?2, ?3, '${CORRECTION_CATEGORY}', 'Balance correction', diff, unixepoch()
+      FROM (SELECT ?4 - COALESCE(SUM(amount), 0) AS diff FROM transactions WHERE user_id = ?1 AND wallet_id = ?3 AND paid = 1)
+      WHERE diff <> 0`)
+      .bind(uid, crypto.randomUUID(), data.walletId, data.keep)
+      .run()
+  return { opening, reconciled }
 }

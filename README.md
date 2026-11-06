@@ -21,12 +21,14 @@ Kosha (कोश, "treasury") keeps every account in one place: bank accounts, c
 ## What it does
 
 - **Net worth across currencies.** Totals convert at daily exchange rates. Credit cards count what you owe, and investments count what you put in plus their latest gain.
+- **Quick setup.** A new account opens on a welcome screen: confirm your name, main currency and time zone (guessed from your browser), then add your bank accounts, cards, cash and investments in one go, each with what it holds today. Every step can be skipped.
 - **The current month.** Spending so far against your usual pace, a projection to the end of the month, and the bills still to pay.
 - **Fast entry.** Type one line, like `12.50 groceries yesterday`, and Kosha fills in the amount, category, date and account. Categories are also guessed from payees you have entered before.
 - **Tags and events.** Tag entries with hashtags (`#work`, or type them in the one-line entry). Create an event such as a trip with its dates, and everything you add during it is filed under it, so Activity can show what the whole trip cost. Click a tag on any entry to see every transaction with it, from any month.
 - **Subscriptions and bills.** Set a schedule once. Payments are recorded when they fall due, and you can skip or edit a single one.
 - **Transfers and currency exchange.** Moving money between your own accounts never counts as spending. For exchanges through Wise or similar, Kosha shows the fee and the cost of the provider's rate against the market rate.
 - **One account per person.** Each person sees only their own data. Sign in with a password or a passkey, with optional two-factor codes.
+- **Start from your statements.** A new account opens with a banner that takes every statement you have, from every bank and card and as many months as you like, all at once. Kosha sorts the files into accounts (by account number, or the bank's format), counts lines that appear in two statements once, links transfers between your own accounts, and names and sorts each payee from well-known merchants and your rules (and AI, when it's on). You check the result by payee, where a new name or category applies to every transaction from that payee, before anything is saved. Each account then gets an opening balance that makes it meet its latest statement, and is reconciled to it. An account you already had keeps today's balance. **Import statements** is also in search and in Settings › Import & export.
 - **Bank statements and reconciliation.** Drop a CSV, OFX or QFX file from your bank on **Reconcile** (from Accounts, or Settings › Import & export). Kosha works out the columns, remembers them for that bank, ticks every entry that matches a statement line (a few days of posting delay allowed), lists what's missing so you can add it in one go, and flags amounts that are close but not the same, such as a tip. A live bar shows the statement balance, what's ticked and the difference. When it doesn't add up, Kosha runs the bookkeeper's checks: an entry equal to the difference, half of it (a wrong sign), digits swapped (a difference divisible by 9), a misplaced decimal point, a duplicate, or entries at the period's end that will show on the next statement. Finishing marks the entries reconciled, Kosha warns before you change one, and the latest reconciliation can be undone. No file? Tick entries against the statement by hand, or confirm in one tap that your bank shows the same balance.
 - **Recurring payments, spotted.** Recurring lists payees you pay on a steady rhythm (weekly to yearly) that aren't set up yet. One tap makes one a recurring payment and files its past payments under it.
 - **Import from Cashew.** Bring over accounts, categories, transactions and recurring payments.
@@ -140,8 +142,6 @@ Running the import again updates accounts in place and keeps their type, credit 
 
 - **Offline.** The installed app opens without a connection and shows the pages and data from your last visit. New entries from **Add** wait on the device and sync when you're back online. Edits, transfers and deletes still need a connection. Signing out clears what the device saved.
 - **Updates.** When a new version is deployed, a card at the bottom offers to reload into it.
-
-Not built yet: bank statement reconciliation.
 
 ## Built with
 

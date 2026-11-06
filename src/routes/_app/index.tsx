@@ -13,6 +13,7 @@ import {
   YAxis,
 } from "recharts"
 import { toast } from "sonner"
+import { GetStarted, useStarting } from "@/components/get-started"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { ChartContainer } from "@/components/ui/chart"
@@ -66,6 +67,7 @@ function Overview() {
   const d = Route.useLoaderData()
   const meta = useMeta()
   const { current } = useGlobals()
+  const starting = useStarting()
   const today = dayOf(Date.now() / 1000, meta.tz)
   const [paying, setPaying] = useState<{ card: Wallet; owed: number } | null>(null)
   const [gainFor, setGainFor] = useState<Wallet | null>(null)
@@ -80,6 +82,7 @@ function Overview() {
   return (
     <div className="flex flex-col gap-3 px-4 pt-4 md:gap-5 md:px-8 md:pt-7">
       <h1 className="sr-only">Overview</h1>
+      {starting && <GetStarted />}
       {d.recap && <RecapCard key={d.recap.month} view={d.recap} />}
       <div className="flex flex-wrap gap-5">
         <NetWorthCard d={d} />

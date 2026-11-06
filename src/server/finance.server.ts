@@ -57,6 +57,8 @@ export type Wallet = {
   gain: number | null
   gain_day: string | null
   tx_count: number
+  /** Transactions other than balance corrections: zero for an account that only has its opening balance. */
+  entry_count: number
   /** The statement day of its latest reconciliation, if any. */
   reconciled_day: string | null
 }
@@ -124,6 +126,7 @@ const walletsQuery = (uid: string) =>
     .prepare(`SELECT w.id, w.name, w.currency, w.colour, w.archived, w.type, w.credit_limit,
       COALESCE((SELECT SUM(amount) FROM transactions WHERE user_id = w.user_id AND wallet_id = w.id AND paid = 1), 0) AS balance,
       (SELECT COUNT(*) FROM transactions WHERE user_id = w.user_id AND wallet_id = w.id) AS tx_count,
+      (SELECT COUNT(*) FROM transactions WHERE user_id = w.user_id AND wallet_id = w.id AND category_id <> '${CORRECTION_CATEGORY}') AS entry_count,
       (SELECT gain FROM valuations WHERE user_id = w.user_id AND wallet_id = w.id ORDER BY day DESC LIMIT 1) AS gain,
       (SELECT day FROM valuations WHERE user_id = w.user_id AND wallet_id = w.id ORDER BY day DESC LIMIT 1) AS gain_day,
       (SELECT MAX(statement_day) FROM reconciliations WHERE user_id = w.user_id AND wallet_id = w.id) AS reconciled_day
@@ -1184,56 +1187,85 @@ export const accountInput = z.object({
   /** Balance the account should have now, in cents (available credit for cards, amount invested for investments).
    *  The difference from the current balance becomes a balance correction. null leaves it as is. */
   balance: z.number().int().nullable().default(null),
+  /** Investments only: a gain to record for today (value today minus money put in), after any balance change. */
+  gain: z.number().int().optional(),
 })
 
-export async function saveAccount(uid: string, data: z.infer<typeof accountInput>) {
+export const saveAccount = async (uid: string, data: z.infer<typeof accountInput>) =>
+  (await saveAccounts(uid, [data]))[0]
+
+/** Creates or edits accounts in one batch, so the list saves whole or not at all. Returns their ids in order. */
+export async function saveAccounts(uid: string, items: z.infer<typeof accountInput>[]) {
   const DB = db()
-  const limit = data.type === "credit" ? data.creditLimit : null
-  const id = data.id ?? crypto.randomUUID()
-  const writes = []
-  if (data.id) {
-    const old =
-      await DB.prepare(`SELECT currency, (SELECT COUNT(*) FROM transactions WHERE user_id = wallets.user_id AND wallet_id = wallets.id) AS n
-      FROM wallets WHERE user_id = ? AND id = ?`)
-        .bind(uid, data.id)
-        .first<{ currency: string; n: number }>()
-    if (!old) throw notFound("Account")
-    if (old.currency !== data.currency && old.n > 0)
-      throw new HttpError(409, "Currency can't change once an account has transactions")
-    writes.push(
-      DB.prepare(
-        "UPDATE wallets SET name = ?, type = ?, currency = ?, credit_limit = ?, archived = ? WHERE user_id = ? AND id = ?"
-      ).bind(data.name, data.type, data.currency, limit, data.archived ? 1 : 0, uid, id)
-    )
-  } else {
-    writes.push(
-      DB.prepare(`INSERT INTO wallets (user_id, id, name, currency, type, credit_limit, archived, sort)
-      VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, (SELECT COALESCE(MAX(sort), 0) + 1 FROM wallets WHERE user_id = ?1))`).bind(
-        uid,
-        id,
-        data.name,
-        data.currency,
-        data.type,
-        limit,
-        data.archived ? 1 : 0
+  const label = (i: number) => (items.length > 1 ? `Account ${i + 1}` : "Account")
+  const editIds = items.flatMap((a) => (a.id ? [a.id] : []))
+  const { results: old } = editIds.length
+    ? await DB.prepare(`SELECT id, currency, (SELECT COUNT(*) FROM transactions WHERE user_id = wallets.user_id AND wallet_id = wallets.id) AS n
+      FROM wallets WHERE user_id = ? AND id IN (SELECT value FROM json_each(?))`)
+        .bind(uid, ids(editIds))
+        .all<{ id: string; currency: string; n: number }>()
+    : { results: [] }
+  const today = items.some((a) => a.gain !== undefined) ? dayOf(Date.now() / 1000, (await getSettings(uid)).tz) : ""
+  const writes: D1PreparedStatement[] = []
+  const out = items.map((data, i) => {
+    const limit = data.type === "credit" ? data.creditLimit : null
+    const id = data.id ?? crypto.randomUUID()
+    if (data.gain !== undefined && data.type !== "investment")
+      throw new HttpError(400, "Gains can only be recorded for investment accounts")
+    if (data.id) {
+      const was = old.find((w) => w.id === data.id)
+      if (!was) throw notFound(label(i))
+      if (was.currency !== data.currency && was.n > 0)
+        throw new HttpError(409, "Currency can't change once an account has transactions")
+      writes.push(
+        DB.prepare(
+          "UPDATE wallets SET name = ?, type = ?, currency = ?, credit_limit = ?, archived = ? WHERE user_id = ? AND id = ?"
+        ).bind(data.name, data.type, data.currency, limit, data.archived ? 1 : 0, uid, id)
       )
-    )
-  }
-  // The difference is computed in the same batch, so it is always against the latest balance.
-  if (data.balance !== null)
-    writes.push(
-      DB.prepare(`INSERT INTO transactions (user_id, id, wallet_id, category_id, name, amount, date)
-      SELECT ?1, ?2, ?3, '${CORRECTION_CATEGORY}', ?4, diff, unixepoch()
-      FROM (SELECT ?5 - COALESCE(SUM(amount), 0) AS diff FROM transactions WHERE user_id = ?1 AND wallet_id = ?3 AND paid = 1) WHERE diff <> 0`).bind(
-        uid,
-        crypto.randomUUID(),
-        id,
-        data.id ? "Balance correction" : "Opening balance",
-        data.balance
+    } else {
+      writes.push(
+        DB.prepare(`INSERT INTO wallets (user_id, id, name, currency, type, credit_limit, archived, sort)
+        VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, (SELECT COALESCE(MAX(sort), 0) + 1 FROM wallets WHERE user_id = ?1))`).bind(
+          uid,
+          id,
+          data.name,
+          data.currency,
+          data.type,
+          limit,
+          data.archived ? 1 : 0
+        )
       )
-    )
-  await DB.batch(writes)
-  return id
+    }
+    // The difference is computed in the same batch, so it is always against the latest balance.
+    if (data.balance !== null)
+      writes.push(
+        DB.prepare(`INSERT INTO transactions (user_id, id, wallet_id, category_id, name, amount, date)
+        SELECT ?1, ?2, ?3, '${CORRECTION_CATEGORY}', ?4, diff, unixepoch()
+        FROM (SELECT ?5 - COALESCE(SUM(amount), 0) AS diff FROM transactions WHERE user_id = ?1 AND wallet_id = ?3 AND paid = 1) WHERE diff <> 0`).bind(
+          uid,
+          crypto.randomUUID(),
+          id,
+          data.id ? "Balance correction" : "Opening balance",
+          data.balance
+        )
+      )
+    // Like recordGains, one gain per account and day, against the money put in after the correction above.
+    if (data.gain !== undefined)
+      writes.push(
+        DB.prepare(`INSERT INTO valuations (user_id, id, wallet_id, day, gain, invested, note)
+        SELECT ?1, ?2, ?3, ?4, ?5, COALESCE(SUM(amount), 0), '' FROM transactions WHERE user_id = ?1 AND wallet_id = ?3 AND paid = 1
+        ON CONFLICT(user_id, wallet_id, day) DO UPDATE SET gain = excluded.gain, invested = excluded.invested`).bind(
+          uid,
+          crypto.randomUUID(),
+          id,
+          today,
+          data.gain
+        )
+      )
+    return id
+  })
+  if (writes.length) await DB.batch(writes)
+  return out
 }
 
 export async function deleteAccount(uid: string, id: string) {
