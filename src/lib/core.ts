@@ -364,6 +364,88 @@ export function instances(
   return out
 }
 
+// --- spotting recurring payments ---
+
+const PERIODS = [
+  { every: 1, unit: "week", days: 7, slack: 1 },
+  { every: 2, unit: "week", days: 14, slack: 2 },
+  { every: 1, unit: "month", days: 30.44, slack: 4 },
+  { every: 3, unit: "month", days: 91.3, slack: 8 },
+  { every: 1, unit: "year", days: 365.25, slack: 12 },
+] as const
+const between = (a: string, b: string) => Math.round((Date.parse(b) - Date.parse(a)) / 86_400_000)
+const median = (xs: number[]) => {
+  const s = [...xs].sort((a, b) => a - b)
+  return s.length % 2 ? s[(s.length - 1) / 2] : (s[s.length / 2 - 1] + s[s.length / 2]) / 2
+}
+
+export type Payment = { id: string; name: string; amount: number; day: string; category_id: string; wallet_id: string }
+export type RecurringGuess = {
+  name: string
+  /** The latest amount for a steady one, the typical one when it varies. Signed. */
+  amount: number
+  variable: boolean
+  every: number
+  unit: Unit
+  nextDay: string
+  lastDay: string
+  count: number
+  categoryId: string
+  walletId: string
+  /** The past payments it was spotted from, oldest first. */
+  ids: string[]
+}
+
+/**
+ * Payees paid on a steady rhythm: weekly, fortnightly, monthly, quarterly or yearly, still going, and with
+ * about one payment per period. Three payments are needed (two for yearly). Weekly, fortnightly and yearly
+ * ones must also keep a steady amount (within 10%), so weekly groceries don't count; monthly and quarterly
+ * ones may vary, like an energy bill. Pass payments that aren't already recurring, transfers or corrections.
+ */
+export function findRecurring(payments: Payment[], today: string): RecurringGuess[] {
+  const groups = new Map<string, Payment[]>()
+  for (const p of payments) {
+    const key = p.name.trim().toLowerCase()
+    if (key) (groups.get(key) ?? groups.set(key, []).get(key)!).push(p)
+  }
+  const out: RecurringGuess[] = []
+  for (const list of groups.values()) {
+    const ps = [...list].sort((a, b) => a.day.localeCompare(b.day))
+    if (ps.length < 2 || !ps.every((p) => Math.sign(p.amount) === Math.sign(ps[0].amount))) continue
+    const gaps = ps.slice(1).map((p, i) => between(ps[i].day, p.day))
+    const typical = median(gaps)
+    const period = PERIODS.find((x) => Math.abs(typical - x.days) <= x.slack)
+    if (!period || ps.length < (period.unit === "year" ? 2 : 3)) continue
+    if (gaps.filter((g) => Math.abs(g - period.days) <= period.slack).length < gaps.length * 0.75) continue
+    const last = ps[ps.length - 1]
+    if (between(last.day, today) > period.days * 1.5 + period.slack) continue
+    const amounts = ps.map((p) => Math.abs(p.amount))
+    const mid = median(amounts)
+    const steady = amounts.filter((a) => Math.abs(a - mid) <= Math.max(mid * 0.1, 100)).length >= amounts.length * 0.75
+    if (!steady && (period.unit === "week" || period.unit === "year")) continue
+    let n = 1
+    let next = occurrence({ start_day: last.day, every: period.every, unit: period.unit, end_day: null }, n)
+    while (next < today)
+      next = occurrence({ start_day: last.day, every: period.every, unit: period.unit, end_day: null }, ++n)
+    out.push({
+      name: last.name.trim(),
+      amount: Math.sign(last.amount) * (steady ? Math.abs(last.amount) : Math.round(mid)),
+      variable: !steady,
+      every: period.every,
+      unit: period.unit,
+      nextDay: next,
+      lastDay: last.day,
+      count: ps.length,
+      categoryId: last.category_id,
+      walletId: last.wallet_id,
+      ids: ps.map((p) => p.id),
+    })
+  }
+  return out.sort(
+    (a, b) => Math.abs(monthlyCost(b.amount, b.every, b.unit)) - Math.abs(monthlyCost(a.amount, a.every, a.unit))
+  )
+}
+
 // --- accounts & net worth ---
 
 export type AccountType = "bank" | "cash" | "credit" | "investment"
@@ -462,6 +544,20 @@ export const PREFS = {
   ai_share_note: pref(z.enum(["0", "1"]), "0"),
   ai_share_account: pref(z.enum(["0", "1"]), "0"),
   ai_log_enabled: pref(z.enum(["0", "1"]), "1"),
+  ai_categorise: pref(z.enum(["0", "1"]), "1"),
+  ai_quick_add: pref(z.enum(["0", "1"]), "1"),
+  ai_receipts: pref(z.enum(["0", "1"]), "1"),
+  ai_recap: pref(z.enum(["0", "1"]), "1"),
+  ai_ask: pref(z.enum(["0", "1"]), "1"),
+  ai_statements: pref(z.enum(["0", "1"]), "1"),
+  /** The month whose recap was dismissed from Overview, so it stays hidden on every device. */
+  ai_recap_hidden: pref(
+    z
+      .string()
+      .regex(/^\d{4}-\d{2}$/)
+      .nullable(),
+    null
+  ),
   backup_codes_saved_at: pref(z.string().regex(/^\d+$/).nullable(), null),
 }
 export type Prefs = { [K in keyof typeof PREFS]: z.infer<(typeof PREFS)[K]["schema"]> }
@@ -481,12 +577,96 @@ export function parsePrefs(rows: Record<string, string | undefined>): Prefs {
 export type AiShares = { amount: boolean; payee: boolean; date: boolean; note: boolean; account: boolean }
 export type AiTx = { payee: string; amount: number; currency: string; day: string; note: string; account: string }
 
+/** Settings › AI › What AI can see, as flags. */
+export const aiShares = (p: Prefs): AiShares => ({
+  amount: p.ai_share_amount === "1",
+  payee: p.ai_share_payee === "1",
+  date: p.ai_share_date === "1",
+  note: p.ai_share_note === "1",
+  account: p.ai_share_account === "1",
+})
+
+/**
+ * Each AI feature, its on/off preference, and the settings it can't work without. Auto-categorise guesses
+ * from the payee and only while Kosha suggests categories at all; a recap is about amounts.
+ */
+export const AI_FEATURES = {
+  categorise: { pref: "ai_categorise", needs: ["ai_share_payee", "suggest_category"] },
+  quick_add: { pref: "ai_quick_add", needs: [] },
+  receipts: { pref: "ai_receipts", needs: [] },
+  recap: { pref: "ai_recap", needs: ["ai_share_amount"] },
+  ask: { pref: "ai_ask", needs: [] },
+  statements: { pref: "ai_statements", needs: [] },
+} as const satisfies Record<string, { pref: keyof Prefs; needs: readonly (keyof Prefs)[] }>
+export type AiFeature = keyof typeof AI_FEATURES
+
+const AI_FEATURE_NAMES: Record<AiFeature, string> = {
+  categorise: "Auto-categorise",
+  quick_add: "Natural-language add",
+  receipts: "Receipt scanning",
+  recap: "Monthly recap",
+  ask: "Ask Kosha",
+  statements: "Statements",
+}
+const NEEDS: Partial<Record<keyof Prefs, string>> = {
+  ai_share_payee: "payee names shared, under Settings › AI › What AI can see",
+  ai_share_amount: "amounts shared, under Settings › AI › What AI can see",
+  suggest_category: "Suggest a category turned on, under Settings › General",
+}
+
+/**
+ * Why an AI feature can't run, as a message that says what to change, or null when it can: no provider
+ * connected, AI off, the feature off, or a setting it needs off.
+ */
+export function aiBlocker(p: Prefs, connected: boolean, feature: AiFeature): string | null {
+  const on = p.ai_enabled === "1"
+  if (!connected && !on)
+    return "AI isn't set up. In Kosha, open Settings › AI, turn on Use AI features and connect a provider (Anthropic, OpenAI, Gemini, OpenRouter, Ollama or any OpenAI-compatible endpoint)."
+  if (!connected)
+    return "No AI provider is connected. In Kosha, open Settings › AI and connect one (Anthropic, OpenAI, Gemini, OpenRouter, Ollama or any OpenAI-compatible endpoint)."
+  if (!on) return "AI is turned off. In Kosha, open Settings › AI and turn on Use AI features."
+  const f = AI_FEATURES[feature]
+  const name = AI_FEATURE_NAMES[feature]
+  if (p[f.pref] !== "1") return `${name} is turned off. Turn it on in Kosha under Settings › AI › Features.`
+  const missing = f.needs.find((n: keyof Prefs) => p[n] !== "1")
+  return missing ? `${name} needs ${NEEDS[missing]}.` : null
+}
+
+/** Which AI features are live: AI on, a default provider connected, the feature on and what it needs turned on. */
+export function aiFeatures(p: Prefs, connected: boolean) {
+  return Object.fromEntries(
+    (Object.keys(AI_FEATURES) as AiFeature[]).map((k) => [k, !aiBlocker(p, connected, k)])
+  ) as Record<AiFeature, boolean>
+}
+
+/**
+ * An amount read by AI in the account's currency. A receipt in another currency is converted at today's
+ * rate, and the note says what was paid. Without a rate for it, the amount stays and the note says so.
+ */
+export function inCurrency(
+  e: { amount: number | null; currency: string | null; note: string },
+  currency: string,
+  rates: Rates
+) {
+  if (!e.amount || !e.currency || e.currency === currency) return { amount: e.amount, note: e.note }
+  const paid = `Paid ${fmt(e.amount, e.currency)}`
+  const known = rates[e.currency] && rates[currency]
+  return {
+    amount: known ? Math.round(convert(e.amount, e.currency, currency, rates)) : e.amount,
+    note: [e.note, known ? paid : `${paid}, not converted`].filter(Boolean).join(" · "),
+  }
+}
+
 /** FNV-1a: a small stable hash, so the same payee always gets the same code. Not for secrets. */
 function fnv1a(s: string) {
   let h = 0x811c9dc5
   for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 0x01000193)
   return h >>> 0
 }
+
+/** The stable code that stands in for a payee name when payee names aren't shared. */
+export const payeeCode = (uid: string, payee: string) =>
+  `payee_${fnv1a(`${uid}\u0000${payee.trim().toLowerCase()}`).toString(36)}`
 
 /**
  * Exactly what an AI request may contain for one transaction, per Settings › AI › What AI can see.
@@ -495,7 +675,7 @@ function fnv1a(s: string) {
  */
 export function redactForAi(tx: AiTx, shares: AiShares, uid: string) {
   const out: Record<string, string | number | null> = {
-    payee: shares.payee ? tx.payee : `payee_${fnv1a(`${uid}\u0000${tx.payee.trim().toLowerCase()}`).toString(36)}`,
+    payee: shares.payee ? tx.payee : payeeCode(uid, tx.payee),
     amount: shares.amount ? tx.amount / 100 : null,
     currency: tx.currency.toUpperCase(),
   }
@@ -504,4 +684,24 @@ export function redactForAi(tx: AiTx, shares: AiShares, uid: string) {
   if (shares.note) out.note = tx.note
   if (shares.account) out.account = tx.account
   return out
+}
+
+/** Puts real names back in a model's reply, in place of the payee codes and account refs it was given. */
+export const unmask = (text: string, names: Map<string, string>) =>
+  names.size ? text.replace(/\b(payee_[0-9a-z]+|account_\d+)\b/g, (code) => names.get(code) ?? code) : text
+
+/**
+ * The JSON object in a model's reply. Models wrap it in prose or ``` fences now and then, so this reads
+ * from the first "{" to the last "}". Returns null when there's no object.
+ */
+export function readJson(text: string): Record<string, unknown> | null {
+  const start = text.indexOf("{")
+  const end = text.lastIndexOf("}")
+  if (start < 0 || end < start) return null
+  try {
+    const v: unknown = JSON.parse(text.slice(start, end + 1))
+    return v && typeof v === "object" && !Array.isArray(v) ? (v as Record<string, unknown>) : null
+  } catch {
+    return null
+  }
 }

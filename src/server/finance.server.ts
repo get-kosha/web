@@ -9,6 +9,7 @@ import {
   PREFS,
   TRANSFER_CATEGORY,
   addDays,
+  aiFeatures,
   convert,
   cumulative,
   dayOf,
@@ -56,6 +57,8 @@ export type Wallet = {
   gain: number | null
   gain_day: string | null
   tx_count: number
+  /** The statement day of its latest reconciliation, if any. */
+  reconciled_day: string | null
 }
 export type Category = {
   id: string
@@ -89,6 +92,10 @@ export type Tx = {
   /** JSON array of tags as stored; read with tagList. */
   tags?: string
   event_id?: string | null
+  /** The reconciliation that checked it against a statement, if one has. */
+  reconciled_id?: string | null
+  /** The bank's id for an imported line. */
+  bank_ref?: string | null
 }
 export type Event = {
   id: string
@@ -118,7 +125,8 @@ const walletsQuery = (uid: string) =>
       COALESCE((SELECT SUM(amount) FROM transactions WHERE user_id = w.user_id AND wallet_id = w.id AND paid = 1), 0) AS balance,
       (SELECT COUNT(*) FROM transactions WHERE user_id = w.user_id AND wallet_id = w.id) AS tx_count,
       (SELECT gain FROM valuations WHERE user_id = w.user_id AND wallet_id = w.id ORDER BY day DESC LIMIT 1) AS gain,
-      (SELECT day FROM valuations WHERE user_id = w.user_id AND wallet_id = w.id ORDER BY day DESC LIMIT 1) AS gain_day
+      (SELECT day FROM valuations WHERE user_id = w.user_id AND wallet_id = w.id ORDER BY day DESC LIMIT 1) AS gain_day,
+      (SELECT MAX(statement_day) FROM reconciliations WHERE user_id = w.user_id AND wallet_id = w.id) AS reconciled_day
       FROM wallets w WHERE w.user_id = ? ORDER BY w.archived, w.sort`)
     .bind(uid)
 
@@ -157,7 +165,7 @@ export async function loadMeta(uid: string) {
   await ensureSettled(uid)
   const settings = await getSettings(uid)
   refreshRatesIfStale(settings.ratesUpdated)
-  const [wallets, categories, rules, titles, events, tagRows] = await DB.batch([
+  const [wallets, categories, rules, titles, events, tagRows, provider] = await DB.batch([
     walletsQuery(uid),
     // Archived categories are included so old transactions keep their name; pickers leave them out.
     DB.prepare(`SELECT c.id, c.name, c.icon, c.income, c.parent_id, c.archived,
@@ -169,7 +177,9 @@ export async function loadMeta(uid: string) {
     ).bind(uid),
     eventsQuery(uid),
     tagsQuery(uid, "", 200),
+    DB.prepare("SELECT id, model FROM ai_providers WHERE user_id = ? AND is_default = 1").bind(uid),
   ])
+  const ai = provider.results[0] as { id: string; model: string } | undefined
   return {
     wallets: wallets.results as Wallet[],
     categories: categories.results as Category[],
@@ -183,6 +193,9 @@ export async function loadMeta(uid: string) {
     tz: settings.tz,
     prefs: settings.prefs,
     ratesUpdated: settings.ratesUpdated,
+    /** The AI features that are live. The UI shows nothing of one that is off. */
+    ai: aiFeatures(settings.prefs, !!ai),
+    aiModel: ai ? { provider: ai.id, model: ai.model } : null,
   }
 }
 
@@ -417,6 +430,8 @@ export const listInput = z.object({
   type: z.enum(["out", "in", "transfers"]).optional(),
   /** Balance corrections are hidden unless asked for. */
   corrections: z.boolean().optional(),
+  /** Only entries checked against a statement (true), or only those not yet (false). */
+  reconciled: z.boolean().optional(),
   limit: z.number().int().min(1).max(2000).default(100),
   offset: z.number().int().min(0).default(0),
 })
@@ -477,6 +492,7 @@ export async function listTransactions(uid: string, data: z.infer<typeof listInp
   if (data.type === "in") where.push(`t.amount > 0 AND t.category_id NOT IN ${NEUTRAL_SQL}`)
   if (data.type === "transfers") where.push("t.transfer_id IS NOT NULL")
   if (!data.corrections) where.push(`t.category_id <> '${CORRECTION_CATEGORY}'`)
+  if (data.reconciled !== undefined) where.push(`t.reconciled_id IS ${data.reconciled ? "NOT " : ""}NULL`)
   const w = `WHERE ${where.join(" AND ")}`
   const DB = db()
   const [rows, count, totals, corrections] = await DB.batch([
@@ -580,6 +596,8 @@ export const saveInput = z.object({
   tags: tags.optional(),
   /** null means no event. When left out, an edit keeps its event and a new entry gets the event its day falls in. */
   eventId: z.string().nullable().optional(),
+  /** A new entry imported from a statement: the bank's id for the line. */
+  bankRef: z.string().max(200).optional(),
 })
 type SaveTx = z.infer<typeof saveInput>
 
@@ -609,10 +627,11 @@ export async function saveTransactions(uid: string, items: SaveTx[]) {
   const update = DB.prepare(`UPDATE transactions SET wallet_id = ?1, category_id = ?2,
     subcategory_id = CASE WHEN ?10 = 1 THEN ?11 WHEN category_id = ?2 THEN subcategory_id ELSE NULL END,
     tags = COALESCE(?12, tags), event_id = CASE WHEN ?13 = 1 THEN ?14 ELSE event_id END,
+    reconciled_id = CASE WHEN amount = ?5 AND wallet_id = ?1 AND ?15 = 1 THEN reconciled_id END,
     name = ?3, note = ?4, amount = ?5, date = ?6, paid = ?7, updated_at = unixepoch() WHERE user_id = ?9 AND id = ?8`)
   const insert =
-    DB.prepare(`INSERT INTO transactions (user_id, id, wallet_id, category_id, subcategory_id, name, note, amount, date, paid, tags, event_id)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+    DB.prepare(`INSERT INTO transactions (user_id, id, wallet_id, category_id, subcategory_id, name, note, amount, date, paid, tags, event_id, bank_ref)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
   // Settings › Payee rules › Learn from my edits. A learned rule never replaces one you made.
   const learn = DB.prepare(`INSERT INTO title_rules (user_id, title, category_id) VALUES (?, ?, ?)
     ON CONFLICT(user_id, title) DO UPDATE SET category_id = excluded.category_id WHERE source = 'learned'`)
@@ -642,7 +661,9 @@ export async function saveTransactions(uid: string, items: SaveTx[]) {
             data.subcategoryId ?? null,
             tagsJson,
             eventId === undefined ? 0 : 1,
-            eventId ?? null
+            eventId ?? null,
+            // A reconciled entry stays reconciled while its amount, account and day stay the same.
+            dayOf(old, tz) === data.day ? 1 : 0
           )
         : insert.bind(
             uid,
@@ -656,7 +677,8 @@ export async function saveTransactions(uid: string, items: SaveTx[]) {
             date,
             data.paid ? 1 : 0,
             tagsJson ?? "[]",
-            eventId ?? null
+            eventId ?? null,
+            data.bankRef ?? null
           )
     )
     if (name && !isNeutral(data.categoryId) && prefs.learn_rules === "1")
@@ -1225,6 +1247,7 @@ export async function deleteAccount(uid: string, id: string) {
   if (used.n) throw new HttpError(409, "This account has transactions. Archive it instead.")
   await DB.batch([
     DB.prepare("DELETE FROM valuations WHERE user_id = ? AND wallet_id = ?").bind(uid, id),
+    DB.prepare("DELETE FROM reconciliations WHERE user_id = ? AND wallet_id = ?").bind(uid, id),
     DB.prepare("DELETE FROM wallets WHERE user_id = ? AND id = ?").bind(uid, id),
   ])
 }

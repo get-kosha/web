@@ -8,7 +8,9 @@ import {
 } from "@phosphor-icons/react/ssr"
 import type { Icon } from "@phosphor-icons/react"
 import { toast } from "sonner"
-import { SettingGroup } from "@/components/settings/row"
+import { Link } from "@tanstack/react-router"
+import { SettingGroup, SettingRow } from "@/components/settings/row"
+import { useMeta } from "@/components/shell"
 import { errorOf } from "@/components/settings/saved"
 import { cn } from "@/lib/utils"
 
@@ -30,6 +32,30 @@ const EXPORTS: [href: string, file: string, icon: Icon, title: string, sub: stri
 ]
 
 export function ImportExport() {
+  const meta = useMeta()
+  return (
+    <>
+      <SettingGroup label="Import">
+        <SettingRow
+          id="statements"
+          title="Bank statements"
+          description={`Import a CSV, OFX or QFX file from your bank${meta.ai.statements ? ", or a PDF statement," : ""} and Kosha adds what's missing and checks the account against it.`}
+          control={
+            <Link
+              to="/reconcile"
+              className="inline-flex h-8 items-center rounded-md border bg-card px-3 text-[13px] transition-colors hover:bg-muted max-md:h-11"
+            >
+              Import a statement
+            </Link>
+          }
+        />
+      </SettingGroup>
+      <Exports />
+    </>
+  )
+}
+
+function Exports() {
   return (
     <SettingGroup label="Export" plain>
       <div id="export" className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-3">

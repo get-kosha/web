@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { Link, createFileRoute, useNavigate, useRouter } from "@tanstack/react-router"
-import { CaretLeftIcon, CaretRightIcon, PlusIcon } from "@phosphor-icons/react/ssr"
+import { CaretLeftIcon, CaretRightIcon, PlusIcon, XIcon } from "@phosphor-icons/react/ssr"
 import { toast } from "sonner"
 import { z } from "zod"
 import { Button } from "@/components/ui/button"
@@ -23,8 +23,11 @@ import { SubscriptionForm } from "@/components/subscription-form"
 import { TransactionForm, TransactionSheet } from "@/components/transaction-form"
 import {
   deleteSubscription,
+  dismissRecurring,
+  linkPayments,
   listSubscriptions,
   recentIncome,
+  recurringSuggestions,
   saveSubscription,
   updateOccurrence,
   type SubscriptionView,
@@ -48,8 +51,13 @@ import { cn } from "@/lib/utils"
 export const Route = createFileRoute("/_app/subscriptions")({
   validateSearch: z.object({ id: z.coerce.string().optional() }),
   loader: async () => {
-    const [subs, income] = await Promise.all([listSubscriptions(), recentIncome()])
-    return { subs, income }
+    // Spotting is extra: when it fails, Recurring still loads.
+    const [subs, income, spotted] = await Promise.all([
+      listSubscriptions(),
+      recentIncome(),
+      recurringSuggestions().catch(() => []),
+    ])
+    return { subs, income, spotted }
   },
   head: () => ({ meta: [{ title: "Recurring · Kosha" }] }),
   pendingComponent: PageSkeleton,
@@ -79,11 +87,13 @@ const isOpen = (i: Instance) => i.status !== "paid" && i.status !== "skipped"
 const COLS = "grid grid-cols-[minmax(0,1fr)_5.5rem_5rem] gap-4 md:grid-cols-[minmax(0,1fr)_5.75rem_5.5rem_6rem_5.75rem]"
 
 function Subscriptions() {
-  const { subs, income } = Route.useLoaderData()
+  const { subs, income, spotted } = Route.useLoaderData()
   const s = Route.useSearch()
   const meta = useMeta()
   const navigate = useNavigate({ from: Route.fullPath })
   const [creating, setCreating] = useState(false)
+  const [adopting, setAdopting] = useState<Guess | null>(null)
+  const router = useRouter()
   const [showEnded, setShowEnded] = useState(false)
   const today = dayOf(Date.now() / 1000, meta.tz)
   const cur = useGlobals().currency
@@ -167,6 +177,7 @@ function Subscriptions() {
           </Card>
 
           <Strip subs={active} today={today} toCur={toCur} money={money} />
+          {spotted.length > 0 && <Spotted list={spotted} today={today} onAdd={setAdopting} />}
         </div>
 
         <div className="flex flex-wrap items-start gap-5">
@@ -256,6 +267,29 @@ function Subscriptions() {
         </div>
       </div>
 
+      <Dialog open={!!adopting} onOpenChange={(o) => !o && setAdopting(null)}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Make {adopting?.name} recurring</DialogTitle>
+            <DialogDescription>
+              Its {adopting?.count} past payments are filed under it, so they show in its history.
+            </DialogDescription>
+          </DialogHeader>
+          {adopting && (
+            <SubscriptionForm
+              preset={adopting}
+              onDone={async (id) => {
+                const ids = adopting.ids
+                setAdopting(null)
+                await linkPayments({ data: { id, ids } }).catch(() => {})
+                await router.invalidate()
+                navigate({ search: (p) => ({ ...p, id }) })
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={creating} onOpenChange={setCreating}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
@@ -270,6 +304,79 @@ function Subscriptions() {
         </DialogContent>
       </Dialog>
     </div>
+  )
+}
+
+type Guess = Awaited<ReturnType<typeof recurringSuggestions>>[number]
+
+/** Regular payments Kosha spotted that aren't set up as recurring yet. */
+function Spotted({ list, today, onAdd }: { list: Guess[]; today: string; onAdd: (g: Guess) => void }) {
+  const meta = useMeta()
+  const router = useRouter()
+  const [hidden, setHidden] = useState<string[]>([])
+  const shown = list.filter((g) => !hidden.includes(g.name))
+  if (!shown.length) return null
+  async function dismiss(g: Guess) {
+    setHidden((h) => [...h, g.name])
+    try {
+      await dismissRecurring({ data: { payee: g.name } })
+      await router.invalidate()
+    } catch (e) {
+      setHidden((h) => h.filter((n) => n !== g.name))
+      toast.error(e instanceof Error ? e.message : "Couldn't hide it")
+    }
+  }
+  return (
+    <section aria-labelledby="spotted-h">
+      <div className="mx-1 mb-2.5 flex items-baseline justify-between gap-3">
+        <h2 id="spotted-h" className="text-[13px] font-medium">
+          Looks recurring
+        </h2>
+        <span className="text-xs text-muted-foreground">Spotted from payments on a steady rhythm</span>
+      </div>
+      <Card className="gap-0 py-0">
+        {shown.map((g) => {
+          const c = meta.categories.find((x) => x.id === g.categoryId)
+          const cur = meta.wallets.find((w) => w.id === g.walletId)?.currency ?? meta.primary
+          return (
+            <div
+              key={g.name}
+              className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-t px-4 py-3 first:border-t-0"
+            >
+              <div className="flex min-w-0 items-center gap-3">
+                <CategoryIcon icon={c?.icon} className="size-5 shrink-0 text-muted-foreground" />
+                <div className="min-w-0">
+                  <div className="truncate text-sm font-medium">{g.name}</div>
+                  <div className="text-xs text-muted-foreground">
+                    <span className="num">
+                      {g.variable ? "about " : ""}
+                      {fmt(Math.abs(g.amount), cur)}
+                    </span>{" "}
+                    every {every(g.every, g.unit)} · paid {g.count} times, last on {short(g.lastDay)} · next around{" "}
+                    {nextLabel(g.nextDay, today)}
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-1">
+                <Button size="sm" variant="outline" className="bg-card max-md:h-11" onClick={() => onAdd(g)}>
+                  <PlusIcon /> Make recurring
+                </Button>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="text-muted-foreground max-md:size-11"
+                  aria-label={`${g.name} isn't recurring`}
+                  title="Not recurring"
+                  onClick={() => dismiss(g)}
+                >
+                  <XIcon />
+                </Button>
+              </div>
+            </div>
+          )
+        })}
+      </Card>
+    </section>
   )
 }
 

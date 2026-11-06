@@ -1,6 +1,14 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react"
 import { useRouter } from "@tanstack/react-router"
-import { ArrowDownIcon, CalendarStarIcon, HashIcon, NotePencilIcon, TrashIcon, XIcon } from "@phosphor-icons/react/ssr"
+import {
+  ArrowDownIcon,
+  CalendarStarIcon,
+  CheckCircleIcon,
+  HashIcon,
+  NotePencilIcon,
+  TrashIcon,
+  XIcon,
+} from "@phosphor-icons/react/ssr"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -13,6 +21,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { AiMark, useAiCategory } from "@/components/ai"
 import { CategoryIcon } from "@/components/category-icon"
 import { segment, segmentButton, useMeta } from "@/components/shell"
 import { DatePicker, TimePicker, dayLabel } from "@/components/date-time"
@@ -286,6 +295,14 @@ export function TransactionForm({
   )
   const wallet = meta.wallets.find((w) => w.id === walletId)
   const toWallet = meta.wallets.find((w) => w.id === toWalletId)
+  // Auto-categorise: a new entry whose payee no rule placed gets AI's pick, marked until you choose.
+  const aiCat = useAiCategory(
+    name,
+    income ? "income" : "expense",
+    meta.ai.categorise && !initial && !transfer && !categoryTouched && !categoryId
+  )
+  const suggested = !categoryId && aiCat.id && categories.some((c) => c.id === aiCat.id) ? aiCat.id : null
+  const pickedCategory = categoryId || suggested || ""
   const cents = parseAmount(amount)
   const x = useExchange(transfer ? wallet : undefined, toWallet, Math.abs(cents ?? 0), sides, initial?.provider)
 
@@ -307,7 +324,8 @@ export function TransactionForm({
       if (!toWalletId || toWalletId === walletId) return toast.error("Pick the account the money goes to")
       if (x.converted <= 0) return toast.error("The fee must be less than the amount")
       if (!x.receivedCents) return toast.error("Enter the amount received")
-    } else if (!categoryId || !categories.some((c) => c.id === categoryId)) return toast.error("Pick a category")
+    } else if (!pickedCategory || !categories.some((c) => c.id === pickedCategory))
+      return toast.error("Pick a category")
     setBusy(true)
     try {
       if (transfer) {
@@ -336,7 +354,7 @@ export function TransactionForm({
           data: {
             id: initial?.transfer_id ? undefined : initial?.id,
             walletId,
-            categoryId,
+            categoryId: pickedCategory,
             name,
             note,
             amount: signed,
@@ -347,7 +365,7 @@ export function TransactionForm({
             eventId,
           },
         })
-        const cat = meta.categories.find((c) => c.id === categoryId)
+        const cat = meta.categories.find((c) => c.id === pickedCategory)
         toast.success(
           `${initial ? "Saved" : "Added"} ${fmt(signed, wallet?.currency ?? meta.primary)}, ${name || cat?.name}`
         )
@@ -472,8 +490,14 @@ export function TransactionForm({
           </label>
 
           <CategoryStrip
-            categories={categories}
-            value={categoryId}
+            // The suggestion leads the strip, so it's in view.
+            categories={
+              suggested
+                ? [...categories.filter((c) => c.id === suggested), ...categories.filter((c) => c.id !== suggested)]
+                : categories
+            }
+            value={pickedCategory}
+            suggested={suggested}
             onPick={(id) => {
               setCategoryId(id)
               setCategoryTouched(true)
@@ -494,6 +518,14 @@ export function TransactionForm({
           day,
         })}
       />
+
+      {initial?.reconciled_id && (
+        <p className="flex items-start gap-2 rounded-lg bg-muted px-3 py-2.5 text-xs text-muted-foreground">
+          <CheckCircleIcon weight="fill" className="mt-px size-4 shrink-0 text-positive" />
+          Reconciled with a bank statement. Changing its amount or account means checking it again next time you
+          reconcile.
+        </p>
+      )}
 
       {initial && !initial.paid && !transfer && (
         <label className="flex items-center gap-2 text-sm">
@@ -534,7 +566,12 @@ export function TransactionForm({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{initial?.transfer_id ? "Delete this transfer?" : "Delete this transaction?"}</DialogTitle>
-            {initial?.transfer_id && <DialogDescription>This removes it from both accounts.</DialogDescription>}
+            {(initial?.transfer_id || initial?.reconciled_id) && (
+              <DialogDescription>
+                {initial.transfer_id && "This removes it from both accounts. "}
+                {initial.reconciled_id && "It's reconciled, so the account will no longer match that statement."}
+              </DialogDescription>
+            )}
           </DialogHeader>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setConfirming(false)}>
@@ -613,10 +650,13 @@ export function TransactionSheet({
 function CategoryStrip({
   categories,
   value,
+  suggested,
   onPick,
 }: {
   categories: Category[]
   value: string | null
+  /** Auto-categorise's pick, marked with a sparkle. */
+  suggested?: string | null
   onPick: (id: string) => void
 }) {
   const ref = useRef<HTMLDivElement>(null)
@@ -638,8 +678,10 @@ function CategoryStrip({
           type="button"
           onClick={() => onPick(c.id)}
           aria-pressed={c.id === value}
-          className="flex h-[68px] snap-start flex-col items-center justify-center gap-1.5 rounded-lg border border-transparent px-1 text-[11px] leading-tight text-muted-foreground transition-colors hover:bg-muted aria-pressed:border-foreground aria-pressed:bg-muted aria-pressed:text-foreground"
+          aria-label={c.id === suggested ? `${c.name}, suggested` : undefined}
+          className="relative flex h-[68px] snap-start flex-col items-center justify-center gap-1.5 rounded-lg border border-transparent px-1 text-[11px] leading-tight text-muted-foreground transition-colors hover:bg-muted aria-pressed:border-foreground aria-pressed:bg-muted aria-pressed:text-foreground"
         >
+          {c.id === suggested && <AiMark className="absolute top-1.5 right-1.5 size-3" />}
           <CategoryIcon icon={c.icon} className="size-5" />
           <span className="line-clamp-1 w-full text-center">{c.name}</span>
         </button>

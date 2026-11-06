@@ -21,13 +21,27 @@ const UNITS: { value: Unit; label: string }[] = [
 ]
 type Kind = "subscription" | "repetitive" | "transfer"
 
+/** What a new schedule starts with, e.g. a regular payment Kosha spotted. Amount is signed cents. */
+type Preset = {
+  name: string
+  amount: number
+  walletId: string
+  categoryId: string
+  every: number
+  unit: Unit
+  nextDay: string
+  variable: boolean
+}
+
 /** Create or edit the schedule and template of a subscription, bill or recurring transfer. */
 export function SubscriptionForm({
   initial,
+  preset,
   transfer: startAsTransfer,
   onDone,
 }: {
   initial?: SubscriptionView
+  preset?: Preset
   transfer?: boolean
   onDone: (id: string) => void
 }) {
@@ -38,21 +52,23 @@ export function SubscriptionForm({
   const [kind, setKind] = useState<Kind>(
     initial?.to_wallet_id || (!initial && startAsTransfer)
       ? "transfer"
-      : initial?.kind === "repetitive"
+      : initial?.kind === "repetitive" || (!initial && preset && (preset.amount > 0 || preset.variable))
         ? "repetitive"
         : "subscription"
   )
-  const [income, setIncome] = useState(initial ? initial.amount > 0 : false)
-  const [name, setName] = useState(initial?.name ?? "")
-  const [amount, setAmount] = useState(initial ? (Math.abs(initial.amount) / 100).toFixed(2) : "")
-  const [walletId, setWalletId] = useState(initial?.wallet_id ?? active[0]?.id ?? "")
+  const [income, setIncome] = useState(initial ? initial.amount > 0 : (preset?.amount ?? 0) > 0)
+  const [name, setName] = useState(initial?.name ?? preset?.name ?? "")
+  const [amount, setAmount] = useState(
+    initial ? (Math.abs(initial.amount) / 100).toFixed(2) : preset ? (Math.abs(preset.amount) / 100).toFixed(2) : ""
+  )
+  const [walletId, setWalletId] = useState(initial?.wallet_id ?? preset?.walletId ?? active[0]?.id ?? "")
   const [toWalletId, setToWalletId] = useState(initial?.to_wallet_id ?? "")
   const [toAmount, setToAmount] = useState(initial?.to_amount ? (initial.to_amount / 100).toFixed(2) : "")
   const [variable, setVariable] = useState(!!initial?.variable)
-  const [categoryId, setCategoryId] = useState(initial?.category_id ?? "")
-  const [every, setEvery] = useState(String(initial?.every ?? 1))
-  const [unit, setUnit] = useState<Unit>(initial?.unit ?? "month")
-  const [nextDay, setNextDay] = useState(initial?.next?.due_day ?? initial?.start_day ?? today)
+  const [categoryId, setCategoryId] = useState(initial?.category_id ?? preset?.categoryId ?? "")
+  const [every, setEvery] = useState(String(initial?.every ?? preset?.every ?? 1))
+  const [unit, setUnit] = useState<Unit>(initial?.unit ?? preset?.unit ?? "month")
+  const [nextDay, setNextDay] = useState(initial?.next?.due_day ?? initial?.start_day ?? preset?.nextDay ?? today)
   const [endDay, setEndDay] = useState(initial?.end_day ?? "")
   // New schedules start from Settings › Recurring › Record payments automatically.
   const [autoPay, setAutoPay] = useState(initial ? !!initial.auto_pay : meta.prefs.default_auto_pay === "1")

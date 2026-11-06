@@ -1,16 +1,20 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react"
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react"
 import { useNavigate, useRouter } from "@tanstack/react-router"
 import {
   ArrowRightIcon,
   BackspaceIcon,
   CalendarBlankIcon,
+  CameraIcon,
   ClockIcon,
   CreditCardIcon,
   DotsNineIcon,
   NotePencilIcon,
+  SparkleIcon,
+  SpinnerGapIcon,
   XIcon,
 } from "@phosphor-icons/react/ssr"
 import { toast } from "sonner"
+import { AiMark, readReceipt, useAiCategory } from "@/components/ai"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { CategoryIcon } from "@/components/category-icon"
@@ -20,7 +24,7 @@ import { EventPicker, TagInput } from "@/components/tags-events"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { ExchangeFields, useExchange } from "@/components/transaction-form"
 import { bottomSheet, segment, segmentButton, useMeta } from "@/components/shell"
-import { saveTransfer, suggestPayees, type PayeeSuggestion, type Wallet } from "@/lib/api"
+import { readEntry, saveTransfer, suggestPayees, type AiEntry, type PayeeSuggestion, type Wallet } from "@/lib/api"
 import { addTransaction } from "@/lib/offline"
 import { WALLET_KEY, startWallet } from "@/lib/add-defaults"
 import {
@@ -32,6 +36,7 @@ import {
   eventFor,
   fmt,
   guessCategory,
+  inCurrency,
   isNeutral,
   pressKey,
   shiftMonth,
@@ -40,7 +45,7 @@ import {
 import { cn } from "@/lib/utils"
 
 type Kind = "expense" | "income" | "transfer"
-type Sheet = "from" | "to" | "date" | "category" | "details" | "exchange" | null
+type Sheet = "from" | "to" | "date" | "category" | "details" | "exchange" | "describe" | null
 
 const KEYS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "0", "del"]
 
@@ -92,6 +97,12 @@ export function PhoneAdd() {
   const eventId = pickedEvent !== undefined ? pickedEvent : eventFor(day, meta.events)
   const [match, setMatch] = useState<PayeeSuggestion | null>(null)
   const [saving, setSaving] = useState(false)
+  // Natural-language add and receipt scanning fill the screen; `filled` says which, until the next reset.
+  const [reading, setReading] = useState<"text" | "receipt" | null>(null)
+  const [filled, setFilled] = useState<"text" | "receipt" | null>(null)
+  const [described, setDescribed] = useState("")
+  const [aiCategoryId, setAiCategoryId] = useState<string | null>(null)
+  const camera = useRef<HTMLInputElement>(null)
 
   const transfer = kind === "transfer"
   const wallet = wallets.find((w) => w.id === walletId) ?? wallets[0]
@@ -120,12 +131,20 @@ export function PhoneAdd() {
   const candidates = meta.categories.filter(
     (c) => !c.archived && !isNeutral(c.id) && !c.parent_id && !!c.income === (kind === "income")
   )
-  const usual =
-    meta.prefs.suggest_category !== "1"
-      ? null
-      : match && candidates.some((c) => c.id === match.category_id)
-        ? match.category_id
-        : guessCategory(payee, meta.rules)
+  const guessing = meta.prefs.suggest_category === "1"
+  const fromHistory = !guessing
+    ? null
+    : match && candidates.some((c) => c.id === match.category_id)
+      ? match.category_id
+      : guessCategory(payee, meta.rules)
+  // Auto-categorise asks only about a payee that history and rules can't place.
+  const aiCat = useAiCategory(
+    payee,
+    kind === "income" ? "income" : "expense",
+    meta.ai.categorise && !transfer && !fromHistory && !categoryId && !aiCategoryId
+  )
+  const aiGuess = [aiCategoryId, aiCat.id].find((id) => guessing && id && candidates.some((c) => c.id === id)) ?? null
+  const usual = fromHistory ?? aiGuess
   // Most used first, with this payee's usual category at the front.
   const ordered = useMemo(() => {
     const top = [...candidates].sort((a, b) => b.uses - a.uses)
@@ -154,6 +173,9 @@ export function PhoneAdd() {
     setAmount("")
     setPayee("")
     setCategoryId(null)
+    setAiCategoryId(null)
+    setFilled(null)
+    setDescribed("")
     setNote("")
     setTags([])
     setPickedEvent(undefined)
@@ -231,6 +253,49 @@ export function PhoneAdd() {
     }
   }
 
+  /** Puts what AI read into the screen. Fields it couldn't read keep what they had. */
+  function fill(e: AiEntry, from: "text" | "receipt") {
+    const w = wallets.find((x) => x.id === e.walletId) ?? wallet
+    const fit = inCurrency(e, w?.currency ?? currency, meta.rates)
+    if (w) setWalletId(w.id)
+    if (fit.amount) setAmount((fit.amount / 100).toFixed(2).replace(/\.00$/, ""))
+    if (fit.amount || e.categoryId) setKind(e.income ? "income" : "expense")
+    if (e.payee) setPayee(e.payee)
+    setCategoryId(null)
+    setAiCategoryId(e.categoryId)
+    if (e.day) setDay(e.day)
+    if (e.time) setTime(e.time)
+    if (fit.note) setNote(fit.note)
+    if (e.tags.length) setTags((t) => [...new Set([...t, ...e.tags])])
+    setFilled(from)
+  }
+
+  async function describe() {
+    const text = described.trim()
+    if (!text || reading) return
+    setSheet(null)
+    setReading("text")
+    try {
+      fill(await readEntry({ data: { text } }), "text")
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Couldn't read that")
+    } finally {
+      setReading(null)
+    }
+  }
+
+  async function scan(file: File) {
+    setSheet(null)
+    setReading("receipt")
+    try {
+      fill(await readReceipt(file), "receipt")
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Couldn't read that receipt")
+    } finally {
+      setReading(null)
+    }
+  }
+
   // Physical keyboards type into the amount too, unless a field or a sheet has focus. Enter adds and closes,
   // Shift+Enter adds another and Escape closes.
   useEffect(() => {
@@ -296,20 +361,65 @@ export function PhoneAdd() {
             </button>
           ))}
         </div>
+        {(meta.ai.quick_add || meta.ai.receipts) && (
+          <Button
+            variant="ghost"
+            size="icon-lg"
+            className="size-11 justify-self-end text-subtle-foreground"
+            disabled={!!reading}
+            // With only receipts on, the button goes straight to the camera.
+            onClick={() => (meta.ai.quick_add ? setSheet("describe") : camera.current?.click())}
+            aria-label={meta.ai.quick_add ? "Describe it or scan a receipt" : "Scan a receipt"}
+          >
+            {meta.ai.quick_add ? <SparkleIcon className="size-5" /> : <CameraIcon className="size-5" />}
+          </Button>
+        )}
+        {meta.ai.receipts && (
+          <input
+            ref={camera}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            hidden
+            onChange={(e) => {
+              const file = e.target.files?.[0]
+              e.target.value = ""
+              if (file) void scan(file)
+            }}
+          />
+        )}
       </div>
 
       <div className="pt-3 text-center">
-        <output
-          aria-live="polite"
-          aria-label="Amount"
-          className={cn(
-            "num block text-[48px] leading-[1.05] font-medium tracking-[-0.03em]",
-            !cents && "text-muted-foreground",
-            kind === "income" && cents && "text-positive"
-          )}
-        >
-          {display}
-        </output>
+        {reading ? (
+          <p
+            role="status"
+            className="flex h-[50px] items-center justify-center gap-2 text-[15px] text-muted-foreground"
+          >
+            <SpinnerGapIcon aria-hidden="true" className="size-5 animate-spin text-brand" />
+            {reading === "receipt" ? "Reading the receipt…" : "Reading what you wrote…"}
+          </p>
+        ) : (
+          <output
+            aria-live="polite"
+            aria-label="Amount"
+            className={cn(
+              "num block text-[48px] leading-[1.05] font-medium tracking-[-0.03em]",
+              !cents && "text-muted-foreground",
+              kind === "income" && cents && "text-positive"
+            )}
+          >
+            {display}
+          </output>
+        )}
+        {filled && !reading && (
+          <p className="mt-1 flex items-center justify-center gap-1 text-xs text-muted-foreground">
+            <AiMark className="size-3" />
+            {filled === "receipt"
+              ? "Read from your receipt. Check it before adding."
+              : "Filled in by AI. Check it before adding."}
+          </p>
+        )}
         <div className="mt-3 flex justify-center gap-2">
           {!transfer && (
             <Chip
@@ -370,7 +480,11 @@ export function PhoneAdd() {
             <span className="sr-only">Payee</span>
             <Suggest
               value={payee}
-              onChange={setPayee}
+              onChange={(v) => {
+                setPayee(v)
+                // A category read with an earlier payee doesn't speak for the new one.
+                setAiCategoryId(null)
+              }}
               options={meta.titles}
               placeholder="Payee"
               className="min-w-0 flex-1 bg-transparent outline-none placeholder:text-muted-foreground"
@@ -389,6 +503,7 @@ export function PhoneAdd() {
                 onClick={() => setCategoryId(c.id)}
                 icon={<CategoryIcon icon={c.icon} className="size-5" />}
                 label={c.name}
+                suggested={c.id === chosen && !categoryId && !fromHistory && c.id === aiGuess}
                 // Hidden on screens with fewer rows, where it falls in or past the "All" slot.
                 className={cn(ROWS.map((r, row) => i >= row * 5 + 4 && ordered.length > row * 5 + 5 && r.hideBelow))}
               />
@@ -456,6 +571,52 @@ export function PhoneAdd() {
             setSheet(null)
           }}
         />
+      </Sheet>
+
+      <Sheet open={sheet === "describe"} onClose={() => setSheet(null)} title="Describe it">
+        <form
+          className="grid gap-3"
+          onSubmit={(e) => {
+            e.preventDefault()
+            void describe()
+          }}
+        >
+          <textarea
+            autoFocus
+            value={described}
+            onChange={(e) => setDescribed(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault()
+                void describe()
+              }
+            }}
+            rows={2}
+            maxLength={500}
+            aria-label="What did you spend or receive?"
+            placeholder="Lunch with Sam at Nando's, 18.50 yesterday"
+            className="field-sizing-content min-h-20 w-full resize-none rounded-xl border bg-card px-3.5 py-3 text-base outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+          />
+          <p className="text-xs text-muted-foreground">
+            Kosha fills in the amount, payee, category, account and date. You check it before adding.
+          </p>
+          <div className="flex gap-2">
+            {meta.ai.receipts && (
+              <Button
+                type="button"
+                variant="outline"
+                size="lg"
+                className="h-12 rounded-[14px] px-4"
+                onClick={() => camera.current?.click()}
+              >
+                <CameraIcon className="size-5" /> Scan a receipt
+              </Button>
+            )}
+            <Button type="submit" size="lg" className="h-12 flex-1 rounded-[14px]" disabled={!described.trim()}>
+              Fill in
+            </Button>
+          </div>
+        </form>
       </Sheet>
 
       <Sheet open={sheet === "category"} onClose={() => setSheet(null)} title="Category">
@@ -636,6 +797,7 @@ function Tile({
   icon,
   label,
   pressed,
+  suggested,
   wrap,
   onClick,
   className,
@@ -644,6 +806,8 @@ function Tile({
   icon: ReactNode
   label: string
   pressed?: boolean
+  /** Picked by auto-categorise, so it wears a sparkle until you choose. */
+  suggested?: boolean
   wrap?: boolean
   onClick: () => void
   className?: string
@@ -654,12 +818,13 @@ function Tile({
       type="button"
       onClick={onClick}
       aria-pressed={pressed}
-      aria-label={ariaLabel}
+      aria-label={ariaLabel ?? (suggested ? `${label}, suggested` : undefined)}
       className={cn(
-        "flex min-h-16 min-w-0 flex-col items-center justify-center gap-1.5 rounded-lg border border-transparent px-1 py-2 text-xs leading-tight text-muted-foreground transition-colors outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 aria-pressed:border-foreground aria-pressed:bg-muted aria-pressed:text-foreground",
+        "relative flex min-h-16 min-w-0 flex-col items-center justify-center gap-1.5 rounded-lg border border-transparent px-1 py-2 text-xs leading-tight text-muted-foreground transition-colors outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 aria-pressed:border-foreground aria-pressed:bg-muted aria-pressed:text-foreground",
         className
       )}
     >
+      {suggested && <AiMark className="absolute top-1.5 right-1.5 size-3" />}
       {icon}
       <span className={cn("w-full text-center", wrap ? "line-clamp-2 break-words" : "truncate")}>{label}</span>
     </button>

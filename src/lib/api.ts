@@ -3,6 +3,8 @@ import { z } from "zod"
 import { monthOf, monthRange, dayOf } from "@/lib/core"
 import { db, getSettings } from "@/server/db.server"
 import * as finance from "@/server/finance.server"
+import * as ai from "@/server/ai-tasks.server"
+import * as statements from "@/server/statements.server"
 import { MCP_RESOURCE, auth, avatars, demoAvailable, getUser, setAvatar, userId } from "@/server/auth.server"
 import {
   consentDetails,
@@ -37,6 +39,8 @@ export type {
   TitleRuleRow,
 } from "@/server/finance.server"
 export type { SubscriptionView } from "@/server/db.server"
+export type { AiEntry, AskLink, Recap } from "@/server/ai-tasks.server"
+export type { ReconcileEntry } from "@/server/statements.server"
 
 // ---------- meta: everything most screens need ----------
 
@@ -203,6 +207,59 @@ export type AccountsOverview = Awaited<ReturnType<typeof getAccountsOverview>>
 export const suggestPayees = createServerFn({ method: "GET" })
   .validator(z.object({ q: z.string().max(100) }))
   .handler(async ({ data }) => finance.suggestPayees(await userId(), data.q))
+
+// ---------- reconcile and import ----------
+
+/** One account's reconciliation state: history, open entries, recent reconciled ones, layouts and payee aliases. */
+export const getReconcile = createServerFn({ method: "GET" })
+  .validator(z.object({ walletId: z.string().min(1) }))
+  .handler(async ({ data }) => statements.reconcileData(await userId(), data.walletId))
+export type ReconcileData = Awaited<ReturnType<typeof getReconcile>>
+
+export const finishReconcile = createServerFn({ method: "POST" })
+  .validator(statements.finishInput)
+  .handler(async ({ data }) => statements.finishReconcile(await userId(), data))
+
+export const undoReconcile = createServerFn({ method: "POST" })
+  .validator(z.object({ id: z.string() }))
+  .handler(async ({ data }) => statements.undoReconcile(await userId(), data.id))
+
+/** Adds statement lines missing from Kosha. Returns the new entries' ids in line order. */
+export const importLines = createServerFn({ method: "POST" })
+  .validator(statements.importInput)
+  .handler(async ({ data }) => statements.importLines(await userId(), data))
+
+// AI help with statements: reading a PDF, a CSV's columns, payee names, and a reconciliation difference.
+export const readStatementPdf = createServerFn({ method: "POST" })
+  .validator(ai.pdfInput)
+  .handler(async ({ data }) => ai.readStatement(await userId(), data))
+
+export const readCsvLayout = createServerFn({ method: "POST" })
+  .validator(ai.layoutInput)
+  .handler(async ({ data }) => ai.readLayout(await userId(), data))
+
+export const tidyStatementLines = createServerFn({ method: "POST" })
+  .validator(ai.tidyInput)
+  .handler(async ({ data }) => ai.tidyLines(await userId(), data))
+
+export const explainDifference = createServerFn({ method: "POST" })
+  .validator(ai.differenceInput)
+  .handler(async ({ data }) => ai.explainDifference(await userId(), data))
+
+// ---------- spotting recurring payments ----------
+
+export const recurringSuggestions = createServerFn({ method: "GET" }).handler(async () =>
+  statements.recurringSuggestions(await userId())
+)
+
+export const dismissRecurring = createServerFn({ method: "POST" })
+  .validator(z.object({ payee: z.string().min(1).max(200) }))
+  .handler(async ({ data }) => statements.dismissRecurring(await userId(), data.payee))
+
+/** Files past payments under a recurring schedule made from a suggestion. */
+export const linkPayments = createServerFn({ method: "POST" })
+  .validator(z.object({ id: z.string(), ids: z.array(z.string()).max(500) }))
+  .handler(async ({ data }) => statements.linkPayments(await userId(), data.id, data.ids))
 
 // ---------- categories ----------
 
@@ -396,6 +453,47 @@ export const disconnectAiProvider = createServerFn({ method: "POST" })
     ])
   })
 
+// The AI features. Each is a POST, because each call is logged and spends the user's tokens.
+
+/** A category for a payee Kosha hasn't seen (auto-categorise). */
+export const suggestCategory = createServerFn({ method: "POST" })
+  .validator(ai.categoryInput)
+  .handler(async ({ data }) => ai.suggestCategory(await userId(), data))
+
+/** One transaction read from a typed sentence (natural-language add). */
+export const readEntry = createServerFn({ method: "POST" })
+  .validator(ai.textEntryInput)
+  .handler(async ({ data }) => ai.readEntry(await userId(), data))
+
+/** One transaction read from a photo of a receipt. */
+export const scanReceipt = createServerFn({ method: "POST" })
+  .validator(ai.receiptInput)
+  .handler(async ({ data }) => ai.readEntry(await userId(), data))
+
+/** The recap Overview shows for a month, if any. Reading never writes one. */
+export const getRecap = createServerFn({ method: "GET" })
+  .validator(
+    z.object({
+      month: z
+        .string()
+        .regex(/^\d{4}-\d{2}$/)
+        .optional(),
+    })
+  )
+  .handler(async ({ data }) => ai.getRecap(await userId(), data.month))
+
+/** Writes, or rewrites, the recap of a finished month. */
+export const writeRecap = createServerFn({ method: "POST" })
+  .validator(ai.recapInput)
+  .handler(async ({ data }) => ai.writeRecap(await userId(), data.month))
+
+/** Ask Kosha. Streams each look-up as it happens, then the answer. */
+export const askKosha = createServerFn({ method: "POST" })
+  .validator(ai.askInput)
+  .handler(async function* ({ data }) {
+    yield* ai.ask(await userId(), data.messages)
+  })
+
 /** Requests and tokens this month, and the last 30 days of the request log. */
 export const getAiUsage = createServerFn({ method: "GET" }).handler(async () => {
   const uid = await userId()
@@ -405,8 +503,9 @@ export const getAiUsage = createServerFn({ method: "GET" }).handler(async () => 
   const [usage, log] = await DB.batch([
     DB.prepare(`SELECT COUNT(*) AS requests, COALESCE(SUM(tokens_in + tokens_out), 0) AS tokens
       FROM ai_log WHERE user_id = ? AND at >= ?`).bind(uid, from),
+    // Rows kept while the log was off hold only the counts, so the log leaves them out.
     DB.prepare(`SELECT id, at, provider, model, feature, request, response, tokens_in, tokens_out FROM ai_log
-      WHERE user_id = ? AND at >= unixepoch() - 30 * 86400 ORDER BY at DESC LIMIT 100`).bind(uid),
+      WHERE user_id = ? AND at >= unixepoch() - 30 * 86400 AND request <> '' ORDER BY at DESC LIMIT 100`).bind(uid),
   ])
   return {
     ...(usage.results[0] as { requests: number; tokens: number }),
@@ -432,14 +531,14 @@ export const getAiUsage = createServerFn({ method: "GET" }).handler(async () => 
 // ---------- delete & reset ----------
 
 /**
- * Deletes every transaction, transfer and valuation, and the recurring schedules too, because settling
+ * Deletes every transaction, transfer, valuation and reconciliation, and the recurring schedules too, because settling
  * would otherwise recreate their past payments on the next load. Accounts, categories, rules and settings stay.
  */
 export const deleteAllTransactions = createServerFn({ method: "POST" }).handler(async () => {
   const uid = await userId()
   const DB = db()
   await DB.batch(
-    ["transfers", "valuations", "transactions", "subscriptions"].map((t) =>
+    ["transfers", "valuations", "transactions", "subscriptions", "reconciliations"].map((t) =>
       DB.prepare(`DELETE FROM ${t} WHERE user_id = ?`).bind(uid)
     )
   )

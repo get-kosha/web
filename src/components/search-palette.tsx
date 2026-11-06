@@ -3,6 +3,7 @@ import { useNavigate } from "@tanstack/react-router"
 import {
   ArrowRightIcon,
   ChartBarIcon,
+  CheckSquareOffsetIcon,
   CreditCardIcon,
   GearSixIcon,
   ListIcon,
@@ -10,6 +11,7 @@ import {
   PlusIcon,
   RepeatIcon,
   ShieldCheckIcon,
+  SparkleIcon,
   TagIcon,
   WalletIcon,
 } from "@phosphor-icons/react/ssr"
@@ -28,6 +30,12 @@ const PAGES = [
   { to: "/subscriptions", label: "Recurring", icon: RepeatIcon },
   { to: "/accounts", label: "Accounts", icon: CreditCardIcon },
   { to: "/categories", label: "Categories", icon: TagIcon },
+  {
+    to: "/reconcile",
+    label: "Reconcile an account",
+    icon: CheckSquareOffsetIcon,
+    keywords: "statement import csv ofx qfx pdf bank",
+  },
   { to: "/settings", label: "Settings", icon: GearSixIcon },
   { to: "/account", label: "Sign-in & security", icon: ShieldCheckIcon, keywords: "account password passkey" },
 ] as const
@@ -98,6 +106,19 @@ function Body({ close, onAdd }: { close: () => void; onAdd: (text: string) => vo
     )
 
   const items: Item[] = []
+  const ask: Item | null =
+    text && meta.ai.ask
+      ? {
+          id: "ask",
+          group: "Ask Kosha",
+          icon: <SparkleIcon />,
+          label: <>Ask "{text}"</>,
+          end: <Hint>Answered from your data</Hint>,
+          run: go(() => void navigate({ to: "/ask", search: { q: text } })),
+        }
+      : null
+  // A question leads the list; anything else keeps search first.
+  if (ask && QUESTION.test(text)) items.push(ask)
   if (text) {
     items.push({
       id: "search",
@@ -153,6 +174,7 @@ function Body({ close, onAdd }: { close: () => void; onAdd: (text: string) => vo
       end: <ArrowRightIcon className="size-3.5 text-muted-foreground" />,
       run: go(() => void navigate({ to: p.to })),
     })
+  if (ask && !QUESTION.test(text)) items.push(ask)
   items.push({
     id: "add",
     group: "Add",
@@ -223,6 +245,9 @@ function Body({ close, onAdd }: { close: () => void; onAdd: (text: string) => vo
     </div>
   )
 }
+
+const QUESTION =
+  /\?\s*$|^(how|what|when|where|why|which|who|did|do|does|am|is|are|was|were|can|could|should|will|show|list|compare|tell)\b/i
 
 const Hint = ({ children }: { children: ReactNode }) => (
   <span className="text-xs text-muted-foreground">{children}</span>

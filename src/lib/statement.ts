@@ -1,0 +1,559 @@
+// Bank statements: reading CSV and OFX files, turning bank text into payees, matching statement lines to
+// Kosha's entries, and hints for a reconciliation difference. Pure, so core.test.ts can check it.
+import { addDays, parseAmount } from "./core.ts"
+
+/** One line of a statement, in the account's currency. Negative is money out of the account. */
+export type Line = { day: string; amount: number; description: string; balance: number | null; ref: string | null }
+
+// ---------- CSV ----------
+
+/** Splits CSV text into rows of cells. Handles quotes, doubled quotes, CRLF and a BOM; the delimiter is detected. */
+export function parseCsv(text: string): string[][] {
+  const src = text.replace(/^﻿/, "")
+  const sample = src.split(/\r?\n/).slice(0, 20).join("\n")
+  const counts = [",", ";", "\t", "|"].map((d) => [d, sample.split(d).length] as const)
+  const delim = counts.sort((a, b) => b[1] - a[1])[0][0]
+  const rows: string[][] = []
+  let row: string[] = []
+  let cell = ""
+  let quoted = false
+  for (let i = 0; i < src.length; i++) {
+    const c = src[i]
+    if (quoted) {
+      if (c === '"' && src[i + 1] === '"') {
+        cell += '"'
+        i++
+      } else if (c === '"') quoted = false
+      else cell += c
+    } else if (c === '"' && cell.trim() === "") quoted = true
+    else if (c === delim) {
+      row.push(cell.trim())
+      cell = ""
+    } else if (c === "\n" || c === "\r") {
+      if (c === "\r" && src[i + 1] === "\n") i++
+      row.push(cell.trim())
+      if (row.some(Boolean)) rows.push(row)
+      row = []
+      cell = ""
+    } else cell += c
+  }
+  row.push(cell.trim())
+  if (row.some(Boolean)) rows.push(row)
+  return rows
+}
+
+export type DateFormat = "ymd" | "dmy" | "mdy" | "text"
+/**
+ * Which column holds what. `amount` is one signed column; `debit` and `credit` are separate money-out and
+ * money-in columns. `invert` flips signs, for exports that show spending as positive (most credit cards).
+ */
+export type Layout = {
+  header: number
+  date: number
+  dateFormat: DateFormat
+  description: number[]
+  amount: number | null
+  debit: number | null
+  credit: number | null
+  invert: boolean
+  balance: number | null
+}
+
+const MONTHS = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"]
+const pad = (n: number) => String(n).padStart(2, "0")
+const fullYear = (y: number) => (y < 100 ? 2000 + y : y)
+function valid(y: number, m: number, d: number) {
+  if (!(y >= 1990 && y <= 2100 && m >= 1 && m <= 12 && d >= 1 && d <= 31)) return null
+  const date = new Date(Date.UTC(y, m - 1, d))
+  return date.getUTCMonth() === m - 1 ? `${y}-${pad(m)}-${pad(d)}` : null
+}
+
+/** Reads a statement date in the given format, ignoring any time after it. Returns YYYY-MM-DD or null. */
+export function parseDay(raw: string, format: DateFormat): string | null {
+  const s = raw.trim().toLowerCase()
+  if (format === "text") {
+    // "3 Nov 2026", "03-Nov-26", "Nov 3, 2026"
+    const a = s.match(/^(\d{1,2})[\s\-./]*([a-z]{3})[a-z]*\.?[\s\-./,]*(\d{2,4})/)
+    const b = s.match(/^([a-z]{3})[a-z]*\.?[\s\-./]*(\d{1,2})(?:st|nd|rd|th)?,?[\s\-./]*(\d{2,4})/)
+    const [d, mon, y] = a ? [a[1], a[2], a[3]] : b ? [b[2], b[1], b[3]] : ["", "", ""]
+    const m = mon ? MONTHS.indexOf(mon) + 1 : 0
+    return m ? valid(fullYear(+y), m, +d) : null
+  }
+  if (/^\d{8}/.test(s) && format === "ymd") return valid(+s.slice(0, 4), +s.slice(4, 6), +s.slice(6, 8))
+  const p = s.match(/^(\d{1,4})[-./ ](\d{1,2})[-./ ](\d{1,4})/)
+  if (!p) return null
+  const [x, y, z] = [+p[1], +p[2], +p[3]]
+  if (format === "ymd") return p[1].length === 4 ? valid(x, y, z) : null
+  if (p[3].length !== 4 && p[3].length !== 2) return null
+  return format === "dmy" ? valid(fullYear(z), y, x) : valid(fullYear(z), x, y)
+}
+
+/**
+ * The date format that reads every value. Between day-first and month-first, a part over 12 decides; when
+ * nothing does, the one that keeps the rows in date order wins, then day-first.
+ */
+export function guessDateFormat(values: string[]): DateFormat | null {
+  const list = values.filter((v) => v.trim()).slice(0, 200)
+  if (!list.length) return null
+  const ok = (["ymd", "dmy", "mdy", "text"] as const).filter((f) => list.every((v) => parseDay(v, f) !== null))
+  if (ok.length < 2) return ok[0] ?? null
+  const ordered = (f: DateFormat) => {
+    const days = list.map((v) => parseDay(v, f)!)
+    let up = 0
+    let down = 0
+    for (let i = 1; i < days.length; i++) {
+      if (days[i] > days[i - 1]) up++
+      if (days[i] < days[i - 1]) down++
+    }
+    return Math.min(up, down)
+  }
+  return [...ok].sort((a, b) => ordered(a) - ordered(b))[0]
+}
+
+const HEAD = {
+  date: /(^|\s)(date|datum|fecha|data|posted|booking|buchungstag|dated)(\s|$)|date$/i,
+  valueDate: /value|valuta|wertstellung/i,
+  payee: /payee|merchant|counterparty|name|empf|beg(ue|ü)nstigter|recipient|beneficiary/i,
+  description:
+    /description|details|narrative|particulars|transaction|text|concepto|libell|verwendungszweck|memo|reference|beschreibung/i,
+  amount: /amount|betrag|importe|montant|value|sum|bedrag|kwota/i,
+  debit: /debit|money out|paid out|withdrawal|outflow|out$|soll|ausgang|cargo|spent/i,
+  credit: /credit|money in|paid in|deposit|inflow|in$|haben|eingang|abono|received/i,
+  balance: /balance|saldo|solde|kontostand/i,
+  skip: /currency|category|type|status|state|fee|local|exchange|emoji|receipt|address|time|card|id$|^id/i,
+}
+const numeric = (v: string) => v.trim() !== "" && parseAmount(v) !== null && /\d/.test(v) && !/[a-z]{3,}/i.test(v)
+
+/**
+ * Works out a CSV's layout from its header names and values. `confident` is false when it had to guess roles.
+ * For a credit `card` without a running balance to go by, mostly positive amounts mean spending is positive.
+ */
+export function guessLayout(rows: string[][], card = false): { layout: Layout; confident: boolean } {
+  const width = Math.max(...rows.slice(0, 30).map((r) => r.length))
+  const dateish = (v: string) => (["ymd", "dmy", "mdy", "text"] as const).some((f) => parseDay(v, f))
+  // The header is the last row before data starts: data rows have a date in some column.
+  const firstData = rows.findIndex((r) => r.some(dateish) && r.some(numeric))
+  const header = firstData > 0 && !rows[firstData - 1].some(dateish) ? firstData - 1 : -1
+  const names = header >= 0 ? rows[header].map((h) => h.trim()) : []
+  const data = rows.slice(header + 1).filter((r) => r.some(dateish))
+  const column = (i: number) => data.map((r) => r[i] ?? "")
+  const share = (i: number, test: (v: string) => boolean) => {
+    const vals = column(i).filter((v) => v.trim())
+    return vals.length ? vals.filter(test).length / vals.length : 0
+  }
+  const cols = Array.from({ length: width }, (_, i) => i)
+  const named = (re: RegExp, also: (i: number) => boolean = () => true) =>
+    cols.filter((i) => re.test(names[i] ?? "") && !HEAD.skip.test(names[i] ?? "") && also(i))
+  const dates = cols.filter((i) => share(i, dateish) > 0.9)
+  const date =
+    named(HEAD.date, (i) => dates.includes(i) && !HEAD.valueDate.test(names[i]))[0] ??
+    named(HEAD.date, (i) => dates.includes(i))[0] ??
+    dates[0] ??
+    0
+  const money = cols.filter(
+    (i) => i !== date && share(i, (v) => numeric(v) || !v.trim()) > 0.95 && share(i, numeric) > 0
+  )
+  const balance = named(HEAD.balance, (i) => money.includes(i))[0] ?? null
+  const debit = named(HEAD.debit, (i) => money.includes(i) && i !== balance)[0] ?? null
+  const credit = named(HEAD.credit, (i) => money.includes(i) && i !== balance && i !== debit)[0] ?? null
+  const pair = debit !== null && credit !== null
+  const amount = pair
+    ? null
+    : (named(HEAD.amount, (i) => money.includes(i) && i !== balance)[0] ??
+      money.find((i) => i !== balance && i !== debit && i !== credit) ??
+      null)
+  const text = cols.filter((i) => i !== date && !money.includes(i) && share(i, (v) => /[a-z]/i.test(v)) > 0.5)
+  const description = [
+    ...named(HEAD.payee, (i) => text.includes(i)).slice(0, 1),
+    ...named(HEAD.description, (i) => text.includes(i)),
+  ]
+  const avgLength = (i: number) => column(i).reduce((t, v) => t + v.length, 0) / Math.max(1, data.length)
+  const desc = [...new Set(description)].slice(0, 2)
+  if (!desc.length) {
+    const longest = [...text].sort((a, b) => avgLength(b) - avgLength(a))[0]
+    if (longest !== undefined) desc.push(longest)
+  }
+  const dateFormat = guessDateFormat(column(date)) ?? "dmy"
+  const layout: Layout = {
+    header,
+    date,
+    dateFormat,
+    description: desc,
+    amount: pair ? null : amount,
+    debit: pair ? debit : null,
+    credit: pair ? credit : null,
+    invert: false,
+    balance,
+  }
+  // A running balance tells which way the amounts go: each row's balance moves by its amount.
+  if (balance !== null && !pair) {
+    const lines = readCsv(rows, layout).lines
+    let same = 0
+    let flipped = 0
+    for (let i = 1; i < lines.length; i++) {
+      const [a, b] = [lines[i - 1], lines[i]]
+      if (a.balance === null || b.balance === null) continue
+      const step = b.balance - a.balance
+      // Oldest first, the step is this row's amount; newest first, it is minus the previous row's.
+      if (step === b.amount || step === -a.amount) same++
+      if (step === -b.amount || step === a.amount) flipped++
+    }
+    layout.invert = flipped > same
+  } else if (card && !pair) {
+    const amounts = readCsv(rows, layout).lines.map((l) => l.amount)
+    layout.invert = amounts.filter((a) => a > 0).length > amounts.length / 2
+  }
+  const confident = names.length > 0 && (amount !== null || pair) && desc.length > 0 && dates.length > 0
+  return { layout, confident }
+}
+
+/** The key a bank's CSV layout is remembered by: its header names, lowercased. */
+export const layoutSignature = (rows: string[][], layout: Layout) =>
+  layout.header >= 0 ? rows[layout.header].map((h) => h.trim().toLowerCase()).join("|") : `cols:${rows[0]?.length ?? 0}`
+
+/** Reads the lines of a CSV with a layout. Rows without a readable date or amount (totals, notes) are skipped. */
+export function readCsv(rows: string[][], layout: Layout) {
+  const lines: Line[] = []
+  let skipped = 0
+  for (const r of rows.slice(layout.header + 1)) {
+    const day = parseDay(r[layout.date] ?? "", layout.dateFormat)
+    const abs = (i: number | null) => (i === null ? 0 : Math.abs(parseAmount(r[i] ?? "") ?? 0))
+    const amount = layout.amount !== null ? parseAmount(r[layout.amount] ?? "") : abs(layout.credit) - abs(layout.debit)
+    if (!day || amount === null || amount === 0) {
+      skipped++
+      continue
+    }
+    const description = layout.description
+      .map((i) => (r[i] ?? "").trim())
+      .filter((v, i, all) => v && all.indexOf(v) === i)
+      .join(" · ")
+    const balance = layout.balance === null ? null : parseAmount(r[layout.balance] ?? "")
+    lines.push({ day, amount: layout.invert ? -amount : amount, description, balance, ref: null })
+  }
+  return { lines: withRefs(lines), skipped }
+}
+
+/**
+ * Gives each line without a bank id a stable one from its day, amount and text, numbered when the same
+ * line appears twice, so importing a file again finds what it added the first time.
+ */
+export function withRefs(lines: Line[]) {
+  const seen = new Map<string, number>()
+  return lines.map((l) => {
+    if (l.ref) return l
+    const base = `${l.day}|${l.amount}|${descriptorKey(l.description)}`
+    const n = (seen.get(base) ?? 0) + 1
+    seen.set(base, n)
+    return { ...l, ref: `h:${hash(`${base}|${n}`)}` }
+  })
+}
+
+function hash(s: string) {
+  let h = 0x811c9dc5
+  for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 0x01000193)
+  return (h >>> 0).toString(36)
+}
+
+// ---------- OFX / QFX ----------
+
+/** True for OFX and QFX files, both the SGML (1.x) and XML (2.x) kinds. */
+export const isOfx = (text: string) => /<OFX>|OFXHEADER/i.test(text.slice(0, 2000))
+
+/** Reads an OFX or QFX statement: its lines, and the closing (ledger) balance with its day when given. */
+export function parseOfx(text: string) {
+  // SGML OFX leaves leaf tags unclosed, so a value runs to the next tag or line end.
+  const tag = (block: string, name: string) => block.match(new RegExp(`<${name}>([^<\\r\\n]*)`, "i"))?.[1].trim() ?? ""
+  const ofxDay = (v: string) => (v.length >= 8 ? valid(+v.slice(0, 4), +v.slice(4, 6), +v.slice(6, 8)) : null)
+  const lines: Line[] = []
+  for (const m of text.matchAll(/<STMTTRN>([\s\S]*?)(?:<\/STMTTRN>|(?=<STMTTRN>)|(?=<\/BANKTRANLIST>))/gi)) {
+    const b = m[1]
+    const day = ofxDay(tag(b, "DTPOSTED") || tag(b, "DTUSER"))
+    const amount = parseAmount(tag(b, "TRNAMT"))
+    if (!day || !amount) continue
+    const name = tag(b, "NAME") || tag(b, "PAYEE")
+    const memo = tag(b, "MEMO")
+    const description = [name, memo && memo !== name ? memo : ""].filter(Boolean).join(" · ").replace(/&amp;/g, "&")
+    lines.push({ day, amount, description, balance: null, ref: tag(b, "FITID") ? `ofx:${tag(b, "FITID")}` : null })
+  }
+  const ledger = text.match(/<LEDGERBAL>([\s\S]*?)(?:<\/LEDGERBAL>|<AVAILBAL>|$)/i)?.[1] ?? ""
+  const balance = ledger ? parseAmount(tag(ledger, "BALAMT")) : null
+  return {
+    lines: withRefs(lines),
+    closing: balance,
+    closingDay: ledger ? ofxDay(tag(ledger, "DTASOF")) : null,
+    currency: tag(text, "CURDEF").toLowerCase() || null,
+  }
+}
+
+// ---------- bank text to payees ----------
+
+// Card processors and wallets that prefix the merchant: "PAYPAL *SPOTIFY", "SQ *BLUE BOTTLE".
+const PROCESSOR =
+  /^(paypal|pp|sq|sqr|tst|sp|sumup|zettle|iz|izettle|google|gpay|apple pay|amzn mktp|crv|wpy|pay)\s?\*\s?/i
+// Words banks add around the merchant, in English, German, French, Spanish and Dutch.
+const NOISE = new Set(
+  [
+    "card payment purchase pos debit credit visa mastercard maestro contactless cnp direct dd so standing order",
+    "faster payments fps fpi fpo bacs transfer trf tfr to from on at via ref reference gb gbr uk usa us ie de fr nl",
+    "es it eur usd gbp ltd limited inc plc llc gmbh bv sarl www com net org co the and",
+    "kartenzahlung lastschrift basislastschrift gutschrift überweisung ueberweisung dauerauftrag sepa",
+    "paiement carte cb prelevement prélèvement virement achat compra pago tarjeta transferencia recibo",
+    "betaalautomaat pinbetaling incasso overboeking",
+  ]
+    .join(" ")
+    .split(" ")
+)
+
+/** Bank text reduced to the words that name the merchant, for matching and for remembering payees. */
+export function descriptorKey(text: string) {
+  const words = text
+    .toLowerCase()
+    .replace(PROCESSOR, "")
+    .replace(/\b(on|date)\s+\d{1,2}\s*[a-z]{3}\b.*$/, "") // "… ON 03 NOV …" to the end
+    .replace(/\S*\d\S*/g, " ") // card numbers, references and amounts: any word with a digit in it
+    .replace(/[^\p{L}\s]+/gu, " ")
+    .split(/\s+/)
+    .filter((w) => w && !NOISE.has(w))
+  return words.slice(0, 3).join(" ")
+}
+
+const title = (s: string) => s.replace(/\p{L}[\p{L}']*/gu, (w) => w[0].toUpperCase() + w.slice(1).toLowerCase())
+
+/**
+ * The payee for a statement line: a remembered alias first, then a past payee the text names, then the text
+ * itself tidied ("CARD PAYMENT TO TESCO STORES 3211 ON 03 NOV" is "Tesco Stores").
+ */
+export function payeeFor(description: string, known: string[], aliases: Record<string, string>) {
+  const key = descriptorKey(description)
+  if (aliases[key]) return aliases[key]
+  const words = ` ${key} `
+  let best = ""
+  for (const name of known) {
+    const k = descriptorKey(name)
+    if (k && words.includes(` ${k} `) && k.length > descriptorKey(best).length) best = name
+  }
+  if (best) return best
+  return title(key) || description.trim().slice(0, 60)
+}
+
+/** How alike two payee texts are, from 0 to 1: the share of the shorter one's words found in the other. */
+export function similarity(a: string, b: string) {
+  const x = new Set(descriptorKey(a).split(" ").filter(Boolean))
+  const y = new Set(descriptorKey(b).split(" ").filter(Boolean))
+  if (!x.size || !y.size) return 0
+  let common = 0
+  for (const w of x) if (y.has(w) || [...y].some((v) => v.length > 3 && (v.startsWith(w) || w.startsWith(v)))) common++
+  return common / Math.min(x.size, y.size)
+}
+
+// ---------- matching ----------
+
+/** A Kosha entry that a statement line can match. */
+export type Entry = { id: string; day: string; amount: number; name: string; ref: string | null }
+type Pair = { line: number; entry: string; kind: "ref" | "exact" | "close" }
+
+const dayDiff = (a: string, b: string) => Math.round((Date.parse(b) - Date.parse(a)) / 86_400_000)
+
+/**
+ * Pairs statement lines with Kosha entries, each used once. A bank id that Kosha stored matches first. Then
+ * the same amount within `before` days before or `after` days after the entry (banks post a few days late),
+ * closest and most alike first. Lines left over that look like an entry with a different amount (a tip, a
+ * currency rate) become "close" pairs to confirm. What is left is missing from Kosha, or not on the statement.
+ */
+export function matchLines(lines: Line[], entries: Entry[], before = 3, after = 7) {
+  const pairs: Pair[] = []
+  const usedLine = new Set<number>()
+  const usedEntry = new Set<string>()
+  const byRef = new Map(entries.filter((e) => e.ref).map((e) => [e.ref!, e]))
+  lines.forEach((l, i) => {
+    const e = l.ref ? byRef.get(l.ref) : undefined
+    if (!e || usedEntry.has(e.id)) return
+    pairs.push({ line: i, entry: e.id, kind: "ref" })
+    usedLine.add(i)
+    usedEntry.add(e.id)
+  })
+  const scored = (kind: "exact" | "close") => {
+    const list: { line: number; entry: string; score: number }[] = []
+    lines.forEach((l, i) => {
+      if (usedLine.has(i)) return
+      for (const e of entries) {
+        if (usedEntry.has(e.id)) continue
+        const d = dayDiff(e.day, l.day)
+        if (d < -before || d > after) continue
+        const sim = similarity(l.description, e.name)
+        if (kind === "exact") {
+          if (l.amount !== e.amount) continue
+          list.push({ line: i, entry: e.id, score: Math.abs(d) + (1 - sim) * 4 })
+        } else {
+          const off = Math.abs(l.amount - e.amount)
+          const same = Math.sign(l.amount) === Math.sign(e.amount)
+          if (!same || sim < 0.5 || Math.abs(d) > 3 || off > Math.max(Math.abs(e.amount) * 0.25, 500)) continue
+          list.push({ line: i, entry: e.id, score: Math.abs(d) + off / Math.abs(e.amount) })
+        }
+      }
+    })
+    for (const c of list.sort((a, b) => a.score - b.score)) {
+      if (usedLine.has(c.line) || usedEntry.has(c.entry)) continue
+      pairs.push({ line: c.line, entry: c.entry, kind })
+      usedLine.add(c.line)
+      usedEntry.add(c.entry)
+    }
+  }
+  scored("exact")
+  scored("close")
+  return {
+    pairs,
+    missing: lines.map((_, i) => i).filter((i) => !usedLine.has(i)),
+    extra: entries.filter((e) => !usedEntry.has(e.id)).map((e) => e.id),
+  }
+}
+
+// ---------- finding a difference ----------
+
+export type Hint = { text: string; ids: string[] }
+type Item = { id: string; amount: number; day: string; name: string }
+
+/** Every amount made by swapping two neighbouring digits of `cents`, e.g. 5400 gives 4500 and 5040. */
+function swaps(cents: number) {
+  const s = String(Math.abs(cents)).padStart(3, "0")
+  const out = new Set<number>()
+  for (let i = 0; i < s.length - 1; i++) {
+    if (s[i] === s[i + 1]) continue
+    out.add(Number(s.slice(0, i) + s[i + 1] + s[i] + s.slice(i + 2)) * Math.sign(cents))
+  }
+  return [...out]
+}
+
+/**
+ * Bookkeepers' checks for a reconciliation that is out by `diff` (statement minus what's ticked), most
+ * specific first. Each hint names the entries it is about. `money` formats cents for the text.
+ */
+export function differenceHints(
+  diff: number,
+  ticked: Item[],
+  unticked: Item[],
+  statementDay: string,
+  money: (cents: number) => string
+): Hint[] {
+  if (!diff) return []
+  const out: Hint[] = []
+  const name = (e: Item) => e.name || "an entry"
+  // Ticking one more entry, or unticking one, closes it.
+  for (const e of unticked.filter((e) => e.amount === diff))
+    out.push({
+      text: `${name(e)} (${money(e.amount)}) is exactly the difference. Is it on the statement?`,
+      ids: [e.id],
+    })
+  for (const e of ticked.filter((e) => e.amount === -diff))
+    out.push({
+      text: `${name(e)} (${money(e.amount)}) is exactly the difference. Is it really on the statement?`,
+      ids: [e.id],
+    })
+  // An entry with the wrong sign is off by twice its amount.
+  if (diff % 2 === 0)
+    for (const e of ticked.filter((e) => e.amount === -diff / 2))
+      out.push({
+        text: `${name(e)} is half the difference. Is it the wrong way round, money ${e.amount < 0 ? "in" : "out"} rather than ${e.amount < 0 ? "out" : "in"}?`,
+        ids: [e.id],
+      })
+  // Two digits swapped while typing always leave a difference divisible by 9.
+  if (Math.abs(diff) % 9 === 0)
+    for (const e of ticked) {
+      const meant = swaps(e.amount).find((v) => v - e.amount === diff)
+      if (meant !== undefined)
+        out.push({
+          text: `Was ${name(e)} ${money(meant)} rather than ${money(e.amount)}? Swapped digits are a common slip.`,
+          ids: [e.id],
+        })
+    }
+  // A misplaced decimal point (164.67 for 1,646.70) is off by the entry times 9, 99 or 999.
+  for (const e of ticked)
+    for (const k of [10, 100, 1000]) {
+      if (diff === e.amount * (k - 1))
+        out.push({
+          text: `Was ${name(e)} ${money(e.amount * k)} rather than ${money(e.amount)}? The decimal point may be in the wrong place.`,
+          ids: [e.id],
+        })
+      else if (diff * k === -e.amount * (k - 1) && e.amount % k === 0)
+        out.push({
+          text: `Was ${name(e)} ${money(e.amount / k)} rather than ${money(e.amount)}? The decimal point may be in the wrong place.`,
+          ids: [e.id],
+        })
+    }
+  // Two unticked entries that together make the difference.
+  const small = unticked.slice(0, 80)
+  for (let i = 0; i < small.length && out.length < 6; i++)
+    for (let j = i + 1; j < small.length; j++)
+      if (small[i].amount + small[j].amount === diff) {
+        out.push({
+          text: `${name(small[i])} and ${name(small[j])} together make the difference.`,
+          ids: [small[i].id, small[j].id],
+        })
+        break
+      }
+  // The same payment entered twice.
+  for (const e of ticked)
+    for (const f of ticked)
+      if (
+        e.id < f.id &&
+        e.amount === f.amount &&
+        e.amount === -diff &&
+        Math.abs(dayDiff(e.day, f.day)) <= 3 &&
+        similarity(e.name, f.name) >= 0.5
+      )
+        out.push({ text: `${name(e)} appears twice. Is one a duplicate?`, ids: [e.id, f.id] })
+  // Entries at the very end of the period often reach the bank on the next statement.
+  const late = ticked.filter((e) => e.day > addDays(statementDay, -3) && e.day <= statementDay)
+  if (late.length && !out.length)
+    out.push({
+      text: "Entries from the last days of the period can show on the next statement instead.",
+      ids: late.map((e) => e.id),
+    })
+  if (!out.length)
+    out.push({
+      text: `Look on the statement for ${diff < 0 ? "a fee, a charge or interest" : "interest, a refund or a payment in"} of ${money(Math.abs(diff))} that isn't in Kosha yet.`,
+      ids: [],
+    })
+  return out.slice(0, 6)
+}
+
+// ---------- planning a reconciliation ----------
+
+/**
+ * What a reconciliation starts from: which statement lines match Kosha's entries, which are missing, and
+ * which entries count as ticked. With a statement, its period starts at its first line; an entry from before
+ * then that matches no line was on an earlier statement, so it counts as ticked, and in the period only
+ * matched entries are. A close match (a tip, a currency rate) is never ticked until settled. Without a
+ * statement, every paid entry up to the statement day is ticked. `rejected` holds the refs of lines the
+ * person said aren't the same as their close match.
+ */
+export function planReconciliation(o: {
+  lines: Line[]
+  open: (Entry & { paid: number })[]
+  done: Entry[]
+  statementDay: string
+  lastDay: string | null
+  rejected?: Set<string>
+}) {
+  const match = o.lines.length ? matchLines(o.lines, [...o.open, ...o.done]) : null
+  const openIds = new Set(o.open.map((e) => e.id))
+  const pairs = (match?.pairs ?? []).filter((p) => !(p.kind === "close" && o.rejected?.has(o.lines[p.line].ref ?? "")))
+  const paired = new Set(pairs.map((p) => p.line))
+  const matched = new Set(pairs.filter((p) => p.kind !== "close" && openIds.has(p.entry)).map((p) => p.entry))
+  const close = pairs.filter((p) => p.kind === "close" && openIds.has(p.entry))
+  const firstLine = o.lines.reduce((m, l) => (l.day < m ? l.day : m), "9999-12-31")
+  const periodStart = o.lines.length ? firstLine : o.lastDay ? addDays(o.lastDay, 1) : addDays(o.statementDay, -45)
+  const inPeriod = (e: { id: string; day: string }) =>
+    e.day <= o.statementDay && (e.day >= periodStart || matched.has(e.id))
+  const ticks = (e: { id: string; day: string; paid: number }) =>
+    e.day <= o.statementDay && (o.lines.length ? !inPeriod(e) || matched.has(e.id) : e.paid === 1)
+  return {
+    pairs,
+    missing: o.lines.map((_, i) => i).filter((i) => !paired.has(i)),
+    matched,
+    close,
+    periodStart,
+    inPeriod,
+    ticks,
+  }
+}

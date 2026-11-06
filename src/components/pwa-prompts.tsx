@@ -15,7 +15,8 @@ const REMIND_AFTER = 30 * 86_400_000
  * Registers the service worker and shows the cards above the tab bar: offline status, a new version,
  * and installing the app. It also sends entries that were added offline once the connection is back.
  */
-export function PwaPrompts({ uid, bare }: { uid: string; bare: boolean }) {
+/** `away` hides the cards on a page with its own bottom bar; they show again on the next page. */
+export function PwaPrompts({ uid, bare, away }: { uid: string; bare: boolean; away?: boolean }) {
   const router = useRouter()
   const [update, setUpdate] = useState<ServiceWorker | null>(null)
   const [install, setInstall] = useState<InstallEvent | "ios" | null>(null)
@@ -111,7 +112,8 @@ export function PwaPrompts({ uid, bare }: { uid: string; bare: boolean }) {
       className={cn(
         "pointer-events-none fixed inset-x-0 bottom-[calc(1rem+env(safe-area-inset-bottom))] z-50 flex flex-col items-center gap-2 px-4",
         // Above the phone tab bar. /add and Settings are full-screen on phones, so the cards wait for another page.
-        bare ? "max-md:hidden" : "max-md:bottom-[calc(4.75rem+env(safe-area-inset-bottom))]"
+        bare ? "max-md:hidden" : "max-md:bottom-[calc(4.75rem+env(safe-area-inset-bottom))]",
+        away && "hidden"
       )}
     >
       {(!online || waiting > 0) && (

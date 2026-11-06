@@ -7,17 +7,19 @@ export function Pick({
   options,
   placeholder,
   className,
+  "aria-label": ariaLabel,
 }: {
   value: string
   onChange: (v: string) => void
   options: { value: string; label: string }[]
   placeholder: string
   className?: string
+  "aria-label"?: string
 }) {
   const items = [{ value: "", label: placeholder }, ...options]
   return (
     <Select items={items} value={value} onValueChange={(v) => onChange((v as string | null) ?? "")}>
-      <SelectTrigger className={className}>
+      <SelectTrigger className={className} aria-label={ariaLabel}>
         <SelectValue />
       </SelectTrigger>
       <SelectContent>

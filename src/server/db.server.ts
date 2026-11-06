@@ -14,11 +14,15 @@ import {
 
 export const db = () => env.DB
 
-/** An error with the HTTP status the public API answers with. The UI shows its message like any other. */
+/**
+ * An error with the HTTP status the public API answers with, and optionally its error code (else the status's
+ * usual one). The UI shows its message like any other.
+ */
 export class HttpError extends Error {
   constructor(
     readonly status: number,
-    message: string
+    message: string,
+    readonly code?: string
   ) {
     super(message)
   }
@@ -122,7 +126,8 @@ export function transferLegs(
     .prepare(`INSERT INTO transactions (user_id, id, wallet_id, category_id, name, note, amount, date, paid, kind, transfer_id, subscription_id, due_day)
     VALUES (?, ?, ?, 'transfer', '', ?, ?, ?, ?, ?, ?, ?, ?)
     ON CONFLICT(user_id, id) DO UPDATE SET wallet_id = excluded.wallet_id, category_id = 'transfer', note = excluded.note, amount = excluded.amount,
-      date = excluded.date, paid = excluded.paid, kind = excluded.kind, transfer_id = excluded.transfer_id, updated_at = unixepoch()`)
+      date = excluded.date, paid = excluded.paid, kind = excluded.kind, transfer_id = excluded.transfer_id, updated_at = unixepoch(),
+      reconciled_id = CASE WHEN amount = excluded.amount AND wallet_id = excluded.wallet_id THEN reconciled_id END`)
   return [
     up.bind(
       uid,

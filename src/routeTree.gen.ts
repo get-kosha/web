@@ -18,7 +18,9 @@ import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppAccountRouteImport } from './routes/_app/account'
 import { Route as AppAccountsRouteImport } from './routes/_app/accounts'
 import { Route as AppAddRouteImport } from './routes/_app/add'
+import { Route as AppAskRouteImport } from './routes/_app/ask'
 import { Route as AppCategoriesRouteImport } from './routes/_app/categories'
+import { Route as AppReconcileRouteImport } from './routes/_app/reconcile'
 import { Route as AppSettingsRouteImport } from './routes/_app/settings'
 import { Route as AppSubscriptionsRouteImport } from './routes/_app/subscriptions'
 import { Route as AppTransactionsRouteImport } from './routes/_app/transactions'
@@ -74,9 +76,19 @@ const AppAddRoute = AppAddRouteImport.update({
   path: '/add',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAskRoute = AppAskRouteImport.update({
+  id: '/ask',
+  path: '/ask',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppCategoriesRoute = AppCategoriesRouteImport.update({
   id: '/categories',
   path: '/categories',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppReconcileRoute = AppReconcileRouteImport.update({
+  id: '/reconcile',
+  path: '/reconcile',
   getParentRoute: () => AppRoute,
 } as any)
 const AppSettingsRoute = AppSettingsRouteImport.update({
@@ -140,7 +152,9 @@ export interface FileRoutesByFullPath {
   '/account': typeof AppAccountRoute
   '/accounts': typeof AppAccountsRoute
   '/add': typeof AppAddRoute
+  '/ask': typeof AppAskRoute
   '/categories': typeof AppCategoriesRoute
+  '/reconcile': typeof AppReconcileRoute
   '/settings': typeof AppSettingsRouteWithChildren
   '/subscriptions': typeof AppSubscriptionsRoute
   '/transactions': typeof AppTransactionsRoute
@@ -160,7 +174,9 @@ export interface FileRoutesByTo {
   '/account': typeof AppAccountRoute
   '/accounts': typeof AppAccountsRoute
   '/add': typeof AppAddRoute
+  '/ask': typeof AppAskRoute
   '/categories': typeof AppCategoriesRoute
+  '/reconcile': typeof AppReconcileRoute
   '/subscriptions': typeof AppSubscriptionsRoute
   '/transactions': typeof AppTransactionsRoute
   '/api/avatar': typeof ApiAvatarRoute
@@ -182,7 +198,9 @@ export interface FileRoutesById {
   '/_app/account': typeof AppAccountRoute
   '/_app/accounts': typeof AppAccountsRoute
   '/_app/add': typeof AppAddRoute
+  '/_app/ask': typeof AppAskRoute
   '/_app/categories': typeof AppCategoriesRoute
+  '/_app/reconcile': typeof AppReconcileRoute
   '/_app/settings': typeof AppSettingsRouteWithChildren
   '/_app/subscriptions': typeof AppSubscriptionsRoute
   '/_app/transactions': typeof AppTransactionsRoute
@@ -206,7 +224,9 @@ export interface FileRouteTypes {
     | '/account'
     | '/accounts'
     | '/add'
+    | '/ask'
     | '/categories'
+    | '/reconcile'
     | '/settings'
     | '/subscriptions'
     | '/transactions'
@@ -226,7 +246,9 @@ export interface FileRouteTypes {
     | '/account'
     | '/accounts'
     | '/add'
+    | '/ask'
     | '/categories'
+    | '/reconcile'
     | '/subscriptions'
     | '/transactions'
     | '/api/avatar'
@@ -247,7 +269,9 @@ export interface FileRouteTypes {
     | '/_app/account'
     | '/_app/accounts'
     | '/_app/add'
+    | '/_app/ask'
     | '/_app/categories'
+    | '/_app/reconcile'
     | '/_app/settings'
     | '/_app/subscriptions'
     | '/_app/transactions'
@@ -339,11 +363,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAddRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/ask': {
+      id: '/_app/ask'
+      path: '/ask'
+      fullPath: '/ask'
+      preLoaderRoute: typeof AppAskRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/categories': {
       id: '/_app/categories'
       path: '/categories'
       fullPath: '/categories'
       preLoaderRoute: typeof AppCategoriesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/reconcile': {
+      id: '/_app/reconcile'
+      path: '/reconcile'
+      fullPath: '/reconcile'
+      preLoaderRoute: typeof AppReconcileRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/settings': {
@@ -437,7 +475,9 @@ interface AppRouteChildren {
   AppAccountRoute: typeof AppAccountRoute
   AppAccountsRoute: typeof AppAccountsRoute
   AppAddRoute: typeof AppAddRoute
+  AppAskRoute: typeof AppAskRoute
   AppCategoriesRoute: typeof AppCategoriesRoute
+  AppReconcileRoute: typeof AppReconcileRoute
   AppSettingsRoute: typeof AppSettingsRouteWithChildren
   AppSubscriptionsRoute: typeof AppSubscriptionsRoute
   AppTransactionsRoute: typeof AppTransactionsRoute
@@ -448,7 +488,9 @@ const AppRouteChildren: AppRouteChildren = {
   AppAccountRoute: AppAccountRoute,
   AppAccountsRoute: AppAccountsRoute,
   AppAddRoute: AppAddRoute,
+  AppAskRoute: AppAskRoute,
   AppCategoriesRoute: AppCategoriesRoute,
+  AppReconcileRoute: AppReconcileRoute,
   AppSettingsRoute: AppSettingsRouteWithChildren,
   AppSubscriptionsRoute: AppSubscriptionsRoute,
   AppTransactionsRoute: AppTransactionsRoute,

@@ -1,5 +1,6 @@
-import { useId, useState, type ReactNode } from "react"
+import { useEffect, useId, useRef, useState, type ReactNode } from "react"
 import { Link, createFileRoute, useRouter } from "@tanstack/react-router"
+import { ArrowClockwiseIcon, XIcon } from "@phosphor-icons/react/ssr"
 import {
   Area,
   AreaChart,
@@ -15,25 +16,44 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { ChartContainer } from "@/components/ui/chart"
+import { AiMark } from "@/components/ai"
 import { CategoryIcon } from "@/components/category-icon"
 import { BigMoney, CompositionBar, HatchPattern, WorthSplit } from "@/components/net-worth"
 import { Reveal, RollingMoney } from "@/components/motion"
 import { GainDialog } from "@/components/gain-dialog"
 import { TransactionForm, TransactionSheet } from "@/components/transaction-form"
 import { PageSkeleton, useGlobals, useMeta } from "@/components/shell"
-import { getDashboard, updateOccurrence, type Upcoming, type Wallet } from "@/lib/api"
+import {
+  getDashboard,
+  getRecap,
+  savePreferences,
+  updateOccurrence,
+  writeRecap,
+  type Recap,
+  type Upcoming,
+  type Wallet,
+} from "@/lib/api"
 import { LOCALE, addDays, convert, dayOf, fmt, netWorth, shiftMonth } from "@/lib/core"
 import { cn } from "@/lib/utils"
 
 export const Route = createFileRoute("/_app/")({
   loaderDeps: ({ search }) => ({ month: search.month, currency: search.currency }),
   // A guest sees the landing page from the _app layout instead, so there is no dashboard to load.
-  loader: ({ deps, context }) => (context.guest ? (null as unknown as Dash) : getDashboard({ data: deps })),
+  loader: async ({ deps, context }) => {
+    if (context.guest) return null as unknown as Dash & { recap: RecapView | null }
+    // The recap is extra: when it can't load, Overview still does.
+    const [d, recap] = await Promise.all([
+      getDashboard({ data: deps }),
+      getRecap({ data: { month: deps.month } }).catch(() => null),
+    ])
+    return { ...d, recap }
+  },
   pendingComponent: PageSkeleton,
   component: Overview,
 })
 
 type Dash = Awaited<ReturnType<typeof getDashboard>>
+type RecapView = NonNullable<Awaited<ReturnType<typeof getRecap>>>
 
 const short = (day: string) =>
   new Date(`${day}T12:00:00Z`).toLocaleDateString(LOCALE, { day: "numeric", month: "short", timeZone: "UTC" })
@@ -60,6 +80,7 @@ function Overview() {
   return (
     <div className="flex flex-col gap-3 px-4 pt-4 md:gap-5 md:px-8 md:pt-7">
       <h1 className="sr-only">Overview</h1>
+      {d.recap && <RecapCard key={d.recap.month} view={d.recap} />}
       <div className="flex flex-wrap gap-5">
         <NetWorthCard d={d} />
         <PaceCard d={d} stillToPay={stillToPay} bills={bills} monthEnd={monthEnd} />
@@ -95,6 +116,139 @@ function Overview() {
       </TransactionSheet>
       <GainDialog wallet={gainFor} onClose={() => setGainFor(null)} />
     </div>
+  )
+}
+
+/**
+ * Monthly recap. In a month's first week it shows last month's, written on the first visit, until hidden.
+ * For a past month on screen it offers to write one.
+ */
+function RecapCard({ view }: { view: RecapView }) {
+  const router = useRouter()
+  const [recap, setRecap] = useState<(Recap & { writtenDay: string }) | null>(view.recap)
+  const [writing, setWriting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [hidden, setHidden] = useState(false)
+  const name = monthName(view.month)
+  async function write() {
+    setWriting(true)
+    setError(null)
+    try {
+      setRecap(await writeRecap({ data: { month: view.month } }))
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Couldn't write it")
+    } finally {
+      setWriting(false)
+    }
+  }
+  // Once per card: effects can run twice (React's strict mode), and each run would spend tokens.
+  const started = useRef(false)
+  useEffect(() => {
+    if (started.current || !view.auto || view.recap) return
+    started.current = true
+    void write()
+  }, [])
+  async function hide() {
+    setHidden(true)
+    try {
+      await savePreferences({ data: { ai_recap_hidden: view.month } })
+      await router.invalidate()
+    } catch (e) {
+      setHidden(false)
+      toast.error(e instanceof Error ? e.message : "Couldn't hide it")
+    }
+  }
+  if (hidden) return null
+
+  // A past month without a recap: one quiet line that offers it.
+  if (!recap && !writing && !error && !view.auto)
+    return (
+      <Card className="flex-row items-center gap-3 px-6 py-3.5 max-md:px-4">
+        <AiMark className="size-4" />
+        <p className="min-w-0 flex-1 text-[13px] text-muted-foreground">How {name} went, in a few lines.</p>
+        <Button variant="outline" size="sm" className="h-8 bg-card text-[13px] font-normal" onClick={write}>
+          Write a recap
+        </Button>
+      </Card>
+    )
+
+  const tone = { good: "bg-positive", bad: "bg-warning", neutral: "bg-muted-foreground/50" } as const
+  return (
+    <Card className="rise-in gap-3 px-6 max-md:px-[18px]" aria-busy={writing}>
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="flex items-center gap-1.5 text-sm font-medium">
+          <AiMark /> {name} in brief
+        </h2>
+        <div className="-my-1.5 -mr-2 flex items-center gap-0.5">
+          {recap && !writing && (
+            <span className="mr-1 text-xs text-muted-foreground max-sm:hidden">Written {short(recap.writtenDay)}</span>
+          )}
+          {recap && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-muted-foreground max-md:size-11"
+              disabled={writing}
+              onClick={write}
+              aria-label="Write it again"
+              title="Write it again with the latest entries"
+            >
+              <ArrowClockwiseIcon className={cn(writing && "animate-spin")} />
+            </Button>
+          )}
+          {view.auto && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-muted-foreground max-md:size-11"
+              onClick={hide}
+              aria-label={`Hide the ${name} recap`}
+            >
+              <XIcon />
+            </Button>
+          )}
+        </div>
+      </div>
+      {error ? (
+        <div className="flex flex-wrap items-center gap-3 text-[13px]">
+          <p className="text-muted-foreground">Couldn't write the recap. {error}</p>
+          <Button variant="outline" size="sm" className="h-8 bg-card font-normal" onClick={write}>
+            Try again
+          </Button>
+        </div>
+      ) : writing && !recap ? (
+        <div role="status" className="grid animate-pulse gap-2.5 py-1 motion-reduce:animate-none">
+          <span className="sr-only">Writing the {name} recap</span>
+          <div className="h-5 w-2/3 rounded bg-muted" />
+          <div className="h-3.5 w-full max-w-[64ch] rounded bg-muted" />
+          <div className="h-3.5 w-5/6 max-w-[56ch] rounded bg-muted" />
+        </div>
+      ) : (
+        recap && (
+          <div className={cn("grid gap-2.5 transition-opacity duration-300", writing && "opacity-50")}>
+            {recap.headline && (
+              <p className="text-[17px] leading-snug font-medium tracking-[-0.01em] text-balance">{recap.headline}</p>
+            )}
+            {recap.summary && (
+              <p className="max-w-[72ch] text-sm leading-relaxed text-subtle-foreground">{recap.summary}</p>
+            )}
+            {recap.points.length > 0 && (
+              <ul className="mt-1 grid gap-x-6 gap-y-1.5 md:grid-cols-2">
+                {recap.points.map((pt, i) => (
+                  <li key={i} className="flex items-baseline gap-2.5 text-[13px] text-subtle-foreground">
+                    <span
+                      aria-hidden="true"
+                      className={cn("size-1.5 shrink-0 -translate-y-px rounded-full", tone[pt.tone])}
+                    />
+                    {pt.text}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )
+      )}
+    </Card>
   )
 }
 

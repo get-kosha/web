@@ -27,7 +27,19 @@ Kosha (कोश, "treasury") keeps every account in one place: bank accounts, c
 - **Subscriptions and bills.** Set a schedule once. Payments are recorded when they fall due, and you can skip or edit a single one.
 - **Transfers and currency exchange.** Moving money between your own accounts never counts as spending. For exchanges through Wise or similar, Kosha shows the fee and the cost of the provider's rate against the market rate.
 - **One account per person.** Each person sees only their own data. Sign in with a password or a passkey, with optional two-factor codes.
+- **Bank statements and reconciliation.** Drop a CSV, OFX or QFX file from your bank on **Reconcile** (from Accounts, or Settings › Import & export). Kosha works out the columns, remembers them for that bank, ticks every entry that matches a statement line (a few days of posting delay allowed), lists what's missing so you can add it in one go, and flags amounts that are close but not the same, such as a tip. A live bar shows the statement balance, what's ticked and the difference. When it doesn't add up, Kosha runs the bookkeeper's checks: an entry equal to the difference, half of it (a wrong sign), digits swapped (a difference divisible by 9), a misplaced decimal point, a duplicate, or entries at the period's end that will show on the next statement. Finishing marks the entries reconciled, Kosha warns before you change one, and the latest reconciliation can be undone. No file? Tick entries against the statement by hand, or confirm in one tap that your bank shows the same balance.
+- **Recurring payments, spotted.** Recurring lists payees you pay on a steady rhythm (weekly to yearly) that aren't set up yet. One tap makes one a recurring payment and files its past payments under it.
 - **Import from Cashew.** Bring over accounts, categories, transactions and recurring payments.
+- **Optional AI, with your own key.** Connect Anthropic, OpenAI, Gemini, OpenRouter, Ollama or any OpenAI-compatible endpoint in Settings › AI, and turn on what you want:
+  - **Auto-categorise** picks a category, marked ✦, for a payee no rule or past entry can place.
+  - **Natural-language add** reads a sentence such as `lunch with Sam at Nando's 18.50 last friday` in quick add, or from **Describe it** on the phone add screen.
+  - **Receipt scanning** reads the amount, date, time and payee from a photo, converting a receipt in another currency.
+  - **Monthly recap** puts a short note on Overview in the first week of each month: what changed, and why.
+  - **Ask Kosha** answers questions about your money from your data, with links to the entries behind each answer.
+  - **Statements** reads PDF statements (checking that the lines add up to the closing balance), works out CSV files Kosha can't read alone from their column names only, turns bank text into payee names and categories, and explains a reconciliation difference.
+
+  **What AI can see** decides which fields are sent. Hidden payees and accounts go out as codes, and Kosha puts the real names back in the replies. Each request can be kept in a 30-day log, so you can check what was sent. Nothing is sent while AI is off, and a feature that is off leaves no trace in the app.
+
 - **API and MCP.** Everything you can do in the app is also a REST endpoint and a tool for AI assistants such as Claude, ChatGPT and Cursor. Writes work in bulk, up to 500 entries at a time.
 
 ## Run it locally
@@ -93,7 +105,11 @@ curl https://<your Kosha>/api/v1/transactions -H "Authorization: Bearer kosha_�
   -d '{"transactions":[{"accountId":"main","payee":"Tesco","amount":-2350}]}'
 ```
 
-Amounts are in cents, and negative means money out. Leave out `categoryId` and your payee rules choose it. Each user can make 120 requests a minute.
+Amounts are in cents, and negative means money out. Leave out `categoryId` and your payee rules choose it, then the AI model when Auto-categorise is on. Each user can make 120 requests a minute.
+
+Statements and reconciliation work the same way: `check_statement` reads a CSV, OFX or QFX file (or a PDF, with AI) and matches it against an account, `create_transactions` adds the missing lines with each line's `bankRef`, and `reconcile_account` finishes. `list_recurring` with `includeSuggestions` lists the regular payments Kosha spotted. The AI features are operations too (`read_transaction`, `ask_kosha`, `recap_month`). They use the model connected in Settings › AI, and without one they answer `409 ai_unavailable` with what to turn on.
+
+Cursor passes only the first 40 tools to its agent, so the AI tools and the rarely needed undo and dismiss ones come last. Switch off tools you don't use in Cursor if you want those.
 
 The API leaves out sign-in and security settings, AI provider keys, full exports and Delete & reset. Use the app for those.
 

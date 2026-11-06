@@ -4,6 +4,7 @@ import {
   ArticleIcon,
   ChatCircleDotsIcon,
   CheckCircleIcon,
+  FileTextIcon,
   LightningIcon,
   LockSimpleIcon,
   PlusIcon,
@@ -27,7 +28,7 @@ import {
   testAiProvider,
   type AiProviderView,
 } from "@/lib/api"
-import { LOCALE, redactForAi, type AiShares, type Prefs } from "@/lib/core"
+import { AI_FEATURES, LOCALE, aiShares, redactForAi, type AiShares, type Prefs } from "@/lib/core"
 import { cn } from "@/lib/utils"
 
 const useAi = () => getRouteApi("/_app/settings/$section").useLoaderData({ select: (d) => d.ai })
@@ -339,51 +340,137 @@ function ProviderCard({
 }
 
 const FEATURES = [
-  [TagIcon, "Auto-categorise", "Suggests a category when no payee rule matches. You confirm with one tap."],
-  [
-    LightningIcon,
-    "Natural-language add",
-    'Type "24.90 pizza hut yesterday visa" in quick add and Kosha fills the form.',
-  ],
-  [ArticleIcon, "Monthly recap", "A short note on the 1st: what changed, and why."],
-  [ChatCircleDotsIcon, "Ask Kosha", "Questions about your money, answered from your data."],
-  [ReceiptIcon, "Receipt scanning", "Amount, date and payee from a photo."],
+  {
+    key: "ai_categorise",
+    feature: "categorise",
+    icon: TagIcon,
+    title: "Auto-categorise",
+    description:
+      "Picks a category for a payee no rule or past entry can place. It's marked ✦ until you choose, and one tap changes it.",
+    sends: "The payee, and how your most-used payees are sorted.",
+  },
+  {
+    key: "ai_quick_add",
+    feature: "quick_add",
+    icon: LightningIcon,
+    title: "Natural-language add",
+    description:
+      'Type "lunch with Sam at Nando\'s 18.50 yesterday" in quick add, or tap ✦ on the phone add screen, and Kosha fills the form.',
+    sends: "What you type, with your category names.",
+  },
+  {
+    key: "ai_receipts",
+    feature: "receipts",
+    icon: ReceiptIcon,
+    title: "Receipt scanning",
+    description:
+      "Amount, date and payee from a photo. Take one on the phone add screen, or paste or drop it into quick add.",
+    sends: "The photo, shrunk to 1600 pixels.",
+  },
+  {
+    key: "ai_recap",
+    feature: "recap",
+    icon: ArticleIcon,
+    title: "Monthly recap",
+    description: "A short note on Overview in the first week of each month: what changed, and why.",
+    sends: "The month's totals by category, and its largest payments.",
+  },
+  {
+    key: "ai_ask",
+    feature: "ask",
+    icon: ChatCircleDotsIcon,
+    title: "Ask Kosha",
+    description: "Questions about your money, answered from your data, with links to the entries behind each answer.",
+    sends: "Only the entries each answer needs.",
+  },
+  {
+    key: "ai_statements",
+    feature: "statements",
+    icon: FileTextIcon,
+    title: "Statements",
+    description:
+      "Reads PDF statements and CSV files Kosha can't work out alone, names payees from bank text, and helps find a reconciliation difference.",
+    sends:
+      "The PDF you import. For a CSV, only its column names. Bank text and amounts only while What AI can see shares them.",
+  },
 ] as const
 
+// What turns a feature off besides its own switch, and how to fix it.
+const NEEDS: Partial<Record<keyof Prefs, string>> = {
+  ai_share_payee: "Needs Payee names under What AI can see.",
+  ai_share_amount: "Needs Amounts under What AI can see.",
+  suggest_category: "Needs Suggest a category, in General.",
+}
+
 function Features() {
+  const ai = useAi()
+  const meta = useMeta()
+  const connected = !!ai?.providers.some((p) => p.isDefault)
   return (
-    <SettingGroup label="Features">
+    <SettingGroup
+      label="Features"
+      note={connected ? undefined : "Connect a provider above, and the features you leave on start working."}
+    >
       <div id="ai-features">
-        {FEATURES.map(([Icon, title, description]) => (
-          <div key={title} className="flex items-center gap-4 border-t px-5 py-3.5 first:border-t-0 max-md:px-4">
-            <span className="flex size-9 shrink-0 items-center justify-center rounded-[10px] bg-muted text-subtle-foreground">
-              <Icon className="size-[18px]" />
-            </span>
-            <div className="min-w-0 flex-1">
-              <div className="text-sm font-medium">{title}</div>
-              <p className="mt-0.5 text-[13px] text-muted-foreground">{description}</p>
-            </div>
-            <Pill tone="muted">Coming soon</Pill>
-          </div>
+        {FEATURES.map((f) => (
+          <FeatureRow
+            key={f.key}
+            f={f}
+            blocked={AI_FEATURES[f.feature].needs.flatMap((n: keyof Prefs) =>
+              meta.prefs[n] === "1" ? [] : [NEEDS[n]]
+            )}
+          />
         ))}
       </div>
     </SettingGroup>
   )
 }
 
+function FeatureRow({ f, blocked }: { f: (typeof FEATURES)[number]; blocked: (string | undefined)[] }) {
+  const [value, save] = usePref(f.key)
+  const Icon = f.icon
+  return (
+    <div
+      id={`ai-${f.feature}`}
+      data-row="setting"
+      className="flex items-start gap-4 border-t px-5 py-4 first:border-t-0 max-md:gap-3 max-md:px-4"
+    >
+      <span className="flex size-9 shrink-0 items-center justify-center rounded-[10px] bg-muted text-subtle-foreground">
+        <Icon className="size-[18px]" />
+      </span>
+      <div className="min-w-0 flex-1">
+        <div className="text-sm font-medium">{f.title}</div>
+        <p className="mt-0.5 text-[13px] leading-snug text-muted-foreground">{f.description}</p>
+        <p className="mt-1.5 text-xs text-muted-foreground">
+          <span className="text-subtle-foreground">Sends:</span> {f.sends}
+        </p>
+        {value === "1" && blocked.length > 0 && (
+          <p className="mt-1.5 flex items-center gap-1.5 text-xs text-warning">{blocked.join(" ")}</p>
+        )}
+      </div>
+      <Switch
+        aria-label={f.title}
+        className="mt-1"
+        checked={value === "1"}
+        onCheckedChange={(v) => save(v ? "1" : "0")}
+      />
+    </div>
+  )
+}
+
 const SHARES = [
-  ["ai_share_amount", "amount", "Amounts", "Needed for most suggestions."],
-  ["ai_share_payee", "payee", "Payee names", "When off, Kosha sends a stable code instead."],
-  ["ai_share_date", "date", "Exact dates", "When off, Kosha sends only the month."],
-  ["ai_share_note", "note", "Notes", "Your own words. Off by default."],
-  ["ai_share_account", "account", "Account names", "Which card or bank paid."],
+  ["ai_share_amount", "Amounts", "Needed for most suggestions."],
+  ["ai_share_payee", "Payee names", "When off, Kosha sends a stable code instead."],
+  ["ai_share_date", "Exact dates", "When off, Kosha sends only the month."],
+  ["ai_share_note", "Notes", "Your own words. Off by default."],
+  ["ai_share_account", "Account names", "Which card or bank paid."],
 ] as const
 
 function Visibility() {
   const meta = useMeta()
   const [logOn, saveLog] = usePref("ai_log_enabled")
   const [viewing, setViewing] = useState(false)
-  const shares = Object.fromEntries(SHARES.map(([k, s]) => [s, meta.prefs[k] === "1"])) as AiShares
+  const shares = aiShares(meta.prefs)
   return (
     <SettingGroup
       label="What AI can see"
@@ -391,7 +478,7 @@ function Visibility() {
     >
       <div id="ai-privacy" className="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))]">
         <div className="min-w-0">
-          {SHARES.map(([key, , title, description]) => (
+          {SHARES.map(([key, title, description]) => (
             <ShareRow key={key} prefKey={key} title={title} description={description} />
           ))}
         </div>
@@ -514,9 +601,7 @@ function LogDialog({ onClose }: { onClose: () => void }) {
           <DialogDescription>Exactly what was sent and what came back, for the last 30 days.</DialogDescription>
         </DialogHeader>
         {log.length === 0 ? (
-          <p className="py-6 text-center text-sm text-muted-foreground">
-            No requests yet. AI features are coming soon.
-          </p>
+          <p className="py-6 text-center text-sm text-muted-foreground">No requests in the last 30 days.</p>
         ) : (
           <ul className="max-h-[60vh] overflow-y-auto">
             {log.map((r) => (

@@ -327,8 +327,44 @@ const GROUPS: Group[] = [
           {
             key: "ai-features",
             title: "AI features",
-            description: "Auto-categorise, natural-language add, recaps.",
-            keywords: "categorize quick add summary recap receipt",
+            description: "Turn each AI feature on or off.",
+            keywords: "features",
+          },
+          {
+            key: "ai-categorise",
+            title: "Auto-categorise",
+            description: "A category for payees Kosha hasn't seen.",
+            keywords: "categorize category suggest guess",
+          },
+          {
+            key: "ai-quick_add",
+            title: "Natural-language add",
+            description: "Type a sentence and Kosha fills the form.",
+            keywords: "quick add sentence describe type",
+          },
+          {
+            key: "ai-receipts",
+            title: "Receipt scanning",
+            description: "Amount, date and payee from a photo.",
+            keywords: "receipt photo camera scan ocr",
+          },
+          {
+            key: "ai-recap",
+            title: "Monthly recap",
+            description: "A short note on each month.",
+            keywords: "recap summary month review",
+          },
+          {
+            key: "ai-ask",
+            title: "Ask Kosha",
+            description: "Questions about your money.",
+            keywords: "ask chat question assistant",
+          },
+          {
+            key: "ai-statements",
+            title: "Statements",
+            description: "Read PDF statements and help reconcile.",
+            keywords: "statement pdf csv import reconcile reconciliation",
           },
           {
             key: "ai-privacy",
@@ -359,9 +395,15 @@ const GROUPS: Group[] = [
         id: "data",
         title: "Import & export",
         icon: DatabaseIcon,
-        description: "Download all of your data, whenever you like.",
+        description: "Import bank statements, and download all of your data whenever you like.",
         component: ImportExport,
         rows: [
+          {
+            key: "statements",
+            title: "Bank statements",
+            description: "Import a statement and check an account against it.",
+            keywords: "import csv ofx qfx pdf bank statement reconcile reconciliation",
+          },
           {
             key: "export",
             title: "Export",

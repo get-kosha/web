@@ -100,3 +100,380 @@ export async function listModels(id: AiProviderId, key: string, baseUrl: string 
     }
   }
 }
+
+// ---------- calling a model ----------
+
+/** Part of a user message: text, or an image or a PDF as base64. */
+type Part =
+  | { type: "text"; text: string }
+  | { type: "image"; mime: string; data: string }
+  | { type: "pdf"; name: string; data: string }
+type ToolCall = { id: string; name: string; input: Record<string, unknown> }
+/** One message of a conversation, in a shape that maps onto both wire formats. */
+export type Turn =
+  | { role: "user"; content: string | Part[] }
+  /** `raw` holds a reply's own output items, for a provider that wants them sent back as they were (OpenAI's reasoning). */
+  | { role: "assistant"; text: string; calls?: ToolCall[]; raw?: unknown[] }
+  | { role: "tool"; results: { id: string; content: string }[] }
+/** A function the model may call. `parameters` is a JSON Schema object. */
+export type Tool = { name: string; description: string; parameters: Record<string, unknown> }
+export type Reply = { text: string; calls: ToolCall[]; tokensIn: number; tokensOut: number; raw?: unknown[] }
+export type Provider = { id: AiProviderId; model: string; key: string; baseUrl: string | null }
+export type ChatRequest = { system: string; turns: Turn[]; tools?: Tool[]; maxTokens: number; timeoutMs: number }
+
+const PROVIDER_NAMES: Record<AiProviderId, string> = {
+  anthropic: "Anthropic",
+  openai: "OpenAI",
+  gemini: "Gemini",
+  openrouter: "OpenRouter",
+  ollama: "Ollama",
+  compatible: "Your endpoint",
+}
+
+// Anthropic has its Messages API and OpenAI its Responses API (its newer models refuse tools with reasoning on
+// Chat Completions). Everyone else speaks Chat Completions: Gemini through its OpenAI-compatible endpoint,
+// and Ollama under /v1.
+const CHAT_BASE: Partial<Record<AiProviderId, string>> = {
+  gemini: "https://generativelanguage.googleapis.com/v1beta/openai",
+  openrouter: "https://openrouter.ai/api/v1",
+}
+
+/** Sends one request to the provider and returns its text and tool calls. Throws with the provider's own message. */
+export async function chat(p: Provider, req: ChatRequest): Promise<Reply> {
+  const anthropic = p.id === "anthropic"
+  const openai = p.id === "openai"
+  const url = anthropic
+    ? "https://api.anthropic.com/v1/messages"
+    : openai
+      ? "https://api.openai.com/v1/responses"
+      : `${CHAT_BASE[p.id] ?? checkBaseUrl(p.baseUrl ?? "") + (p.id === "ollama" ? "/v1" : "")}/chat/completions`
+  const headers: Record<string, string> = { "content-type": "application/json" }
+  if (anthropic) {
+    headers["x-api-key"] = p.key
+    headers["anthropic-version"] = "2023-06-01"
+  } else if (p.key) headers.authorization = `Bearer ${p.key}`
+  let res: Response
+  try {
+    res = await fetch(url, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(
+        anthropic ? anthropicBody(p.model, req) : openai ? responsesBody(p.model, req) : chatBody(p.model, req)
+      ),
+      signal: AbortSignal.timeout(req.timeoutMs),
+    })
+  } catch (e) {
+    const timeout = e instanceof Error && e.name === "TimeoutError"
+    throw new Error(
+      timeout
+        ? `${PROVIDER_NAMES[p.id]} didn't answer in time`
+        : `Couldn't reach ${p.id === "compatible" ? "your endpoint" : PROVIDER_NAMES[p.id]}`
+    )
+  }
+  const body = (await res.json().catch(() => null)) as Record<string, unknown> | null
+  if (!res.ok || !body) {
+    const err = body?.error as { message?: string } | string | undefined
+    const message = (typeof err === "string" ? err : err?.message) || `HTTP ${res.status}`
+    throw new Error(`${PROVIDER_NAMES[p.id]}: ${message}`)
+  }
+  return anthropic ? anthropicReply(body) : openai ? responsesReply(body) : chatReply(body)
+}
+
+/** A user message's parts in one wire format: its name for a text part, and how it sends images and PDFs. */
+const userParts = (
+  content: string | Part[],
+  text: string,
+  image: (p: Extract<Part, { type: "image" }>) => unknown,
+  pdf: (p: Extract<Part, { type: "pdf" }>) => unknown
+) =>
+  typeof content === "string"
+    ? content
+    : content.map((part) =>
+        part.type === "text" ? { type: text, text: part.text } : part.type === "image" ? image(part) : pdf(part)
+      )
+
+/** OpenAI's Responses API, stateless: each reply's output items (reasoning included) go back in the next request. */
+function responsesBody(model: string, req: ChatRequest) {
+  const input: unknown[] = []
+  for (const t of req.turns) {
+    if (t.role === "user")
+      input.push({
+        role: "user",
+        content: userParts(
+          t.content,
+          "input_text",
+          (part) => ({ type: "input_image", image_url: `data:${part.mime};base64,${part.data}` }),
+          (part) => ({ type: "input_file", filename: part.name, file_data: `data:application/pdf;base64,${part.data}` })
+        ),
+      })
+    else if (t.role === "assistant")
+      input.push(
+        ...(t.raw ?? [
+          ...(t.text ? [{ role: "assistant", content: t.text }] : []),
+          ...(t.calls ?? []).map((c) => ({
+            type: "function_call",
+            call_id: c.id,
+            name: c.name,
+            arguments: JSON.stringify(c.input),
+          })),
+        ])
+      )
+    else for (const r of t.results) input.push({ type: "function_call_output", call_id: r.id, output: r.content })
+  }
+  return {
+    model,
+    instructions: req.system,
+    input,
+    store: false,
+    ...(req.tools?.length && {
+      tools: req.tools.map((t) => ({
+        type: "function",
+        name: t.name,
+        description: t.description,
+        parameters: t.parameters,
+      })),
+    }),
+  }
+}
+
+function responsesReply(body: Record<string, unknown>): Reply {
+  const output = (body.output ?? []) as {
+    type: string
+    content?: { type: string; text?: string }[]
+    call_id?: string
+    name?: string
+    arguments?: string
+  }[]
+  const usage = (body.usage ?? {}) as { input_tokens?: number; output_tokens?: number }
+  const calls = output
+    .filter((o) => o.type === "function_call")
+    .map((o) => {
+      let input: Record<string, unknown> = {}
+      try {
+        input = JSON.parse(o.arguments || "{}")
+      } catch {}
+      return { id: o.call_id ?? crypto.randomUUID(), name: o.name ?? "", input }
+    })
+  return {
+    text: output
+      .filter((o) => o.type === "message")
+      .flatMap((o) => o.content ?? [])
+      .filter((c) => c.type === "output_text")
+      .map((c) => c.text ?? "")
+      .join(""),
+    calls,
+    tokensIn: usage.input_tokens ?? 0,
+    tokensOut: usage.output_tokens ?? 0,
+    raw: output,
+  }
+}
+
+function anthropicBody(model: string, req: ChatRequest) {
+  const messages = req.turns.map((t) => {
+    if (t.role === "user")
+      return {
+        role: "user",
+        content: userParts(
+          t.content,
+          "text",
+          (part) => ({ type: "image", source: { type: "base64", media_type: part.mime, data: part.data } }),
+          (part) => ({ type: "document", source: { type: "base64", media_type: "application/pdf", data: part.data } })
+        ),
+      }
+    if (t.role === "assistant")
+      return {
+        role: "assistant",
+        content: [
+          ...(t.text ? [{ type: "text", text: t.text }] : []),
+          ...(t.calls ?? []).map((c) => ({ type: "tool_use", id: c.id, name: c.name, input: c.input })),
+        ],
+      }
+    return {
+      role: "user",
+      content: t.results.map((r) => ({ type: "tool_result", tool_use_id: r.id, content: r.content })),
+    }
+  })
+  return {
+    model,
+    max_tokens: req.maxTokens,
+    system: req.system,
+    messages,
+    ...(req.tools?.length && {
+      tools: req.tools.map((t) => ({ name: t.name, description: t.description, input_schema: t.parameters })),
+    }),
+  }
+}
+
+function anthropicReply(body: Record<string, unknown>): Reply {
+  const blocks = (body.content ?? []) as {
+    type: string
+    text?: string
+    id?: string
+    name?: string
+    input?: Record<string, unknown>
+  }[]
+  const usage = (body.usage ?? {}) as { input_tokens?: number; output_tokens?: number }
+  return {
+    text: blocks
+      .filter((b) => b.type === "text")
+      .map((b) => b.text ?? "")
+      .join(""),
+    calls: blocks
+      .filter((b) => b.type === "tool_use")
+      .map((b) => ({ id: b.id ?? crypto.randomUUID(), name: b.name ?? "", input: b.input ?? {} })),
+    tokensIn: usage.input_tokens ?? 0,
+    tokensOut: usage.output_tokens ?? 0,
+  }
+}
+
+// ponytail: no token cap here or for OpenAI. Servers disagree on max_tokens and max_completion_tokens,
+// and a cap can cut off a reasoning model mid-thought, while every prompt asks for a short reply anyway.
+function chatBody(model: string, req: ChatRequest) {
+  const messages: Record<string, unknown>[] = [{ role: "system", content: req.system }]
+  for (const t of req.turns) {
+    if (t.role === "user")
+      messages.push({
+        role: "user",
+        content: userParts(
+          t.content,
+          "text",
+          (part) => ({ type: "image_url", image_url: { url: `data:${part.mime};base64,${part.data}` } }),
+          // OpenRouter and OpenAI's own Chat Completions take PDFs this way; a server that can't says so.
+          (part) => ({
+            type: "file",
+            file: { filename: part.name, file_data: `data:application/pdf;base64,${part.data}` },
+          })
+        ),
+      })
+    else if (t.role === "assistant")
+      messages.push({
+        role: "assistant",
+        content: t.text || null,
+        ...(t.calls?.length && {
+          tool_calls: t.calls.map((c) => ({
+            id: c.id,
+            type: "function",
+            function: { name: c.name, arguments: JSON.stringify(c.input) },
+          })),
+        }),
+      })
+    else for (const r of t.results) messages.push({ role: "tool", tool_call_id: r.id, content: r.content })
+  }
+  return {
+    model,
+    messages,
+    ...(req.tools?.length && {
+      tools: req.tools.map((t) => ({
+        type: "function",
+        function: { name: t.name, description: t.description, parameters: t.parameters },
+      })),
+    }),
+  }
+}
+
+function chatReply(body: Record<string, unknown>): Reply {
+  const choice = ((body.choices ?? []) as { message?: Record<string, unknown> }[])[0]?.message ?? {}
+  const content = choice.content
+  const text =
+    typeof content === "string"
+      ? content
+      : Array.isArray(content)
+        ? content.map((c: { text?: string }) => c.text ?? "").join("")
+        : ""
+  const calls = ((choice.tool_calls ?? []) as { id?: string; function?: { name?: string; arguments?: unknown } }[]).map(
+    (c) => {
+      const args = c.function?.arguments
+      let input: Record<string, unknown> = {}
+      // Ollama sends the arguments as an object, everyone else as a JSON string.
+      if (args && typeof args === "object") input = args as Record<string, unknown>
+      else if (typeof args === "string")
+        try {
+          input = JSON.parse(args || "{}")
+        } catch {}
+      return { id: c.id || crypto.randomUUID(), name: c.function?.name ?? "", input }
+    }
+  )
+  const usage = (body.usage ?? {}) as { prompt_tokens?: number; completion_tokens?: number }
+  return { text, calls, tokensIn: usage.prompt_tokens ?? 0, tokensOut: usage.completion_tokens ?? 0 }
+}
+
+/** The request as the log shows it, as readable sections. Images become a size note, and very long requests are cut. */
+function logRequest(req: ChatRequest) {
+  const parts = [`System\n${req.system}`]
+  for (const t of req.turns) {
+    if (t.role === "user")
+      parts.push(
+        `You\n${
+          typeof t.content === "string"
+            ? t.content
+            : t.content
+                .map((p) =>
+                  p.type === "text"
+                    ? p.text
+                    : `[${p.type === "pdf" ? `PDF ${p.name}` : "photo"}, ${Math.round((p.data.length * 3) / 4 / 1024)} KB]`
+                )
+                .join("\n")
+        }`
+      )
+    else if (t.role === "assistant")
+      parts.push(
+        `Model\n${[t.text, ...(t.calls ?? []).map((c) => `→ ${c.name}(${JSON.stringify(c.input)})`)]
+          .filter(Boolean)
+          .join("\n")}`
+      )
+    else parts.push(...t.results.map((r) => `Kosha's answer to the look-up\n${r.content}`))
+  }
+  if (req.tools?.length) parts.push(`Look-ups offered\n${req.tools.map((t) => t.name).join(", ")}`)
+  const text = parts.join("\n\n")
+  return text.length > 200_000 ? `${text.slice(0, 200_000)}\n… cut at 200,000 characters` : text
+}
+
+/**
+ * Records one call for Usage, and its request and reply when the request log is on. With the log off the row
+ * keeps only the counts. Contents older than 30 days are cleared, and rows go after 62 days, past any month's usage.
+ */
+export async function logCall(
+  uid: string,
+  o: { provider: Provider; feature: string; req: ChatRequest; reply: Reply | null; error?: string; keep: boolean }
+) {
+  const DB = env.DB
+  const response = o.reply
+    ? [o.reply.text, ...o.reply.calls.map((c) => `→ ${c.name}(${JSON.stringify(c.input)})`)].join("\n")
+    : `Error: ${o.error ?? "unknown"}`
+  await DB.batch([
+    DB.prepare(`INSERT INTO ai_log (user_id, id, provider, model, feature, request, response, tokens_in, tokens_out)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`).bind(
+      uid,
+      crypto.randomUUID(),
+      o.provider.id,
+      o.provider.model,
+      o.feature,
+      o.keep ? logRequest(o.req) : "",
+      o.keep ? response : "",
+      o.reply?.tokensIn ?? 0,
+      o.reply?.tokensOut ?? 0
+    ),
+    DB.prepare(
+      "UPDATE ai_log SET request = '', response = '' WHERE user_id = ? AND at < unixepoch() - 30 * 86400 AND request <> ''"
+    ).bind(uid),
+    DB.prepare("DELETE FROM ai_log WHERE user_id = ? AND at < unixepoch() - 62 * 86400").bind(uid),
+  ])
+}
+
+/** The default provider with its key decrypted, or null when none is connected. */
+export async function defaultProvider(uid: string): Promise<Provider | null> {
+  const row = await env.DB.prepare(
+    "SELECT id, base_url, model, key_cipher, key_iv FROM ai_providers WHERE user_id = ? AND is_default = 1"
+  )
+    .bind(uid)
+    .first<{
+      id: AiProviderId
+      base_url: string | null
+      model: string
+      key_cipher: string | null
+      key_iv: string | null
+    }>()
+  if (!row) return null
+  const key = row.key_cipher && row.key_iv ? await decryptKey(row.key_cipher, row.key_iv) : ""
+  return { id: row.id, model: row.model, key, baseUrl: row.base_url }
+}

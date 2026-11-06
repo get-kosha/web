@@ -834,13 +834,24 @@ function AccountDetail({
         </div>
       ) : (
         <div className="rounded-xl bg-muted px-4 py-3.5">
-          <div className="text-[13px] font-medium">Does this match your bank?</div>
+          <div className="text-[13px] font-medium">
+            {w.reconciled_day ? `Reconciled to ${long(w.reconciled_day)}` : "Does this match your bank?"}
+          </div>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            Enter the balance your bank shows and Kosha adds a correction.
+            Tick entries off your statement, or import it, and Kosha finds what's missing.
           </p>
-          <Button variant="outline" size="sm" className="mt-2.5 bg-card" onClick={onFix}>
-            Fix balance
-          </Button>
+          <div className="mt-2.5 flex flex-wrap gap-2">
+            <Link
+              to="/reconcile"
+              search={{ account: w.id }}
+              className="inline-flex h-8 items-center rounded-md border bg-card px-3 text-[13px] transition-colors hover:bg-muted max-md:h-11"
+            >
+              Reconcile
+            </Link>
+            <Button variant="ghost" size="sm" className="max-md:h-11" onClick={onFix}>
+              Fix balance
+            </Button>
+          </div>
         </div>
       )}
 

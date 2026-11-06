@@ -20,6 +20,9 @@ const TAGS = {
   Gains: "Investment gains recorded by hand. The latest one per account counts toward net worth.",
   Reports: "Read-only summaries: a month's overview and net worth.",
   Settings: "Currency, time zone and display preferences.",
+  Reconciliation:
+    "Check an account against a bank statement: match its lines to entries, add what's missing, and mark entries reconciled.",
+  AI: "Help from the AI model connected in Kosha under Settings › AI, using your provider's tokens; each call shows in its request log. Without a provider, or with the feature off, these answer ai_unavailable with what to turn on.",
 } as const
 type Tag = keyof typeof TAGS
 
@@ -37,6 +40,8 @@ export type Operation<I extends z.ZodObject = z.ZodObject, O extends z.ZodObject
   destructive?: boolean
   /** Repeating the same call leaves the same result. */
   idempotent?: boolean
+  /** Uses the AI model: always, or only for some inputs. It can then fail with ai_unavailable or ai_provider_error. */
+  ai?: "always" | "sometimes"
   input: I
   output: O
   example: { input: z.input<I>; output: z.input<O> }
@@ -89,6 +94,7 @@ const Account = z.object({
   gainDay: Day.nullable(),
   archived: z.boolean(),
   transactionCount: z.number().int(),
+  reconciledTo: Day.nullable().describe("The statement day of its latest reconciliation, if any."),
 })
 const Category = z.object({
   id: Id,
@@ -140,6 +146,10 @@ const Transaction = z.object({
     })
     .nullable()
     .describe("Set on both halves of a transfer."),
+  reconciled: z
+    .boolean()
+    .describe("Checked against a bank statement. Changing its amount, account or day un-reconciles it."),
+  bankRef: z.string().nullable().describe("The bank's id for the statement line it was imported from."),
 })
 const Payment = z.object({
   dueDay: Day.describe("The scheduled day; identifies the payment."),
@@ -236,6 +246,8 @@ const tx = {
   recurringId: null,
   dueDay: null,
   transfer: null,
+  reconciled: false,
+  bankRef: null,
 }
 const account = {
   id: "a1",
@@ -249,6 +261,7 @@ const account = {
   gainDay: null,
   archived: false,
   transactionCount: 412,
+  reconciledTo: "2026-10-31",
 }
 const category = {
   id: "groceries",
@@ -401,6 +414,10 @@ export const OPERATIONS = {
       minAmount: z.number().int().min(0).optional().describe("Smallest amount in cents, by absolute value."),
       maxAmount: z.number().int().min(0).optional().describe("Largest amount in cents, by absolute value."),
       includeCorrections: z.boolean().default(false).describe("Include balance corrections."),
+      reconciled: z
+        .boolean()
+        .optional()
+        .describe("true: only entries checked against a statement. false: only those not yet."),
       limit: z.number().int().min(1).max(500).default(50),
       offset: z.number().int().min(0).default(0),
     }),
@@ -434,14 +451,14 @@ export const OPERATIONS = {
     path: "/transactions",
     scope: "write",
     description:
-      "Adds 1 to 500 spending or income entries in one all-or-nothing batch. Spending is a negative amount. Leave out categoryId to use your payee rules; the call fails if none matches. `day` defaults to today. Record money moved between your own accounts with create_transfers instead.",
+      "Adds 1 to 500 spending or income entries in one all-or-nothing batch. Spending is a negative amount. Leave out categoryId to use your payee rules, then the AI model when Auto-categorise is on in Settings › AI; the call fails if neither places one. `day` defaults to today. To add lines from a bank statement, pass each line's bankRef from check_statement. Record money moved between your own accounts with create_transfers instead.",
     input: z.object({
       transactions: Bulk(
         z.object({
           accountId: Id,
           payee: Payee,
           amount: Cents.refine((n) => n !== 0, "Amount can't be 0"),
-          categoryId: Id.optional().describe("Left out: guessed from your payee rules."),
+          categoryId: Id.optional().describe("Left out: your payee rules, then AI when Auto-categorise is on."),
           subcategoryId: Id.optional().describe("A subcategory of categoryId."),
           day: Day.optional(),
           note: Note.default(""),
@@ -450,6 +467,14 @@ export const OPERATIONS = {
             .optional()
             .describe("Left out: the event whose dates cover the day, if any. null: none."),
           status: z.enum(["paid", "upcoming"]).default("paid"),
+          bankRef: z
+            .string()
+            .min(1)
+            .max(200)
+            .optional()
+            .describe(
+              "A statement line's bankRef from check_statement, so checking that statement again matches this entry."
+            ),
         }),
         500
       ),
@@ -907,10 +932,52 @@ export const OPERATIONS = {
     path: "/recurring",
     scope: "read",
     description:
-      "Lists subscriptions, bills and recurring transfers with their next payments. Due payments with auto-pay are recorded when Kosha loads; others wait as due or overdue.",
-    input: z.object({ includeEnded: z.boolean().default(false) }),
-    output: z.object({ recurring: z.array(Recurring) }),
-    example: { input: {}, output: { recurring: [recurring] } },
+      "Lists subscriptions, bills and recurring transfers with their next payments. Due payments with auto-pay are recorded when Kosha loads; others wait as due or overdue. With includeSuggestions, it also lists payees you pay on a steady rhythm that aren't set up yet; pass one's fields to create_recurring, with its transactionIds as linkTransactionIds.",
+    input: z.object({
+      includeEnded: z.boolean().default(false),
+      includeSuggestions: z.boolean().default(false).describe("Also spot regular payments not set up as recurring."),
+    }),
+    output: z.object({
+      recurring: z.array(Recurring),
+      suggestions: z
+        .array(
+          z.object({
+            payee: z.string(),
+            amount: Cents.describe("The latest amount, or the typical one when it varies."),
+            variable: z.boolean().describe("The amount varies, like an energy bill."),
+            every: z.number().int(),
+            unit: Unit,
+            nextDay: Day.describe("When the next payment is expected."),
+            lastDay: Day,
+            count: z.number().int().describe("Payments seen."),
+            categoryId: Id,
+            accountId: Id,
+            transactionIds: z.array(Id).describe("The past payments, oldest first."),
+          })
+        )
+        .optional(),
+    }),
+    example: {
+      input: { includeSuggestions: true },
+      output: {
+        recurring: [recurring],
+        suggestions: [
+          {
+            payee: "Spotify",
+            amount: -1099,
+            variable: false,
+            every: 1,
+            unit: "month",
+            nextDay: "2026-11-20",
+            lastDay: "2026-10-20",
+            count: 9,
+            categoryId: "entertainment",
+            accountId: "a1",
+            transactionIds: ["x41", "x52"],
+          },
+        ],
+      },
+    },
   }),
   create_recurring: op({
     title: "Create recurring payment",
@@ -935,6 +1002,11 @@ export const OPERATIONS = {
       toAccountId: Id.optional().describe("Makes it a recurring transfer to this account."),
       toAmount: Positive.optional().describe("Transfers between currencies: what arrives each time."),
       variable: z.boolean().default(false).describe("Transfers only: ask for the amount each time."),
+      linkTransactionIds: z
+        .array(Id)
+        .max(500)
+        .optional()
+        .describe("Past payments to file under it, e.g. a suggestion's transactionIds. They show in its history."),
     }),
     output: Recurring,
     example: {
@@ -1282,6 +1354,353 @@ export const OPERATIONS = {
     output: z.object({ refreshed: z.boolean(), updatedAt: z.number().int() }),
     example: { input: {}, output: { refreshed: true, updatedAt: 1793955600 } },
   }),
+
+  // Cursor passes only the first 40 tools to its agent, so everything after reconcile_account is a tool an
+  // agent rarely needs: undoing, dismissing, and the AI tools an AI assistant can do for itself.
+
+  // Reconciliation
+  check_statement: op({
+    title: "Check a statement",
+    tag: "Reconciliation",
+    method: "POST",
+    path: "/statements/check",
+    scope: "write",
+    ai: "sometimes",
+    description:
+      "Reads a bank statement file and checks it against an account, saving nothing but the CSV's column layout. CSV, OFX and QFX are read by Kosha; a PDF needs the AI model (Statements on in Settings › AI). Each line comes back matched to an entry (same bank id, same amount within a few days, or a close amount such as a tip) or as missing, with a suggested payee and category. Then: add missing lines with create_transactions, passing each line's bankRef; fix close amounts with update_transactions; and finish with reconcile_account, passing reconciliation.transactionIds and the statement balance. reconciliation.hints explain a difference; explain: true also asks the AI model.",
+    input: z.object({
+      accountId: Id,
+      file: z.object({
+        name: z
+          .string()
+          .trim()
+          .min(1)
+          .max(200)
+          .describe("The file name, e.g. october.csv. Its extension tells the format."),
+        content: z.string().min(1).max(15_000_000).describe("The file as text for CSV, OFX and QFX; base64 for a PDF."),
+        format: z.enum(["csv", "ofx", "qfx", "pdf"]).optional().describe("Left out: from the name and content."),
+      }),
+      columns: z
+        .object({
+          header: z.number().int().min(-1).describe("Row of the header, from 0; -1 for none."),
+          date: z.number().int().min(0),
+          dateFormat: z.enum(["ymd", "dmy", "mdy", "text"]),
+          description: z.array(z.number().int().min(0)).max(4),
+          amount: z
+            .number()
+            .int()
+            .min(0)
+            .nullable()
+            .describe("One signed amount column, or null with debit and credit."),
+          debit: z.number().int().min(0).nullable().describe("Money out column."),
+          credit: z.number().int().min(0).nullable().describe("Money in column."),
+          invert: z.boolean().describe("Spending is shown as positive."),
+          balance: z.number().int().min(0).nullable(),
+        })
+        .optional()
+        .describe("CSV only: which column holds what, from 0, when the reply's columns were read wrong."),
+      explain: z
+        .boolean()
+        .default(false)
+        .describe("When it doesn't match, also ask the AI model what explains the difference."),
+    }),
+    output: z.object({
+      format: z.enum(["csv", "ofx", "pdf"]),
+      statement: z.object({
+        from: Day,
+        to: Day.describe("The statement day: the closing day, or the last line's."),
+        closingBalance: z
+          .number()
+          .int()
+          .nullable()
+          .describe("As printed: for a credit card, what is owed (positive). null when the file has none."),
+        linesAddUp: z
+          .boolean()
+          .nullable()
+          .describe("PDF only: whether the lines take the opening balance to the closing one."),
+      }),
+      columns: z
+        .object({
+          header: z.number().int(),
+          date: z.number().int(),
+          dateFormat: z.enum(["ymd", "dmy", "mdy", "text"]),
+          description: z.array(z.number().int()),
+          amount: z.number().int().nullable(),
+          debit: z.number().int().nullable(),
+          credit: z.number().int().nullable(),
+          invert: z.boolean(),
+          balance: z.number().int().nullable(),
+        })
+        .nullable()
+        .describe("CSV only: the columns used. Remembered for the next file with the same header."),
+      lines: z.array(
+        z.object({
+          index: z.number().int(),
+          day: Day,
+          amount: Cents,
+          description: z.string().describe("The bank's text."),
+          bankRef: z.string().describe("Pass it to create_transactions when you add this line."),
+          match: z
+            .object({
+              transactionId: Id,
+              kind: z.enum(["bank_ref", "same_amount", "close_amount"]),
+              reconciled: z.boolean().describe("The entry was already reconciled."),
+            })
+            .nullable()
+            .describe("null: missing from Kosha."),
+          payee: z.string().nullable().describe("Missing lines: the payee Kosha suggests."),
+          categoryId: Id.nullable().describe("Missing lines: the category Kosha suggests, if any."),
+        })
+      ),
+      notOnStatement: z.array(Id).describe("Open entries in the statement's period that match no line."),
+      reconciliation: z.object({
+        statementDay: Day,
+        statementBalance: z.number().int().nullable().describe("As printed, as in statement.closingBalance."),
+        tickedBalance: z.number().int().describe("What Kosha's ticked entries come to, in the same terms."),
+        difference: z.number().int().nullable().describe("statementBalance minus tickedBalance. 0 means it matches."),
+        transactionIds: z
+          .array(Id)
+          .describe("The entries that count as on the statement. Pass them to reconcile_account."),
+        hints: z
+          .array(z.object({ text: z.string(), transactionIds: z.array(Id) }))
+          .describe("What may explain a difference."),
+      }),
+      explanation: z
+        .object({
+          summary: z.string(),
+          suggestions: z.array(z.object({ text: z.string(), transactionIds: z.array(Id) })),
+        })
+        .nullable()
+        .describe("With explain: true and a difference, the AI model's view."),
+    }),
+    example: {
+      input: {
+        accountId: "a1",
+        file: {
+          name: "october.csv",
+          content: "Date,Description,Amount,Balance\n03/10/2026,TESCO STORES 3211,-23.50,2519.50",
+        },
+      },
+      output: {
+        format: "csv",
+        statement: { from: "2026-10-03", to: "2026-10-03", closingBalance: 251950, linesAddUp: null },
+        columns: {
+          header: 0,
+          date: 0,
+          dateFormat: "dmy",
+          description: [1],
+          amount: 2,
+          debit: null,
+          credit: null,
+          invert: false,
+          balance: 3,
+        },
+        lines: [
+          {
+            index: 0,
+            day: "2026-10-03",
+            amount: -2350,
+            description: "TESCO STORES 3211",
+            bankRef: "h:1x9k2p",
+            match: { transactionId: tx.id, kind: "same_amount", reconciled: false },
+            payee: null,
+            categoryId: null,
+          },
+        ],
+        notOnStatement: [],
+        reconciliation: {
+          statementDay: "2026-10-03",
+          statementBalance: 251950,
+          tickedBalance: 251950,
+          difference: 0,
+          transactionIds: [tx.id],
+          hints: [],
+        },
+        explanation: null,
+      },
+    },
+  }),
+  reconcile_account: op({
+    title: "Reconcile account",
+    tag: "Reconciliation",
+    method: "POST",
+    path: "/accounts/{id}/reconcile",
+    scope: "write",
+    description:
+      "Marks an account's entries as checked against a statement. statementBalance is as printed: the closing balance, or for a credit card what is owed. Without transactionIds, every paid entry up to statementDay counts, which suits \"my bank shows the same balance\". With a difference it fails and says by how much, unless correctDifference books it as a balance correction. Reconciled entries are un-reconciled when their amount, account or day changes. Investments can't be reconciled.",
+    input: z.object({
+      id: Id.describe("The account."),
+      statementDay: Day,
+      statementBalance: z.number().int().describe("As printed on the statement, in cents."),
+      transactionIds: z
+        .array(Id)
+        .max(20_000)
+        .optional()
+        .describe("The open entries on the statement, e.g. check_statement's reconciliation.transactionIds."),
+      correctDifference: z.boolean().default(false).describe("Book any difference as a balance correction."),
+    }),
+    output: z.object({
+      reconciliationId: Id,
+      entries: z.number().int().describe("Entries reconciled."),
+      adjustment: z.number().int().describe("The correction booked, in cents; 0 when it matched."),
+      account: Account,
+    }),
+    example: {
+      input: { id: "a1", statementDay: "2026-10-31", statementBalance: 254300 },
+      output: { reconciliationId: "r1", entries: 42, adjustment: 0, account },
+    },
+  }),
+  undo_reconciliation: op({
+    title: "Undo reconciliation",
+    tag: "Reconciliation",
+    method: "POST",
+    path: "/accounts/{id}/reconcile/undo",
+    scope: "write",
+    destructive: true,
+    description:
+      "Undoes an account's latest reconciliation: its entries are open again and any correction it booked is deleted.",
+    input: z.object({ id: Id.describe("The account.") }),
+    output: z.object({ statementDay: Day, entries: z.number().int() }),
+    example: { input: { id: "a1" }, output: { statementDay: "2026-10-31", entries: 42 } },
+  }),
+
+  // Recurring
+  dismiss_recurring_suggestion: op({
+    title: "Dismiss recurring suggestion",
+    tag: "Recurring",
+    method: "POST",
+    path: "/recurring/suggestions/dismiss",
+    scope: "write",
+    idempotent: true,
+    description: "Stops suggesting a payee as recurring (list_recurring with includeSuggestions).",
+    input: z.object({ payee: z.string().trim().min(1).max(200) }),
+    output: z.object({ dismissed: z.boolean() }),
+    example: { input: { payee: "Tesco" }, output: { dismissed: true } },
+  }),
+
+  // AI
+  read_transaction: op({
+    title: "Read a transaction",
+    tag: "AI",
+    method: "POST",
+    path: "/ai/read-transaction",
+    scope: "write",
+    ai: "always",
+    description:
+      "Reads one transaction from a sentence (\"lunch with Sam at Nando's 18.50 yesterday\", Natural-language add) or a receipt photo (Receipt scanning), using the AI model. It returns the entry it read; with save: true it also adds it, using your payee rules when it found no category. A receipt in another currency is converted at today's rate. You rarely need this as an AI assistant: create_transactions takes the fields directly.",
+    input: z
+      .object({
+        text: z.string().trim().min(1).max(500).optional(),
+        photo: z
+          .object({
+            data: z.string().min(100).max(8_000_000).describe("Base64. Keep it under about 5 MB."),
+            mimeType: z.enum(["image/jpeg", "image/png", "image/webp"]),
+          })
+          .optional(),
+        accountId: Id.optional().describe("The account to use when the text names none."),
+        save: z.boolean().default(false),
+      })
+      .refine((i) => !!i.text !== !!i.photo, "Pass text or a photo"),
+    output: z.object({
+      entry: z.object({
+        payee: z.string(),
+        amount: Cents.nullable(),
+        currency: Currency.nullable().describe("The account's currency."),
+        accountId: Id.nullable(),
+        categoryId: Id.nullable(),
+        day: Day,
+        time: z.string().nullable().describe("HH:MM when given or printed."),
+        note: z.string(),
+        tags: z.array(z.string()),
+      }),
+      transaction: Transaction.nullable().describe("With save: true, the entry added."),
+    }),
+    example: {
+      input: { text: "lunch with sam at nandos 18.50 yesterday", accountId: "a1" },
+      output: {
+        entry: {
+          payee: "Nando's",
+          amount: -1850,
+          currency: "eur",
+          accountId: "a1",
+          categoryId: "dining",
+          day: "2026-11-05",
+          time: null,
+          note: "with Sam",
+          tags: [],
+        },
+        transaction: null,
+      },
+    },
+  }),
+  ask_kosha: op({
+    title: "Ask Kosha",
+    tag: "AI",
+    method: "POST",
+    path: "/ai/ask",
+    scope: "write",
+    ai: "always",
+    description:
+      "Answers a question about your money with the AI model connected in Kosha, which looks things up in your data within Settings › AI › What AI can see. For a follow-up, pass the history from the last reply. An AI assistant can usually answer from search_transactions and get_month_overview itself.",
+    input: z.object({
+      question: z.string().trim().min(1).max(2000),
+      history: z
+        .array(z.object({ role: z.enum(["user", "assistant"]), text: z.string().max(6000) }))
+        .max(22)
+        .default([])
+        .describe("The history from the previous reply, for a follow-up."),
+    }),
+    output: z.object({
+      answer: z.string().describe("Plain text with **bold** and - lists."),
+      lookups: z.array(z.string()).describe("What it looked up."),
+      sources: z
+        .array(z.object({ label: z.string(), search: z.record(z.string(), z.union([z.string(), z.number()])) }))
+        .describe("search_transactions inputs for the entries behind the answer."),
+      history: z.array(z.object({ role: z.enum(["user", "assistant"]), text: z.string() })),
+    }),
+    example: {
+      input: { question: "How much did I spend on dining in October?" },
+      output: {
+        answer: "You spent **€242.04** on dining in October, most of it at Burger King.",
+        lookups: ["Looking through Dining, October 2026"],
+        sources: [{ label: "Dining · October 2026", search: { categoryId: "dining", month: "2026-10" } }],
+        history: [
+          { role: "user", text: "How much did I spend on dining in October?" },
+          { role: "assistant", text: "You spent **€242.04** on dining in October, most of it at Burger King." },
+        ],
+      },
+    },
+  }),
+  recap_month: op({
+    title: "Recap a month",
+    tag: "AI",
+    method: "POST",
+    path: "/ai/recap",
+    scope: "write",
+    ai: "sometimes",
+    description:
+      "A short recap of a finished month: what changed against a usual month, and why. The stored recap comes back as it is; a month without one, or with rewrite: true, is written by the AI model (Monthly recap on in Settings › AI).",
+    input: z.object({ month: Month, rewrite: z.boolean().default(false) }),
+    output: z.object({
+      month: Month,
+      headline: z.string(),
+      summary: z.string(),
+      points: z.array(z.object({ text: z.string(), tone: z.enum(["good", "bad", "neutral"]) })),
+      writtenDay: Day,
+      written: z.boolean().describe("Written by this call, rather than stored."),
+    }),
+    example: {
+      input: { month: "2026-10" },
+      output: {
+        month: "2026-10",
+        headline: "October spending was 23% above your usual month.",
+        summary: "Travel and dining drove it, mostly the Rome weekend.",
+        points: [{ text: "Groceries were 32% below usual.", tone: "good" }],
+        writtenDay: "2026-11-01",
+        written: false,
+      },
+    },
+  }),
 }
 
 export type OperationName = keyof typeof OPERATIONS
@@ -1364,6 +1783,17 @@ const ERRORS = {
   409: ["conflict", "The change clashes with existing data, e.g. deleting an account that has transactions."],
   429: ["rate_limited", "Too many requests. Wait a minute."],
 } as const
+// Operations that use the AI model can also fail these ways.
+const AI_ERRORS = {
+  409: [
+    "ai_unavailable",
+    "No AI provider is connected in Settings › AI, AI is off, or this feature or a setting it needs is off. The message says what to turn on. (Other operations use 409 for a conflict.)",
+  ],
+  502: [
+    "ai_provider_error",
+    "The AI provider failed, or answered with something Kosha couldn't use. The message has its words.",
+  ],
+} as const
 
 /** OpenAPI 3.1 document for the REST API, generated from OPERATIONS. */
 export function openApiSpec(origin: string) {
@@ -1389,7 +1819,7 @@ export function openApiSpec(origin: string) {
         content: { "application/json": { schema: jsonSchema(o.output, "output"), example: o.example.output } },
       },
     }
-    for (const [status, [code, text]] of Object.entries(ERRORS)) {
+    for (const [status, [code, text]] of Object.entries(o.ai ? { ...ERRORS, ...AI_ERRORS } : ERRORS)) {
       if (status === "403" && o.scope === "read") continue
       responses[status] = {
         description: text,
@@ -1433,6 +1863,8 @@ export function openApiSpec(origin: string) {
         "**Authentication.** Create a key in Settings › API & MCP and send it as `Authorization: Bearer kosha_…`. A read-only key can call the GET operations; a read & write key can call all of them.",
         "",
         "**Conventions.** Money is integer minor units (cents) in the account's currency: €12.50 is `1250`. The sign is the direction: negative is money out. Days are `YYYY-MM-DD` and months `YYYY-MM` in your Kosha time zone. Bulk writes are all-or-nothing: if one item fails, nothing is saved and the error names the item.",
+        "",
+        "**AI.** Operations tagged AI, and a PDF given to check_statement, use the AI model connected in Kosha under Settings › AI and spend that provider's tokens. When none is connected, AI is off, or the feature is off, they answer `409 ai_unavailable` with what to turn on; a failing provider answers `502 ai_provider_error`.",
         "",
         "**Limits.** 120 requests a minute per user.",
       ].join("\n"),

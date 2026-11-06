@@ -10,6 +10,7 @@ import {
   MagnifyingGlassIcon,
   PlusIcon,
   RepeatIcon,
+  SparkleIcon,
 } from "@phosphor-icons/react/ssr"
 import { Button } from "@/components/ui/button"
 import { AccountMenu, ShortcutsDialog } from "@/components/account-menu"
@@ -63,7 +64,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [addText, setAddText] = useState("")
   const [searching, setSearching] = useState(false)
   useMarkHydrated()
-  const { prefs, user: prefsUser } = useMeta()
+  const { prefs, user: prefsUser, ai } = useMeta()
   useEffect(() => syncPreferences(prefs), [prefs])
   // Once the page settles, load the other main pages in the background, so the first tap on a tab is
   // instant. Visiting a page later shows this data and refreshes it behind the scenes.
@@ -77,10 +78,12 @@ export function AppShell({ children }: { children: ReactNode }) {
     setAddText(text)
     setAdding(true)
   }
-  // Settings isn't about a month or a currency, so the header drops those controls there.
+  // Settings, Ask and Reconcile aren't about a month or a currency, so the header drops those controls there.
   const settings = useLocation({ select: (l) => l.pathname.startsWith("/settings") })
-  // /add and Settings are full-screen on phones, with no top header or tab bar around them.
-  const bare = useLocation({ select: (l) => l.pathname === "/add" }) || settings
+  const reconciling = useLocation({ select: (l) => l.pathname === "/reconcile" })
+  const asking = useLocation({ select: (l) => l.pathname === "/ask" }) || reconciling
+  // /add, Ask and Settings are full-screen on phones, with no top header or tab bar around them.
+  const bare = useLocation({ select: (l) => l.pathname === "/add" }) || settings || asking
 
   const navigate = useNavigate()
   const [shortcuts, setShortcuts] = useState(false)
@@ -117,7 +120,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <KoshaLogo className="text-xl" />
           </Link>
           <nav aria-label="Main" className="flex flex-wrap gap-0.5">
-            {nav.map(({ to, label }) => (
+            {[...nav, ...(ai.ask ? [{ to: "/ask", label: "Ask" } as const] : [])].map(({ to, label }) => (
               <Link
                 key={to}
                 to={to}
@@ -131,7 +134,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </nav>
           <div className="flex-1" />
           <div className="flex flex-wrap items-center gap-2">
-            {!settings && (
+            {!settings && !asking && (
               <>
                 <MonthStepper />
                 <CurrencySwitch />
@@ -163,6 +166,15 @@ export function AppShell({ children }: { children: ReactNode }) {
           <MonthStepper />
           <div className="flex-1" />
           <CurrencySwitch />
+          {ai.ask && (
+            <Link
+              to="/ask"
+              aria-label="Ask Kosha"
+              className="inline-flex size-11 items-center justify-center rounded-md text-subtle-foreground transition-colors active:bg-muted"
+            >
+              <SparkleIcon className="size-5" />
+            </Link>
+          )}
           <AccountMenu user={prefsUser} onShortcuts={() => setShortcuts(true)} />
         </header>
 
@@ -205,7 +217,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <SearchPalette open={searching} onOpenChange={setSearching} onAdd={add} />
         <QuickAdd open={adding} onOpenChange={setAdding} initial={addText} />
         <ShortcutsDialog open={shortcuts} onOpenChange={setShortcuts} />
-        <PwaPrompts uid={prefsUser.id} bare={bare} />
+        <PwaPrompts uid={prefsUser.id} bare={bare} away={reconciling} />
       </div>
     </ShortcutsContext>
   )

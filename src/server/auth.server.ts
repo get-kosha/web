@@ -74,6 +74,11 @@ export const auth = betterAuth({
 export const USER_TABLES = [
   "ai_log",
   "ai_providers",
+  "ai_recaps",
+  "reconciliations",
+  "import_layouts",
+  "payee_aliases",
+  "recurring_dismissed",
   "transfers",
   "valuations",
   "transactions",

@@ -729,6 +729,11 @@ console.log("PRAGMA defer_foreign_keys = on;")
 for (const t of [
   "ai_log",
   "ai_providers",
+  "ai_recaps",
+  "reconciliations",
+  "import_layouts",
+  "payee_aliases",
+  "recurring_dismissed",
   "transfers",
   "valuations",
   "title_rules",

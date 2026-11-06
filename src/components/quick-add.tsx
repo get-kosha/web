@@ -1,18 +1,25 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react"
 import { useNavigate, useRouter } from "@tanstack/react-router"
-import { ArrowsClockwiseIcon, MagnifyingGlassIcon, PlusIcon } from "@phosphor-icons/react/ssr"
+import {
+  ArrowsClockwiseIcon,
+  MagnifyingGlassIcon,
+  PlusIcon,
+  ReceiptIcon,
+  SpinnerGapIcon,
+} from "@phosphor-icons/react/ssr"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { AiMark, imageIn, readReceipt, useAiCategory } from "@/components/ai"
 import { CategoryIcon } from "@/components/category-icon"
 import { DatePicker, TimePicker, dayLabel } from "@/components/date-time"
 import { useMeta } from "@/components/shell"
-import { suggestPayees, type PayeeSuggestion } from "@/lib/api"
+import { readEntry, suggestPayees, type AiEntry, type PayeeSuggestion } from "@/lib/api"
 import { addTransaction } from "@/lib/offline"
 import { WALLET_KEY, startWallet } from "@/lib/add-defaults"
-import { addDays, dayOf, eventFor, fmt, guessCategory, isNeutral, parseAmount, timeOf } from "@/lib/core"
-import { parseQuickAdd } from "@/lib/quick-add"
+import { addDays, dayOf, eventFor, fmt, guessCategory, inCurrency, isNeutral, parseAmount, timeOf } from "@/lib/core"
+import { needsAi, parseQuickAdd } from "@/lib/quick-add"
 import { cn } from "@/lib/utils"
 
 /**
@@ -62,7 +69,16 @@ export function QuickAdd({
   )
 }
 
-type Over = { amount?: string; payee?: string; categoryId?: string; walletId?: string; day?: string; time?: string }
+type Over = {
+  amount?: string
+  payee?: string
+  categoryId?: string
+  walletId?: string
+  day?: string
+  time?: string
+  note?: string
+  tags?: string[]
+}
 
 function Body({
   initial,
@@ -84,6 +100,12 @@ function Body({
   const [picking, setPicking] = useState(false)
   const [busy, setBusy] = useState(false)
   const categoryButton = useRef<HTMLButtonElement>(null)
+  const fileInput = useRef<HTMLInputElement>(null)
+  // Natural-language add: AI's reading of the line, kept only while the line is the one it read.
+  const [read, setRead] = useState<{ q: string; entry: AiEntry } | null>(null)
+  const [reading, setReading] = useState<"line" | "receipt" | null>(null)
+  const [fromReceipt, setFromReceipt] = useState(false)
+  const [dropping, setDropping] = useState(false)
 
   const wallets = meta.wallets.filter((w) => !w.archived)
   const categories = useMemo(
@@ -91,13 +113,36 @@ function Body({
     [meta.categories]
   )
   const p = parseQuickAdd(q, wallets, categories)
+  // Settings › General › Suggest a category off means no guessed category, from history or from AI.
+  const guessing = meta.prefs.suggest_category === "1"
 
-  // Payee suggestions follow the typed words, debounced.
+  // A sentence the local parser can't explain goes to AI once typing pauses. A short line stays instant.
+  const askAi = meta.ai.quick_add && needsAi(q, p)
+  useEffect(() => {
+    if (!askAi || read?.q === q) return
+    let live = true
+    const t = setTimeout(() => {
+      setReading("line")
+      readEntry({ data: { text: q } })
+        .then((entry) => live && setRead({ q, entry }))
+        .catch(() => {}) // without an answer, the local parse stands
+        .finally(() => live && setReading((r) => (r === "line" ? null : r)))
+    }, 650)
+    return () => {
+      live = false
+      clearTimeout(t)
+      setReading((r) => (r === "line" ? null : r))
+    }
+  }, [q, askAi])
+  const ai = read && read.q === q ? read.entry : null
+
+  // Payee suggestions follow the typed words (or the payee AI read), debounced.
+  const lookup = ai?.payee || p.payee
   useEffect(() => {
     let live = true
     const t = setTimeout(
       () =>
-        void suggestPayees({ data: { q: p.payee } })
+        void suggestPayees({ data: { q: lookup } })
           .then((r) => live && setPayees(r))
           .catch(() => {}),
       120
@@ -106,7 +151,7 @@ function Body({
       live = false
       clearTimeout(t)
     }
-  }, [p.payee])
+  }, [lookup])
 
   const closePicker = () => {
     setPicking(false)
@@ -117,51 +162,105 @@ function Body({
   })
 
   // A typed payee that matches a past one becomes that payee, as a guess.
-  const best = p.payee ? payees.find((x) => x.name.toLowerCase().includes(p.payee.toLowerCase())) : undefined
+  const best = lookup ? payees.find((x) => x.name.toLowerCase().includes(lookup.toLowerCase())) : undefined
   const remembered = startWallet(meta.prefs.default_wallet, wallets)
 
   const payee = {
-    value: over.payee ?? best?.name ?? p.payee,
-    state: over.payee || (p.payee && !best) ? "set" : best ? "guess" : "missing",
+    value: over.payee ?? best?.name ?? ai?.payee ?? p.payee,
+    state: over.payee || (p.payee && !best && !ai?.payee) ? "set" : best || ai?.payee ? "guess" : "missing",
   } as const
-  // With Settings › General › Suggest a category off, Kosha guesses nothing and leaves the category to you.
-  const guessedCat =
-    meta.prefs.suggest_category === "1" ? (guessCategory(payee.value, meta.rules) ?? best?.category_id) : undefined
-  const categoryId =
-    over.categoryId ??
-    p.categoryId ??
-    (guessedCat && categories.some((c) => c.id === guessedCat) ? guessedCat : undefined)
+  const fits = (id: string | null | undefined) => (id && categories.some((c) => c.id === id) ? id : undefined)
+  // Guesses in order: a payee rule, the payee's history, then the category AI read from the line.
+  const guessedCat = guessing
+    ? (fits(guessCategory(payee.value, meta.rules)) ?? fits(best?.category_id) ?? fits(ai?.categoryId))
+    : undefined
+  // The direction as typed, before the category's own type has a say.
+  const typedIncome =
+    over.amount !== undefined
+      ? over.amount.trim().startsWith("+")
+      : ai?.amount
+        ? ai.income
+        : p.income || (p.amount === null && meta.prefs.add_kind === "income")
+  // Auto-categorise: only for a payee nothing else could place.
+  const aiCat = useAiCategory(
+    payee.value,
+    typedIncome ? "income" : "expense",
+    meta.ai.categorise && !over.categoryId && !p.categoryId && !guessedCat && !reading
+  )
+  const categoryId = over.categoryId ?? p.categoryId ?? guessedCat ?? fits(aiCat.id)
   const category = categories.find((c) => c.id === categoryId)
-  const walletId = over.walletId ?? p.walletId ?? best?.wallet_id ?? remembered ?? wallets[0]?.id
+  const suggested = !!category && category.id === aiCat.id && !over.categoryId && !p.categoryId && !guessedCat
+  const walletId = over.walletId ?? p.walletId ?? ai?.walletId ?? best?.wallet_id ?? remembered ?? wallets[0]?.id
   const wallet = meta.wallets.find((w) => w.id === walletId)
-  const day = over.day ?? (p.date === "yesterday" ? addDays(today, -1) : today)
+  const currency = wallet?.currency ?? meta.primary
+  const fitted = ai ? inCurrency(ai, currency, meta.rates) : null
+  const day = over.day ?? ai?.day ?? (p.date === "yesterday" ? addDays(today, -1) : today)
   // Shows now until you change it. Untouched on today, the server stamps the exact moment.
-  const time = over.time ?? timeOf(Date.now() / 1000, meta.tz)
+  const time = over.time ?? ai?.time ?? timeOf(Date.now() / 1000, meta.tz)
+  const note = over.note ?? fitted?.note ?? ""
+  const tags = [...new Set([...p.tags, ...(ai?.tags ?? []), ...(over.tags ?? [])])]
   // The server files a new entry under the event its day falls in, so show that event here.
   const event = meta.events.find((e) => e.id === eventFor(day, meta.events))
 
   const overAmount = over.amount !== undefined ? parseAmount(over.amount.replace(/^\+/, "")) : undefined
-  const cents = overAmount !== undefined ? (overAmount === null ? null : Math.abs(overAmount)) : p.amount
-  // With no amount typed yet, Settings › General › Add opens as decides between income and expense.
-  const income =
-    (over.amount !== undefined
-      ? over.amount.trim().startsWith("+")
-      : p.income || (p.amount === null && meta.prefs.add_kind === "income")) || category?.income === 1
+  const cents =
+    overAmount !== undefined ? (overAmount === null ? null : Math.abs(overAmount)) : (fitted?.amount ?? p.amount)
+  const income = typedIncome || category?.income === 1
   const signed = cents ? (income ? cents : -cents) : null
-  const currency = wallet?.currency ?? meta.primary
 
   const states = {
-    amount: cents ? "set" : "missing",
+    amount: over.amount !== undefined || (cents && !fitted?.amount) ? "set" : cents ? "guess" : "missing",
     category: over.categoryId || p.categoryId ? "set" : category ? "guess" : "missing",
     account: over.walletId || p.walletId ? "set" : "guess",
     day: over.day || p.date ? "set" : "guess",
+    time: over.time ? "set" : "guess",
   } as const
 
-  const hint = !cents
-    ? "Start with an amount, then a few words."
-    : !category
-      ? "No category yet. Type one, or press Tab to pick."
-      : "Grey values are guesses from your history. Press Tab to change one."
+  const hint =
+    reading === "receipt"
+      ? "Reading the receipt…"
+      : !cents
+        ? reading === "line"
+          ? "Reading your line…"
+          : meta.ai.receipts
+            ? "Start with an amount, then a few words. Or paste a receipt."
+            : "Start with an amount, then a few words."
+        : !category
+          ? aiCat.loading
+            ? "Finding a category…"
+            : "No category yet. Type one, or press Tab to pick."
+          : suggested
+            ? `${category.name} is a suggestion. Enter accepts it, or press Tab to pick another.`
+            : ai || fromReceipt
+              ? "Grey values are guesses. Press Tab to change one."
+              : "Grey values are guesses from your history. Press Tab to change one."
+
+  // Receipt scanning: a photo fills every field it can, as if typed in by hand.
+  async function scan(file: File) {
+    if (reading === "receipt") return
+    setReading("receipt")
+    try {
+      const e = await readReceipt(file)
+      const w = wallets.find((x) => x.id === (e.walletId ?? walletId))
+      const fit = inCurrency(e, w?.currency ?? currency, meta.rates)
+      setOver((o) => ({
+        ...o,
+        ...(fit.amount && { amount: `${e.income ? "+" : ""}${(fit.amount / 100).toFixed(2)}` }),
+        ...(e.payee && { payee: e.payee }),
+        ...(guessing && fits(e.categoryId) && { categoryId: e.categoryId! }),
+        ...(w && { walletId: w.id }),
+        ...(e.day && { day: e.day }),
+        ...(e.time && { time: e.time }),
+        ...(fit.note && { note: fit.note }),
+        ...(e.tags.length && { tags: e.tags }),
+      }))
+      setFromReceipt(true)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Couldn't read that receipt")
+    } finally {
+      setReading(null)
+    }
+  }
 
   const searchTerm = (payee.value || q).trim()
   const searchActivity = () => {
@@ -181,12 +280,12 @@ function Body({
         walletId: wallet.id,
         categoryId: category.id,
         name,
-        note: "",
+        note,
         amount: signed,
         day,
-        time: over.time ?? (day === today ? undefined : time),
+        time: over.time ?? ai?.time ?? (day === today ? undefined : time),
         paid: true,
-        tags: p.tags,
+        tags,
       })
       try {
         localStorage.setItem(WALLET_KEY, wallet.id)
@@ -214,6 +313,34 @@ function Body({
         e.preventDefault()
         void add()
       }}
+      {...(meta.ai.receipts && {
+        onPaste: (e: React.ClipboardEvent) => {
+          const file = imageIn(e.clipboardData)
+          if (!file) return
+          e.preventDefault()
+          void scan(file)
+        },
+        onDragOver: (e: React.DragEvent) => {
+          if (![...e.dataTransfer.types].includes("Files")) return
+          e.preventDefault()
+          setDropping(true)
+        },
+        onDragLeave: (e: React.DragEvent) => {
+          if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setDropping(false)
+        },
+        onDrop: (e: React.DragEvent) => {
+          const file = imageIn(e.dataTransfer)
+          setDropping(false)
+          if (!file) return
+          e.preventDefault()
+          void scan(file)
+        },
+      })}
+      className={cn(
+        "relative",
+        dropping &&
+          "after:pointer-events-none after:absolute after:inset-1.5 after:rounded-xl after:border-2 after:border-dashed after:border-brand"
+      )}
       onKeyDown={(e) => {
         if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
           e.preventDefault()
@@ -231,16 +358,55 @@ function Body({
           autoFocus
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="24.90 pizza hut dining visa"
+          placeholder={meta.ai.quick_add ? "lunch with sam at nando's 18.50 yesterday" : "24.90 pizza hut dining visa"}
           autoComplete="off"
           spellCheck={false}
           className="w-full min-w-0 bg-transparent font-mono text-lg tracking-[-0.01em] text-foreground outline-none placeholder:text-muted-foreground"
         />
+        {reading === "line" && (
+          <SpinnerGapIcon aria-hidden="true" className="size-4 shrink-0 animate-spin text-brand" />
+        )}
+        {meta.ai.receipts && (
+          <>
+            <input
+              ref={fileInput}
+              type="file"
+              accept="image/*"
+              hidden
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                e.target.value = ""
+                if (file) void scan(file)
+              }}
+            />
+            <button
+              type="button"
+              aria-label="Scan a receipt"
+              title="Scan a receipt (or paste or drop one here)"
+              disabled={reading === "receipt"}
+              onClick={() => fileInput.current?.click()}
+              className="-my-2 inline-flex size-9 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none max-md:size-11"
+            >
+              {reading === "receipt" ? (
+                <SpinnerGapIcon className="size-[18px] animate-spin text-brand" />
+              ) : (
+                <ReceiptIcon className="size-[18px]" />
+              )}
+            </button>
+          </>
+        )}
         <Kbd>esc</Kbd>
       </label>
 
       <div className="px-[18px] pt-4 pb-1.5">
-        <div className="mb-2 text-xs text-muted-foreground">Will add</div>
+        <div className="mb-2 flex items-center gap-1.5 text-xs text-muted-foreground">
+          Will add
+          {(ai || fromReceipt) && (
+            <span className="inline-flex items-center gap-1 text-subtle-foreground">
+              · <AiMark className="size-3" /> {fromReceipt ? "read from your receipt" : "read by AI"}
+            </span>
+          )}
+        </div>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-[100px_minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1fr)_104px_72px]">
           <Box label="Amount">
             <span className="flex items-baseline">
@@ -257,7 +423,12 @@ function Body({
                 value={over.amount ?? (cents ? (cents / 100).toFixed(2) : "")}
                 onChange={(e) => setOver((o) => ({ ...o, amount: e.target.value }))}
                 placeholder="—"
-                className={cn(field, "num", states.amount === "missing" && "text-muted-foreground")}
+                className={cn(
+                  field,
+                  "num",
+                  states.amount === "missing" && "text-muted-foreground",
+                  states.amount === "guess" && "text-subtle-foreground"
+                )}
               />
             </span>
           </Box>
@@ -270,7 +441,7 @@ function Body({
               className={cn(field, payee.state === "guess" && "text-subtle-foreground")}
             />
           </Box>
-          <Box label="Category">
+          <Box label={<>Category {suggested && <AiMark className="size-2.5" />}</>}>
             <button
               ref={categoryButton}
               type="button"
@@ -285,7 +456,7 @@ function Body({
               )}
             >
               {category && <CategoryIcon icon={category.icon} className="size-4" />}
-              <span className="truncate">{category?.name ?? "Pick one"}</span>
+              <span className="truncate">{category?.name ?? (aiCat.loading ? "Finding one…" : "Pick one")}</span>
             </button>
           </Box>
           <Box label="Account">
@@ -329,17 +500,17 @@ function Body({
               aria-label="Time"
               value={time}
               onChange={(t) => setOver((o) => ({ ...o, time: t }))}
-              className={cn(field, "num text-left", !over.time && "text-subtle-foreground")}
+              className={cn(field, "num text-left", states.time === "guess" && "text-subtle-foreground")}
             >
               {time}
             </TimePicker>
           </Box>
         </div>
-        {(p.tags.length > 0 || event) && (
+        {(note || tags.length > 0 || event) && (
           <p className="mt-2.5 text-xs text-muted-foreground">
-            {p.tags.map((t) => `#${t}`).join(" ")}
-            {p.tags.length > 0 && event && " · "}
-            {event && `Goes to ${event.name}`}
+            {[note && `Note: ${note}`, tags.map((t) => `#${t}`).join(" "), event && `Goes to ${event.name}`]
+              .filter(Boolean)
+              .join(" · ")}
           </p>
         )}
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
@@ -431,11 +602,11 @@ function Body({
 const field =
   "h-6 w-full min-w-0 truncate rounded-sm bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
 
-function Box({ label, children }: { label: string; children: ReactNode }) {
+function Box({ label, children }: { label: ReactNode; children: ReactNode }) {
   // The whole box shows focus for whichever control sits inside it.
   return (
     <div className="flex min-w-0 flex-col gap-1 rounded-[10px] border px-3 py-2.5 transition-colors focus-within:border-ring focus-within:bg-muted/50">
-      <span className="text-[11px] text-muted-foreground">{label}</span>
+      <span className="flex items-center gap-1 text-[11px] text-muted-foreground">{label}</span>
       {children}
     </div>
   )

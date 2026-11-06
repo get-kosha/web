@@ -71,3 +71,24 @@ export function parseQuickAdd(
   out.payee = words.join(" ")
   return out
 }
+
+// Words the local parser leaves in the payee that mean the line is a sentence: dates, times, currencies, verbs.
+const NATURAL =
+  /^(at|for|from|with|on|in|via|by|and|paid|pay|spent|spend|bought|got|received|refund|refunded|split|last|ago|this|next|tomorrow|tonight|morning|noon|evening|week|month|(mon|tues?|wed(nes)?|thu(rs)?|fri|satur|sun)(day)?|jan(uary)?|feb(ruary)?|march|april|june|july|aug(ust)?|sept?(ember)?|oct(ober)?|nov(ember)?|dec(ember)?|\d+(st|nd|rd|th|am|pm)|\d{1,2}:\d{2}|eur|usd|gbp|inr|chf|jpy|aud|cad|sgd|aed|bucks|euros?|dollars?|pounds?|quid|rupees?)$/
+
+/**
+ * Whether quick add should ask AI to read the line. Lines the local parser explains in full
+ * ("24.90 pizza hut yesterday visa") stay local and instant. A sentence goes to AI: a leftover word
+ * like "with", "friday" or "eur", a currency sign or digits inside the payee, a long payee, or no
+ * amount in three or more words.
+ */
+export function needsAi(q: string, p: QuickParse) {
+  const tokens = q.trim().split(/\s+/).filter(Boolean)
+  if (tokens.length < 2) return false
+  const words = p.payee.toLowerCase().split(/\s+/).filter(Boolean)
+  return (
+    words.some((w) => NATURAL.test(w) || /[\d€$£₹¥]/.test(w)) ||
+    words.length > 3 ||
+    (p.amount === null && tokens.length >= 3)
+  )
+}
