@@ -4,6 +4,7 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { DatePicker } from "@/components/date-time"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { CategoryIcon } from "@/components/category-icon"
 import { Pick } from "@/components/pick"
@@ -277,13 +278,13 @@ export function SubscriptionForm({
       <div className="grid grid-cols-2 gap-3">
         <div className="grid gap-1.5">
           <Label htmlFor="sub-next">{initial ? "Next payment" : "First payment"}</Label>
-          <Input id="sub-next" type="date" value={nextDay} onChange={(e) => setNextDay(e.target.value || today)} />
+          <DatePicker id="sub-next" value={nextDay} onChange={setNextDay} />
         </div>
         <div className="grid gap-1.5">
           <Label htmlFor="sub-end">
             Ends <span className="text-muted-foreground">(optional)</span>
           </Label>
-          <Input id="sub-end" type="date" value={endDay} min={nextDay} onChange={(e) => setEndDay(e.target.value)} />
+          <DatePicker id="sub-end" value={endDay} min={nextDay} onChange={setEndDay} clearable placeholder="Never" />
         </div>
       </div>
       {autoPay && !variable && nextDay < today && (

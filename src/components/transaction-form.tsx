@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/dialog"
 import { CategoryIcon } from "@/components/category-icon"
 import { segment, segmentButton, useMeta } from "@/components/shell"
+import { DatePicker, TimePicker, dayLabel } from "@/components/date-time"
+import { Suggest } from "@/components/suggest"
 import { EventPicker, TagInput } from "@/components/tags-events"
 import { deleteTransaction, saveTransaction, saveTransfer, type Category, type Tx, type Wallet } from "@/lib/api"
 import {
@@ -293,20 +295,22 @@ export function TransactionForm({
           ))}
         </div>
         <div className="flex items-center gap-1">
-          <input
-            type="date"
-            value={day}
-            onChange={(e) => setDay(e.target.value || today)}
-            className="rounded-md bg-transparent text-sm text-muted-foreground outline-none"
+          <DatePicker
             aria-label="Date"
-          />
-          <input
-            type="time"
-            value={shownTime}
-            onChange={(e) => setTime(e.target.value || null)}
-            className="rounded-md bg-transparent text-sm text-muted-foreground outline-none"
+            value={day}
+            onChange={setDay}
+            className="rounded-md px-1.5 py-1 text-sm text-muted-foreground transition-colors outline-none hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring aria-expanded:bg-muted max-md:min-h-11"
+          >
+            {day === today ? "Today" : dayLabel(day)}
+          </DatePicker>
+          <TimePicker
             aria-label="Time"
-          />
+            value={shownTime}
+            onChange={setTime}
+            className="num rounded-md px-1.5 py-1 text-sm text-muted-foreground transition-colors outline-none hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring aria-expanded:bg-muted max-md:min-h-11"
+          >
+            {shownTime}
+          </TimePicker>
         </div>
       </div>
 
@@ -357,18 +361,13 @@ export function TransactionForm({
               </label>
               <label className="grid gap-1">
                 <span className="text-xs text-muted-foreground">Via</span>
-                <Input
+                <Suggest
                   value={provider}
-                  onChange={(e) => setProvider(e.target.value)}
-                  list="kosha-providers"
-                  className="h-9"
+                  onChange={setProvider}
+                  options={PROVIDERS}
+                  render={<Input className="h-9" />}
                   aria-label="Provider"
                 />
-                <datalist id="kosha-providers">
-                  {PROVIDERS.map((p) => (
-                    <option key={p} value={p} />
-                  ))}
-                </datalist>
               </label>
             </div>
             {crossCurrency && (
@@ -421,19 +420,8 @@ export function TransactionForm({
         <>
           <label className="grid gap-1">
             <span className="text-xs text-muted-foreground">Payee</span>
-            <Input
-              value={name}
-              onChange={(e) => onName(e.target.value)}
-              list="kosha-titles"
-              autoComplete="off"
-              className="h-10"
-            />
+            <Suggest value={name} onChange={onName} options={meta.titles} render={<Input className="h-10" />} />
           </label>
-          <datalist id="kosha-titles">
-            {meta.titles.map((t) => (
-              <option key={t} value={t} />
-            ))}
-          </datalist>
 
           <CategoryStrip
             categories={categories}

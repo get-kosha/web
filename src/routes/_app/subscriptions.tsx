@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { DatePicker } from "@/components/date-time"
 import {
   Dialog,
   DialogClose,
@@ -852,7 +853,7 @@ function InstanceForm({
         </div>
         <div className="grid gap-1.5">
           <Label htmlFor="i-day">Date</Label>
-          <Input id="i-day" type="date" value={day} onChange={(e) => setDay(e.target.value || instance.due_day)} />
+          <DatePicker id="i-day" value={day} onChange={setDay} />
         </div>
       </div>
       {crossCurrency && (

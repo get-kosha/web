@@ -4,12 +4,14 @@ import { ArrowsClockwiseIcon, MagnifyingGlassIcon, PlusIcon } from "@phosphor-ic
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { CategoryIcon } from "@/components/category-icon"
+import { DatePicker, TimePicker, dayLabel } from "@/components/date-time"
 import { useMeta } from "@/components/shell"
 import { suggestPayees, type PayeeSuggestion } from "@/lib/api"
 import { addTransaction } from "@/lib/offline"
 import { WALLET_KEY, startWallet } from "@/lib/add-defaults"
-import { LOCALE, addDays, dayOf, eventFor, fmt, guessCategory, isNeutral, parseAmount, timeOf } from "@/lib/core"
+import { addDays, dayOf, eventFor, fmt, guessCategory, isNeutral, parseAmount, timeOf } from "@/lib/core"
 import { parseQuickAdd } from "@/lib/quick-add"
 import { cn } from "@/lib/utils"
 
@@ -276,48 +278,50 @@ function Body({
             </button>
           </Box>
           <Box label="Account">
-            <select
-              aria-label="Account"
+            <Select
+              items={wallets.map((w) => ({ value: w.id, label: w.name }))}
               value={walletId ?? ""}
-              onChange={(e) => setOver((o) => ({ ...o, walletId: e.target.value }))}
-              className={cn(field, "appearance-none", states.account === "guess" && "text-subtle-foreground")}
+              onValueChange={(v) => v && setOver((o) => ({ ...o, walletId: v as string }))}
             >
-              {wallets.map((w) => (
-                <option key={w.id} value={w.id}>
-                  {w.name}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger
+                aria-label="Account"
+                className={cn(
+                  field,
+                  "h-6 w-full border-0 p-0 dark:bg-transparent dark:hover:bg-transparent [&>svg]:hidden",
+                  states.account === "guess" && "text-subtle-foreground"
+                )}
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {wallets.map((w) => (
+                  <SelectItem key={w.id} value={w.id}>
+                    {w.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </Box>
           <Box label="Date">
-            <input
+            <DatePicker
               aria-label="Date"
-              type="date"
               value={day}
               max={addDays(today, 366)}
-              onChange={(e) => e.target.value && setOver((o) => ({ ...o, day: e.target.value }))}
-              className={cn(
-                field,
-                "num [&::-webkit-calendar-picker-indicator]:hidden",
-                states.day === "guess" && "text-subtle-foreground"
-              )}
-            />
-            <span className="sr-only">
-              {day === today ? "Today" : new Date(`${day}T12:00:00Z`).toLocaleDateString(LOCALE, { timeZone: "UTC" })}
-            </span>
+              onChange={(d) => setOver((o) => ({ ...o, day: d }))}
+              className={cn(field, "num text-left", states.day === "guess" && "text-subtle-foreground")}
+            >
+              {day === today ? "Today" : dayLabel(day)}
+            </DatePicker>
           </Box>
           <Box label="Time">
-            <input
+            <TimePicker
               aria-label="Time"
-              type="time"
               value={time}
-              onChange={(e) => setOver((o) => ({ ...o, time: e.target.value || undefined }))}
-              className={cn(
-                field,
-                "num [&::-webkit-calendar-picker-indicator]:hidden",
-                !over.time && "text-subtle-foreground"
-              )}
-            />
+              onChange={(t) => setOver((o) => ({ ...o, time: t }))}
+              className={cn(field, "num text-left", !over.time && "text-subtle-foreground")}
+            >
+              {time}
+            </TimePicker>
           </Box>
         </div>
         {(p.tags.length > 0 || event) && (

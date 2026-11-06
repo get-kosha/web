@@ -4,6 +4,8 @@ import {
   convert,
   cumulative,
   daysInMonth,
+  dateOfDay,
+  dayOfDate,
   guessCategory,
   monthRange,
   parseAmount,
@@ -301,3 +303,6 @@ assert.deepEqual(
   ["path:id"]
 )
 console.log(`api contract ok (${operations.length} operations)`)
+
+// Calendar widgets round-trip days, including DST change days.
+for (const d of ["2026-03-29", "2026-10-25", "2024-02-29", "2026-01-01"]) assert.equal(dayOfDate(dateOfDay(d)), d)

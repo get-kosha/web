@@ -1,8 +1,23 @@
 import { useState, type ReactNode } from "react"
 import { Link, useRouter } from "@tanstack/react-router"
-import { PlusIcon, XIcon } from "@phosphor-icons/react/ssr"
+import { PlusIcon } from "@phosphor-icons/react/ssr"
 import { toast } from "sonner"
+import { DatePicker } from "@/components/date-time"
 import { Button } from "@/components/ui/button"
+import {
+  Combobox,
+  ComboboxChip,
+  ComboboxChips,
+  ComboboxChipsInput,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+  ComboboxTrigger,
+  ComboboxValue,
+  useComboboxAnchor,
+} from "@/components/ui/combobox"
 import { Input } from "@/components/ui/input"
 import { useMeta } from "@/components/shell"
 import { saveEvent, type Event } from "@/lib/api"
@@ -58,9 +73,10 @@ export function Chip({
 }
 
 /**
- * Hashtags as removable chips plus a field. Space, comma or Enter turns what was typed into tags;
- * Backspace in an empty field removes the last one. It suggests known tags as you type.
- * With `linked`, each tag opens Activity filtered to it. Use it only where edits save as you go.
+ * Hashtags as removable chips in a combobox. Space, comma or Enter turns what was typed into a tag;
+ * Backspace in an empty field removes the last one. The list suggests known tags that start with
+ * what you typed, with the typed tag itself first. With `linked`, each tag opens Activity filtered to it.
+ * Use it only where edits save as you go.
  */
 export function TagInput({
   value,
@@ -74,6 +90,7 @@ export function TagInput({
   linked?: boolean
 }) {
   const meta = useMeta()
+  const anchor = useComboboxAnchor()
   const [text, setText] = useState("")
   const add = (raw: string) => {
     const next = parseTags([...value, raw].join(" "))
@@ -81,88 +98,95 @@ export function TagInput({
     setText("")
   }
   const needle = parseTags(text)[0] ?? ""
-  const suggestions = meta.tags.filter((t) => !value.includes(t) && t.startsWith(needle)).slice(0, needle ? 6 : 8)
+  const known = meta.tags.filter((t) => t !== needle && !value.includes(t) && t.startsWith(needle))
+  const items = [...(needle && !value.includes(needle) ? [needle] : []), ...known].slice(0, 8)
 
   return (
-    <div className="grid gap-2">
-      <div className="flex min-h-10 flex-wrap items-center gap-1.5 rounded-md border bg-card px-2 py-1.5 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50 max-md:min-h-11">
-        {value.map((t) => (
-          <span
-            key={t}
-            className="inline-flex h-7 items-center gap-0.5 rounded-full bg-muted pr-0.5 pl-2.5 text-[13px] max-md:h-8"
-          >
-            {linked ? (
-              <Link
-                to="/transactions"
-                search={{ tag: t }}
-                aria-label={`All transactions tagged #${t}`}
-                className="rounded-sm hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-              >
-                #{t}
-              </Link>
-            ) : (
-              `#${t}`
-            )}
-            <button
-              type="button"
-              onClick={() => onChange(value.filter((x) => x !== t))}
-              aria-label={`Remove #${t}`}
-              className="inline-flex size-6 items-center justify-center rounded-full text-muted-foreground hover:bg-background hover:text-foreground max-md:size-7"
-            >
-              <XIcon className="size-3" />
-            </button>
-          </span>
-        ))}
-        <input
-          value={text}
-          autoFocus={autoFocus}
-          aria-label="Add tags"
-          placeholder={value.length ? "" : "#trip #work"}
-          onChange={(e) => {
-            const v = e.target.value
-            if (/[\s,]$/.test(v)) add(v)
-            else setText(v)
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && text.trim()) {
-              e.preventDefault()
-              add(text)
-            } else if (e.key === "Backspace" && !text && value.length) onChange(value.slice(0, -1))
-          }}
-          onBlur={() => text.trim() && add(text)}
-          autoCapitalize="none"
-          autoComplete="off"
-          className="h-7 min-w-24 flex-1 bg-transparent px-1 text-sm outline-none placeholder:text-muted-foreground"
-        />
-      </div>
-      {suggestions.length > 0 && (
-        <div className="flex [scrollbar-width:none] gap-1.5 overflow-x-auto">
-          {suggestions.map((t) => (
-            <Chip key={t} onClick={() => add(t)} label={`Add #${t}`}>
-              #{t}
-            </Chip>
-          ))}
-        </div>
-      )}
-    </div>
+    <Combobox
+      multiple
+      autoHighlight
+      items={items}
+      filter={null}
+      value={value}
+      onValueChange={(tags: string[]) => {
+        onChange(parseTags(tags.join(" ")))
+        setText("")
+      }}
+      inputValue={text}
+      onInputValueChange={(v) => (/[\s,]$/.test(v) ? add(v) : setText(v))}
+    >
+      <ComboboxChips ref={anchor} className="min-h-10 bg-card px-1.5 max-md:min-h-11">
+        <ComboboxValue>
+          {(tags: string[]) => (
+            <>
+              {tags.map((t) => (
+                <ComboboxChip
+                  key={t}
+                  aria-description="Press Backspace or Delete to remove"
+                  className="h-7 rounded-full pl-2.5 text-[13px] font-normal max-md:h-8 [&_[data-slot=combobox-chip-remove]]:rounded-full max-md:[&_[data-slot=combobox-chip-remove]]:size-7"
+                >
+                  {linked ? (
+                    <Link
+                      to="/transactions"
+                      search={{ tag: t }}
+                      aria-label={`All transactions tagged #${t}`}
+                      className="rounded-sm hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                    >
+                      #{t}
+                    </Link>
+                  ) : (
+                    `#${t}`
+                  )}
+                </ComboboxChip>
+              ))}
+              <ComboboxChipsInput
+                autoFocus={autoFocus}
+                aria-label="Add tags"
+                placeholder={tags.length ? "" : "#trip #work"}
+                onBlur={() => text.trim() && add(text)}
+                autoCapitalize="none"
+                autoComplete="off"
+                className="h-7 min-w-24 bg-transparent px-1 placeholder:text-muted-foreground"
+              />
+            </>
+          )}
+        </ComboboxValue>
+      </ComboboxChips>
+      <ComboboxContent anchor={anchor}>
+        <ComboboxEmpty>{meta.tags.length ? "No more tags" : "Type a tag, then press space"}</ComboboxEmpty>
+        <ComboboxList>
+          {(t: string) => (
+            <ComboboxItem key={t} value={t} className="max-md:min-h-11">
+              {meta.tags.includes(t) ? `#${t}` : `Add #${t}`}
+            </ComboboxItem>
+          )}
+        </ComboboxList>
+      </ComboboxContent>
+    </Combobox>
   )
 }
 
 /**
- * Pick one event, or none (tap the chosen one again). "New event" opens the editor in place and selects
- * what it creates. `day` is the default start for a new event.
+ * Pick one event from a searchable list, or none. "New event" swaps in the editor and selects what
+ * it creates. `day` is the default start for a new event. Without `className` the trigger looks like an Input.
  */
 export function EventPicker({
   value,
   onChange,
   day,
+  className,
+  ...aria
 }: {
   value: string | null
   onChange: (id: string | null) => void
   day: string
+  className?: string
+  "aria-labelledby"?: string
 }) {
   const meta = useMeta()
+  const [open, setOpen] = useState(false)
   const [creating, setCreating] = useState(false)
+  const current = meta.events.find((e) => e.id === value)
   if (creating)
     return (
       <EventEditor
@@ -174,18 +198,56 @@ export function EventPicker({
         onCancel={() => setCreating(false)}
       />
     )
+  const footer = (label: string, act: () => void) => (
+    <button
+      type="button"
+      onClick={() => {
+        setOpen(false)
+        act()
+      }}
+      className="flex min-h-8 w-full items-center gap-2 rounded-md px-1.5 text-left text-sm text-muted-foreground hover:bg-muted hover:text-foreground max-md:min-h-11 [&_svg]:size-4"
+    >
+      {label === "New event" && <PlusIcon />}
+      {label}
+    </button>
+  )
   return (
-    <div role="group" aria-label="Event" className="flex [scrollbar-width:none] gap-1.5 overflow-x-auto">
-      {meta.events.map((e) => (
-        <Chip key={e.id} on={e.id === value} onClick={() => onChange(e.id === value ? null : e.id)}>
-          {e.name}
-          {eventDates(e) && <span className="text-muted-foreground">· {eventDates(e)}</span>}
-        </Chip>
-      ))}
-      <Chip onClick={() => setCreating(true)} className="border-dashed">
-        <PlusIcon /> New event
-      </Chip>
-    </div>
+    <Combobox
+      items={meta.events}
+      value={current ?? null}
+      onValueChange={(e: Event | null) => onChange(e?.id ?? null)}
+      itemToStringLabel={(e: Event) => e.name}
+      isItemEqualToValue={(a: Event, b: Event) => a.id === b.id}
+      open={open}
+      onOpenChange={setOpen}
+      autoHighlight
+    >
+      <ComboboxTrigger
+        {...aria}
+        className={
+          className ??
+          "flex h-10 w-full items-center justify-between gap-2 rounded-md border bg-card px-2.5 text-left text-sm transition-colors outline-none hover:bg-muted/50 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 max-md:h-11"
+        }
+      >
+        <span className={cn("truncate", !current && "text-muted-foreground")}>{current?.name ?? "No event"}</span>
+      </ComboboxTrigger>
+      <ComboboxContent align="start" className="w-72">
+        <ComboboxInput showTrigger={false} placeholder="Search events" aria-label="Search events" />
+        <ComboboxEmpty>{meta.events.length ? "No event matches." : "No events yet."}</ComboboxEmpty>
+        <ComboboxList>
+          {(e: Event) => (
+            <ComboboxItem key={e.id} value={e} className="max-md:min-h-11">
+              <span className="min-w-0 flex-1 truncate">{e.name}</span>
+              <span className="shrink-0 text-xs text-muted-foreground">{eventDates(e)}</span>
+            </ComboboxItem>
+          )}
+        </ComboboxList>
+        <div className="border-t p-1">
+          {current && footer("No event", () => onChange(null))}
+          {footer("New event", () => setCreating(true))}
+        </div>
+      </ComboboxContent>
+    </Combobox>
   )
 }
 
@@ -242,21 +304,26 @@ export function EventEditor({
           className="h-9"
         />
       </label>
-      <div className="grid grid-cols-2 gap-3">
-        <label className="grid gap-1">
-          <span className="text-xs text-muted-foreground">From</span>
-          <Input type="date" value={start} onChange={(e) => setStart(e.target.value)} className="h-9" />
-        </label>
-        <label className="grid gap-1">
-          <span className="text-xs text-muted-foreground">Until</span>
-          <Input
-            type="date"
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(8.5rem,1fr))] gap-3">
+        <div className="grid gap-1">
+          <span id="ev-from" className="text-xs text-muted-foreground">
+            From
+          </span>
+          <DatePicker aria-labelledby="ev-from" value={start} onChange={setStart} clearable placeholder="Any time" />
+        </div>
+        <div className="grid gap-1">
+          <span id="ev-until" className="text-xs text-muted-foreground">
+            Until
+          </span>
+          <DatePicker
+            aria-labelledby="ev-until"
             value={end}
             min={start || undefined}
-            onChange={(e) => setEnd(e.target.value)}
-            className="h-9"
+            onChange={setEnd}
+            clearable
+            placeholder="Any time"
           />
-        </label>
+        </div>
       </div>
       <p className="text-xs text-muted-foreground">
         New entries between these dates go to this event on their own. Recurring payments don't.

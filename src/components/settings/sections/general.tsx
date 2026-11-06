@@ -1,14 +1,20 @@
 import { useMemo, useState } from "react"
-import { CaretDownIcon, CheckIcon, MagnifyingGlassIcon } from "@phosphor-icons/react/ssr"
 import { currencyOptions, useMeta } from "@/components/shell"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+  ComboboxTrigger,
+} from "@/components/ui/combobox"
 import { Switch } from "@/components/ui/switch"
 import { Pick } from "@/components/pick"
 import { Segmented, SettingGroup, SettingRow } from "@/components/settings/row"
 import { usePref, useSave } from "@/components/settings/saved"
 import { fmt } from "@/lib/core"
 import { saveSettings, type Meta } from "@/lib/api"
-import { cn } from "@/lib/utils"
 
 /** saveSettings writes default currency, zone and order together; this fills in whatever isn't changing. */
 export function saveCore(meta: Meta, patch: { tz?: string; order?: string[] }) {
@@ -126,60 +132,38 @@ function TimeZonePicker({ value, onChange }: { value: string; onChange: (zone: s
   // ponytail: offsets are computed only for the first 80 matches; typing narrows the rest.
   const shown = zones.filter((z) => words.every((w) => z.toLowerCase().replace(/_/g, " ").includes(w))).slice(0, 80)
   return (
-    <Popover
+    <Combobox
+      items={shown}
+      filter={null}
+      value={value}
+      onValueChange={(z: string | null) => z && onChange(z)}
+      itemToStringLabel={(z: string) => z.replace(/_/g, " ")}
+      inputValue={q}
+      onInputValueChange={setQ}
       open={open}
       onOpenChange={(o) => {
         setOpen(o)
         if (!o) setQ("")
       }}
+      autoHighlight
     >
-      <PopoverTrigger className="inline-flex h-9 items-center gap-2 rounded-md border bg-card pr-2.5 pl-3 text-[13px] whitespace-nowrap transition-colors hover:border-muted-foreground/50 aria-expanded:border-muted-foreground/50 max-md:h-11 max-md:border-0 max-md:bg-transparent max-md:pr-0 max-md:text-[15px] max-md:text-subtle-foreground">
+      <ComboboxTrigger className="inline-flex h-9 items-center gap-2 rounded-md border bg-card pr-2.5 pl-3 text-[13px] whitespace-nowrap transition-colors hover:border-muted-foreground/50 aria-expanded:border-muted-foreground/50 max-md:h-11 max-md:border-0 max-md:bg-transparent max-md:pr-0 max-md:text-[15px] max-md:text-subtle-foreground [&>svg]:ml-auto [&>svg]:size-3.5">
         <span className="max-md:hidden">{value.replace(/_/g, " ")}</span>
         <span className="md:hidden">{value.split("/").pop()?.replace(/_/g, " ")}</span>
         <span className="font-mono text-muted-foreground tabular-nums">{offsetOf(value, new Date())}</span>
-        <CaretDownIcon className="ml-auto size-3.5 text-muted-foreground" />
-      </PopoverTrigger>
-      <PopoverContent align="end" className="w-80 gap-1.5 p-1.5">
-        <label className="flex h-9 items-center gap-2 rounded-md border bg-background px-2.5 text-muted-foreground">
-          <MagnifyingGlassIcon className="size-3.5 shrink-0" />
-          <input
-            autoFocus
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && shown[0]) {
-                onChange(shown[0])
-                setOpen(false)
-              }
-            }}
-            placeholder="Search a city or region"
-            aria-label="Search time zones"
-            className="w-full min-w-0 bg-transparent text-[13px] text-foreground outline-none placeholder:text-muted-foreground"
-          />
-        </label>
-        <ul className="max-h-72 overflow-y-auto">
-          {shown.map((z) => (
-            <li key={z}>
-              <button
-                type="button"
-                onClick={() => {
-                  onChange(z)
-                  setOpen(false)
-                }}
-                className={cn(
-                  "flex min-h-9 w-full items-center gap-2 rounded-md px-2.5 text-left text-[13px] transition-colors hover:bg-muted",
-                  z === value && "font-medium"
-                )}
-              >
-                <span className="min-w-0 flex-1 truncate">{z.replace(/_/g, " ")}</span>
-                <span className="num text-xs text-muted-foreground">{offsetOf(z, now)}</span>
-                <CheckIcon className={cn("size-3.5 text-brand", z !== value && "invisible")} />
-              </button>
-            </li>
-          ))}
-          {shown.length === 0 && <li className="px-2.5 py-3 text-[13px] text-muted-foreground">No zone matches.</li>}
-        </ul>
-      </PopoverContent>
-    </Popover>
+      </ComboboxTrigger>
+      <ComboboxContent align="end" className="w-80">
+        <ComboboxInput showTrigger={false} placeholder="Search a city or region" aria-label="Search time zones" />
+        <ComboboxEmpty>No zone matches.</ComboboxEmpty>
+        <ComboboxList>
+          {(z: string) => (
+            <ComboboxItem key={z} value={z} className="min-h-9 text-[13px]">
+              <span className="min-w-0 flex-1 truncate">{z.replace(/_/g, " ")}</span>
+              <span className="num text-xs text-muted-foreground">{offsetOf(z, now)}</span>
+            </ComboboxItem>
+          )}
+        </ComboboxList>
+      </ComboboxContent>
+    </Combobox>
   )
 }

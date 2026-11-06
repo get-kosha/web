@@ -4,6 +4,7 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { DatePicker } from "@/components/date-time"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useMeta } from "@/components/shell"
 import { recordGain, type Wallet } from "@/lib/api"
@@ -91,7 +92,7 @@ function GainForm({ w, onDone }: { w: Wallet; onDone: () => void }) {
       <div className="grid grid-cols-2 gap-3">
         <div className="grid gap-1.5">
           <Label htmlFor="g-day">As of</Label>
-          <Input id="g-day" type="date" value={day} onChange={(e) => setDay(e.target.value || day)} />
+          <DatePicker id="g-day" value={day} onChange={setDay} />
         </div>
         <div className="grid gap-1.5">
           <Label htmlFor="g-note">

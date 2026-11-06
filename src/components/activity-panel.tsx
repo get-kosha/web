@@ -16,7 +16,8 @@ import { CategoryIcon } from "@/components/category-icon"
 import { CategoryPicker, categoryPath } from "@/components/category-picker"
 import { useGlobals, useMeta } from "@/components/shell"
 import { TransactionForm } from "@/components/transaction-form"
-import { EventEditor, TagInput, eventDates } from "@/components/tags-events"
+import { DatePicker, TimePicker } from "@/components/date-time"
+import { EventPicker, TagInput } from "@/components/tags-events"
 import { deleteTransaction, getPayeeHistory, saveTransaction, type Tx } from "@/lib/api"
 import { CORRECTION_CATEGORY, LOCALE, convert, dayOf, fmt, isNeutral, parseAmount, tagList, timeOf } from "@/lib/core"
 import { cn } from "@/lib/utils"
@@ -284,40 +285,34 @@ export function ActivityPanel({
       </div>
 
       <div className={field}>
-        <label className={fieldLabel} htmlFor="f-date">
+        <span className={fieldLabel} id="f-date">
           Date
-        </label>
-        <span className={cn(fieldValue, "relative focus-within:bg-muted")}>
+        </span>
+        <DatePicker
+          aria-labelledby="f-date"
+          value={draft.day}
+          // Moving to another day keeps the time of day.
+          onChange={(day) => change({ day, time: shownTime }, 0)}
+          className={fieldValue}
+        >
           <span>{longDay(draft.day)}</span>
           <CaretDownIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-          <input
-            id="f-date"
-            type="date"
-            value={draft.day}
-            // Moving to another day keeps the time of day.
-            onChange={(e) => e.target.value && change({ day: e.target.value, time: shownTime }, 0)}
-            onClick={(e) => e.currentTarget.showPicker?.()}
-            className="absolute inset-0 cursor-pointer opacity-0"
-          />
-        </span>
+        </DatePicker>
       </div>
 
       <div className={field}>
-        <label className={fieldLabel} htmlFor="f-time">
+        <span className={fieldLabel} id="f-time">
           Time
-        </label>
-        <span className={cn(fieldValue, "relative focus-within:bg-muted")}>
+        </span>
+        <TimePicker
+          aria-labelledby="f-time"
+          value={shownTime}
+          onChange={(time) => change({ time }, 0)}
+          className={fieldValue}
+        >
           <span className="num">{shownTime}</span>
           <CaretDownIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-          <input
-            id="f-time"
-            type="time"
-            value={shownTime}
-            onChange={(e) => e.target.value && change({ time: e.target.value }, 0)}
-            onClick={(e) => e.currentTarget.showPicker?.()}
-            className="absolute inset-0 cursor-pointer opacity-0"
-          />
-        </span>
+        </TimePicker>
       </div>
 
       <div className={cn(field, "py-1.5")}>
@@ -329,7 +324,13 @@ export function ActivityPanel({
         <span className={fieldLabel} id="f-event">
           Event
         </span>
-        <EventField value={draft.eventId} day={draft.day} onChange={(eventId) => change({ eventId }, 0)} />
+        <EventPicker
+          aria-labelledby="f-event"
+          value={draft.eventId}
+          day={draft.day}
+          onChange={(eventId) => change({ eventId }, 0)}
+          className={fieldValue}
+        />
       </div>
 
       <div className={cn(field, "border-b")}>
@@ -427,64 +428,3 @@ const Stat = ({ label, value }: { label: string; value: string }) => (
     <div className="num mt-0.5 text-sm">{value}</div>
   </div>
 )
-
-/** The event row. Its popover lists every event, "No event", and a "New event" editor. */
-function EventField({
-  value,
-  day,
-  onChange,
-}: {
-  value: string | null
-  day: string
-  onChange: (id: string | null) => void
-}) {
-  const meta = useMeta()
-  const [open, setOpen] = useState(false)
-  const [creating, setCreating] = useState(false)
-  const current = meta.events.find((e) => e.id === value)
-  const pick = (id: string | null) => {
-    onChange(id)
-    setOpen(false)
-  }
-  return (
-    <Popover
-      open={open}
-      onOpenChange={(o) => {
-        setOpen(o)
-        if (!o) setCreating(false)
-      }}
-    >
-      <PopoverTrigger aria-labelledby="f-event" className={fieldValue}>
-        <span className={cn("truncate", !current && "text-muted-foreground")}>{current?.name ?? "None"}</span>
-        <CaretDownIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-      </PopoverTrigger>
-      <PopoverContent align="start" className="w-72 gap-0 p-1">
-        {creating ? (
-          <EventEditor defaultDay={day} onSaved={pick} onCancel={() => setCreating(false)} />
-        ) : (
-          <>
-            {[{ id: null, name: "No event", start_day: null, end_day: null }, ...meta.events].map((e) => (
-              <button
-                key={e.id ?? "none"}
-                type="button"
-                aria-pressed={e.id === value}
-                onClick={() => pick(e.id)}
-                className="flex min-h-9 w-full items-center justify-between gap-3 rounded-md px-2 text-left text-sm hover:bg-muted aria-pressed:font-medium"
-              >
-                <span className="truncate">{e.name}</span>
-                <span className="shrink-0 text-xs text-muted-foreground">{eventDates(e)}</span>
-              </button>
-            ))}
-            <button
-              type="button"
-              onClick={() => setCreating(true)}
-              className="flex min-h-9 w-full items-center rounded-md px-2 text-left text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
-            >
-              New event…
-            </button>
-          </>
-        )}
-      </PopoverContent>
-    </Popover>
-  )
-}

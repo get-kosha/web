@@ -255,6 +255,16 @@ export function usualCurve(curves: number[][], days: number) {
   )
 }
 
+/** A day as a local-midnight Date, for calendar widgets that work in the browser's zone. */
+export function dateOfDay(day: string) {
+  const [y, m, d] = ymd(day)
+  return new Date(y, m - 1, d)
+}
+
+/** The day a calendar widget's local Date stands for. The inverse of `dateOfDay`. */
+export const dayOfDate = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`
+
 export function addDays(day: string, n: number) {
   const [y, m, d] = ymd(day)
   return iso(Date.UTC(y, m - 1, d + n))

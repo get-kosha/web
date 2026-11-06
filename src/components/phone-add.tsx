@@ -3,6 +3,9 @@ import { Link, useNavigate, useRouter } from "@tanstack/react-router"
 import { BackspaceIcon, CalendarBlankIcon, ClockIcon, CreditCardIcon, XIcon } from "@phosphor-icons/react/ssr"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
+import { Calendar } from "@/components/ui/calendar"
+import { TimePicker } from "@/components/date-time"
+import { Suggest } from "@/components/suggest"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { CategoryStrip, Extras, TransactionForm } from "@/components/transaction-form"
 import { bottomSheet, segment, segmentButton, useMeta } from "@/components/shell"
@@ -12,7 +15,9 @@ import { WALLET_KEY, startWallet } from "@/lib/add-defaults"
 import {
   LOCALE,
   addDays,
+  dateOfDay,
   dayOf,
+  dayOfDate,
   eventFor,
   fmt,
   guessCategory,
@@ -181,7 +186,6 @@ export function PhoneAdd() {
     ["Start of month", `${month}-01`],
     ["End of month", addDays(`${shiftMonth(month, 1)}-01`, -1)],
   ] as const
-  const custom = !presets.some(([, d]) => d === day)
 
   return (
     <div className="mx-auto flex min-h-svh w-full max-w-md flex-col gap-3 px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-[max(1.25rem,env(safe-area-inset-bottom))] md:min-h-0 md:pt-8">
@@ -246,13 +250,12 @@ export function PhoneAdd() {
 
           <label className="flex h-12 items-center gap-2.5 rounded-xl border bg-card px-3.5">
             <span className="sr-only">Payee</span>
-            <input
+            <Suggest
               value={payee}
-              onChange={(e) => setPayee(e.target.value)}
+              onChange={setPayee}
+              options={meta.titles}
               placeholder="Payee"
-              list="kosha-titles"
-              autoComplete="off"
-              className="min-w-0 flex-1 bg-transparent text-[15px] outline-none placeholder:text-muted-foreground [&::-webkit-calendar-picker-indicator]:hidden"
+              className="min-w-0 flex-1 bg-transparent text-[15px] outline-none placeholder:text-muted-foreground"
             />
             {match && match.avg !== 0 && (
               <span className="num shrink-0 text-xs text-muted-foreground">
@@ -260,11 +263,6 @@ export function PhoneAdd() {
               </span>
             )}
           </label>
-          <datalist id="kosha-titles">
-            {meta.titles.map((t) => (
-              <option key={t} value={t} />
-            ))}
-          </datalist>
 
           <div>
             <div className="mx-0.5 mb-2 text-xs text-muted-foreground">
@@ -353,38 +351,29 @@ export function PhoneAdd() {
                 {label}
               </Pill>
             ))}
-            {/* The chip is the label; the native date input covers it, so a tap opens the system calendar. */}
-            <label
-              className={cn(pill, "relative has-focus-visible:ring-3 has-focus-visible:ring-ring/50", custom && pillOn)}
-            >
-              <CalendarBlankIcon className="size-4" />
-              {custom ? dayLabel : "Custom"}
-              <input
-                type="date"
-                value={day}
-                onChange={(e) => e.target.value && setDay(e.target.value)}
-                onClick={(e) => e.currentTarget.showPicker?.()}
-                aria-label="Pick a date"
-                className="absolute inset-0 cursor-pointer opacity-0"
-              />
-            </label>
           </div>
+          <Calendar
+            mode="single"
+            selected={dateOfDay(day)}
+            defaultMonth={dateOfDay(day)}
+            weekStartsOn={1}
+            onSelect={(d) => {
+              if (d) setDay(dayOfDate(d))
+              setSheetOpen(null)
+            }}
+            className="mx-auto rounded-xl border bg-card [--cell-size:--spacing(11)]"
+          />
           <div className="flex items-center gap-3">
             <span className="text-sm text-muted-foreground">Time</span>
-            <label
-              className={cn(pill, "relative has-focus-visible:ring-3 has-focus-visible:ring-ring/50", time && pillOn)}
+            <TimePicker
+              aria-label="Time"
+              value={shownTime}
+              onChange={setTime}
+              className={cn(pill, "outline-none focus-visible:ring-3 focus-visible:ring-ring/50", time && pillOn)}
             >
               <ClockIcon className="size-4" />
-              {shownTime}
-              <input
-                type="time"
-                value={shownTime}
-                onChange={(e) => setTime(e.target.value || null)}
-                onClick={(e) => e.currentTarget.showPicker?.()}
-                aria-label="Time"
-                className="absolute inset-0 cursor-pointer opacity-0"
-              />
-            </label>
+              <span className="num">{shownTime}</span>
+            </TimePicker>
           </div>
         </DialogContent>
       </Dialog>
