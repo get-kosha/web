@@ -224,7 +224,7 @@ export async function undoReconcile(uid: string, id: string) {
 
 // ---------- import ----------
 
-const layoutSchema = z.object({
+export const layoutSchema = z.object({
   header: z.number().int().min(-1),
   date: z.number().int().min(0),
   dateFormat: z.enum(["ymd", "dmy", "mdy", "text"]),

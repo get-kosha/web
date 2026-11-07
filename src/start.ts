@@ -7,8 +7,10 @@ const redirect = (to: string) => new Response(null, { status: 302, headers: { Lo
 
 // Every SSR page, server function and server route goes through here.
 // Cloudflare's asset layer serves static files in /public before the Worker runs.
-// The public API, MCP and OAuth discovery check their own bearer tokens and never read the session cookie.
-const PUBLIC = /^\/(api\/auth\/|api\/v1(\/|$)|mcp$|\.well-known\/)/
+// The public API, the phone apps' endpoints, MCP and OAuth discovery check their own bearer tokens and never
+// read the session cookie.
+const BEARER = /^\/(api\/v1(\/|$)|api\/app\/|mcp$)/
+const PUBLIC = /^\/(api\/auth\/|api\/v1(\/|$)|api\/app\/|mcp$|\.well-known\/)/
 const SIGNED_OUT_PAGES = new Set(["/", "/privacy", "/terms", "/forgot-password", "/reset-password"])
 const requireUser = createMiddleware().server(async ({ next, request }) => {
   const url = new URL(request.url)
@@ -36,10 +38,15 @@ const locale = createMiddleware().server(({ next, request }) =>
 
 // Server functions are same-origin RPC, so reject cross-site calls to them and to POST server routes (/api/auth).
 // The bearer-token endpoints are left out, because they ignore cookies, so a cross-site request can't act as the user.
+// So are the OAuth endpoints apps call directly: they authenticate with a code, PKCE verifier or token, never a
+// cookie, and native apps send no Origin header.
+const COOKIELESS = /^\/api\/auth\/oauth2\/(token|revoke|introspect|register)$/
 const csrf = createCsrfMiddleware({
-  filter: (ctx) =>
-    ctx.handlerType === "serverFn" ||
-    (ctx.request.method === "POST" && !/^\/(api\/v1(\/|$)|mcp$)/.test(new URL(ctx.request.url).pathname)),
+  filter: (ctx) => {
+    if (ctx.handlerType === "serverFn") return true
+    const path = new URL(ctx.request.url).pathname
+    return ctx.request.method === "POST" && !BEARER.test(path) && !COOKIELESS.test(path)
+  },
 })
 
 // The demo account is read-only. Every server function that changes data is a POST, so refuse them all

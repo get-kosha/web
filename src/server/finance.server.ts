@@ -1337,6 +1337,19 @@ export async function saveAccounts(uid: string, items: z.infer<typeof accountInp
   return out
 }
 
+/**
+ * Deletes every transaction, transfer, valuation and reconciliation, and the recurring schedules too, because settling
+ * would otherwise recreate their past payments on the next load. Accounts, categories, rules and settings stay.
+ */
+export async function deleteAllTransactions(uid: string) {
+  const DB = db()
+  await DB.batch(
+    ["transfers", "valuations", "transactions", "subscriptions", "reconciliations"].map((t) =>
+      DB.prepare(`DELETE FROM ${t} WHERE user_id = ?`).bind(uid)
+    )
+  )
+}
+
 export async function deleteAccount(uid: string, id: string) {
   const DB = db()
   const used = await DB.prepare(`SELECT (SELECT COUNT(*) FROM transactions WHERE user_id = ?1 AND wallet_id = ?2)

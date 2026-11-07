@@ -106,6 +106,7 @@ Settings › **API & MCP** has what you need:
 
 - **AI assistants.** Add `https://<your Kosha>/mcp` as a custom connector in Claude, ChatGPT or Cursor. The assistant opens Kosha's sign-in and asks you to allow it, read-only or with changes. Connected apps are listed there, and **Disconnect** cuts one off at once.
 - **Scripts.** Create an API key (read only, or read & write) and send it as `Authorization: Bearer kosha_…`. The key is shown once; only its hash is stored.
+- **Apps.** Sign people in with OAuth 2.1 (authorization code with PKCE; discovery at `/.well-known/oauth-authorization-server`), asking for `kosha:read` or `kosha:write` and the resource `<your Kosha>/api/v1`, and send the access token the same way. Kosha's own phone apps are registered already (`migrations/0009_app_clients.sql`).
 - **Reference.** `/api/v1/docs` lists every operation with its fields and examples, and `/api/v1/openapi.json` is the OpenAPI 3.1 document.
 
 ```sh

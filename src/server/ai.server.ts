@@ -1,6 +1,7 @@
 import { env } from "cloudflare:workers"
-import { isPrivateIp } from "@/lib/core"
+import { dayOf, isPrivateIp, monthOf, monthRange } from "@/lib/core"
 import { m } from "@/paraglide/messages"
+import { HttpError, getSettings } from "@/server/db.server"
 
 // Keys are encrypted at rest with AES-GCM: a random IV per row, and a key derived from the Worker secret
 // AI_KEY_SECRET. Only server functions that call a provider decrypt; nothing returns a key to the browser.
@@ -8,7 +9,7 @@ import { m } from "@/paraglide/messages"
 export const AI_PROVIDERS = ["anthropic", "openai", "gemini", "openrouter", "ollama", "compatible"] as const
 export type AiProviderId = (typeof AI_PROVIDERS)[number]
 /** Providers reached at a URL you give (and an optional key) rather than a fixed cloud API. */
-export const usesBaseUrl = (id: AiProviderId) => id === "ollama" || id === "compatible"
+const usesBaseUrl = (id: AiProviderId) => id === "ollama" || id === "compatible"
 
 const b64 = (bytes: ArrayBuffer | Uint8Array) => btoa(String.fromCharCode(...new Uint8Array(bytes)))
 const unb64 = (s: string) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0))
@@ -22,13 +23,13 @@ function aesKey() {
   return cryptoKey
 }
 
-export async function encryptKey(plain: string) {
+async function encryptKey(plain: string) {
   const iv = crypto.getRandomValues(new Uint8Array(12))
   const cipher = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, await aesKey(), new TextEncoder().encode(plain))
   return { cipher: b64(cipher), iv: b64(iv) }
 }
 
-export async function decryptKey(cipher: string, iv: string) {
+async function decryptKey(cipher: string, iv: string) {
   const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv: unb64(iv) }, await aesKey(), unb64(cipher))
   return new TextDecoder().decode(plain)
 }
@@ -39,16 +40,16 @@ const LOCAL_NAME = /^(localhost|.*\.localhost|.*\.local|.*\.internal)$/i
  * Checks a self-hosted endpoint's URL: http or https, and not a local name or a private IP address. `npm run dev`
  * runs on the developer's own machine, so dev allows local endpoints (a local model, or `scripts/ai-stub.ts`).
  */
-export function checkBaseUrl(raw: string) {
+function checkBaseUrl(raw: string) {
   let url: URL
   try {
     url = new URL(raw.trim())
   } catch {
-    throw new Error(m.ai_url_invalid())
+    throw new HttpError(400, m.ai_url_invalid())
   }
-  if (url.protocol !== "https:" && url.protocol !== "http:") throw new Error(m.ai_url_protocol())
+  if (url.protocol !== "https:" && url.protocol !== "http:") throw new HttpError(400, m.ai_url_protocol())
   if (!import.meta.env.DEV && (LOCAL_NAME.test(url.hostname) || isPrivateIp(url.hostname)))
-    throw new Error(m.ai_url_private())
+    throw new HttpError(400, m.ai_url_private())
   return url.toString().replace(/\/+$/, "")
 }
 
@@ -78,7 +79,7 @@ async function checkResolves(url: string) {
 }
 
 /** Calls the provider's model list with an 8s timeout. This proves the key or URL works and gives the models to pick from. */
-export async function listModels(id: AiProviderId, key: string, baseUrl: string | null) {
+async function listModels(id: AiProviderId, key: string, baseUrl: string | null) {
   const started = Date.now()
   let url: string
   const headers: Record<string, string> = {}
@@ -511,4 +512,130 @@ export async function defaultProvider(uid: string): Promise<Provider | null> {
   if (!row) return null
   const key = row.key_cipher && row.key_iv ? await decryptKey(row.key_cipher, row.key_iv) : ""
   return { id: row.id, model: row.model, key, baseUrl: row.base_url }
+}
+
+// ---------- connecting providers (Settings › AI), for the web and the phone apps ----------
+
+type ProviderRow = {
+  id: AiProviderId
+  base_url: string | null
+  model: string
+  key_cipher: string | null
+  key_iv: string | null
+  key_hint: string | null
+  is_default: number
+}
+const loadProviders = async (uid: string) =>
+  (
+    await env.DB.prepare(
+      "SELECT id, base_url, model, key_cipher, key_iv, key_hint, is_default FROM ai_providers WHERE user_id = ?"
+    )
+      .bind(uid)
+      .all<ProviderRow>()
+  ).results
+
+/** Each provider's status. It never includes the key, only its last four characters. */
+export async function listProviders(uid: string) {
+  const rows = await loadProviders(uid)
+  return AI_PROVIDERS.map((id) => {
+    const r = rows.find((x) => x.id === id)
+    return {
+      id,
+      connected: !!r,
+      model: r?.model ?? "",
+      keyHint: r?.key_hint ?? null,
+      baseUrl: r?.base_url ?? null,
+      isDefault: !!r?.is_default,
+    }
+  })
+}
+
+export type ProviderInput = { id: AiProviderId; key?: string; baseUrl?: string }
+
+/** The key and URL to use: what was typed, or what's stored when the field was left blank. */
+async function credentials(uid: string, data: ProviderInput) {
+  const stored = (await loadProviders(uid)).find((r) => r.id === data.id)
+  const key =
+    data.key || (stored?.key_cipher && stored.key_iv ? await decryptKey(stored.key_cipher, stored.key_iv) : "")
+  const baseUrl = usesBaseUrl(data.id) ? checkBaseUrl(data.baseUrl || stored?.base_url || "") : null
+  if (!usesBaseUrl(data.id) && !key) throw new HttpError(400, m.server_paste_api_key())
+  return { key, baseUrl, stored }
+}
+
+/** Calls the provider's model list with the typed (or stored) key. Returns the latency and models, or the error. */
+export async function testProvider(uid: string, data: ProviderInput) {
+  const { key, baseUrl } = await credentials(uid, data)
+  return listModels(data.id, key, baseUrl)
+}
+
+/** Connects or updates a provider. The first one connected becomes the default. */
+export async function saveProvider(uid: string, data: ProviderInput & { model: string }) {
+  const { key, baseUrl, stored } = await credentials(uid, data)
+  const enc = data.key ? await encryptKey(data.key) : null
+  const others = (await loadProviders(uid)).filter((r) => r.id !== data.id)
+  const isDefault = stored ? stored.is_default : others.some((r) => r.is_default) ? 0 : 1
+  await env.DB.prepare(`INSERT INTO ai_providers (user_id, id, base_url, model, key_cipher, key_iv, key_hint, is_default, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, unixepoch())
+      ON CONFLICT(user_id, id) DO UPDATE SET base_url = excluded.base_url, model = excluded.model,
+        key_cipher = excluded.key_cipher, key_iv = excluded.key_iv, key_hint = excluded.key_hint, updated_at = unixepoch()`)
+    .bind(
+      uid,
+      data.id,
+      baseUrl,
+      data.model,
+      enc?.cipher ?? stored?.key_cipher ?? null,
+      enc?.iv ?? stored?.key_iv ?? null,
+      key ? key.slice(-4) : null,
+      isDefault
+    )
+    .run()
+}
+
+export async function setDefaultProvider(uid: string, id: AiProviderId) {
+  const DB = env.DB
+  const row = await DB.prepare("SELECT 1 FROM ai_providers WHERE user_id = ? AND id = ?").bind(uid, id).first()
+  if (!row) throw new HttpError(400, m.server_connect_first())
+  await DB.prepare("UPDATE ai_providers SET is_default = (id = ?) WHERE user_id = ?").bind(id, uid).run()
+}
+
+/** Forgets a provider and its key. If it was the default, another connected one takes over. */
+export async function disconnectProvider(uid: string, id: AiProviderId) {
+  const DB = env.DB
+  await DB.batch([
+    DB.prepare("DELETE FROM ai_providers WHERE user_id = ? AND id = ?").bind(uid, id),
+    DB.prepare(`UPDATE ai_providers SET is_default = 1 WHERE user_id = ?1 AND id = (SELECT id FROM ai_providers
+      WHERE user_id = ?1 ORDER BY updated_at LIMIT 1) AND NOT EXISTS (SELECT 1 FROM ai_providers WHERE user_id = ?1 AND is_default = 1)`).bind(
+      uid
+    ),
+  ])
+}
+
+/** Requests and tokens this month, and the last 30 days of the request log. */
+export async function aiUsage(uid: string) {
+  const { tz } = await getSettings(uid)
+  const [from] = monthRange(monthOf(Date.now() / 1000, tz), tz)
+  const DB = env.DB
+  const [usage, log] = await DB.batch([
+    DB.prepare(`SELECT COUNT(*) AS requests, COALESCE(SUM(tokens_in + tokens_out), 0) AS tokens
+      FROM ai_log WHERE user_id = ? AND at >= ?`).bind(uid, from),
+    // Rows kept while the log was off hold only the counts, so the log leaves them out.
+    DB.prepare(`SELECT id, at, provider, model, feature, request, response, tokens_in, tokens_out FROM ai_log
+      WHERE user_id = ? AND at >= unixepoch() - 30 * 86400 AND request <> '' ORDER BY at DESC LIMIT 100`).bind(uid),
+  ])
+  return {
+    ...(usage.results[0] as { requests: number; tokens: number }),
+    log: (
+      log.results as {
+        id: string
+        at: number
+        provider: string
+        model: string
+        feature: string
+        request: string
+        response: string
+        tokens_in: number
+        tokens_out: number
+      }[]
+    ).map((r) => ({ ...r, day: dayOf(r.at, tz) })),
+  }
 }

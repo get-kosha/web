@@ -38,7 +38,15 @@ import {
   type Instance,
   type TitleRule,
 } from "@/lib/core"
-import { API_SCOPES, MCP_RESOURCE, OAUTH_ISSUER, auth, demoLocked } from "@/server/auth.server"
+import {
+  API_RESOURCE,
+  API_SCOPES,
+  APP_CLIENTS,
+  MCP_RESOURCE,
+  OAUTH_ISSUER,
+  auth,
+  demoLocked,
+} from "@/server/auth.server"
 import {
   COUNTERPART,
   HttpError,
@@ -405,6 +413,7 @@ const HANDLERS: Handlers = {
         })
       checkRefs(`transactions.${i}`, { ...t, categoryId: categoryId ?? undefined }, l, issues)
       return {
+        newId: t.id,
         walletId: t.accountId,
         categoryId: categoryId ?? "",
         subcategoryId: t.subcategoryId ?? null,
@@ -1049,7 +1058,8 @@ async function run(name: OperationName, uid: string, input: unknown) {
 
 // ---------- who is calling ----------
 
-type Principal = { uid: string; scope: Scope }
+/** Who is calling. `client` is the OAuth app's id; null for an API key. */
+export type Principal = { uid: string; scope: Scope; client: string | null }
 
 const sha256 = async (text: string) =>
   [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text)))]
@@ -1057,7 +1067,8 @@ const sha256 = async (text: string) =>
     .join("")
 
 const KEY_PREFIX = "kosha_"
-const bearer = (request: Request) => /^Bearer\s+(\S+)$/i.exec(request.headers.get("authorization") ?? "")?.[1] ?? null
+export const bearer = (request: Request) =>
+  /^Bearer\s+(\S+)$/i.exec(request.headers.get("authorization") ?? "")?.[1] ?? null
 
 async function fromApiKey(key: string): Promise<Principal | null> {
   const row = await db()
@@ -1073,43 +1084,54 @@ async function fromApiKey(key: string): Promise<Principal | null> {
         .bind(row.user_id, row.id)
         .run()
     )
-  return { uid: row.user_id, scope: demoLocked(row.user_id) ? "read" : row.scope }
+  return { uid: row.user_id, scope: demoLocked(row.user_id) ? "read" : row.scope, client: null }
 }
 
 // One JWKS fetch per isolate, refetched when a token names a key it hasn't seen.
 const jwksCacheKey = {}
 
-/** An MCP OAuth access token: signed by Kosha, for the /mcp resource, from an app the user still has connected. */
-async function fromAccessToken(token: string): Promise<Principal | "no-scope" | null> {
+/**
+ * An OAuth access token: signed by Kosha, for one of `audience`, from an app the user still has connected.
+ * MCP tokens are for /mcp; the phone apps ask for /api/v1, and /api/v1 takes either.
+ */
+export async function fromAccessToken(token: string, audience: string[]): Promise<Principal | "no-scope" | null> {
   let claims
   try {
     // The keys come from the auth instance, not over HTTP: a Worker can't reliably fetch its own URL.
     claims = await verifyJwsAccessToken(token, {
       jwksFetch: () => auth.api.getJwks(),
       jwksCacheKey,
-      verifyOptions: { issuer: OAUTH_ISSUER, audience: MCP_RESOURCE, typ: "at+jwt", requiredClaims: ["azp"] },
+      verifyOptions: { issuer: OAUTH_ISSUER, audience, typ: "at+jwt", requiredClaims: ["azp"] },
     })
   } catch {
     return null
   }
   // ponytail: DPoP-bound tokens are refused, since proving them needs verifyAccessTokenRequest, which
-  // fetches the JWKS over HTTP. Claude, ChatGPT and Cursor send plain bearer tokens.
+  // fetches the JWKS over HTTP. Claude, ChatGPT, Cursor and Kosha's apps send plain bearer tokens.
   if (claims.cnf || typeof claims.sub !== "string") return null
-  // Disconnecting an app in Settings deletes its consent, so its tokens stop working at once.
-  const consent = await db()
-    .prepare(`SELECT 1 FROM "oauthConsent" WHERE "userId" = ? AND "clientId" = ?`)
-    .bind(claims.sub, String(claims.azp))
+  const client = String(claims.azp)
+  // Disconnecting an app in Settings deletes its consent, so its tokens stop working at once. Kosha's own apps
+  // skip consent; signing out revokes their refresh token instead.
+  // ponytail: a phone that signs out keeps a working access token (an hour at most) while another phone of
+  // the same user stays signed in; checking the token's session would close that.
+  const live = APP_CLIENTS.has(client)
+    ? `SELECT 1 FROM "oauthRefreshToken" WHERE "userId" = ? AND "clientId" = ? AND "revoked" IS NULL AND "expiresAt" > ?`
+    : `SELECT 1 FROM "oauthConsent" WHERE "userId" = ? AND "clientId" = ?`
+  const ok = await db()
+    .prepare(live)
+    .bind(claims.sub, client, ...(APP_CLIENTS.has(client) ? [new Date().toISOString()] : []))
     .first()
-  if (!consent) return null
+  if (!ok) return null
   const scopes = String(claims.scope ?? "").split(" ")
   // The demo account is read-only, whatever a token says.
-  if (scopes.includes(API_SCOPES.write)) return { uid: claims.sub, scope: demoLocked(claims.sub) ? "read" : "write" }
-  if (scopes.includes(API_SCOPES.read)) return { uid: claims.sub, scope: "read" }
+  if (scopes.includes(API_SCOPES.write))
+    return { uid: claims.sub, scope: demoLocked(claims.sub) ? "read" : "write", client }
+  if (scopes.includes(API_SCOPES.read)) return { uid: claims.sub, scope: "read", client }
   return "no-scope"
 }
 
-/** True when the user is over 120 requests a minute, across REST and MCP. */
-async function overLimit(uid: string) {
+/** True when the user is over 120 requests a minute, across REST, MCP and the app endpoints. */
+export async function overLimit(uid: string) {
   return !(await env.API_LIMITER.limit({ key: uid })).success
 }
 
@@ -1123,7 +1145,7 @@ const CODES: Record<number, string> = {
 }
 
 /** A thrown error as status, code and a message the caller can act on. Unexpected errors stay vague. */
-function describeError(e: unknown) {
+export function describeError(e: unknown) {
   if (e instanceof InvalidInput) return { status: 400, code: "invalid_request", message: e.message, issues: e.issues }
   if (e instanceof HttpError)
     return { status: e.status, code: e.code ?? CODES[e.status] ?? "error", message: e.message }
@@ -1132,7 +1154,7 @@ function describeError(e: unknown) {
   console.error(e)
   return { status: 500, code: "internal_error", message: "Something went wrong on Kosha's side. Try again." }
 }
-const zodIssues = (e: z.ZodError) => e.issues.map((i) => ({ path: i.path.join("."), message: i.message }))
+export const zodIssues = (e: z.ZodError) => e.issues.map((i) => ({ path: i.path.join("."), message: i.message }))
 
 // ---------- REST ----------
 
@@ -1141,9 +1163,9 @@ const CORS = {
   "Access-Control-Allow-Headers": "Authorization, Content-Type",
   "Access-Control-Allow-Methods": "GET, POST, PATCH, PUT, DELETE, OPTIONS",
 }
-const json = (body: unknown, status = 200, headers: Record<string, string> = {}) =>
+export const json = (body: unknown, status = 200, headers: Record<string, string> = {}) =>
   Response.json(body, { status, headers: { ...CORS, "Cache-Control": "no-store", ...headers } })
-const fail = (
+export const fail = (
   status: number,
   code: string,
   message: string,
@@ -1174,7 +1196,7 @@ const DOCS = `<!doctype html>
   </body>
 </html>`
 
-/** /api/v1/*: the OpenAPI document, its docs page, and every operation. Authenticated with API keys. */
+/** /api/v1/*: the OpenAPI document, its docs page, and every operation. API keys or OAuth access tokens. */
 export async function handleRest(request: Request) {
   const url = new URL(request.url)
   const path = url.pathname.replace(/^\/api\/v1/, "") || "/"
@@ -1187,20 +1209,32 @@ export async function handleRest(request: Request) {
   const route = matchRoute(request.method, path)
   if (!route)
     return fail(404, "not_found", `No ${request.method} ${path}. The operations are listed at ${ORIGIN}/api/v1/docs.`)
-  const key = bearer(request)
-  const who = key?.startsWith(KEY_PREFIX) ? await fromApiKey(key) : null
+  const token = bearer(request)
+  const who = !token
+    ? null
+    : token.startsWith(KEY_PREFIX)
+      ? await fromApiKey(token)
+      : await fromAccessToken(token, [API_RESOURCE, MCP_RESOURCE])
+  if (who === "no-scope")
+    return fail(
+      403,
+      "insufficient_scope",
+      "This token has neither kosha:read nor kosha:write.",
+      {},
+      {
+        "WWW-Authenticate": `Bearer realm="kosha", error="insufficient_scope", scope="${API_SCOPES.read} ${API_SCOPES.write}"`,
+      }
+    )
   if (!who)
     return fail(
       401,
       "unauthorized",
-      "Send an API key from Settings › API & MCP as Authorization: Bearer kosha_….",
+      "Send an API key from Settings › API & MCP, or an OAuth access token from Kosha, as Authorization: Bearer ….",
       {},
-      {
-        "WWW-Authenticate": 'Bearer realm="kosha"',
-      }
+      { "WWW-Authenticate": 'Bearer realm="kosha"' }
     )
   if (route.op.scope === "write" && who.scope !== "write")
-    return fail(403, "insufficient_scope", `${route.name} changes data, and this key is read-only.`)
+    return fail(403, "insufficient_scope", `${route.name} changes data, and this key or token is read-only.`)
   if (await overLimit(who.uid))
     return fail(429, "rate_limited", "Over 120 requests a minute. Wait a moment.", {}, { "Retry-After": "60" })
 
@@ -1315,7 +1349,7 @@ export async function handleMcp(request: Request) {
   if (origin && origin !== ORIGIN) return new Response("Forbidden origin", { status: 403 })
   const token = bearer(request)
   if (!token) return challenge(401)
-  const who = token.startsWith(KEY_PREFIX) ? await fromApiKey(token) : await fromAccessToken(token)
+  const who = token.startsWith(KEY_PREFIX) ? await fromApiKey(token) : await fromAccessToken(token, [MCP_RESOURCE])
   if (who === "no-scope") return challenge(403, "insufficient_scope")
   if (!who) return challenge(401, "invalid_token")
   if (await overLimit(who.uid))

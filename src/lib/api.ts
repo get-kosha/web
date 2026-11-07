@@ -1,14 +1,13 @@
 import { createIsomorphicFn, createServerFn } from "@tanstack/react-start"
 import { z } from "zod"
 import { m } from "@/paraglide/messages"
-import { monthOf, monthRange, dayOf } from "@/lib/core"
-import { db, getSettings } from "@/server/db.server"
 import * as finance from "@/server/finance.server"
 import * as ai from "@/server/ai-tasks.server"
 import * as statements from "@/server/statements.server"
 import * as files from "@/server/attachments.server"
 import {
   MCP_RESOURCE,
+  accountOverview,
   auth,
   avatars,
   demoAvailable,
@@ -27,15 +26,8 @@ import {
   listApiKeys,
   listConnectedApps,
 } from "@/server/api.server"
-import {
-  AI_PROVIDERS,
-  checkBaseUrl,
-  decryptKey,
-  encryptKey,
-  listModels,
-  usesBaseUrl,
-  type AiProviderId,
-} from "@/server/ai.server"
+import { AI_PROVIDERS } from "@/server/ai.server"
+import * as aiKeys from "@/server/ai.server"
 import { getRequest } from "@tanstack/react-start/server"
 
 // The UI's server functions. The work happens in server/finance.server.ts, which the public API
@@ -437,125 +429,41 @@ export const getConsentRequest = createServerFn({ method: "GET" })
 // ---------- AI ----------
 
 const providerId = z.enum(AI_PROVIDERS)
-type ProviderRow = {
-  id: AiProviderId
-  base_url: string | null
-  model: string
-  key_cipher: string | null
-  key_iv: string | null
-  key_hint: string | null
-  is_default: number
-}
-const loadProviders = async (uid: string) =>
-  (
-    await db()
-      .prepare(
-        "SELECT id, base_url, model, key_cipher, key_iv, key_hint, is_default FROM ai_providers WHERE user_id = ?"
-      )
-      .bind(uid)
-      .all<ProviderRow>()
-  ).results
-
-/** Each provider's status. It never includes the key, only its last four characters. */
-export const listAiProviders = createServerFn({ method: "GET" }).handler(async () => {
-  const rows = await loadProviders(await userId())
-  return AI_PROVIDERS.map((id) => {
-    const r = rows.find((x) => x.id === id)
-    return {
-      id,
-      connected: !!r,
-      model: r?.model ?? "",
-      keyHint: r?.key_hint ?? null,
-      baseUrl: r?.base_url ?? null,
-      isDefault: !!r?.is_default,
-    }
-  })
-})
-export type AiProviderView = Awaited<ReturnType<typeof listAiProviders>>[number]
-
 const providerInput = z.object({
   id: providerId,
   key: z.string().trim().max(500).optional(),
   baseUrl: z.string().trim().max(500).optional(),
 })
+const modelInput = z
+  .string()
+  .trim()
+  .min(1, { error: () => m.server_pick_model() })
+  .max(200)
 
-/** The key and URL to use: what was typed, or what's stored when the field was left blank. */
-async function credentials(uid: string, data: z.infer<typeof providerInput>) {
-  const stored = (await loadProviders(uid)).find((r) => r.id === data.id)
-  const key =
-    data.key || (stored?.key_cipher && stored.key_iv ? await decryptKey(stored.key_cipher, stored.key_iv) : "")
-  const baseUrl = usesBaseUrl(data.id) ? checkBaseUrl(data.baseUrl || stored?.base_url || "") : null
-  if (!usesBaseUrl(data.id) && !key) throw new Error(m.server_paste_api_key())
-  return { key, baseUrl, stored }
-}
+/** Each provider's status. It never includes the key, only its last four characters. */
+export const listAiProviders = createServerFn({ method: "GET" }).handler(async () =>
+  aiKeys.listProviders(await userId())
+)
+export type AiProviderView = Awaited<ReturnType<typeof listAiProviders>>[number]
 
 /** Calls the provider's model list with the typed (or stored) key. Returns the latency and models, or the error. */
 export const testAiProvider = createServerFn({ method: "POST" })
   .validator(providerInput)
-  .handler(async ({ data }) => {
-    const { key, baseUrl } = await credentials(await userId(), data)
-    return listModels(data.id, key, baseUrl)
-  })
+  .handler(async ({ data }) => aiKeys.testProvider(await userId(), data))
 
 /** Connects or updates a provider. The first one connected becomes the default. */
 export const saveAiProvider = createServerFn({ method: "POST" })
-  .validator(
-    providerInput.extend({
-      model: z
-        .string()
-        .trim()
-        .min(1, { error: () => m.server_pick_model() })
-        .max(200),
-    })
-  )
-  .handler(async ({ data }) => {
-    const uid = await userId()
-    const { key, baseUrl, stored } = await credentials(uid, data)
-    const enc = data.key ? await encryptKey(data.key) : null
-    const others = (await loadProviders(uid)).filter((r) => r.id !== data.id)
-    const isDefault = stored ? stored.is_default : others.some((r) => r.is_default) ? 0 : 1
-    await db()
-      .prepare(`INSERT INTO ai_providers (user_id, id, base_url, model, key_cipher, key_iv, key_hint, is_default, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, unixepoch())
-        ON CONFLICT(user_id, id) DO UPDATE SET base_url = excluded.base_url, model = excluded.model,
-          key_cipher = excluded.key_cipher, key_iv = excluded.key_iv, key_hint = excluded.key_hint, updated_at = unixepoch()`)
-      .bind(
-        uid,
-        data.id,
-        baseUrl,
-        data.model,
-        enc?.cipher ?? stored?.key_cipher ?? null,
-        enc?.iv ?? stored?.key_iv ?? null,
-        key ? key.slice(-4) : null,
-        isDefault
-      )
-      .run()
-  })
+  .validator(providerInput.extend({ model: modelInput }))
+  .handler(async ({ data }) => aiKeys.saveProvider(await userId(), data))
 
 export const setDefaultAiProvider = createServerFn({ method: "POST" })
   .validator(z.object({ id: providerId }))
-  .handler(async ({ data }) => {
-    const uid = await userId()
-    const DB = db()
-    const row = await DB.prepare("SELECT 1 FROM ai_providers WHERE user_id = ? AND id = ?").bind(uid, data.id).first()
-    if (!row) throw new Error(m.server_connect_first())
-    await DB.prepare("UPDATE ai_providers SET is_default = (id = ?) WHERE user_id = ?").bind(data.id, uid).run()
-  })
+  .handler(async ({ data }) => aiKeys.setDefaultProvider(await userId(), data.id))
 
 /** Forgets a provider and its key. If it was the default, another connected one takes over. */
 export const disconnectAiProvider = createServerFn({ method: "POST" })
   .validator(z.object({ id: providerId }))
-  .handler(async ({ data }) => {
-    const uid = await userId()
-    const DB = db()
-    await DB.batch([
-      DB.prepare("DELETE FROM ai_providers WHERE user_id = ? AND id = ?").bind(uid, data.id),
-      DB.prepare(`UPDATE ai_providers SET is_default = 1 WHERE user_id = ?1 AND id = (SELECT id FROM ai_providers
-        WHERE user_id = ?1 ORDER BY updated_at LIMIT 1) AND NOT EXISTS (SELECT 1 FROM ai_providers WHERE user_id = ?1 AND is_default = 1)`).bind(
-        uid
-      ),
-    ])
-  })
+  .handler(async ({ data }) => aiKeys.disconnectProvider(await userId(), data.id))
 
 // The AI features. Each is a POST, because each call is logged and spends the user's tokens.
 
@@ -599,38 +507,7 @@ export const askKosha = createServerFn({ method: "POST" })
   })
 
 /** Requests and tokens this month, and the last 30 days of the request log. */
-export const getAiUsage = createServerFn({ method: "GET" }).handler(async () => {
-  const uid = await userId()
-  const { tz } = await getSettings(uid)
-  const [from] = monthRange(monthOf(Date.now() / 1000, tz), tz)
-  const DB = db()
-  const [usage, log] = await DB.batch([
-    DB.prepare(`SELECT COUNT(*) AS requests, COALESCE(SUM(tokens_in + tokens_out), 0) AS tokens
-      FROM ai_log WHERE user_id = ? AND at >= ?`).bind(uid, from),
-    // Rows kept while the log was off hold only the counts, so the log leaves them out.
-    DB.prepare(`SELECT id, at, provider, model, feature, request, response, tokens_in, tokens_out FROM ai_log
-      WHERE user_id = ? AND at >= unixepoch() - 30 * 86400 AND request <> '' ORDER BY at DESC LIMIT 100`).bind(uid),
-  ])
-  return {
-    ...(usage.results[0] as { requests: number; tokens: number }),
-    log: (
-      log.results as {
-        id: string
-        at: number
-        provider: string
-        model: string
-        feature: string
-        request: string
-        response: string
-        tokens_in: number
-        tokens_out: number
-      }[]
-    ).map((r) => ({
-      ...r,
-      day: dayOf(r.at, tz),
-    })),
-  }
-})
+export const getAiUsage = createServerFn({ method: "GET" }).handler(async () => aiKeys.aiUsage(await userId()))
 
 // ---------- delete & reset ----------
 
@@ -638,42 +515,14 @@ export const getAiUsage = createServerFn({ method: "GET" }).handler(async () => 
  * Deletes every transaction, transfer, valuation and reconciliation, and the recurring schedules too, because settling
  * would otherwise recreate their past payments on the next load. Accounts, categories, rules and settings stay.
  */
-export const deleteAllTransactions = createServerFn({ method: "POST" }).handler(async () => {
-  const uid = await userId()
-  const DB = db()
-  await DB.batch(
-    ["transfers", "valuations", "transactions", "subscriptions", "reconciliations"].map((t) =>
-      DB.prepare(`DELETE FROM ${t} WHERE user_id = ?`).bind(uid)
-    )
-  )
-})
+export const deleteAllTransactions = createServerFn({ method: "POST" }).handler(async () =>
+  finance.deleteAllTransactions(await userId())
+)
 
 // ---------- account ----------
 
-/** What deleting the account would remove, for the confirmation step. */
-export const accountSummary = createServerFn({ method: "GET" }).handler(async () => {
-  const uid = await userId()
-  const n = (table: string) => `(SELECT COUNT(*) FROM ${table} WHERE user_id = ?1)`
-  const row = await db()
-    .prepare(`SELECT ${n("transactions")} AS transactions, ${n("wallets")} AS accounts,
-      ${n("subscriptions")} AS recurring, ${n("categories")} AS categories, ${n("title_rules")} AS rules`)
-    .bind(uid)
-    .first<{ transactions: number; accounts: number; recurring: number; categories: number; rules: number }>()
-  const { results: logins } = await db()
-    .prepare(`SELECT "id", "providerId" AS provider, "password" IS NOT NULL AS pw FROM "account" WHERE "userId" = ?`)
-    .bind(uid)
-    .all<{ id: string; provider: string; pw: number }>()
-  const hasPassword = logins.some((l) => l.provider === "credential" && l.pw)
-  // null when this deployment has no Google client. accountId is the connected Google login, if any.
-  const google = googleSignIn ? { accountId: logins.find((l) => l.provider === "google")?.id ?? null } : null
-  const twoFa = await db()
-    .prepare(
-      `SELECT "twoFactorEnabled" AS on2fa, (SELECT COUNT(*) FROM "passkey" WHERE "userId" = ?1) AS passkeys FROM "user" WHERE "id" = ?1`
-    )
-    .bind(uid)
-    .first<{ on2fa: number | null; passkeys: number }>()
-  return { ...row!, hasPassword, google, twoFactor: !!twoFa?.on2fa, passkeys: twoFa?.passkeys ?? 0 }
-})
+/** What deleting the account would remove, for the confirmation step, and which sign-in methods it has. */
+export const accountSummary = createServerFn({ method: "GET" }).handler(async () => accountOverview(await userId()))
 
 /** Adds a password to an account that signs in with passkeys only. Changing an existing one goes through authClient.changePassword. */
 export const setAccountPassword = createServerFn({ method: "POST" })

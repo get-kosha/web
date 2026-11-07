@@ -17,6 +17,13 @@ const ORIGIN = env.BETTER_AUTH_URL.replace(/\/+$/, "")
 export const MCP_RESOURCE = `${ORIGIN}/mcp`
 /** Who signs MCP access tokens: Better Auth, at its base path. */
 export const OAUTH_ISSUER = `${ORIGIN}/api/auth`
+/** The REST API's URL, the audience the phone apps ask for. /api/v1 accepts tokens for either resource. */
+export const API_RESOURCE = `${ORIGIN}/api/v1`
+/**
+ * Kosha's own phone apps: public clients registered by migrations/0009_app_clients.sql, so every server has
+ * them. They skip the consent screen, and only they may call /api/app.
+ */
+export const APP_CLIENTS = new Set(["kosha-android", "kosha-ios"])
 /** What an MCP connection may do. A read-only connection sees only the read tools. */
 export const API_SCOPES = { read: "kosha:read", write: "kosha:write" } as const
 
@@ -94,11 +101,16 @@ export const auth = betterAuth({
     twoFactor({ issuer: "Kosha" }),
     // Signs MCP access tokens. It sets no set-auth-jwt header, because session JWTs would share the signing key.
     jwt({ disableSettingJwtHeader: true }),
-    // Kosha is the OAuth 2.1 authorization server for its own MCP server. Clients register themselves
-    // (Claude, ChatGPT and Cursor all use dynamic registration), and every sign-in still goes through
-    // /login and the consent screen at /consent.
+    // Kosha is the OAuth 2.1 authorization server for its own MCP server and REST API. Clients register
+    // themselves (Claude, ChatGPT and Cursor all use dynamic registration), and every sign-in still goes
+    // through /login and the consent screen at /consent. Kosha's own apps are registered already and skip consent.
     mcp({
       resource: MCP_RESOURCE,
+      resources: [API_RESOURCE],
+      // Both resources are the same API with the same scopes, so any client may ask for either. Linking each
+      // client to its resources would need the server's origin in migrations/0009_app_clients.sql.
+      enforcePerClientResources: false,
+      cachedTrustedClients: APP_CLIENTS,
       loginPage: "/login",
       consentPage: "/consent",
       scopes: ["openid", "profile", "email", "offline_access", API_SCOPES.read, API_SCOPES.write],
@@ -254,5 +266,33 @@ export async function setAvatar(uid: string, file: Blob | null) {
     await bucket.put(avatarKey(uid), bytes, { httpMetadata: { contentType: "image/jpeg" } })
     image = `/api/avatar?v=${Date.now().toString(36)}`
   } else await bucket.delete(avatarKey(uid))
-  await auth.api.updateUser({ headers: getRequest().headers, body: { image } })
+  await updateProfile(uid, { image })
+}
+
+/** Changes the user's name or picture. It needs no session, so the phone apps' bearer tokens can use it too. */
+export async function updateProfile(uid: string, data: { name?: string; image?: string | null }) {
+  await (await auth.$context).internalAdapter.updateUser(uid, data)
+}
+
+/** What deleting the account would remove, for the confirmation step, and which sign-in methods it has. */
+export async function accountOverview(uid: string) {
+  const n = (table: string) => `(SELECT COUNT(*) FROM ${table} WHERE user_id = ?1)`
+  const row = await env.DB.prepare(`SELECT ${n("transactions")} AS transactions, ${n("wallets")} AS accounts,
+      ${n("subscriptions")} AS recurring, ${n("categories")} AS categories, ${n("title_rules")} AS rules`)
+    .bind(uid)
+    .first<{ transactions: number; accounts: number; recurring: number; categories: number; rules: number }>()
+  const { results: logins } = await env.DB.prepare(
+    `SELECT "id", "providerId" AS provider, "password" IS NOT NULL AS pw FROM "account" WHERE "userId" = ?`
+  )
+    .bind(uid)
+    .all<{ id: string; provider: string; pw: number }>()
+  const hasPassword = logins.some((l) => l.provider === "credential" && l.pw)
+  // null when this deployment has no Google client. accountId is the connected Google login, if any.
+  const google = googleSignIn ? { accountId: logins.find((l) => l.provider === "google")?.id ?? null } : null
+  const twoFa = await env.DB.prepare(
+    `SELECT "twoFactorEnabled" AS on2fa, (SELECT COUNT(*) FROM "passkey" WHERE "userId" = ?1) AS passkeys FROM "user" WHERE "id" = ?1`
+  )
+    .bind(uid)
+    .first<{ on2fa: number | null; passkeys: number }>()
+  return { ...row!, hasPassword, google, twoFactor: !!twoFa?.on2fa, passkeys: twoFa?.passkeys ?? 0 }
 }

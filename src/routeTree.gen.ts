@@ -33,6 +33,7 @@ import { Route as AppWelcomeRouteImport } from './routes/_app/welcome'
 import { Route as ApiAvatarRouteImport } from './routes/api/avatar'
 import { Route as AppSettingsIndexRouteImport } from './routes/_app/settings.index'
 import { Route as AppSettingsSectionRouteImport } from './routes/_app/settings.$section'
+import { Route as ApiAppSplatRouteImport } from './routes/api/app/$'
 import { Route as ApiAttachmentsIdRouteImport } from './routes/api/attachments/$id'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiExportKoshaDotjsonRouteImport } from './routes/api/export/kosha[.]json'
@@ -158,6 +159,11 @@ const AppSettingsSectionRoute = AppSettingsSectionRouteImport.update({
   path: '/$section',
   getParentRoute: () => AppSettingsRoute,
 } as any)
+const ApiAppSplatRoute = ApiAppSplatRouteImport.update({
+  id: '/api/app/$',
+  path: '/api/app/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAttachmentsIdRoute = ApiAttachmentsIdRouteImport.update({
   id: '/api/attachments/$id',
   path: '/api/attachments/$id',
@@ -208,6 +214,7 @@ export interface FileRoutesByFullPath {
   '/welcome': typeof AppWelcomeRoute
   '/api/avatar': typeof ApiAvatarRoute
   '/settings/$section': typeof AppSettingsSectionRoute
+  '/api/app/$': typeof ApiAppSplatRoute
   '/api/attachments/$id': typeof ApiAttachmentsIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/export/kosha.json': typeof ApiExportKoshaDotjsonRoute
@@ -237,6 +244,7 @@ export interface FileRoutesByTo {
   '/api/avatar': typeof ApiAvatarRoute
   '/': typeof AppIndexRoute
   '/settings/$section': typeof AppSettingsSectionRoute
+  '/api/app/$': typeof ApiAppSplatRoute
   '/api/attachments/$id': typeof ApiAttachmentsIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/export/kosha.json': typeof ApiExportKoshaDotjsonRoute
@@ -269,6 +277,7 @@ export interface FileRoutesById {
   '/api/avatar': typeof ApiAvatarRoute
   '/_app/': typeof AppIndexRoute
   '/_app/settings/$section': typeof AppSettingsSectionRoute
+  '/api/app/$': typeof ApiAppSplatRoute
   '/api/attachments/$id': typeof ApiAttachmentsIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/export/kosha.json': typeof ApiExportKoshaDotjsonRoute
@@ -301,6 +310,7 @@ export interface FileRouteTypes {
     | '/welcome'
     | '/api/avatar'
     | '/settings/$section'
+    | '/api/app/$'
     | '/api/attachments/$id'
     | '/api/auth/$'
     | '/api/export/kosha.json'
@@ -330,6 +340,7 @@ export interface FileRouteTypes {
     | '/api/avatar'
     | '/'
     | '/settings/$section'
+    | '/api/app/$'
     | '/api/attachments/$id'
     | '/api/auth/$'
     | '/api/export/kosha.json'
@@ -361,6 +372,7 @@ export interface FileRouteTypes {
     | '/api/avatar'
     | '/_app/'
     | '/_app/settings/$section'
+    | '/api/app/$'
     | '/api/attachments/$id'
     | '/api/auth/$'
     | '/api/export/kosha.json'
@@ -380,6 +392,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   DotwellKnownSplatRoute: typeof DotwellKnownSplatRoute
   ApiAvatarRoute: typeof ApiAvatarRoute
+  ApiAppSplatRoute: typeof ApiAppSplatRoute
   ApiAttachmentsIdRoute: typeof ApiAttachmentsIdRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiExportKoshaDotjsonRoute: typeof ApiExportKoshaDotjsonRoute
@@ -557,6 +570,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSettingsSectionRouteImport
       parentRoute: typeof AppSettingsRoute
     }
+    '/api/app/$': {
+      id: '/api/app/$'
+      path: '/api/app/$'
+      fullPath: '/api/app/$'
+      preLoaderRoute: typeof ApiAppSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/attachments/$id': {
       id: '/api/attachments/$id'
       path: '/api/attachments/$id'
@@ -652,6 +672,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   DotwellKnownSplatRoute: DotwellKnownSplatRoute,
   ApiAvatarRoute: ApiAvatarRoute,
+  ApiAppSplatRoute: ApiAppSplatRoute,
   ApiAttachmentsIdRoute: ApiAttachmentsIdRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiExportKoshaDotjsonRoute: ApiExportKoshaDotjsonRoute,

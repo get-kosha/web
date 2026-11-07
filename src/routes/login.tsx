@@ -33,6 +33,8 @@ export const Route = createFileRoute("/login")({
     error: z.string().optional().catch(undefined),
     // Set by /reset-password after a new password is saved.
     reset: z.coerce.boolean().optional().catch(undefined),
+    // An OAuth sign-in from Kosha's phone apps sends login_hint=demo for "Try the demo".
+    login_hint: z.string().optional().catch(undefined),
   }),
   loader: () => signInOptions(),
   // One canonical URL for every ?mode, ?returnTo and OAuth variant of this page.
@@ -89,10 +91,11 @@ function Login() {
   const search = Route.useSearch()
   const { google, demo: hasDemo, resetByEmail } = Route.useLoaderData()
   const { returnTo } = search
-  // The landing page's "Create an account" opens this page with ?mode=up, and "Try the demo" with ?demo=1.
+  // The landing page's "Create an account" opens this page with ?mode=up, and "Try the demo" with ?demo=1
+  // (the phone apps with login_hint=demo).
   // Switching between them is page state, not navigation: re-encoding the URL would break an OAuth app's signed query.
   const [mode, setMode] = useState<"in" | "up">(search.mode ?? "in")
-  const [demo, setDemo] = useState(!!search.demo && mode === "in")
+  const [demo, setDemo] = useState((!!search.demo || (hasDemo && search.login_hint === "demo")) && mode === "in")
   const [notice, setNotice] = useState(!!search.reset)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")

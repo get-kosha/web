@@ -451,10 +451,16 @@ export const OPERATIONS = {
     path: "/transactions",
     scope: "write",
     description:
-      "Adds 1 to 500 spending or income entries in one all-or-nothing batch. Spending is a negative amount. Leave out categoryId to use your payee rules, then the AI model when Auto-categorise is on in Settings › AI; the call fails if neither places one. `day` defaults to today. To add lines from a bank statement, pass each line's bankRef from check_statement. Record money moved between your own accounts with create_transfers instead.",
+      "Adds 1 to 500 spending or income entries in one all-or-nothing batch. Spending is a negative amount. Pass your own id to make a retry safe. Leave out categoryId to use your payee rules, then the AI model when Auto-categorise is on in Settings › AI; the call fails if neither places one. `day` defaults to today. To add lines from a bank statement, pass each line's bankRef from check_statement. Record money moved between your own accounts with create_transfers instead.",
     input: z.object({
       transactions: Bulk(
         z.object({
+          id: z
+            .uuid()
+            .optional()
+            .describe(
+              "A UUID you choose for the new entry, so sending it again (say, after a lost reply) saves it once. Left out: Kosha picks one."
+            ),
           accountId: Id,
           payee: Payee,
           amount: Cents.refine((n) => n !== 0, "Amount can't be 0"),
@@ -1873,7 +1879,9 @@ export function openApiSpec(origin: string) {
       description: [
         "Everything you can do in Kosha's app, over HTTP. The same operations are tools on the MCP server at `/mcp`.",
         "",
-        "**Authentication.** Create a key in Settings › API & MCP and send it as `Authorization: Bearer kosha_…`. A read-only key can call the GET operations; a read & write key can call all of them.",
+        "**Authentication.** Create a key in Settings › API & MCP and send it as `Authorization: Bearer kosha_…`. A read-only key can call the GET operations; a read & write key can call all of them. Apps can instead sign people in with OAuth 2.1 (authorization code with PKCE, discovery at `/.well-known/oauth-authorization-server`), asking for `kosha:read` or `kosha:write` and the resource `" +
+          origin +
+          "/api/v1`, and send the access token the same way.",
         "",
         "**Conventions.** Money is integer minor units (cents) in the account's currency: €12.50 is `1250`. The sign is the direction: negative is money out. Days are `YYYY-MM-DD` and months `YYYY-MM` in your Kosha time zone. Bulk writes are all-or-nothing: if one item fails, nothing is saved and the error names the item.",
         "",
@@ -1883,7 +1891,7 @@ export function openApiSpec(origin: string) {
       ].join("\n"),
     },
     servers: [{ url: `${origin}/api/v1` }],
-    security: [{ apiKey: [] }],
+    security: [{ apiKey: [] }, { oauth: [] }],
     tags: Object.entries(TAGS).map(([name, description]) => ({ name, description })),
     paths,
     components: {
@@ -1892,6 +1900,18 @@ export function openApiSpec(origin: string) {
           type: "http",
           scheme: "bearer",
           description: "An API key from Settings › API & MCP, starting kosha_.",
+        },
+        oauth: {
+          type: "oauth2",
+          description: "An access token from Kosha's OAuth server, for the resource /api/v1 (or /mcp).",
+          flows: {
+            authorizationCode: {
+              authorizationUrl: `${origin}/api/auth/oauth2/authorize`,
+              tokenUrl: `${origin}/api/auth/oauth2/token`,
+              refreshUrl: `${origin}/api/auth/oauth2/token`,
+              scopes: { "kosha:read": "Read your data", "kosha:write": "Change your data" },
+            },
+          },
         },
       },
     },
