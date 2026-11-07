@@ -395,22 +395,46 @@ const HANDLERS: Handlers = {
     const [{ tz }, l] = await Promise.all([getSettings(uid), lookups(uid)])
     const today = dayOf(Date.now() / 1000, tz)
     const issues: Issue[] = []
-    const ruled = input.transactions.map((t) => t.categoryId ?? guessCategory(t.payee, l.rules))
+    // An entry sent with its own id keeps a hash of the request. Sending the same request again (a retry after a
+    // lost reply) returns what was saved, even if it was edited since; the id with a different request is a
+    // mistake, so it fails rather than answering with another entry.
+    const hashes = await Promise.all(input.transactions.map((t) => (t.id ? sha256(JSON.stringify(t)) : undefined)))
+    const given = input.transactions.flatMap((t) => (t.id ? [t.id] : []))
+    const { results: saved } = given.length
+      ? await db()
+          .prepare(
+            "SELECT id, request_hash FROM transactions WHERE user_id = ? AND id IN (SELECT value FROM json_each(?))"
+          )
+          .bind(uid, JSON.stringify(given))
+          .all<{ id: string; request_hash: string | null }>()
+      : { results: [] }
+    const savedHash = new Map(saved.map((r) => [r.id, r.request_hash]))
+    const taken = input.transactions.find((t, i) => t.id && savedHash.has(t.id) && savedHash.get(t.id) !== hashes[i])
+    if (taken) throw new HttpError(409, m.server_transaction_id_taken({ id: taken.id! }))
+    const seen = new Set<string>()
+    input.transactions.forEach((t, i) => {
+      if (t.id && seen.has(t.id))
+        issues.push({ path: `transactions.${i}.id`, message: m.server_transaction_id_twice() })
+      if (t.id) seen.add(t.id)
+    })
+    const fresh = input.transactions.flatMap((t, i) => (t.id && savedHash.has(t.id) ? [] : [{ t, i }]))
+
+    const ruled = fresh.map(({ t }) => t.categoryId ?? guessCategory(t.payee, l.rules))
     // What no rule places goes to the AI model in one request, when Auto-categorise is on. A failing model
     // leaves them uncategorised, so the call reports them rather than failing on the AI.
-    const unplaced = ruled.flatMap((c, i) => (c || !input.transactions[i].payee.trim() ? [] : [i]))
+    const unplaced = ruled.flatMap((c, n) => (c || !fresh[n].t.payee.trim() ? [] : [n]))
     const live = unplaced.length > 0 && (await ai.aiLive(uid, "categorise"))
     if (live) {
       const picks = await ai
         .suggestCategories(
           uid,
-          unplaced.map((i) => ({ payee: input.transactions[i].payee, income: input.transactions[i].amount > 0 }))
+          unplaced.map((n) => ({ payee: fresh[n].t.payee, income: fresh[n].t.amount > 0 }))
         )
         .catch(() => [] as (string | null)[])
-      unplaced.forEach((i, n) => (ruled[i] = picks[n] ?? null))
+      unplaced.forEach((n, k) => (ruled[n] = picks[k] ?? null))
     }
-    const items = input.transactions.map((t, i) => {
-      const categoryId = ruled[i]
+    const items = fresh.map(({ t, i }, n) => {
+      const categoryId = ruled[n]
       if (!categoryId)
         issues.push({
           path: `transactions.${i}.categoryId`,
@@ -421,6 +445,7 @@ const HANDLERS: Handlers = {
       checkRefs(`transactions.${i}`, { ...t, categoryId: categoryId ?? undefined }, l, issues)
       return {
         newId: t.id,
+        requestHash: hashes[i],
         walletId: t.accountId,
         categoryId: categoryId ?? "",
         subcategoryId: t.subcategoryId ?? null,
@@ -436,7 +461,12 @@ const HANDLERS: Handlers = {
       }
     })
     check(issues)
-    return transactionsOut(uid, await finance.saveTransactions(uid, items))
+    const ids = await finance.saveTransactions(uid, items)
+    // Input order, the retried entries included.
+    return transactionsOut(
+      uid,
+      input.transactions.map((t, i) => t.id ?? ids[fresh.findIndex((f) => f.i === i)])
+    )
   },
   async update_transactions(uid, input) {
     const [{ tz }, l, rows] = await Promise.all([

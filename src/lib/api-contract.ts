@@ -470,7 +470,7 @@ export const OPERATIONS = {
             .uuid()
             .optional()
             .describe(
-              "A UUID you choose for the new entry, so sending it again (say, after a lost reply) saves it once. Left out: Kosha picks one."
+              "A UUID you choose for the new entry, so sending the same request again (say, after a lost reply) saves it once and returns it. The same id with different details fails with conflict (409). Left out: Kosha picks one."
             ),
           accountId: Id,
           payee: Payee,

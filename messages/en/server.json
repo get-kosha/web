@@ -60,5 +60,7 @@
   "server_password_min_length": "Use at least 10 characters",
   "server_avatars_off": "Profile pictures aren't set up on this server",
   "server_avatar_unreadable": "That image couldn't be read",
-  "server_request_too_large": "This is too large to send. Try a smaller file or fewer entries."
+  "server_request_too_large": "This is too large to send. Try a smaller file or fewer entries.",
+  "server_transaction_id_taken": "Another entry already has the id {id}. Use a new id for a new entry.",
+  "server_transaction_id_twice": "This id appears twice in the same request."
 }

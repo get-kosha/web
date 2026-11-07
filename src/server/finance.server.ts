@@ -664,8 +664,11 @@ export const saveInput = z.object({
 })
 type SaveTx = z.infer<typeof saveInput>
 
-/** Creates or edits transactions in one atomic batch. Returns their ids in input order. */
-export async function saveTransactions(uid: string, items: SaveTx[]) {
+/**
+ * Creates or edits transactions in one atomic batch. Returns their ids in input order. `requestHash` is kept
+ * on a new entry so the public API can tell a retried create from a reused id.
+ */
+export async function saveTransactions(uid: string, items: (SaveTx & { requestHash?: string })[]) {
   const DB = db()
   const { tz, prefs } = await getSettings(uid)
   const now = Math.floor(Date.now() / 1000)
@@ -699,8 +702,8 @@ export async function saveTransactions(uid: string, items: SaveTx[]) {
     reconciled_id = CASE WHEN amount = ?5 AND wallet_id = ?1 AND ?15 = 1 THEN reconciled_id END,
     name = ?3, note = ?4, amount = ?5, date = ?6, paid = ?7, updated_at = unixepoch() WHERE user_id = ?9 AND id = ?8`)
   const insert =
-    DB.prepare(`INSERT INTO transactions (user_id, id, wallet_id, category_id, subcategory_id, name, note, amount, date, paid, tags, event_id, bank_ref)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (user_id, id) DO NOTHING`)
+    DB.prepare(`INSERT INTO transactions (user_id, id, wallet_id, category_id, subcategory_id, name, note, amount, date, paid, tags, event_id, bank_ref, request_hash)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (user_id, id) DO NOTHING`)
   // Settings › Payee rules › Learn from my edits. A learned rule never replaces one you made.
   const learn = DB.prepare(`INSERT INTO title_rules (user_id, title, category_id) VALUES (?, ?, ?)
     ON CONFLICT(user_id, title) DO UPDATE SET category_id = excluded.category_id WHERE source = 'learned'`)
@@ -747,7 +750,8 @@ export async function saveTransactions(uid: string, items: SaveTx[]) {
             data.paid ? 1 : 0,
             tagsJson ?? "[]",
             eventId ?? null,
-            data.bankRef ?? null
+            data.bankRef ?? null,
+            data.requestHash ?? null
           )
     )
     if (name && !isNeutral(data.categoryId) && prefs.learn_rules === "1")

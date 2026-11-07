@@ -60,5 +60,7 @@
   "server_password_min_length": "Gebruik minstens 10 tekens",
   "server_avatars_off": "Profielfoto's zijn niet ingesteld op deze server",
   "server_avatar_unreadable": "Die afbeelding kon niet worden gelezen",
-  "server_request_too_large": "Dit is te groot om te versturen. Probeer een kleiner bestand of minder transacties."
+  "server_request_too_large": "Dit is te groot om te versturen. Probeer een kleiner bestand of minder transacties.",
+  "server_transaction_id_taken": "Een andere transactie heeft al de id {id}. Gebruik een nieuwe id voor een nieuwe transactie.",
+  "server_transaction_id_twice": "Deze id komt twee keer voor in hetzelfde verzoek."
 }

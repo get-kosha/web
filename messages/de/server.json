@@ -60,5 +60,7 @@
   "server_password_min_length": "Verwende mindestens 10 Zeichen",
   "server_avatars_off": "Profilbilder sind auf diesem Server nicht eingerichtet",
   "server_avatar_unreadable": "Dieses Bild konnte nicht gelesen werden",
-  "server_request_too_large": "Das ist zu groß zum Senden. Versuch es mit einer kleineren Datei oder weniger Buchungen."
+  "server_request_too_large": "Das ist zu groß zum Senden. Versuch es mit einer kleineren Datei oder weniger Buchungen.",
+  "server_transaction_id_taken": "Eine andere Buchung hat bereits die ID {id}. Verwende für eine neue Buchung eine neue ID.",
+  "server_transaction_id_twice": "Diese ID kommt in derselben Anfrage zweimal vor."
 }
