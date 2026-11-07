@@ -2,8 +2,10 @@ import { deleteTransaction, saveTransaction } from "@/lib/api"
 
 // New transactions added without a connection wait in localStorage, per user, until they can be sent.
 // ponytail: only new entries from the add screens queue. Edits, transfers and deletes still need a connection.
-type NewTx = Omit<Parameters<typeof saveTransaction>[0]["data"], "id">
-type Queued = { key: string; data: NewTx }
+type NewTx = Omit<Parameters<typeof saveTransaction>[0]["data"], "id" | "newId">
+// `data.newId` is the entry's id, picked here, so the server saves a retried entry only once.
+// Entries queued before it existed have none and fall back to the server's id.
+type Queued = { key: string; data: NewTx & { newId?: string } }
 
 const storeKey = (uid: string) => `kosha:outbox:${uid}`
 
@@ -29,16 +31,18 @@ const unreachable = (e: unknown) => !navigator.onLine || e instanceof TypeError
 
 /** Saves a new transaction, or keeps it on this device when there's no connection. `undo` removes it either way. */
 export async function addTransaction(uid: string, data: NewTx) {
+  // The same id goes with the first try and any retry, in case the server saved it but the reply never came.
+  const key = crypto.randomUUID()
+  const entry = { ...data, newId: key }
   if (navigator.onLine) {
     try {
-      const { id } = await saveTransaction({ data })
+      const { id } = await saveTransaction({ data: entry })
       return { queued: false, id, undo: () => deleteTransaction({ data: { id } }) }
     } catch (e) {
       if (!unreachable(e)) throw e
     }
   }
-  const key = crypto.randomUUID()
-  write(uid, [...queued(uid), { key, data }])
+  write(uid, [...queued(uid), { key, data: entry }])
   return {
     queued: true,
     id: null,
@@ -52,8 +56,9 @@ export async function addTransaction(uid: string, data: NewTx) {
 
 /**
  * Sends queued transactions in the order they were added. Stops when the connection drops again.
- * An entry the server rejects (say, its account was deleted meanwhile) is dropped and reported.
- * ponytail: if the server saved an entry but the reply was lost, the retry saves it a second time.
+ * An entry the server rejects (say, its account was deleted meanwhile) is dropped and reported. Each entry
+ * carries its own id, so one the server saved before the reply was lost isn't saved again.
+ * ponytail: an entry saved that way and then deleted elsewhere before the retry comes back; tombstones would stop it.
  */
 export async function sendQueued(uid: string) {
   const result = { sent: 0, rejected: [] as string[] }

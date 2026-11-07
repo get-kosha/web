@@ -635,7 +635,13 @@ export async function deleteEvent(uid: string, id: string) {
 }
 
 export const saveInput = z.object({
+  /** The entry to edit. */
   id: z.string().optional(),
+  /**
+   * A new entry's id, chosen by the caller so sending it again can't save it twice: a second save with the
+   * same id changes nothing. Ignored with `id`.
+   */
+  newId: z.uuid().optional(),
   walletId: z.string().min(1),
   categoryId: z.string().min(1),
   name: z.string().max(200),
@@ -694,7 +700,7 @@ export async function saveTransactions(uid: string, items: SaveTx[]) {
     name = ?3, note = ?4, amount = ?5, date = ?6, paid = ?7, updated_at = unixepoch() WHERE user_id = ?9 AND id = ?8`)
   const insert =
     DB.prepare(`INSERT INTO transactions (user_id, id, wallet_id, category_id, subcategory_id, name, note, amount, date, paid, tags, event_id, bank_ref)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (user_id, id) DO NOTHING`)
   // Settings › Payee rules › Learn from my edits. A learned rule never replaces one you made.
   const learn = DB.prepare(`INSERT INTO title_rules (user_id, title, category_id) VALUES (?, ?, ?)
     ON CONFLICT(user_id, title) DO UPDATE SET category_id = excluded.category_id WHERE source = 'learned'`)
@@ -704,7 +710,7 @@ export async function saveTransactions(uid: string, items: SaveTx[]) {
     const old = data.id ? existing.get(data.id) : undefined
     const date = entryDate(data.day, tz, now, data.time, old)
     const name = data.name.trim()
-    const id = data.id ?? crypto.randomUUID()
+    const id = data.id ?? data.newId ?? crypto.randomUUID()
     const eventId = data.eventId === undefined && old === undefined ? eventFor(data.day, events) : data.eventId
     const tagsJson = data.tags === undefined ? null : JSON.stringify(data.tags)
     out.push(id)
