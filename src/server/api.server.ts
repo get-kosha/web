@@ -421,6 +421,8 @@ const HANDLERS: Handlers = {
           .all<{ id: string; request_hash: string | null }>()
       : { results: [] }
     const savedHash = new Map(saved.map((r) => [r.id, r.request_hash]))
+    // ponytail: two requests racing with one id and different details can both pass this check; the second then
+    // answers with the first's entry. The window is one round trip; an insert that fails on the id would close it.
     const taken = input.transactions.find((t, i) => t.id && savedHash.has(t.id) && savedHash.get(t.id) !== hashes[i])
     if (taken) throw new HttpError(409, m.server_transaction_id_taken({ id: taken.id! }))
     const seen = new Set<string>()
