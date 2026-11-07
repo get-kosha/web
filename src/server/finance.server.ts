@@ -207,6 +207,33 @@ export async function loadMeta(uid: string) {
 
 // ---------- dashboard analytics ----------
 
+type Span = { wallet_id: string; first: number; last: number }
+/** Each account's first and last paid entry, read from either end of its (user_id, wallet_id, date) index. */
+const spansQuery = (uid: string) =>
+  db()
+    .prepare(`SELECT * FROM (SELECT w.id AS wallet_id,
+      (SELECT date FROM transactions WHERE user_id = w.user_id AND wallet_id = w.id AND paid = 1 ORDER BY date LIMIT 1) AS first,
+      (SELECT date FROM transactions WHERE user_id = w.user_id AND wallet_id = w.id AND paid = 1 ORDER BY date DESC LIMIT 1) AS last
+      FROM wallets w WHERE w.user_id = ?) WHERE first IS NOT NULL`)
+    .bind(uid)
+
+type Bucket = { k: number; wallet_id: string; n: number; net: number; income: number; expense: number }
+/**
+ * Paid totals per account between ascending `bounds` in unix seconds: bucket k covers [bounds[k], bounds[k + 1]).
+ * Callers pass boundaries from monthRange or unixOf, so months and days follow the user's time zone (DST included)
+ * while SQL only sums. Income and expense leave the neutral categories out; amounts stay in the account's currency.
+ * CROSS JOIN keeps the boundaries as the outer loop, so each bucket is one range seek on (user_id, date).
+ */
+const bucketTotals = (uid: string, bounds: number[]) =>
+  db()
+    .prepare(`SELECT b.key AS k, t.wallet_id, COUNT(*) AS n, SUM(t.amount) AS net,
+      SUM(CASE WHEN t.amount > 0 AND t.category_id NOT IN ${NEUTRAL_SQL} THEN t.amount ELSE 0 END) AS income,
+      SUM(CASE WHEN t.amount < 0 AND t.category_id NOT IN ${NEUTRAL_SQL} THEN -t.amount ELSE 0 END) AS expense
+      FROM json_each(?2) b CROSS JOIN transactions t ON t.user_id = ?1 AND t.paid = 1
+        AND t.date >= json_extract(b.value, '$[0]') AND t.date < json_extract(b.value, '$[1]')
+      GROUP BY b.key, t.wallet_id`)
+    .bind(uid, JSON.stringify(bounds.slice(1).map((end, k) => [bounds[k], end])))
+
 export type Upcoming = {
   key: string
   name: string
@@ -231,12 +258,19 @@ export async function dashboard(uid: string, data: z.infer<typeof dashboardInput
   const nowMonth = monthOf(Date.now() / 1000, tz)
   const selected = data.month ?? nowMonth
 
-  // ponytail: full scan aggregated in JS so months follow the user's time zone; fine for tens of
-  // thousands of rows, move to SQL aggregates if it gets slow. History uses today's exchange rates.
-  const [all, oneOff, accounts, valuations] = await DB.batch([
-    DB.prepare(`SELECT t.amount, t.date, t.category_id, t.name, t.wallet_id, t.subscription_id, w.currency
-      FROM transactions t JOIN wallets w ON w.user_id = t.user_id AND w.id = t.wallet_id WHERE t.user_id = ? AND t.paid = 1`).bind(
-      uid
+  // Month totals over the whole history are summed in SQL between month boundaries computed in the user's zone.
+  // Only the window that needs single entries is read row by row: the 12 months up to the selected one (or to
+  // now, for a future month), for the pace, categories, largest income and the chart's largest expense.
+  // History uses today's exchange rates.
+  const since = shiftMonth(selected < nowMonth ? selected : nowMonth, -11)
+  const [spans, entries, oneOff, accounts, valuations] = await DB.batch([
+    spansQuery(uid),
+    DB.prepare(`SELECT t.amount, t.date, t.category_id, t.name, t.subscription_id, w.currency
+      FROM transactions t JOIN wallets w ON w.user_id = t.user_id AND w.id = t.wallet_id
+      WHERE t.user_id = ? AND t.paid = 1 AND t.date >= ? AND t.date < ? ORDER BY t.date, t.id`).bind(
+      uid,
+      monthRange(since, tz)[0],
+      monthRange(selected, tz)[1]
     ),
     DB.prepare(`SELECT t.*, w.currency FROM transactions t JOIN wallets w ON w.user_id = t.user_id AND w.id = t.wallet_id
       WHERE t.user_id = ? AND t.paid = 0 AND t.subscription_id IS NULL AND COALESCE(t.kind, '') NOT IN ('credit', 'debt', 'skipped')
@@ -276,23 +310,19 @@ export async function dashboard(uid: string, data: z.infer<typeof dashboardInput
     })),
   ].sort((a, b) => a.day.localeCompare(b.day))
 
-  type Row = {
-    amount: number
-    date: number
-    category_id: string
-    name: string
-    currency: string
-    wallet_id: string
-    subscription_id: string | null
-  }
+  type Account = { id: string; type: string; credit_limit: number | null; currency: string }
+  const currencyOf = new Map((accounts.results as Account[]).map((a) => [a.id, a.currency]))
   // Net worth adjustments by month. Credit limits count from a card's first month, and gains from their entry date.
   const adjust = new Map<string, number>()
   const firstMonth = new Map<string, string>()
-  for (const r of all.results as Row[]) {
-    const m = monthOf(r.date, tz)
-    if (!firstMonth.has(r.wallet_id) || m < firstMonth.get(r.wallet_id)!) firstMonth.set(r.wallet_id, m)
-  }
-  for (const a of accounts.results as { id: string; type: string; credit_limit: number | null; currency: string }[])
+  let lastMonth = ""
+  for (const s of spans.results as Span[])
+    if (currencyOf.has(s.wallet_id)) {
+      firstMonth.set(s.wallet_id, monthOf(s.first, tz))
+      const m = monthOf(s.last, tz)
+      if (m > lastMonth) lastMonth = m
+    }
+  for (const a of accounts.results as Account[])
     if (a.type === "credit" && a.credit_limit && firstMonth.has(a.id)) {
       const m = firstMonth.get(a.id)!
       adjust.set(m, (adjust.get(m) ?? 0) - convert(a.credit_limit, a.currency, primary, rates))
@@ -308,11 +338,27 @@ export async function dashboard(uid: string, data: z.infer<typeof dashboardInput
     gainChange.set(m, (gainChange.get(m) ?? 0) + delta)
     lastGain.set(v.wallet_id, g)
   }
+  const first = [...firstMonth.values()].sort()[0]
   const months = new Map<string, { income: number; expense: number; net: number }>()
+  if (first) {
+    const list: string[] = []
+    for (let m = first; m <= lastMonth; m = shiftMonth(m, 1)) list.push(m)
+    const totals = await bucketTotals(uid, [
+      monthRange(first, tz)[0],
+      ...list.map((m) => monthRange(m, tz)[1]),
+    ]).all<Bucket>()
+    for (const b of totals.results) {
+      const cur = currencyOf.get(b.wallet_id)!
+      const e = months.get(list[b.k]) ?? { income: 0, expense: 0, net: 0 }
+      e.net += convert(b.net, cur, primary, rates)
+      e.income += convert(b.income, cur, primary, rates)
+      e.expense += convert(b.expense, cur, primary, rates)
+      months.set(list[b.k], e)
+    }
+  }
   const dim = daysInMonth(selected)
   const todayNum = selected === nowMonth ? Number(today.slice(8)) : null
   // Pace compares against the 6 complete months before the selected one (the first month with data is partial).
-  const first = [...firstMonth.values()].sort()[0]
   const usualMonths = Array.from({ length: 6 }, (_, i) => shiftMonth(selected, -1 - i)).filter(
     (m) => first && m > first
   )
@@ -324,20 +370,23 @@ export async function dashboard(uid: string, data: z.infer<typeof dashboardInput
   const biggest = new Map<string, { name: string; amount: number }>() // largest expense per month
   let income: { name: string; day: string; amount: number } | null = null
 
-  for (const r of all.results as Row[]) {
+  type Row = {
+    amount: number
+    date: number
+    category_id: string
+    name: string
+    currency: string
+    subscription_id: string | null
+  }
+  for (const r of entries.results as Row[]) {
+    if (isNeutral(r.category_id)) continue
     const m = monthOf(r.date, tz)
     const v = convert(r.amount, r.currency, primary, rates)
-    const e = months.get(m) ?? { income: 0, expense: 0, net: 0 }
-    e.net += v
-    months.set(m, e)
-    if (isNeutral(r.category_id)) continue
     if (v > 0) {
-      e.income += v
       if (m === selected && (!income || v > income.amount))
         income = { name: r.name.trim(), day: dayOf(r.date, tz), amount: v }
       continue
     }
-    e.expense -= v
     if (-v > (biggest.get(m)?.amount ?? 0)) biggest.set(m, { name: r.name.trim(), amount: -v })
     const d = Number(dayOf(r.date, tz).slice(8))
     const days = daily.get(m)
@@ -1353,24 +1402,57 @@ export async function accountsOverview(uid: string, data: z.infer<typeof dashboa
   const today = dayOf(Date.now() / 1000, tz)
   const nowMonth = today.slice(0, 7)
   const selected = data.month ?? nowMonth
-  // ponytail: full scan of paid transactions, like the dashboard; move to SQL aggregates if it gets slow.
-  const [txs, walletRows, vals, recentRows] = await DB.batch([
-    DB.prepare(
-      "SELECT wallet_id, amount, date, category_id FROM transactions WHERE user_id = ? AND paid = 1 ORDER BY date"
-    ).bind(uid),
+  const days = Array.from({ length: 90 }, (_, k) => addDays(today, k - 89))
+  const dayEnds = days.map((d) => ({ t: unixOf(addDays(d, 1), tz), day: d }))
+  const last6 = Array.from({ length: 6 }, (_, k) => shiftMonth(nowMonth, k - 5))
+  const [from, to] = monthRange(selected, tz)
+  const [spans, walletRows, vals, flows, recentRows] = await DB.batch([
+    spansQuery(uid),
     DB.prepare("SELECT id, type, currency, credit_limit FROM wallets WHERE user_id = ?").bind(uid),
     DB.prepare("SELECT wallet_id, day, gain FROM valuations WHERE user_id = ? ORDER BY day").bind(uid),
-    DB.prepare(`SELECT id, wallet_id, name, amount, date, category_id, transfer_id, counter_wallet_id FROM (
-        SELECT t.id, t.wallet_id, t.name, t.amount, t.date, t.category_id, t.transfer_id,
-          (SELECT x.wallet_id FROM transactions x WHERE x.user_id = t.user_id AND x.transfer_id = t.transfer_id AND x.id <> t.id) AS counter_wallet_id,
-          ROW_NUMBER() OVER (PARTITION BY t.wallet_id ORDER BY t.date DESC) AS n
-        FROM transactions t WHERE t.user_id = ? AND t.paid = 1) WHERE n <= 4 ORDER BY date DESC`).bind(uid),
+    // The selected month's in, out and moved per account.
+    DB.prepare(`SELECT wallet_id,
+      SUM(CASE WHEN category_id <> '${TRANSFER_CATEGORY}' AND amount > 0 THEN amount ELSE 0 END) AS inc,
+      SUM(CASE WHEN category_id <> '${TRANSFER_CATEGORY}' AND amount < 0 THEN amount ELSE 0 END) AS spent,
+      SUM(CASE WHEN category_id = '${TRANSFER_CATEGORY}' THEN ABS(amount) ELSE 0 END) AS moved
+      FROM transactions WHERE user_id = ? AND paid = 1 AND date >= ? AND date < ? AND category_id <> '${CORRECTION_CATEGORY}'
+      GROUP BY wallet_id`).bind(uid, from, to),
+    // Each account's 4 latest, read through its (user_id, wallet_id, date) index. CROSS JOIN keeps accounts outermost.
+    DB.prepare(`SELECT t.id, t.wallet_id, t.name, t.amount, t.date, t.category_id, t.transfer_id,
+        (SELECT x.wallet_id FROM transactions x WHERE x.user_id = t.user_id AND x.transfer_id = t.transfer_id AND x.id <> t.id) AS counter_wallet_id
+      FROM wallets w CROSS JOIN transactions t ON t.user_id = w.user_id AND t.id IN (
+        SELECT id FROM transactions WHERE user_id = w.user_id AND wallet_id = w.id AND paid = 1 ORDER BY date DESC, id LIMIT 4)
+      WHERE w.user_id = ? ORDER BY t.date DESC, t.id`).bind(uid),
   ])
-  type T = { wallet_id: string; amount: number; date: number; category_id: string }
   type W = { id: string; type: AccountType; currency: string; credit_limit: number | null }
-  const byWallet = new Map<string, T[]>()
-  for (const t of txs.results as T[])
-    (byWallet.get(t.wallet_id) ?? byWallet.set(t.wallet_id, []).get(t.wallet_id)!).push(t)
+  const span = new Map((spans.results as Span[]).map((r) => [r.wallet_id, r]))
+  const first = Math.min(...[...span.values()].map((r) => r.first))
+  const months: string[] = []
+  if (span.size) for (let m = monthOf(first, tz); m <= nowMonth; m = shiftMonth(m, 1)) months.push(m)
+  const monthEnd = (m: string) => ({ t: monthRange(m, tz)[1], day: addDays(`${shiftMonth(m, 1)}-01`, -1) })
+  const monthEnds = months.map(monthEnd)
+  const last6Ends = last6.map(monthEnd)
+
+  // Every point a balance is read at, ascending. SQL sums each account's paid entries between consecutive points,
+  // and running totals give the balance before each point.
+  const cuts = [...new Set([...monthEnds, ...last6Ends, ...dayEnds].map((e) => e.t))].sort((x, y) => x - y)
+  const at = new Map(cuts.map((t, k) => [t, k]))
+  const running = new Map<string, { bal: number[]; n: number[] }>()
+  if (span.size) {
+    const totals = await bucketTotals(uid, [Number.MIN_SAFE_INTEGER, ...cuts]).all<Bucket>()
+    for (const b of totals.results) {
+      const r =
+        running.get(b.wallet_id) ??
+        running.set(b.wallet_id, { bal: cuts.map(() => 0), n: cuts.map(() => 0) }).get(b.wallet_id)!
+      r.bal[b.k] = b.net
+      r.n[b.k] = b.n
+    }
+    for (const r of running.values())
+      for (let k = 1; k < cuts.length; k++) {
+        r.bal[k] += r.bal[k - 1]
+        r.n[k] += r.n[k - 1]
+      }
+  }
   const gains = new Map<string, { day: string; gain: number }[]>()
   for (const v of vals.results as { wallet_id: string; day: string; gain: number }[])
     (gains.get(v.wallet_id) ?? gains.set(v.wallet_id, []).get(v.wallet_id)!).push(v)
@@ -1378,29 +1460,23 @@ export async function accountsOverview(uid: string, data: z.infer<typeof dashboa
   // An account's worth at each point, ascending, split into what it holds and an investment's unrealized gain.
   // Before its first transaction it didn't exist yet, so both are 0.
   const parts = (w: W, ends: { t: number; day: string }[]) => {
-    const tx = byWallet.get(w.id) ?? [],
+    const r = running.get(w.id),
       vs = gains.get(w.id) ?? []
-    let i = 0,
-      j = 0,
-      bal = 0,
+    let j = 0,
       gain = 0
     return ends.map((e) => {
-      while (i < tx.length && tx[i].date < e.t) bal += tx[i++].amount
       while (j < vs.length && vs[j].day <= e.day) gain = vs[j++].gain
-      if (!i) return { owned: 0, gain: 0 }
+      const k = at.get(e.t)!
+      if (!r?.n[k]) return { owned: 0, gain: 0 }
+      const bal = r.bal[k]
       if (w.type === "credit") return { owned: bal - (w.credit_limit ?? 0), gain: 0 }
       return { owned: bal, gain: w.type === "investment" ? gain : 0 }
     })
   }
   const curve = (w: W, ends: { t: number; day: string }[]) => parts(w, ends).map((p) => p.owned + p.gain)
-  const monthEnd = (m: string) => ({ t: monthRange(m, tz)[1], day: addDays(`${shiftMonth(m, 1)}-01`, -1) })
-  const first = (txs.results as T[])[0]
-  const months: string[] = []
-  if (first) for (let m = monthOf(first.date, tz); m <= nowMonth; m = shiftMonth(m, 1)) months.push(m)
-  const days = Array.from({ length: 90 }, (_, k) => addDays(today, k - 89))
-  const dayEnds = days.map((d) => ({ t: unixOf(addDays(d, 1), tz), day: d }))
-  const last6 = Array.from({ length: 6 }, (_, k) => shiftMonth(nowMonth, k - 5))
-  const [from, to] = monthRange(selected, tz)
+  const flow = new Map(
+    (flows.results as { wallet_id: string; inc: number; spent: number; moved: number }[]).map((f) => [f.wallet_id, f])
+  )
 
   const totals = months.map(() => 0)
   // Per month: each account's owned part and all unrealized gains, in the display currency, for the stacked chart.
@@ -1411,30 +1487,22 @@ export async function accountsOverview(uid: string, data: z.infer<typeof dashboa
     { months: number[]; days: number[]; lastEntry: string | null; in: number; out: number; moved: number }
   > = {}
   for (const w of walletRows.results as W[]) {
-    parts(w, months.map(monthEnd)).forEach((p, k) => {
+    parts(w, monthEnds).forEach((p, k) => {
       const o = convert(p.owned, w.currency, display, rates),
         g = convert(p.gain, w.currency, display, rates)
       totals[k] += o + g
       gained[k] += g
       if (o) owned[k][w.id] = o
     })
-    const tx = byWallet.get(w.id) ?? []
-    let inc = 0,
-      out = 0,
-      moved = 0
-    for (const t of tx) {
-      if (t.date < from || t.date >= to || t.category_id === CORRECTION_CATEGORY) continue
-      if (t.category_id === TRANSFER_CATEGORY) moved += Math.abs(t.amount)
-      else if (t.amount > 0) inc += t.amount
-      else out += t.amount
-    }
+    const f = flow.get(w.id)
+    const last = span.get(w.id)?.last
     accounts[w.id] = {
-      months: curve(w, last6.map(monthEnd)),
+      months: curve(w, last6Ends),
       days: curve(w, dayEnds),
-      lastEntry: tx.length ? dayOf(tx[tx.length - 1].date, tz) : null,
-      in: inc,
-      out,
-      moved,
+      lastEntry: last === undefined ? null : dayOf(last, tz),
+      in: f?.inc ?? 0,
+      out: f?.spent ?? 0,
+      moved: f?.moved ?? 0,
     }
   }
   const start = totals.findIndex((v) => v !== 0)
