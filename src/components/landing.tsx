@@ -338,7 +338,10 @@ function Hero({ demo }: { demo: boolean }) {
             <GithubLogoIcon className="size-5" aria-hidden="true" />
             <span className="max-sm:sr-only">GitHub</span>
           </a>
-          <LanguageSwitch className="h-11 rounded-lg px-2 text-sm text-subtle-foreground hover:bg-foreground/5 sm:px-3" />
+          <LanguageSwitch
+            short
+            className="h-11 rounded-lg px-2 text-sm text-subtle-foreground hover:bg-foreground/5 sm:px-3"
+          />
           <a href="/login" className={navLink}>
             {m.landing_sign_in()}
           </a>
