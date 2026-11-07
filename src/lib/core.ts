@@ -70,6 +70,62 @@ export function remember<K, V>(map: Map<K, V>, key: K, value: V, max: number) {
   if (map.size > max) map.delete(map.keys().next().value!)
 }
 
+function privateV4(ip: string) {
+  const p = ip
+    .match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/)
+    ?.slice(1)
+    .map(Number)
+  if (!p || p.some((n) => n > 255)) return null
+  const [a, b, c] = p
+  return (
+    a === 0 ||
+    a === 10 ||
+    a === 127 ||
+    a >= 224 || // multicast and reserved
+    (a === 100 && b >= 64 && b < 128) || // shared (carrier-grade NAT)
+    (a === 169 && b === 254) ||
+    (a === 172 && b >= 16 && b < 32) ||
+    (a === 192 && b === 168) ||
+    (a === 192 && b === 0 && c === 0) ||
+    (a === 198 && (b === 18 || b === 19)) // benchmarking
+  )
+}
+/** An IPv6 address as its 8 groups, or null if it isn't one. A trailing dotted IPv4 part counts as 2 groups. */
+function v6Groups(ip: string) {
+  let s = ip.toLowerCase()
+  const dotted = s.match(/^(.*:)(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/)
+  if (dotted) {
+    const [a, b, c, d] = dotted[2].split(".").map(Number)
+    s = `${dotted[1]}${((a << 8) | b).toString(16)}:${((c << 8) | d).toString(16)}`
+  }
+  const halves = s.split("::")
+  if (halves.length > 2) return null
+  const head = halves[0] ? halves[0].split(":") : []
+  const tail = halves.length === 2 && halves[1] ? halves[1].split(":") : []
+  const groups = halves.length === 2 ? [...head, ...Array(8 - head.length - tail.length).fill("0"), ...tail] : head
+  if (groups.length !== 8 || groups.some((g) => !/^[0-9a-f]{1,4}$/.test(g))) return null
+  return groups.map((g) => parseInt(g, 16))
+}
+/**
+ * True for an IP address no public server has: loopback, private, link-local, shared, multicast and reserved
+ * ranges, in IPv4 or IPv6, including IPv4 addresses written as IPv6. False for anything that isn't an IP address.
+ */
+export function isPrivateIp(ip: string): boolean {
+  const v4 = privateV4(ip)
+  if (v4 !== null) return v4
+  const g = v6Groups(ip.replace(/^\[|\]$/g, ""))
+  if (!g) return false
+  const embedded = `${g[6] >> 8}.${g[6] & 255}.${g[7] >> 8}.${g[7] & 255}`
+  // ::a.b.c.d (which covers :: and ::1), ::ffff:a.b.c.d and the NAT64 prefix 64:ff9b::/96 all carry an IPv4 address.
+  if (g.slice(0, 5).every((x) => !x) && (g[5] === 0 || g[5] === 0xffff)) return privateV4(embedded)!
+  if (g[0] === 0x64 && g[1] === 0xff9b && g.slice(2, 6).every((x) => !x)) return privateV4(embedded)!
+  return (
+    (g[0] & 0xfe00) === 0xfc00 || // unique local
+    (g[0] & 0xff80) === 0xfe80 || // link-local and the old site-local
+    g[0] >= 0xff00 // multicast
+  )
+}
+
 const moneyFormats = new Map<string, Intl.NumberFormat>()
 export function fmt(cents: number, currency: string, compact = false) {
   const locale = intlLocale()

@@ -1,4 +1,5 @@
 import { env } from "cloudflare:workers"
+import { isPrivateIp } from "@/lib/core"
 import { m } from "@/paraglide/messages"
 
 // Keys are encrypted at rest with AES-GCM: a random IV per row, and a key derived from the Worker secret
@@ -32,13 +33,9 @@ export async function decryptKey(cipher: string, iv: string) {
   return new TextDecoder().decode(plain)
 }
 
-const PRIVATE_HOST =
-  /^(localhost|.*\.local|.*\.internal|127\.\d+\.\d+\.\d+|10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+|169\.254\.\d+\.\d+|0\.0\.0\.0|\[?::1\]?|\[?f[cd][0-9a-f]*:.*)$/i
+const LOCAL_NAME = /^(localhost|.*\.localhost|.*\.local|.*\.internal)$/i
 
-/**
- * Checks a self-hosted endpoint's URL. Kosha calls it from Cloudflare, so loopback and LAN addresses can never
- * answer. ponytail: checks the hostname only; a public name that resolves to a private IP isn't caught.
- */
+/** Checks a self-hosted endpoint's URL: http or https, and not a local name or a private IP address. */
 export function checkBaseUrl(raw: string) {
   let url: URL
   try {
@@ -47,8 +44,32 @@ export function checkBaseUrl(raw: string) {
     throw new Error(m.ai_url_invalid())
   }
   if (url.protocol !== "https:" && url.protocol !== "http:") throw new Error(m.ai_url_protocol())
-  if (PRIVATE_HOST.test(url.hostname)) throw new Error(m.ai_url_private())
+  if (LOCAL_NAME.test(url.hostname) || isPrivateIp(url.hostname)) throw new Error(m.ai_url_private())
   return url.toString().replace(/\/+$/, "")
+}
+
+/**
+ * Refuses a self-hosted endpoint whose name resolves to a private address, looked up over DNS-over-HTTPS.
+ * Cloudflare documents that Workers sockets can't reach private addresses, but says nothing of fetch() to a
+ * public name that points at one, and `npm run dev` runs on your own network, so Kosha checks itself.
+ * ponytail: the name is resolved again by fetch, so a DNS server that answers differently the second time
+ * (rebinding) gets past this; Workers can't fetch a pinned IP address to close that.
+ */
+async function checkResolves(url: string) {
+  const host = new URL(url).hostname
+  if (/^[\d.]+$|^\[/.test(host)) return // an IP address, which checkBaseUrl already judged
+  const answers = await Promise.all(
+    ["A", "AAAA"].map(async (type) => {
+      const res = await fetch(`https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(host)}&type=${type}`, {
+        headers: { accept: "application/dns-json" },
+        signal: AbortSignal.timeout(3000),
+      }).catch(() => null)
+      if (!res?.ok) throw new Error(m.ai_models_unreachable())
+      const body = (await res.json()) as { Answer?: { type: number; data: string }[] }
+      return (body.Answer ?? []).filter((r) => r.type === 1 || r.type === 28).map((r) => r.data)
+    })
+  )
+  if (answers.flat().some(isPrivateIp)) throw new Error(m.ai_url_private())
 }
 
 /** Calls the provider's model list with an 8s timeout. This proves the key or URL works and gives the models to pick from. */
@@ -75,7 +96,10 @@ export async function listModels(id: AiProviderId, key: string, baseUrl: string 
     if (key) headers.authorization = `Bearer ${key}`
   }
   try {
-    const res = await fetch(url, { headers, signal: AbortSignal.timeout(8000) })
+    // A self-hosted endpoint is checked where it resolves, and may not redirect, so it can't lead to a private one.
+    const custom = usesBaseUrl(id)
+    if (custom) await checkResolves(url)
+    const res = await fetch(url, { headers, signal: AbortSignal.timeout(8000), redirect: custom ? "manual" : "follow" })
     const body = (await res.json().catch(() => null)) as Record<string, unknown> | null
     if (!res.ok) {
       const err = body?.error as { message?: string } | string | undefined
@@ -150,10 +174,13 @@ export async function chat(p: Provider, req: ChatRequest): Promise<Reply> {
     headers["x-api-key"] = p.key
     headers["anthropic-version"] = "2023-06-01"
   } else if (p.key) headers.authorization = `Bearer ${p.key}`
+  const custom = usesBaseUrl(p.id)
+  if (custom) await checkResolves(url)
   let res: Response
   try {
     res = await fetch(url, {
       method: "POST",
+      redirect: custom ? "manual" : "follow",
       headers,
       body: JSON.stringify(
         anthropic ? anthropicBody(p.model, req) : openai ? responsesBody(p.model, req) : chatBody(p.model, req)
