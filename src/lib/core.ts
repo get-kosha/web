@@ -135,9 +135,11 @@ export function dayOf(unix: number, tz: string) {
 }
 export const monthOf = (unix: number, tz: string) => dayOf(unix, tz).slice(0, 7)
 
+const partFormats = new Map<string, Intl.DateTimeFormat>()
 function offsetMs(utcMs: number, tz: string) {
-  const p = Object.fromEntries(
-    new Intl.DateTimeFormat("en-US", {
+  let f = partFormats.get(tz)
+  if (!f) {
+    f = new Intl.DateTimeFormat("en-US", {
       timeZone: tz,
       hourCycle: "h23",
       year: "numeric",
@@ -147,15 +149,18 @@ function offsetMs(utcMs: number, tz: string) {
       minute: "2-digit",
       second: "2-digit",
     })
-      .formatToParts(utcMs)
-      .map((x) => [x.type, x.value])
-  )
+    partFormats.set(tz, f)
+  }
+  const p = Object.fromEntries(f.formatToParts(utcMs).map((x) => [x.type, x.value]))
   return Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour, +p.minute, +p.second) - utcMs
 }
 /** Converts "YYYY-MM-DD" (plus an optional hour and minute) in `tz` to unix seconds. */
 export function unixOf(day: string, tz: string, hour = 0, minute = 0) {
   const guess = Date.UTC(+day.slice(0, 4), +day.slice(5, 7) - 1, +day.slice(8, 10), hour, minute)
-  return Math.floor((guess - offsetMs(guess, tz)) / 1000)
+  // The offset at `guess` can be the wrong side of a DST change that falls within a few hours of the wanted
+  // time (Lord Howe at 2:00 on 1 October 2023), so read it again at the first answer.
+  const first = guess - offsetMs(guess, tz)
+  return Math.floor((guess - offsetMs(first, tz)) / 1000)
 }
 
 const timeFormats = new Map<string, Intl.DateTimeFormat>()

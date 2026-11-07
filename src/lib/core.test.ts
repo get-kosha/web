@@ -8,12 +8,14 @@ import {
   dateOfDay,
   dayOfDate,
   guessCategory,
+  monthOf,
   monthRange,
   parseAmount,
   pressKey,
   unixOf,
   dayOf,
   entryDate,
+  shiftMonth,
   timeOf,
   usualCurve,
 } from "./core.ts"
@@ -1083,3 +1085,21 @@ for (const [key, [{ declarations }]] of plurals) {
 }
 assert.equal(fmt(123456, "eur"), "€1,234.56")
 console.log("languages ok")
+
+// ---------- month boundaries across DST ----------
+{
+  // Lord Howe moves its clocks 30 minutes at 2:00 on 1 October 2023, within hours of the month's first midnight.
+  const lh = "Australia/Lord_Howe"
+  const [start] = monthRange("2023-10", lh)
+  assert.equal(dayOf(start, lh), "2023-10-01")
+  assert.equal(timeOf(start, lh), "00:00")
+  assert.equal(dayOf(start - 1, lh), "2023-09-30")
+  // Every month start in a few DST zones is local midnight, so SQL ranges and monthOf agree.
+  for (const zone of [lh, "Europe/Paris", "America/New_York", "America/Santiago", "Pacific/Chatham"])
+    for (let mo = "2022-01"; mo <= "2027-12"; mo = shiftMonth(mo, 1)) {
+      const [a, b] = monthRange(mo, zone)
+      assert.equal(monthOf(a, zone), mo)
+      assert.equal(monthOf(a - 1, zone), shiftMonth(mo, -1))
+      assert.equal(monthOf(b - 1, zone), mo)
+    }
+}
