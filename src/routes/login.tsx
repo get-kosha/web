@@ -142,6 +142,19 @@ function Login() {
           <Button type="submit" disabled={busy}>
             {demo ? "Open the demo" : mode === "in" ? "Sign in" : "Create account"}
           </Button>
+          {mode === "up" && (
+            <p className="text-xs text-muted-foreground">
+              By creating an account you agree to the{" "}
+              <a href="/terms" className="underline underline-offset-4 hover:text-foreground">
+                terms
+              </a>{" "}
+              and{" "}
+              <a href="/privacy" className="underline underline-offset-4 hover:text-foreground">
+                privacy policy
+              </a>
+              .
+            </p>
+          )}
           {demo && (
             <button
               type="button"

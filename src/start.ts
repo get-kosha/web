@@ -8,6 +8,7 @@ const redirect = (to: string) => new Response(null, { status: 302, headers: { Lo
 // Cloudflare's asset layer serves static files in /public before the Worker runs.
 // The public API, MCP and OAuth discovery check their own bearer tokens and never read the session cookie.
 const PUBLIC = /^\/(api\/auth\/|api\/v1(\/|$)|mcp$|\.well-known\/)/
+const SIGNED_OUT_PAGES = new Set(["/", "/privacy", "/terms"])
 const requireUser = createMiddleware().server(async ({ next, request }) => {
   const url = new URL(request.url)
   if (PUBLIC.test(url.pathname)) return next()
@@ -16,10 +17,10 @@ const requireUser = createMiddleware().server(async ({ next, request }) => {
   if (url.pathname === "/login")
     return user && !url.searchParams.has("sig") ? redirect(safeReturn(url.searchParams.get("returnTo"))) : next()
   if (user) return next()
-  // A signed-out visit to / gets the landing page (the _app layout renders it instead of the app). Any
-  // GET or HEAD qualifies, so link-preview bots that send Accept: */* can read its card. Server functions
-  // live under /_serverFn/, so nothing else answers at /.
-  if ((request.method === "GET" || request.method === "HEAD") && url.pathname === "/") return next()
+  // A signed-out visit to / gets the landing page (the _app layout renders it instead of the app), and the
+  // legal pages are public too. Any GET or HEAD qualifies, so link-preview bots that send Accept: */* can
+  // read the card. Server functions live under /_serverFn/, so nothing else answers at these paths.
+  if ((request.method === "GET" || request.method === "HEAD") && SIGNED_OUT_PAGES.has(url.pathname)) return next()
   const page = request.method === "GET" && request.headers.get("accept")?.includes("text/html")
   if (page) return redirect(`/login?returnTo=${encodeURIComponent(url.pathname + url.search)}`)
   return new Response("Unauthorized", { status: 401 }) as never

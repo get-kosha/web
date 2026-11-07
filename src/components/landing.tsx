@@ -516,10 +516,18 @@ function Closing({ demo }: { demo: boolean }) {
           <a href={API_DOCS} className={footerLink}>
             API reference
           </a>
+          <a href="/privacy" className={footerLink}>
+            Privacy
+          </a>
+          <a href="/terms" className={footerLink}>
+            Terms
+          </a>
           <a href="/login" className={footerLink}>
             Sign in
           </a>
-          <span className="basis-full py-2 sm:basis-auto">© 2026 Kosha, MIT licence</span>
+          <a href={`${SOURCE}/blob/main/LICENSE`} className={cn(footerLink, "basis-full sm:basis-auto")}>
+            © 2026 Kosha, MIT licence
+          </a>
         </div>
       </div>
     </footer>

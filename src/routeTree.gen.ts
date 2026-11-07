@@ -13,6 +13,8 @@ import { Route as AppRouteImport } from './routes/_app'
 import { Route as ConsentRouteImport } from './routes/consent'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as McpRouteImport } from './routes/mcp'
+import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as DotwellKnownSplatRouteImport } from './routes/[.]well-known/$'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppAccountRouteImport } from './routes/_app/account'
@@ -52,6 +54,16 @@ const LoginRoute = LoginRouteImport.update({
 const McpRoute = McpRouteImport.update({
   id: '/mcp',
   path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DotwellKnownSplatRoute = DotwellKnownSplatRouteImport.update({
@@ -166,6 +178,8 @@ export interface FileRoutesByFullPath {
   '/consent': typeof ConsentRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
+  '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
   '/.well-known/$': typeof DotwellKnownSplatRoute
   '/account': typeof AppAccountRoute
   '/accounts': typeof AppAccountsRoute
@@ -191,6 +205,8 @@ export interface FileRoutesByTo {
   '/consent': typeof ConsentRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
+  '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
   '/.well-known/$': typeof DotwellKnownSplatRoute
   '/account': typeof AppAccountRoute
   '/accounts': typeof AppAccountsRoute
@@ -218,6 +234,8 @@ export interface FileRoutesById {
   '/consent': typeof ConsentRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
+  '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
   '/.well-known/$': typeof DotwellKnownSplatRoute
   '/_app/account': typeof AppAccountRoute
   '/_app/accounts': typeof AppAccountsRoute
@@ -247,6 +265,8 @@ export interface FileRouteTypes {
     | '/consent'
     | '/login'
     | '/mcp'
+    | '/privacy'
+    | '/terms'
     | '/.well-known/$'
     | '/account'
     | '/accounts'
@@ -272,6 +292,8 @@ export interface FileRouteTypes {
     | '/consent'
     | '/login'
     | '/mcp'
+    | '/privacy'
+    | '/terms'
     | '/.well-known/$'
     | '/account'
     | '/accounts'
@@ -298,6 +320,8 @@ export interface FileRouteTypes {
     | '/consent'
     | '/login'
     | '/mcp'
+    | '/privacy'
+    | '/terms'
     | '/.well-known/$'
     | '/_app/account'
     | '/_app/accounts'
@@ -326,6 +350,8 @@ export interface RootRouteChildren {
   ConsentRoute: typeof ConsentRoute
   LoginRoute: typeof LoginRoute
   McpRoute: typeof McpRoute
+  PrivacyRoute: typeof PrivacyRoute
+  TermsRoute: typeof TermsRoute
   DotwellKnownSplatRoute: typeof DotwellKnownSplatRoute
   ApiAvatarRoute: typeof ApiAvatarRoute
   ApiAttachmentsIdRoute: typeof ApiAttachmentsIdRoute
@@ -363,6 +389,20 @@ declare module '@tanstack/react-router' {
       path: '/mcp'
       fullPath: '/mcp'
       preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/.well-known/$': {
@@ -566,6 +606,8 @@ const rootRouteChildren: RootRouteChildren = {
   ConsentRoute: ConsentRoute,
   LoginRoute: LoginRoute,
   McpRoute: McpRoute,
+  PrivacyRoute: PrivacyRoute,
+  TermsRoute: TermsRoute,
   DotwellKnownSplatRoute: DotwellKnownSplatRoute,
   ApiAvatarRoute: ApiAvatarRoute,
   ApiAttachmentsIdRoute: ApiAttachmentsIdRoute,
