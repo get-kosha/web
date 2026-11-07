@@ -44,6 +44,7 @@ These invariants hold across the codebase. Breaking one gives wrong totals witho
 
 ## UI conventions
 
+- `DESIGN.md` describes the design system as built: tokens, type, layout, components, motion and the landing and sign-in surfaces. Read it before building a new screen.
 - Icons come from Phosphor (`@phosphor-icons/react`). Category icons map the stored emoji to a Phosphor icon in `category-icon.tsx`.
 - Colours come from the theme tokens in `src/styles.css`. Light and dark mode must both work. Dark mode is the `.dark` class on `<html>`.
 - Confirmations (delete, end subscription) use the `Dialog` component.
