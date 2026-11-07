@@ -1,11 +1,12 @@
 import { useEffect, useState, type FormEvent } from "react"
 import { createFileRoute } from "@tanstack/react-router"
-import { EyeIcon, KeyIcon } from "@phosphor-icons/react/ssr"
+import { EyeIcon, GoogleLogoIcon, KeyIcon } from "@phosphor-icons/react/ssr"
 import { z } from "zod"
 import { KoshaLogo } from "@/components/kosha-mark"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { signInOptions } from "@/lib/api"
 import { authClient } from "@/lib/auth-client"
 import { DEMO, safeReturn } from "@/lib/core"
 
@@ -15,19 +16,31 @@ export const Route = createFileRoute("/login")({
     returnTo: z.string().optional(),
     mode: z.enum(["in", "up"]).optional().catch(undefined),
     demo: z.coerce.boolean().optional().catch(undefined),
+    // Set by Better Auth when Google sends the visitor back without signing them in.
+    error: z.string().optional().catch(undefined),
   }),
+  loader: () => signInOptions(),
   head: () => ({ meta: [{ title: "Sign in · Kosha" }] }),
   component: Login,
 })
 
+/** What to say when Google sign-in comes back with an error code. */
+function googleError(code: string | undefined) {
+  if (!code) return ""
+  if (code === "account_not_linked")
+    return "That email already has a Kosha account. Sign in with your password or passkey, then connect Google in Settings › Sign-in & security."
+  return "Signing in with Google didn't work. Try again."
+}
+
 function Login() {
   const search = Route.useSearch()
+  const { google } = Route.useLoaderData()
   const { returnTo } = search
   // The landing page's "Create an account" opens this page with ?mode=up.
   const [mode, setMode] = useState<"in" | "up">(search.mode ?? "in")
   // The landing page's "Try the demo" opens this page with ?demo=1: the shared demo account, filled in.
   const [demo, setDemo] = useState(!!search.demo && mode === "in")
-  const [error, setError] = useState("")
+  const [error, setError] = useState(googleError(search.error))
   const [busy, setBusy] = useState(false)
   // Set after a correct password when the account has two-factor on. The next step asks for the code.
   const [twoFactor, setTwoFactor] = useState(false)
@@ -58,6 +71,21 @@ function Login() {
     if (res?.error) setError(res.error.message || "Something went wrong")
     else if ((res?.data as { twoFactorRedirect?: boolean } | null)?.twoFactorRedirect) setTwoFactor(true)
     else done(res?.data)
+  }
+
+  function signInWithGoogle() {
+    // Come back to this page, minus any earlier error, if Google sign-in fails.
+    const back = new URL(window.location.href)
+    back.searchParams.delete("error")
+    back.searchParams.delete("error_description")
+    void run(() =>
+      authClient.signIn.social({
+        provider: "google",
+        callbackURL: safeReturn(returnTo),
+        newUserCallbackURL: returnTo ? safeReturn(returnTo) : "/welcome",
+        errorCallbackURL: back.pathname + back.search,
+      })
+    )
   }
 
   if (twoFactor) return <TwoFactorStep onDone={done} onBack={() => setTwoFactor(false)} />
@@ -173,6 +201,12 @@ function Login() {
             onClick={() => void run(() => authClient.signIn.passkey({ autoFill: false }))}
           >
             <KeyIcon /> Sign in with a passkey
+          </Button>
+        )}
+
+        {google && !demo && (
+          <Button variant="outline" disabled={busy} onClick={signInWithGoogle}>
+            <GoogleLogoIcon /> {mode === "in" ? "Sign in with Google" : "Sign up with Google"}
           </Button>
         )}
 

@@ -6,7 +6,16 @@ import * as finance from "@/server/finance.server"
 import * as ai from "@/server/ai-tasks.server"
 import * as statements from "@/server/statements.server"
 import * as files from "@/server/attachments.server"
-import { MCP_RESOURCE, auth, avatars, demoAvailable, getUser, setAvatar, userId } from "@/server/auth.server"
+import {
+  MCP_RESOURCE,
+  auth,
+  avatars,
+  demoAvailable,
+  getUser,
+  googleSignIn,
+  setAvatar,
+  userId,
+} from "@/server/auth.server"
 import {
   consentDetails,
   createApiKey,
@@ -60,6 +69,9 @@ export const guestVisit = createIsomorphicFn()
     const page = document.querySelector<HTMLElement>("[data-landing]")
     return page ? { demo: page.dataset.demo === "1" } : null
   })
+
+/** The sign-in methods this deployment offers beyond email, password and passkeys. */
+export const signInOptions = createServerFn({ method: "GET" }).handler(() => ({ google: googleSignIn }))
 
 export const getMeta = createServerFn({ method: "GET" }).handler(async () => {
   const user = (await getUser())!
@@ -613,17 +625,20 @@ export const accountSummary = createServerFn({ method: "GET" }).handler(async ()
       ${n("subscriptions")} AS recurring, ${n("categories")} AS categories, ${n("title_rules")} AS rules`)
     .bind(uid)
     .first<{ transactions: number; accounts: number; recurring: number; categories: number; rules: number }>()
-  const hasPassword = !!(await db()
-    .prepare(`SELECT 1 FROM "account" WHERE "userId" = ? AND "providerId" = 'credential' AND "password" IS NOT NULL`)
+  const { results: logins } = await db()
+    .prepare(`SELECT "id", "providerId" AS provider, "password" IS NOT NULL AS pw FROM "account" WHERE "userId" = ?`)
     .bind(uid)
-    .first())
+    .all<{ id: string; provider: string; pw: number }>()
+  const hasPassword = logins.some((l) => l.provider === "credential" && l.pw)
+  // null when this deployment has no Google client. accountId is the connected Google login, if any.
+  const google = googleSignIn ? { accountId: logins.find((l) => l.provider === "google")?.id ?? null } : null
   const twoFa = await db()
     .prepare(
       `SELECT "twoFactorEnabled" AS on2fa, (SELECT COUNT(*) FROM "passkey" WHERE "userId" = ?1) AS passkeys FROM "user" WHERE "id" = ?1`
     )
     .bind(uid)
     .first<{ on2fa: number | null; passkeys: number }>()
-  return { ...row!, hasPassword, twoFactor: !!twoFa?.on2fa, passkeys: twoFa?.passkeys ?? 0 }
+  return { ...row!, hasPassword, google, twoFactor: !!twoFa?.on2fa, passkeys: twoFa?.passkeys ?? 0 }
 })
 
 /** Adds a password to an account that signs in with passkeys only. Changing an existing one goes through authClient.changePassword. */

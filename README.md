@@ -90,6 +90,8 @@ Profile pictures and attachments (receipts, payslips) are stored in Cloudflare R
 - **With R2:** run `npx wrangler r2 bucket create kosha-avatars` and `npx wrangler r2 bucket create kosha-attachments` once before you deploy.
 - **Without R2:** delete the `r2_buckets` block from `wrangler.jsonc`, or just the entry you don't want. Everything else works. Without `AVATARS`, Settings › Profile shows initials and says photos aren't set up. Without `ATTACHMENTS`, the attach buttons don't appear.
 
+Sign in with Google is optional. To turn it on, create an OAuth client (type **Web application**) in Google Cloud Console under **APIs & Services › Credentials**. Add `<BETTER_AUTH_URL>/api/auth/callback/google` as an authorised redirect URI, such as `http://localhost:3000/api/auth/callback/google` for local use. Then set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in `.dev.vars`, or with `npx wrangler secret put` in production. Without them, the Google buttons don't appear. Someone who already has a password account connects Google from Settings › Sign-in & security, because Kosha never verified that email address.
+
 Before you deploy, set `BETTER_AUTH_URL` under `vars` in `wrangler.jsonc` to the public URL of the app. Passkeys only work on this domain.
 
 To deploy on every push, connect the repository under the Worker's **Settings → Build**. Use `npm run deploy` as the deploy command and leave the build command empty. The build token needs **D1: Edit** for the migration step, which the token Cloudflare creates by default does not have.

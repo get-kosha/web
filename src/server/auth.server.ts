@@ -17,11 +17,27 @@ export const OAUTH_ISSUER = `${ORIGIN}/api/auth`
 /** What an MCP connection may do. A read-only connection sees only the read tools. */
 export const API_SCOPES = { read: "kosha:read", write: "kosha:write" } as const
 
+const GOOGLE = env as { GOOGLE_CLIENT_ID?: string; GOOGLE_CLIENT_SECRET?: string }
+/** Whether this deployment has a Google OAuth client, so sign-in and Settings can offer Google. */
+export const googleSignIn = !!(GOOGLE.GOOGLE_CLIENT_ID && GOOGLE.GOOGLE_CLIENT_SECRET)
+
 export const auth = betterAuth({
   database: env.DB,
   baseURL: env.BETTER_AUTH_URL,
   secret: env.BETTER_AUTH_SECRET,
   emailAndPassword: { enabled: true, minPasswordLength: 10 },
+  // Google's callback is <BETTER_AUTH_URL>/api/auth/callback/google. A Google email that already has a
+  // password account isn't linked on sign-in, since that address was never verified here; its owner
+  // connects Google from Settings › Sign-in & security instead.
+  socialProviders: googleSignIn
+    ? {
+        google: {
+          clientId: GOOGLE.GOOGLE_CLIENT_ID!,
+          clientSecret: GOOGLE.GOOGLE_CLIENT_SECRET!,
+          prompt: "select_account",
+        },
+      }
+    : undefined,
   session: { expiresIn: 60 * 60 * 24 * 30, updateAge: 60 * 60 * 24 },
   rateLimit: { enabled: true, storage: "database" },
   // Cloudflare sets the visitor's IP here; rate limits are per IP.
@@ -30,6 +46,8 @@ export const auth = betterAuth({
     // Deleting an account removes every row of the user's finance data first (Settings › Account › Delete).
     deleteUser: { enabled: true, beforeDelete: (user) => deleteUserData(user.id) },
   },
+  // Better Auth keeps Google's tokens on the account row. Kosha never calls Google with them, so keep them encrypted.
+  account: { encryptOAuthTokens: true },
   databaseHooks: {
     user: {
       create: {

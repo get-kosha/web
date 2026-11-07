@@ -27,7 +27,8 @@ function Privacy() {
       <ul>
         <li>
           <strong>Your account:</strong> your name, email address, a hash of your password (never the password itself),
-          passkeys, two-factor settings and an optional profile picture.
+          passkeys, two-factor settings and an optional profile picture. If you sign in with Google, Kosha also keeps
+          your Google account id, your Google profile picture&apos;s address and the tokens Google returns, encrypted.
         </li>
         <li>
           <strong>Your finances:</strong> everything you enter or import, such as accounts, transactions, payees,
@@ -82,6 +83,10 @@ function Privacy() {
         <li>
           <strong>The API reference page</strong> loads its viewer from jsDelivr, which sees your IP address like any
           website you load files from.
+        </li>
+        <li>
+          <strong>Google</strong>, only if you choose to sign in with it. Google tells Kosha your name, email address
+          and profile picture, and learns that you signed in to Kosha.
         </li>
         <li>
           <strong>AI providers</strong> you add yourself, as described above.

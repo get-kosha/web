@@ -92,6 +92,12 @@ const GROUPS: Group[] = [
             keywords: "webauthn biometrics fingerprint",
           },
           {
+            key: "google",
+            title: "Google",
+            description: "Sign in with your Google account.",
+            keywords: "gmail oauth social connect",
+          },
+          {
             key: "two-factor",
             title: "Two-factor authentication",
             description: "A code from an authenticator app.",

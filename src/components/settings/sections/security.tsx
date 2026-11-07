@@ -8,6 +8,7 @@ import {
   DeviceMobileIcon,
   DownloadSimpleIcon,
   FingerprintIcon,
+  GoogleLogoIcon,
   KeyIcon,
   TrashIcon,
 } from "@phosphor-icons/react/ssr"
@@ -94,6 +95,7 @@ export function Security() {
       <SettingGroup label="Sign-in">
         <Password open={pwOpen} setOpen={setPwOpen} />
         <Passkeys list={passkeys} before={before} onAdd={addPasskey} />
+        <Google />
         <TwoFactor step={step} setStep={setStep} />
       </SettingGroup>
       <Sessions />
@@ -187,7 +189,7 @@ function Password({ open, setOpen }: { open: boolean; setOpen: (o: boolean) => v
       description={
         hasPassword
           ? "At least 10 characters. Changing it signs out your other devices."
-          : "You sign in with passkeys only. Add a password as a fallback."
+          : "You sign in without a password. Add one as a fallback."
       }
       control={
         <Button variant="outline" className="h-9 bg-card px-3 text-[13px] font-normal" onClick={() => setOpen(true)}>
@@ -287,6 +289,101 @@ function Passkeys({
                 }}
               >
                 Remove
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+    </SettingRow>
+  )
+}
+
+/** What to say when Google sends you back here without connecting. */
+const LINK_ERRORS: Record<string, string> = {
+  email_does_not_match: "That Google account has a different email. Choose the one with your Kosha email.",
+  account_already_linked_to_different_user: "That Google account is already connected to another Kosha account.",
+}
+
+/** Signing in with Google. Hidden when this deployment has no Google client. */
+function Google() {
+  const { google, hasPassword } = useAccount()
+  const router = useRouter()
+  const [removing, setRemoving] = useState(false)
+  // Connecting leaves for Google and comes back to this page, with ?error= when it failed.
+  useEffect(() => {
+    const url = new URL(window.location.href)
+    const code = url.searchParams.get("error")
+    if (!code) return
+    toast.error(LINK_ERRORS[code] ?? "Couldn't connect Google. Try again.")
+    url.searchParams.delete("error")
+    url.searchParams.delete("error_description")
+    history.replaceState(history.state, "", url)
+  }, [])
+  if (!google) return null
+  const { accountId } = google
+
+  return (
+    <SettingRow
+      id="google"
+      title="Google"
+      description={
+        !accountId
+          ? "Sign in with the Google account that has your Kosha email."
+          : hasPassword
+            ? "Connected. You can sign in with Google."
+            : "Connected. Set a password before you disconnect it, so you can still sign in."
+      }
+      control={
+        accountId ? (
+          <Button
+            variant="outline"
+            className="h-9 bg-card px-3 text-[13px] font-normal"
+            disabled={!hasPassword}
+            onClick={() => setRemoving(true)}
+          >
+            Disconnect
+          </Button>
+        ) : (
+          <Button
+            variant="outline"
+            className="h-9 bg-card px-3 text-[13px] font-normal"
+            onClick={() => {
+              const here = window.location.pathname
+              void attempt(() =>
+                authClient.linkSocial({ provider: "google", callbackURL: here, errorCallbackURL: here })
+              )
+            }}
+          >
+            <GoogleLogoIcon /> Connect Google
+          </Button>
+        )
+      }
+    >
+      {removing && (
+        <Dialog open onOpenChange={(o) => !o && setRemoving(false)}>
+          <DialogContent className="sm:max-w-sm">
+            <DialogHeader>
+              <DialogTitle>Disconnect Google?</DialogTitle>
+              <DialogDescription>
+                You won't be able to sign in with Google any more. Your other sign-in methods keep working.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setRemoving(false)}>
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={async () => {
+                  const res = await authClient.unlinkAccount({ accountId: accountId! })
+                  // Better Auth only unlinks from a session started in the last day.
+                  if (res.error?.code === "SESSION_NOT_FRESH")
+                    toast.error("Sign out and back in, then disconnect Google.")
+                  else if (await attempt(async () => res, "Google disconnected")) void router.invalidate()
+                  setRemoving(false)
+                }}
+              >
+                Disconnect
               </Button>
             </DialogFooter>
           </DialogContent>
