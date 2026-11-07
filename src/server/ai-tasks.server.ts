@@ -1051,7 +1051,8 @@ export async function readStatement(uid: string, input: z.infer<typeof pdfInput>
         day: str(r.date, 10),
         amount,
         description: str(r.description, 300),
-        payee: str(r.payee),
+        // No payee rather than an empty one, so Kosha's own name or the AI tidy-up fills it in.
+        payee: str(r.payee) || undefined,
         balance: null,
         ref: null,
       },
