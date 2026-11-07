@@ -951,7 +951,10 @@ function ComingUp({
               {short(u.day)}
             </span>
             <span className="truncate">
-              {name(u)} <span className="text-xs text-muted-foreground max-md:hidden">· {u.kind}</span>
+              {name(u)}{" "}
+              <span className="text-xs text-muted-foreground max-md:hidden">
+                · {u.kind === "repetitive" ? (u.amount > 0 ? "income" : "bill") : u.kind}
+              </span>
             </span>
             <span className={cn("num", u.to_wallet_id && "text-muted-foreground")}>{amount(u)}</span>
           </div>

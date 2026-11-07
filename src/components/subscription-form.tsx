@@ -19,7 +19,8 @@ const UNITS: { value: Unit; label: string }[] = [
   { value: "month", label: "months" },
   { value: "year", label: "years" },
 ]
-type Kind = "subscription" | "repetitive" | "transfer"
+// Income is stored as a "repetitive" schedule with a positive amount.
+type Kind = "subscription" | "repetitive" | "income" | "transfer"
 
 /** What a new schedule starts with, e.g. a regular payment Kosha spotted. Amount is signed cents. */
 type Preset = {
@@ -33,7 +34,7 @@ type Preset = {
   variable: boolean
 }
 
-/** Create or edit the schedule and template of a subscription, bill or recurring transfer. */
+/** Create or edit the schedule and template of a subscription, bill, recurring income or recurring transfer. */
 export function SubscriptionForm({
   initial,
   preset,
@@ -52,11 +53,12 @@ export function SubscriptionForm({
   const [kind, setKind] = useState<Kind>(
     initial?.to_wallet_id || (!initial && startAsTransfer)
       ? "transfer"
-      : initial?.kind === "repetitive" || (!initial && preset && (preset.amount > 0 || preset.variable))
-        ? "repetitive"
-        : "subscription"
+      : (initial?.amount ?? preset?.amount ?? 0) > 0
+        ? "income"
+        : initial?.kind === "repetitive" || (!initial && preset?.variable)
+          ? "repetitive"
+          : "subscription"
   )
-  const [income, setIncome] = useState(initial ? initial.amount > 0 : (preset?.amount ?? 0) > 0)
   const [name, setName] = useState(initial?.name ?? preset?.name ?? "")
   const [amount, setAmount] = useState(
     initial ? (Math.abs(initial.amount) / 100).toFixed(2) : preset ? (Math.abs(preset.amount) / 100).toFixed(2) : ""
@@ -75,11 +77,17 @@ export function SubscriptionForm({
   const [note, setNote] = useState(initial?.note ?? "")
   const [busy, setBusy] = useState(false)
   const transfer = kind === "transfer"
+  const income = kind === "income"
   const wallet = meta.wallets.find((w) => w.id === walletId)
   const toWallet = meta.wallets.find((w) => w.id === toWalletId)
   const crossCurrency = transfer && !!toWallet && toWallet.currency !== wallet?.currency
   const walletOptions = meta.wallets.map((w) => ({ value: w.id, label: w.name }))
-  const categories = meta.categories.filter((c) => !isNeutral(c.id) && (!c.archived || c.id === initial?.category_id))
+  const categories = meta.categories.filter(
+    (c) =>
+      !isNeutral(c.id) &&
+      (!c.archived || c.id === initial?.category_id) &&
+      (!!c.income === income || c.id === categoryId)
+  )
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
@@ -100,9 +108,9 @@ export function SubscriptionForm({
           endDay: endDay || null,
           walletId,
           name: name.trim() || (transfer ? `${wallet?.name} → ${toWallet?.name}` : ""),
-          kind: transfer ? "repetitive" : kind,
+          kind: kind === "subscription" ? "subscription" : "repetitive",
           categoryId: transfer ? TRANSFER_CATEGORY : categoryId,
-          amount: Math.abs(cents) * (income && !transfer ? 1 : -1),
+          amount: Math.abs(cents) * (income ? 1 : -1),
           toWalletId: transfer ? toWalletId : null,
           toAmount: crossCurrency && !variable ? parseAmount(toAmount) : null,
           variable: transfer && variable,
@@ -114,9 +122,11 @@ export function SubscriptionForm({
           ? "Saved"
           : transfer
             ? "Recurring transfer added"
-            : kind === "repetitive"
-              ? "Bill added"
-              : "Subscription added"
+            : income
+              ? "Recurring income added"
+              : kind === "repetitive"
+                ? "Bill added"
+                : "Subscription added"
       )
       onDone(id)
     } catch (err) {
@@ -133,6 +143,7 @@ export function SubscriptionForm({
           [
             ["repetitive", "Bill"],
             ["subscription", "Subscription"],
+            ["income", "Income"],
             ["transfer", "Transfer"],
           ] as const
         ).map(([k, label]) => (
@@ -142,26 +153,9 @@ export function SubscriptionForm({
         ))}
       </div>
 
-      <div className="grid grid-cols-[1fr_auto] items-end gap-3">
-        <div className="grid gap-1.5">
-          <Label htmlFor="sub-name">Name {transfer && <span className="text-muted-foreground">(optional)</span>}</Label>
-          <Input id="sub-name" value={name} onChange={(e) => setName(e.target.value)} autoComplete="off" />
-        </div>
-        {!transfer && (
-          <div role="group" aria-label="Direction" className={segment}>
-            {[false, true].map((inc) => (
-              <button
-                key={String(inc)}
-                type="button"
-                aria-pressed={income === inc}
-                onClick={() => setIncome(inc)}
-                className={segmentButton}
-              >
-                {inc ? "Income" : "Expense"}
-              </button>
-            ))}
-          </div>
-        )}
+      <div className="grid gap-1.5">
+        <Label htmlFor="sub-name">Name {transfer && <span className="text-muted-foreground">(optional)</span>}</Label>
+        <Input id="sub-name" value={name} onChange={(e) => setName(e.target.value)} autoComplete="off" />
       </div>
 
       {transfer ? (
@@ -327,7 +321,9 @@ export function SubscriptionForm({
         </p>
       )}
       <Button type="submit" disabled={busy}>
-        {initial ? "Save changes" : `Add ${transfer ? "transfer" : kind === "repetitive" ? "bill" : "subscription"}`}
+        {initial
+          ? "Save changes"
+          : `Add ${transfer ? "transfer" : income ? "income" : kind === "repetitive" ? "bill" : "subscription"}`}
       </Button>
     </form>
   )

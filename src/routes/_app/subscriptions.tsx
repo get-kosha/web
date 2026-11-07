@@ -79,10 +79,15 @@ const every = (n: number, unit: Unit) => (n === 1 ? unit : `${n} ${unit}s`)
 const nextLabel = (day: string, today: string) =>
   day > addDays(today, 300) ? `${fmtDay(day, { month: "short" })} '${day.slice(2, 4)}` : short(day)
 
-type Group = "Bills" | "Subscriptions" | "Transfers"
+type Group = "Bills" | "Subscriptions" | "Income" | "Transfers"
 const groupOf = (x: SubscriptionView): Group =>
-  x.to_wallet_id ? "Transfers" : x.kind === "repetitive" ? "Bills" : "Subscriptions"
-const KIND_LABEL: Record<Group, string> = { Bills: "Bill", Subscriptions: "Subscription", Transfers: "Transfer" }
+  x.to_wallet_id ? "Transfers" : x.amount > 0 ? "Income" : x.kind === "repetitive" ? "Bills" : "Subscriptions"
+const KIND_LABEL: Record<Group, string> = {
+  Bills: "Bill",
+  Subscriptions: "Subscription",
+  Income: "Income",
+  Transfers: "Transfer",
+}
 const isOpen = (i: Instance) => i.status !== "paid" && i.status !== "skipped"
 const COLS = "grid grid-cols-[minmax(0,1fr)_5.5rem_5rem] gap-4 md:grid-cols-[minmax(0,1fr)_5.75rem_5.5rem_6rem_5.75rem]"
 
@@ -104,7 +109,7 @@ function Subscriptions() {
   const perMonth = (x: SubscriptionView) => Math.abs(toCur(x.monthly, x.currency))
   const active = subs.filter((x) => !x.ended).sort((a, b) => perMonth(b) - perMonth(a))
   const ended = subs.filter((x) => x.ended).sort((a, b) => (b.end_day ?? "").localeCompare(a.end_day ?? ""))
-  const groups = (["Bills", "Subscriptions", "Transfers"] as const)
+  const groups = (["Bills", "Subscriptions", "Income", "Transfers"] as const)
     .map((g) => ({ g, rows: active.filter((x) => groupOf(x) === g) }))
     .filter((x) => x.rows.length)
   const selected = subs.find((x) => x.id === s.id)
@@ -194,7 +199,7 @@ function Subscriptions() {
               </div>
             )}
             {groups.map(({ g, rows }, n) => {
-              const total = rows.filter((x) => x.amount < 0).reduce((t, x) => t + perMonth(x), 0)
+              const total = rows.reduce((t, x) => t + perMonth(x), 0)
               return (
                 <section key={g} aria-label={g} className={cn(n > 0 && "border-t")}>
                   <div className={cn(COLS, "items-baseline px-4 pt-4 pb-1.5 text-xs text-muted-foreground")}>
