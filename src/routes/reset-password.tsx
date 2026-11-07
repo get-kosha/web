@@ -70,7 +70,7 @@ function ResetPassword() {
           />
         )}
       </AuthHeader>
-      <form onSubmit={submit} className="flex flex-1 flex-col gap-[18px] md:flex-none">
+      <form method="post" onSubmit={submit} className="flex flex-1 flex-col gap-[18px] md:flex-none">
         {/* Tells password managers which login the new password belongs to. */}
         {link.email && (
           <input type="email" name="username" autoComplete="username" value={link.email} readOnly hidden />

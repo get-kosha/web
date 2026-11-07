@@ -212,7 +212,7 @@ function Login() {
         </div>
       )}
 
-      <form onSubmit={submit} className="flex flex-col gap-4 max-md:gap-3">
+      <form method="post" onSubmit={submit} className="flex flex-col gap-4 max-md:gap-3">
         {!signIn && (
           <AuthField
             id="name"
@@ -471,7 +471,7 @@ function TwoFactorStep({
         )}
       </AuthHeader>
 
-      <form onSubmit={submit} className="flex flex-1 flex-col gap-[22px] md:flex-none">
+      <form method="post" onSubmit={submit} className="flex flex-1 flex-col gap-[22px] md:flex-none">
         <div className="flex flex-col gap-2.5">
           <label htmlFor="code" className="mb-0.5 text-[13px] leading-[18px] font-medium text-subtle-foreground">
             {backup ? m.auth_2fa_backup_label() : m.auth_2fa_code_label()}
