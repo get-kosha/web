@@ -606,6 +606,7 @@ export const OPERATIONS = {
             fee: z.number().int().min(0).default(0).describe("Part of `sent` charged as a fee."),
             provider: z.string().trim().max(60).default(""),
             day: Day.optional(),
+            time: Time.optional().describe("Left out: now for today, else noon."),
             note: Note.default(""),
           })
           .refine((t) => t.fromAccountId !== t.toAccountId, "Pick two different accounts")

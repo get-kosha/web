@@ -226,7 +226,8 @@ async function loadTransactions(uid: string, list: string[]) {
   return list.flatMap((id) => byId.get(id) ?? [])
 }
 
-async function transactionsOut(uid: string, list: string[]) {
+/** Transactions by id in the public shape, for the phone apps' GET /api/app/transactions/{id}. */
+export async function transactionsOut(uid: string, list: string[]) {
   const [{ tz }, l, rows] = await Promise.all([getSettings(uid), lookups(uid), loadTransactions(uid, list)])
   return { transactions: rows.map((t) => toTransaction(t, tz, l)) }
 }
@@ -514,6 +515,7 @@ const HANDLERS: Handlers = {
         received: t.received ?? Math.max(1, round(convert(t.sent - t.fee, from, to, rates))),
         provider: t.provider,
         day: t.day ?? today,
+        time: t.time,
         note: t.note,
       }
     })

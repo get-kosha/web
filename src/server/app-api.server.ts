@@ -21,6 +21,7 @@ import {
   listApiKeys,
   listConnectedApps,
   overLimit,
+  transactionsOut,
   zodIssues,
   type Principal,
 } from "@/server/api.server"
@@ -144,6 +145,12 @@ const ROUTES: Record<string, Handler> = {
   },
   "GET /payee-history": ({ uid, url }) =>
     finance.payeeHistory(uid, z.string().min(1).max(200).parse(url.searchParams.get("name"))),
+  // One entry in the public shape, for duplicating it or opening it from a link.
+  "GET /transactions/{id}": async ({ uid, params }) => {
+    const [t] = (await transactionsOut(uid, [params.id])).transactions
+    if (!t) throw new HttpError(404, m.server_transaction_not_found())
+    return t
+  },
   "GET /days": ({ uid, url }) =>
     daysWithEntries(
       uid,
