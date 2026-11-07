@@ -178,6 +178,7 @@ assert.deepEqual(qa, {
   categoryId: "dining",
   payee: "Pizza Hut",
   tags: [],
+  currency: false,
 })
 const qt = parseQuickAdd("12 #Trip lunch #trip #rome-2026", qw, qc)
 assert.deepEqual(qt.tags, ["trip", "rome-2026"])
@@ -218,6 +219,117 @@ assert.equal(ai("Miete 1200 am 3."), true)
 assert.equal(ai("Essen mit Sam 18,50 letzten Freitag"), true)
 assert.equal(ai("Kino 12 vorgestern"), true)
 console.log("quick add ok")
+
+// quick add in all 12 languages: number formats, day words, scripts without spaces, sentences for AI
+{
+  const q = (s: string, locale: string) => parseQuickAdd(s, qw, qc, locale)
+  const ai = (s: string, locale: string) => needsAi(s, q(s, locale), locale)
+  const local = (s: string, locale: string) => {
+    const p = q(s, locale)
+    return [p.amount, p.date, p.payee, needsAi(s, p, locale)]
+  }
+  // number formats: grouping, decimal commas, Indian lakh, Devanagari and full-width digits, 万 and 만
+  assert.equal(q("1,234.56 rent", "en").amount, 123456)
+  assert.equal(q("1.234,56 Miete", "de").amount, 123456)
+  assert.equal(q("1'200.50 Miete", "de").amount, 120050)
+  assert.equal(q("1,234 rent", "en").amount, 123400) // three digits after a separator group thousands
+  assert.equal(q("0,5 café", "fr").amount, 50)
+  assert.equal(q("1,00,000 किराया", "hi").amount, 10000000)
+  assert.equal(q("３万円 家賃", "ja").amount, 3000000)
+  assert.equal(q("1.5万 房租", "zh").amount, 1500000)
+  // one line per language: [amount, date, payee, needs AI]
+  assert.deepEqual(local("24.90 pizza hut yesterday", "en"), [2490, "yesterday", "pizza hut", false])
+  assert.deepEqual(local("Bäcker 4,20 heute", "de"), [420, "today", "Bäcker", false])
+  assert.deepEqual(local("12,50 mercadona ayer", "es"), [1250, "yesterday", "mercadona", false])
+  assert.deepEqual(local("4,20 boulangerie aujourd’hui", "fr"), [420, "today", "boulangerie", false])
+  assert.deepEqual(local("3,50 bar ieri", "it"), [350, "yesterday", "bar", false])
+  assert.deepEqual(local("padaria 8,90 hj", "pt"), [890, "today", "padaria", false])
+  assert.deepEqual(local("6,95 albert heijn gister", "nl"), [695, "yesterday", "albert heijn", false])
+  assert.deepEqual(local("350 пятёрочка вчера", "ru"), [35000, "yesterday", "пятёрочка", false])
+  assert.deepEqual(local("दूध ५० आज", "hi"), [5000, "today", "दूध", false])
+  assert.deepEqual(local("昨日ランチ850", "ja"), [85000, "yesterday", "ランチ", false])
+  assert.deepEqual(local("昨天午饭35", "zh"), [3500, "yesterday", "午饭", false])
+  assert.deepEqual(local("점심 9000 오늘", "ko"), [900000, "today", "점심", false])
+  assert.deepEqual(local("１２００ 本屋 きのう", "ja"), [120000, "yesterday", "本屋", false])
+  assert.equal(q("11月3日 家賃 80000", "ja").amount, 8000000) // dates are not split into amounts
+  // "hier" is yesterday in French and "here" in German and Dutch: the UI language decides
+  assert.equal(q("hier boulangerie 4,20", "fr").date, "yesterday")
+  assert.equal(q("hier boulangerie 4,20", "en").date, "yesterday")
+  assert.equal(q("hier Bäcker 4,20", "de").date, null)
+  // a currency sign or unit is read as the amount, and AI checks the currency
+  assert.deepEqual([q("어제 점심 9000원", "ko").amount, q("어제 점심 9000원", "ko").payee], [900000, "점심"])
+  assert.equal(q("3만원 택시", "ko").amount, 3000000)
+  assert.equal(q("500₽ такси", "ru").currency, true)
+  assert.equal(q("R$ 20 padaria", "pt").amount, 2000)
+  assert.equal(q("35元午饭", "zh").payee, "午饭")
+  for (const [s, l] of [
+    ["12,50 € café", "fr"],
+    ["35元 打车", "zh"],
+    ["スタバ 500円", "ja"],
+    ["500 руб такси", "ru"],
+  ])
+    assert.equal(ai(s, l), true, s)
+  // sentences go to AI in every language
+  for (const [s, l] of [
+    ["café con Ana 4,50 el viernes", "es"],
+    ["déjeuner avec Paul 18,50 vendredi", "fr"],
+    ["pizza con Marco 25 sabato", "it"],
+    ["almoço com a Ana 30 sexta-feira", "pt"],
+    ["lunch met Sanne 15 vrijdag", "nl"],
+    ["обед с Машей 800 в пятницу", "ru"],
+    ["कल दूध 50", "hi"],
+    ["スタバで500", "ja"],
+    ["一昨日 ランチ 900", "ja"],
+    ["在星巴克花了35", "zh"],
+    ["스타벅스에서 5000", "ko"],
+    ["Essen 20 vorgestern", "de"],
+  ])
+    assert.equal(ai(s, l), true, s)
+  assert.equal(ai("mars 1,20", "en"), false) // the chocolate bar, not the French month
+  assert.equal(ai("mars 1,20 courses", "fr"), true)
+  console.log("quick add languages ok")
+}
+
+// search: a question leads with Ask Kosha in every language
+import { isQuestion } from "./question.ts"
+for (const [s, l] of [
+  ["how much did I spend on food", "en"],
+  ["wie viel habe ich im Oktober ausgegeben", "de"],
+  ["¿cuánto gasté en comida", "es"],
+  ["cuanto gaste en octubre", "es"],
+  ["combien j'ai dépensé en courses", "fr"],
+  ["qu’est-ce que j'ai acheté hier", "fr"],
+  ["quanto ho speso a ottobre", "it"],
+  ["dov'è finito lo stipendio", "it"],
+  ["o que comprei ontem", "pt"],
+  ["hoeveel heb ik uitgegeven", "nl"],
+  ["сколько я потратил на еду", "ru"],
+  ["трачу ли я больше, чем в прошлом месяце", "ru"],
+  ["मैंने खाने पर कितना खर्च किया", "hi"],
+  ["kitna kharcha hua", "hi"],
+  ["今月いくら使った", "ja"],
+  ["食費使いすぎ？", "ja"],
+  ["这个月花了多少钱", "zh"],
+  ["이번 달 얼마 썼어", "ko"],
+  ["dove", "it"],
+  ["何记", "ja"],
+])
+  assert.equal(isQuestion(s, l), true, s)
+for (const [s, l] of [
+  ["tesco", "en"],
+  ["dove", "en"], // the soap
+  ["quick", "fr"],
+  ["mercadona", "es"],
+  ["albert heijn", "nl"],
+  ["пятёрочка", "ru"],
+  ["दूध", "hi"],
+  ["スタバ", "ja"],
+  ["星巴克", "zh"],
+  ["何记", "zh"], // a shop, not "what"
+  ["스타벅스", "ko"],
+])
+  assert.equal(isQuestion(s, l), false, s)
+console.log("questions ok")
 
 // tags and events
 import { eventFor, parseTags, tagList } from "./core.ts"

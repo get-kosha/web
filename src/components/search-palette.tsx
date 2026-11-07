@@ -21,6 +21,7 @@ import { CategoryIcon } from "@/components/category-icon"
 import { useMeta } from "@/components/shell"
 import { suggestPayees, type PayeeSuggestion } from "@/lib/api"
 import { fmt, isNeutral } from "@/lib/core"
+import { isQuestion } from "@/lib/question"
 import { cn } from "@/lib/utils"
 import { m } from "@/paraglide/messages"
 
@@ -122,7 +123,8 @@ function Body({ close, onAdd }: { close: () => void; onAdd: (text: string) => vo
         }
       : null
   // A question leads the list; anything else keeps search first.
-  if (ask && QUESTION.test(text)) items.push(ask)
+  const question = isQuestion(text)
+  if (ask && question) items.push(ask)
   if (text) {
     items.push({
       id: "search",
@@ -178,7 +180,7 @@ function Body({ close, onAdd }: { close: () => void; onAdd: (text: string) => vo
       end: <ArrowRightIcon className="size-3.5 text-muted-foreground" />,
       run: go(() => void navigate({ to: p.to })),
     })
-  if (ask && !QUESTION.test(text)) items.push(ask)
+  if (ask && !question) items.push(ask)
   items.push({
     id: "add",
     group: m.common_add(),
@@ -249,11 +251,6 @@ function Body({ close, onAdd }: { close: () => void; onAdd: (text: string) => vo
     </div>
   )
 }
-
-// English and German question words, so a question without a "?" still leads with Ask.
-// ponytail: other languages need the "?" to lead with Ask.
-const QUESTION =
-  /\?\s*$|^(how|what|when|where|why|which|who|did|do|does|am|is|are|was|were|can|could|should|will|show|list|compare|tell|wie|wann|wo|warum|wieso|welche[rsnm]?|wer|wieviel|habe?|bin|ist|sind|kann|soll|zeige?|liste|vergleiche?)\b/i
 
 const Hint = ({ children }: { children: ReactNode }) => (
   <span className="text-xs text-muted-foreground">{children}</span>
