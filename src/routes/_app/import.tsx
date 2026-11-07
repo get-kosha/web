@@ -220,9 +220,8 @@ function Import() {
           : r.account.name
             ? `name:${r.account.name.toLowerCase()}`
             : `file:${id}`,
-        title:
-          r.account.name ??
-          `${credit ? m.import_type_card() : m.import_type_bank()}${r.account.last4 ? ` ••${r.account.last4}` : ""}`,
+        // The last four digits stay in the name, so next month's statement finds this account.
+        title: `${r.account.name ?? (credit ? m.import_type_card() : m.import_type_bank())}${r.account.last4 ? ` ••${r.account.last4}` : ""}`,
       }
     }
     const text = await fileText(file)
