@@ -386,20 +386,12 @@ function Hero({ demo }: { demo: boolean }) {
             <span className="block">a few seconds at a time</span>
           </h1>
 
-          <div className="mt-8 grid gap-x-12 gap-y-8 lg:mt-6 lg:grid-cols-12 lg:items-end">
-            <p className="max-w-[34rem] text-lg leading-relaxed text-pretty text-subtle-foreground lg:col-span-6">
-              Add each payment on your phone as you pay. At your desk, see how the month is going and check it against
-              your bank.
-            </p>
-            <div className="lg:col-span-6 lg:justify-self-end">
-              <div className="flex flex-wrap gap-3">
-                <a href={SIGN_UP} className={cn(button, solid)}>
-                  Create an account
-                </a>
-                <a href={SOURCE} className={cn(button, outline)}>
-                  <GithubLogoIcon className="size-[18px]" aria-hidden="true" /> View on GitHub
-                </a>
-              </div>
+          <div className="mt-8 grid gap-x-12 gap-y-8 lg:mt-6 lg:grid-cols-12 lg:items-center">
+            <div className="lg:col-span-6">
+              <p className="max-w-[34rem] text-lg leading-relaxed text-pretty text-subtle-foreground">
+                Add each payment on your phone as you pay. At your desk, see how the month is going and check it against
+                your bank.
+              </p>
               <p className="mt-3 text-sm text-muted-foreground">
                 Free and open source, MIT licensed.
                 {demo && (
@@ -412,9 +404,17 @@ function Hero({ demo }: { demo: boolean }) {
                 )}
               </p>
             </div>
+            <div className="flex flex-wrap gap-3 lg:col-span-6 lg:justify-self-end">
+              <a href={SIGN_UP} className={cn(button, solid)}>
+                Create an account
+              </a>
+              <a href={SOURCE} className={cn(button, outline)}>
+                <GithubLogoIcon className="size-[18px]" aria-hidden="true" /> View on GitHub
+              </a>
+            </div>
           </div>
 
-          <div className="relative mt-10 lg:mt-6">
+          <div className="relative mt-14 lg:mt-16">
             <div aria-hidden="true" className={cn(coin, "top-24 -right-56 size-[600px]")} />
             <HeroDemo />
           </div>
