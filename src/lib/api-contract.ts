@@ -151,6 +151,11 @@ const Transaction = z.object({
       counterAccountId: Id.nullable(),
       counterAmount: z.number().int().nullable(),
       fee: z.number().int(),
+      provider: z.string().describe("Wise, Revolut, your bank… Empty if not given."),
+      marketRate: z
+        .number()
+        .nullable()
+        .describe("Mid-market rate that day between the two currencies, when they differ and it's known."),
     })
     .nullable()
     .describe("Set on both halves of a transfer."),
@@ -446,6 +451,20 @@ export const OPERATIONS = {
           transferred: z.number().int().describe("Sum moved out by transfers."),
         })
       ),
+      byCategory: z
+        .array(
+          z.object({
+            categoryId: Id,
+            categoryName: z.string(),
+            currency: Currency,
+            amount: Cents.describe("Paid spending and income in this category, net (refunds lower it)."),
+            count: z.number().int(),
+          })
+        )
+        .optional()
+        .describe(
+          "Only with a tag or eventId: what it cost per category and currency, most spent first. Transfers and corrections are left out."
+        ),
     }),
     example: {
       input: { query: "tesco", from: "2026-01-01", to: "2026-11-06", limit: 20 },
@@ -766,8 +785,11 @@ export const OPERATIONS = {
     description:
       "Lists spending and income categories with how often each is used. Subcategories carry a parentId. Transfers and balance corrections have their own system categories and aren't listed.",
     input: z.object({ includeArchived: z.boolean().default(false) }),
-    output: z.object({ categories: z.array(Category) }),
-    example: { input: {}, output: { categories: [category] } },
+    output: z.object({
+      categories: z.array(Category),
+      correctionCount: z.number().int().describe("Balance corrections, which use the unlisted system category 0."),
+    }),
+    example: { input: {}, output: { categories: [category], correctionCount: 3 } },
   }),
   create_category: op({
     title: "Create category",

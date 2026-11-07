@@ -83,6 +83,8 @@ const readInput = z.object({
   format: z.enum(["csv", "ofx", "qfx", "pdf"]).optional(),
   /** A credit card's statement: its CSV usually shows spending as positive. */
   card: z.boolean().default(false),
+  /** The account it's for, when known (Reconcile): a card's statement reads the other way, CSV or PDF. */
+  walletId: z.string().min(1).optional(),
   /** The columns as the person set them; left out, Kosha uses the remembered layout or its own guess. */
   layout: statements.layoutSchema.optional(),
 })
@@ -90,12 +92,23 @@ const readInput = z.object({
 async function readStatement(uid: string, input: z.infer<typeof readInput>) {
   const ext = input.name.toLowerCase().match(/\.(csv|ofx|qfx|pdf)$/)?.[1]
   const format = input.format ?? (ext === "pdf" ? "pdf" : isOfx(input.content) ? "ofx" : ext === "qfx" ? "qfx" : "csv")
+  const { walletId } = input
   if (format === "pdf")
-    return { format, ...(await ai.readStatement(uid, ai.pdfInput.parse({ name: input.name, data: input.content }))) }
+    return {
+      format,
+      ...(await ai.readStatement(uid, ai.pdfInput.parse({ walletId, name: input.name, data: input.content }))),
+    }
   if (format === "ofx" || format === "qfx") return { format, ...parseOfx(input.content) }
   const rows = parseCsv(input.content)
   if (rows.length < 2) throw new HttpError(400, m.import_error_no_rows())
-  const guess = guessLayout(rows, input.card)
+  const wallet = walletId
+    ? await db()
+        .prepare("SELECT type FROM wallets WHERE user_id = ? AND id = ?")
+        .bind(uid, walletId)
+        .first<{ type: string }>()
+    : null
+  if (walletId && !wallet) throw new HttpError(404, m.server_account_not_found())
+  const guess = guessLayout(rows, input.card || wallet?.type === "credit")
   const signature = layoutSignature(rows, guess.layout)
   const remembered = (await statements.importMemory(uid)).layouts[signature]
   const layout = input.layout ?? remembered ?? guess.layout
@@ -147,9 +160,20 @@ const ROUTES: Record<string, Handler> = {
   // page's per-account history and month flows, schedules with their payment history, and the days that have entries.
   "GET /dashboard": ({ uid, url }) => finance.dashboard(uid, finance.dashboardInput.parse(query(url))),
   "GET /accounts-overview": ({ uid, url }) => finance.accountsOverview(uid, finance.dashboardInput.parse(query(url))),
+  // Each schedule with attachment_count, the files on its payments ("· 11 payslips").
   "GET /subscriptions": async ({ uid }) => {
-    const [subscriptions, income] = await Promise.all([finance.listSubscriptions(uid), finance.recentIncome(uid)])
-    return { subscriptions, income }
+    const [subscriptions, income, files] = await Promise.all([
+      finance.listSubscriptions(uid),
+      finance.recentIncome(uid),
+      db()
+        .prepare(`SELECT t.subscription_id AS id, COUNT(*) AS n FROM attachments a
+          JOIN transactions t ON t.user_id = a.user_id AND t.id = a.transaction_id
+          WHERE a.user_id = ? AND t.subscription_id IS NOT NULL GROUP BY t.subscription_id`)
+        .bind(uid)
+        .all<{ id: string; n: number }>(),
+    ])
+    const count = new Map(files.results.map((f) => [f.id, f.n]))
+    return { subscriptions: subscriptions.map((s) => ({ ...s, attachment_count: count.get(s.id) ?? 0 })), income }
   },
   "GET /payee-history": ({ uid, url }) =>
     finance.payeeHistory(uid, z.string().min(1).max(200).parse(url.searchParams.get("name"))),

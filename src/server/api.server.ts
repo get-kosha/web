@@ -209,6 +209,8 @@ const toTransaction = (t: Tx, tz: string, l: Lookups) => ({
         counterAccountId: t.counter_wallet_id ?? null,
         counterAmount: t.counter_amount ?? null,
         fee: t.fee ?? 0,
+        provider: t.provider ?? "",
+        marketRate: t.market_rate ?? null,
       }
     : null,
   reconciled: !!t.reconciled_id,
@@ -390,6 +392,15 @@ const HANDLERS: Handlers = {
         received: t.inn,
         transferred: t.transfers,
       })),
+      ...(res.byCategory && {
+        byCategory: res.byCategory.map((c) => ({
+          categoryId: c.category_id,
+          categoryName: l.categories.get(c.category_id)?.name ?? "",
+          currency: c.currency,
+          amount: c.amount,
+          count: c.n,
+        })),
+      }),
     }
   },
   async create_transactions(uid, input) {
@@ -617,8 +628,11 @@ const HANDLERS: Handlers = {
 
   // Categories
   async list_categories(uid, input) {
-    const all = await finance.listCategories(uid)
-    return { categories: all.filter((c) => input.includeArchived || !c.archived).map(toCategory) }
+    const [all, corrections] = await Promise.all([finance.listCategories(uid), finance.correctionCount(uid)])
+    return {
+      categories: all.filter((c) => input.includeArchived || !c.archived).map(toCategory),
+      correctionCount: corrections,
+    }
   },
   async create_category(uid, input) {
     const parent = input.parentId ? await findCategory(uid, input.parentId) : null

@@ -550,7 +550,7 @@ export async function listTransactions(uid: string, data: z.infer<typeof listInp
   if (data.reconciled !== undefined) where.push(`t.reconciled_id IS ${data.reconciled ? "NOT " : ""}NULL`)
   const w = `WHERE ${where.join(" AND ")}`
   const DB = db()
-  const [rows, count, totals, corrections] = await DB.batch([
+  const [rows, count, totals, corrections, byCategory] = await DB.batch([
     DB.prepare(`SELECT t.*,
       (SELECT COUNT(*) FROM attachments a WHERE a.user_id = t.user_id AND a.transaction_id = t.id) AS files,
       ${COUNTERPART} ${w} ORDER BY t.date DESC LIMIT ? OFFSET ?`).bind(...binds, data.limit + 1, data.offset),
@@ -565,6 +565,15 @@ export async function listTransactions(uid: string, data: z.infer<typeof listInp
     DB.prepare(
       `SELECT COUNT(*) AS n FROM transactions t WHERE ${base.join(" AND ")} AND t.category_id = '${CORRECTION_CATEGORY}'`
     ).bind(...baseBinds),
+    // A tag or an event is read as one budget: what it cost per category, per currency.
+    ...(data.tag || data.event
+      ? [
+          DB.prepare(`SELECT t.category_id, w.currency, SUM(t.amount) AS amount, COUNT(*) AS n
+            FROM transactions t JOIN wallets w ON w.user_id = t.user_id AND w.id = t.wallet_id
+            ${w} AND t.paid = 1 AND t.category_id NOT IN ${NEUTRAL_SQL}
+            GROUP BY t.category_id, w.currency ORDER BY SUM(t.amount)`).bind(...binds),
+        ]
+      : []),
   ])
   const list = rows.results as Tx[]
   return {
@@ -572,6 +581,9 @@ export async function listTransactions(uid: string, data: z.infer<typeof listInp
     total: (count.results[0] as { n: number }).n,
     totals: totals.results as { currency: string; out: number; inn: number; transfers: number }[],
     corrections: (corrections.results[0] as { n: number }).n,
+    byCategory: byCategory?.results as
+      | { category_id: string; currency: string; amount: number; n: number }[]
+      | undefined,
     tz,
   }
 }
@@ -1609,6 +1621,15 @@ export async function suggestPayees(uid: string, q: string, limit = 5) {
 // ---------- categories ----------
 
 export type ManagedCategory = Omit<Category, "uses"> & { archived: number; tx: number; subs: number; rules: number }
+
+/** How many balance corrections (category 0) there are; listCategories leaves the system categories out. */
+export async function correctionCount(uid: string) {
+  const row = await db()
+    .prepare(`SELECT COUNT(*) AS n FROM transactions WHERE user_id = ? AND category_id = '${CORRECTION_CATEGORY}'`)
+    .bind(uid)
+    .first<{ n: number }>()
+  return row?.n ?? 0
+}
 
 export async function listCategories(uid: string) {
   const { results } = await db()
