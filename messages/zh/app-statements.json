@@ -1,3 +1,80 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_rcn_quick_title": "快速核对",
+  "app_rcn_statement_title": "用对账单核对",
+  "app_rcn_tick_off": "逐条勾选",
+  "app_rcn_import_instead": "改为导入对账单",
+  "app_rcn_formats": "银行导出的 CSV、OFX 或 QFX 文件。",
+  "app_rcn_formats_pdf": "银行导出的 CSV、OFX、QFX 或 PDF 文件。",
+  "app_rcn_below_zero": "负数",
+  "app_imp_choose": "选择文件",
+  "app_imp_choose_more": "选择更多文件",
+  "app_imp_formats": "CSV、OFX 或 QFX。所有银行和信用卡，多少个月都可以。",
+  "app_imp_formats_pdf": "CSV、OFX、QFX 或 PDF。所有银行和信用卡，多少个月都可以。",
+  "app_imp_share_hint": "也可以从文件应用或银行应用把对账单分享到 Kosha。",
+  "app_imp_read_progress": "已完成 {done}/{total}",
+  "app_imp_reading": "正在读取…",
+  "app_imp_reading_ai": "正在用 AI 读取…",
+  "app_imp_check_accounts": "检查账户",
+  "app_imp_offline": "导入需要网络连接。恢复联网后再选择文件。",
+  "app_imp_closing_matches": "期末余额一致",
+  "app_imp_card_bill": "从银行账户还信用卡",
+  "app_imp_check_pdf": "请与 PDF 核对",
+  "app_imp_recurring": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "有 {count} 笔付款看起来是定期的"
+      }
+    }
+  ],
+  "app_imp_n_files": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{count} 个文件"
+      }
+    }
+  ],
+  "app_imp_n_accounts": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{count} 个账户"
+      }
+    }
+  ],
+  "app_imp_n_payees": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{count} 个交易对象"
+      }
+    }
+  ],
+  "app_imp_n_transfers": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{count} 笔转账"
+      }
+    }
+  ],
+  "app_imp_n_new": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{count} 笔新交易"
+      }
+    }
+  ],
+  "app_imp_summary": "{accounts}中有 {transactions}",
+  "app_imp_done_summary": "已将 {transactions} 导入 {accounts}。",
+  "app_imp_done_summary_transfers": "已将 {transactions} 导入 {accounts}，并关联了其间的 {transfers}。"
 }

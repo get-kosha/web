@@ -1,3 +1,53 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_add_start": "Begin met het bedrag",
+  "app_add_ready_next": "Klaar voor de volgende. Rekening en datum blijven staan.",
+  "app_add_income_note": "Geld dat binnenkomt staat met een plus",
+  "app_add_transfer_note": "Telt niet als uitgave. De kosten wel.",
+  "app_add_converted": "≈ {amount} tegen de koers van vandaag",
+  "app_add_why_expense_new": "{payee} is nieuw, dus Kosha kan er geen raden. Kies er een en de uitgave wordt toegevoegd.",
+  "app_add_why_income_new": "{payee} is nieuw, dus Kosha kan er geen raden. Kies er een en de inkomsten worden toegevoegd.",
+  "app_add_why_expense": "Kosha kan er nog geen raden. Kies er een en de uitgave wordt toegevoegd.",
+  "app_add_why_income": "Kosha kan er nog geen raden. Kies er een en de inkomsten worden toegevoegd.",
+  "app_add_most_used_first": "Meest gebruikt eerst.",
+  "app_add_used_before": "Eerder gebruikt",
+  "app_add_picked_by_date": "{dates} · gekozen op datum",
+  "app_add_files": "Bestanden",
+  "app_add_attach": "Toevoegen",
+  "app_add_days_with_entries": "Dagen met transacties",
+  "app_add_time_help_24": "Draai aan een wiel of tik op een rij. 24-uursnotatie, volgens je taal.",
+  "app_add_time_help_12": "Draai aan een wiel of tik op een rij. 12-uursnotatie, volgens je taal.",
+  "app_add_privacy": "Kosha stuurt alleen {#link}wat je deelt{/link} naar {provider}.",
+  "app_add_camera_hint": "Houd het bonnetje binnen het kader.",
+  "app_add_choose_photo": "Foto kiezen",
+  "app_add_take_photo": "Foto maken",
+  "app_add_flash_on": "Flitser aan",
+  "app_add_flash_off": "Flitser uit",
+  "app_add_camera_needed": "Kosha heeft de camera nodig om een bonnetje te scannen. Je kunt ook een foto kiezen.",
+  "app_add_allow_camera": "Camera toestaan",
+  "app_add_filled_receipt": "Gelezen van je bonnetje",
+  "app_add_filled_ai": "Ingevuld door AI",
+  "app_add_check_it": "Controleer het voordat je het toevoegt.",
+  "app_add_check_photo": "Controleer het voordat je het toevoegt. De foto is bijgevoegd.",
+  "app_add_times": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} keer",
+        "countPlural=*": "{count} keer"
+      }
+    }
+  ],
+  "app_add_available_of": "{available} van {limit} beschikbaar",
+  "app_add_swap": "Van en naar omwisselen",
+  "app_add_fee_amount": "{amount} kosten",
+  "app_add_category_none": "Categorie, nog niet gekozen",
+  "app_add_category_picked": "Categorie, {name}",
+  "app_add_category_usual": "Categorie, {name}, gebruikelijk voor deze tegenpartij",
+  "app_add_category_ai": "Categorie, {name}, voorgesteld door AI",
+  "app_add_account_guessed": "Rekening, {name}, geraden",
+  "app_add_clear_payee": "Tegenpartij wissen",
+  "app_add_time_row": "Tijd, {time}, wijzigen",
+  "app_add_back_to_date": "Terug naar datum"
 }

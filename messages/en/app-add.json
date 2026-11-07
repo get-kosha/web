@@ -1,3 +1,53 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_add_start": "Start with the amount",
+  "app_add_ready_next": "Ready for the next one. Account and date stay.",
+  "app_add_income_note": "Money in shows with a plus",
+  "app_add_transfer_note": "Not counted as spending. The fee is.",
+  "app_add_converted": "≈ {amount} at today's rate",
+  "app_add_why_expense_new": "{payee} is new, so Kosha can't guess one. Pick it and the expense is added.",
+  "app_add_why_income_new": "{payee} is new, so Kosha can't guess one. Pick it and the income is added.",
+  "app_add_why_expense": "Kosha can't guess one yet. Pick it and the expense is added.",
+  "app_add_why_income": "Kosha can't guess one yet. Pick it and the income is added.",
+  "app_add_most_used_first": "Most used first.",
+  "app_add_used_before": "Used before",
+  "app_add_picked_by_date": "{dates} · picked by date",
+  "app_add_files": "Files",
+  "app_add_attach": "Attach",
+  "app_add_days_with_entries": "Days with entries",
+  "app_add_time_help_24": "Flick or drag a wheel, or tap a row. 24-hour, from your language.",
+  "app_add_time_help_12": "Flick or drag a wheel, or tap a row. 12-hour, from your language.",
+  "app_add_privacy": "Kosha sends only {#link}what you share{/link} with {provider}.",
+  "app_add_camera_hint": "Fit the receipt inside the frame.",
+  "app_add_choose_photo": "Choose a photo",
+  "app_add_take_photo": "Take photo",
+  "app_add_flash_on": "Flash on",
+  "app_add_flash_off": "Flash off",
+  "app_add_camera_needed": "Kosha needs the camera to scan a receipt. You can also choose a photo.",
+  "app_add_allow_camera": "Allow camera",
+  "app_add_filled_receipt": "Read from your receipt",
+  "app_add_filled_ai": "Filled in by AI",
+  "app_add_check_it": "Check it before adding.",
+  "app_add_check_photo": "Check it before adding. The photo is attached.",
+  "app_add_times": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} time",
+        "countPlural=*": "{count} times"
+      }
+    }
+  ],
+  "app_add_available_of": "{available} available of {limit}",
+  "app_add_swap": "Swap from and to",
+  "app_add_fee_amount": "{amount} fee",
+  "app_add_category_none": "Category, not picked yet",
+  "app_add_category_picked": "Category, {name}",
+  "app_add_category_usual": "Category, {name}, usual for this payee",
+  "app_add_category_ai": "Category, {name}, suggested by AI",
+  "app_add_account_guessed": "Account, {name}, guessed",
+  "app_add_clear_payee": "Clear payee",
+  "app_add_time_row": "Time, {time}, change",
+  "app_add_back_to_date": "Back to date"
 }

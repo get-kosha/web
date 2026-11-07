@@ -1,3 +1,91 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_set_profile_desc": "नाम, फ़ोटो और ईमेल",
+  "app_set_security_desc": "पासकी, टू-फ़ैक्टर, ऐप लॉक, डिवाइस",
+  "app_set_general_desc": "भाषा, टाइम ज़ोन, जोड़ते समय की डिफ़ॉल्ट सेटिंग",
+  "app_set_appearance_desc": "थीम, एक्सेंट, डेंसिटी, रकम छिपाएँ",
+  "app_set_categories_desc": "आइकन, नाम, उप-श्रेणियाँ, मिलाना",
+  "app_set_events_desc": "यात्राएँ और मौके",
+  "app_set_rules_learning": "आपके बदलावों से सीख रहा है",
+  "app_set_recurring_desc": "बिल और सब्सक्रिप्शन की डिफ़ॉल्ट सेटिंग",
+  "app_set_ai_features_on": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} सुविधा चालू",
+        "countPlural=*": "{count} सुविधाएँ चालू"
+      }
+    }
+  ],
+  "app_set_data_desc": "स्टेटमेंट अंदर, CSV या JSON बाहर",
+  "app_set_apps_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} जुड़ा ऐप",
+        "countPlural=*": "{count} जुड़े ऐप"
+      }
+    }
+  ],
+  "app_set_keys_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} कुंजी",
+        "countPlural=*": "{count} कुंजियाँ"
+      }
+    }
+  ],
+  "app_set_delete_desc": "स्थायी कार्रवाइयाँ",
+  "app_set_footer": "Kosha {version} ({build}) · {server}",
+  "app_set_unlock": "फ़िंगरप्रिंट या चेहरे से अनलॉक करें",
+  "app_set_unlock_desc": "Kosha खोलते समय पूछता है। फ़ोन का PIN भी चलता है।",
+  "app_set_unlock_kw": "ऐप लॉक बायोमेट्रिक फ़िंगरप्रिंट चेहरा PIN app lock fingerprint face",
+  "app_set_unlock_unavailable": "पहले इस फ़ोन पर स्क्रीन लॉक सेट करें।",
+  "app_set_on_phone": "इस फ़ोन पर",
+  "app_set_lock_after": "फिर से लॉक करें",
+  "app_set_lock_instantly": "तुरंत",
+  "app_set_lock_minutes": "{n} मिनट",
+  "app_set_lock_hour": "1 घंटा",
+  "app_set_lock_note": "सिर्फ़ इस फ़ोन पर।",
+  "app_set_opens_web": "ये {host} खोलते हैं और आपको वापस ले आते हैं।",
+  "app_set_hide_desc": "छूकर दबाए रखने तक रकम धुंधली रखें। अकाउंट मेन्यू में भी यह स्विच है।",
+  "app_set_account_colours": "खातों के रंग",
+  "app_set_account_colours_desc": "हर खाते के लिए एक छोटा रंग का निशान। बंद करने पर वेब जैसा दिखता है।",
+  "app_set_add_currency": "मुद्रा जोड़ें",
+  "app_set_currencies_note": "क्रम बदलने के लिए दबाकर खींचें। सबसे ऊपर वाली आपकी मुख्य मुद्रा है, इसलिए नेट वर्थ और जोड़ इसी में होते हैं। ओवरव्यू के ऊपर का मुद्रा स्विच इन्हें इसी क्रम में बदलता है।",
+  "app_set_rate_in": "1 {from}, {to} में",
+  "app_set_move_up": "ऊपर ले जाएँ",
+  "app_set_move_down": "नीचे ले जाएँ",
+  "app_set_subcategories": "उप-श्रेणियाँ",
+  "app_set_rule_used": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} बार इस्तेमाल",
+        "countPlural=*": "{count} बार इस्तेमाल"
+      }
+    }
+  ],
+  "app_set_ai_intro": "वैकल्पिक। इसके बिना भी Kosha पूरी तरह चलता है।",
+  "app_set_ai_add_provider": "प्रोवाइडर जोड़ें",
+  "app_set_ai_add_provider_desc": "OpenAI, Gemini, OpenRouter, Ollama या आपका अपना एंडपॉइंट",
+  "app_set_ai_disconnect_named": "{name} डिस्कनेक्ट करें",
+  "app_set_ai_replace": "बदलें",
+  "app_set_ai_key_stored": "सर्वर पर एन्क्रिप्ट करके रखी जाती है। Kosha इसे फिर कभी नहीं दिखाता।",
+  "app_set_ai_privacy_intro": "वे फ़ील्ड जिन्हें Kosha आपके AI प्रोवाइडर को भेज सकता है। बाकी सब Kosha में ही रहता है।",
+  "app_set_ai_each_sends": "हर सुविधा क्या भेजती है",
+  "app_set_ai_sent": "भेजा गया",
+  "app_set_ai_returned": "जवाब",
+  "app_set_export_note": "डाउनलोड करने पर शेयर शीट खुलती है, ताकि आप उन्हें फ़ाइलों में सेव कर सकें या आगे भेज सकें।",
+  "app_set_share": "शेयर करें",
+  "app_set_delete_intro": "इन्हें पलटा नहीं जा सकता। पक्का न हो तो पहले एक्सपोर्ट करें।",
+  "app_set_delete_account_note": "{host} खुलता है, जहाँ आप तीन चरणों में अपने ईमेल और पासवर्ड से पुष्टि करते हैं।",
+  "app_wel_net_worth_starts": "नेट वर्थ {amount} से शुरू होती है।",
+  "app_wel_import_later": "अभी नहीं? आप इन्हें कभी भी खाते या सेटिंग्स › इम्पोर्ट और एक्सपोर्ट से इम्पोर्ट कर सकते हैं।",
+  "app_wel_formats": "आपकी ऑनलाइन बैंकिंग से CSV, OFX या QFX फ़ाइलें, या PDF स्टेटमेंट।"
 }

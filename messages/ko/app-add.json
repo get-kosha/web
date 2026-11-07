@@ -1,3 +1,52 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_add_start": "금액부터 입력하세요",
+  "app_add_ready_next": "다음 거래를 입력하세요. 계좌와 날짜는 그대로예요.",
+  "app_add_income_note": "들어온 돈은 더하기 기호로 표시돼요",
+  "app_add_transfer_note": "지출로 치지 않아요. 수수료는 지출이에요.",
+  "app_add_converted": "오늘 환율로 약 {amount}",
+  "app_add_why_expense_new": "{payee}은(는) 처음이라 Kosha가 카테고리를 추측할 수 없어요. 고르면 지출이 추가돼요.",
+  "app_add_why_income_new": "{payee}은(는) 처음이라 Kosha가 카테고리를 추측할 수 없어요. 고르면 수입이 추가돼요.",
+  "app_add_why_expense": "Kosha가 아직 카테고리를 추측할 수 없어요. 고르면 지출이 추가돼요.",
+  "app_add_why_income": "Kosha가 아직 카테고리를 추측할 수 없어요. 고르면 수입이 추가돼요.",
+  "app_add_most_used_first": "자주 쓰는 순서예요.",
+  "app_add_used_before": "사용한 적 있음",
+  "app_add_picked_by_date": "{dates} · 날짜로 자동 선택",
+  "app_add_files": "파일",
+  "app_add_attach": "첨부",
+  "app_add_days_with_entries": "거래가 있는 날",
+  "app_add_time_help_24": "휠을 돌리거나 줄을 탭하세요. 언어에 맞춰 24시간제로 표시해요.",
+  "app_add_time_help_12": "휠을 돌리거나 줄을 탭하세요. 언어에 맞춰 12시간제로 표시해요.",
+  "app_add_privacy": "Kosha는 {#link}공유하도록 허용한 정보{/link}만 {provider}에 보내요.",
+  "app_add_camera_hint": "영수증을 틀 안에 맞춰 주세요.",
+  "app_add_choose_photo": "사진 선택",
+  "app_add_take_photo": "사진 찍기",
+  "app_add_flash_on": "플래시 켜짐",
+  "app_add_flash_off": "플래시 꺼짐",
+  "app_add_camera_needed": "영수증을 스캔하려면 카메라가 필요해요. 사진을 고를 수도 있어요.",
+  "app_add_allow_camera": "카메라 허용",
+  "app_add_filled_receipt": "영수증에서 읽었어요",
+  "app_add_filled_ai": "AI가 채웠어요",
+  "app_add_check_it": "추가하기 전에 확인해 주세요.",
+  "app_add_check_photo": "추가하기 전에 확인해 주세요. 사진이 첨부돼요.",
+  "app_add_times": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{count}회"
+      }
+    }
+  ],
+  "app_add_available_of": "{limit} 중 {available} 사용 가능",
+  "app_add_swap": "보내는 곳과 받는 곳 바꾸기",
+  "app_add_fee_amount": "수수료 {amount}",
+  "app_add_category_none": "카테고리, 아직 선택 안 함",
+  "app_add_category_picked": "카테고리, {name}",
+  "app_add_category_usual": "카테고리, {name}, 이 거래처에 늘 쓰는 것",
+  "app_add_category_ai": "카테고리, {name}, AI 제안",
+  "app_add_account_guessed": "계좌, {name}, 추측",
+  "app_add_clear_payee": "거래처 지우기",
+  "app_add_time_row": "시간, {time}, 변경",
+  "app_add_back_to_date": "날짜로 돌아가기"
 }

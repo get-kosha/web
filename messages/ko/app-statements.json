@@ -1,3 +1,80 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_rcn_quick_title": "빠른 확인",
+  "app_rcn_statement_title": "명세서로 확인",
+  "app_rcn_tick_off": "거래 체크하기",
+  "app_rcn_import_instead": "명세서 가져오기",
+  "app_rcn_formats": "은행에서 받은 CSV, OFX, QFX 파일.",
+  "app_rcn_formats_pdf": "은행에서 받은 CSV, OFX, QFX, PDF 파일.",
+  "app_rcn_below_zero": "마이너스",
+  "app_imp_choose": "파일 선택",
+  "app_imp_choose_more": "파일 더 선택",
+  "app_imp_formats": "CSV, OFX, QFX. 모든 은행과 카드, 원하는 만큼의 달.",
+  "app_imp_formats_pdf": "CSV, OFX, QFX, PDF. 모든 은행과 카드, 원하는 만큼의 달.",
+  "app_imp_share_hint": "파일 앱이나 은행 앱에서 명세서를 Kosha로 공유할 수도 있어요.",
+  "app_imp_read_progress": "{total}개 중 {done}개 완료",
+  "app_imp_reading": "읽는 중…",
+  "app_imp_reading_ai": "AI로 읽는 중…",
+  "app_imp_check_accounts": "계좌 확인",
+  "app_imp_offline": "가져오려면 인터넷 연결이 필요해요. 다시 온라인이 되면 파일을 선택하세요.",
+  "app_imp_closing_matches": "마감 잔액 일치",
+  "app_imp_card_bill": "은행에서 낸 카드 대금",
+  "app_imp_check_pdf": "PDF와 대조하세요",
+  "app_imp_recurring": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "정기 결제로 보이는 결제 {count}건"
+      }
+    }
+  ],
+  "app_imp_n_files": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "파일 {count}개"
+      }
+    }
+  ],
+  "app_imp_n_accounts": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "계좌 {count}개"
+      }
+    }
+  ],
+  "app_imp_n_payees": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "거래처 {count}곳"
+      }
+    }
+  ],
+  "app_imp_n_transfers": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "이체 {count}건"
+      }
+    }
+  ],
+  "app_imp_n_new": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "새 거래 {count}건"
+      }
+    }
+  ],
+  "app_imp_summary": "{accounts}에 {transactions}",
+  "app_imp_done_summary": "{accounts}에 {transactions}을 넣었어요.",
+  "app_imp_done_summary_transfers": "{accounts}에 {transactions}을 넣고, 계좌 사이 {transfers}을 연결했어요."
 }

@@ -13,5 +13,66 @@
   "app_stepper_less": "Meno",
   "app_stepper_more": "Più",
   "app_most_used": "Più usate",
-  "app_next": "Avanti"
+  "app_next": "Avanti",
+  "app_signin_continue": "Continua per accedere",
+  "app_signin_demo": "Prova la demo",
+  "app_signin_note": "Accedi o crea un account su {host} con la tua password, una passkey o Google. Kosha ti riporta qui.",
+  "app_signin_own_server": "Usa il tuo server",
+  "app_own_title": "Il tuo server",
+  "app_own_lead": "Kosha è open source. Se lo gestisci tu, inserisci il suo indirizzo e accedi lì.",
+  "app_own_label": "Indirizzo del server",
+  "app_own_found": "Kosha trovato su {host}",
+  "app_own_invalid": "Inserisci un URL completo, come https://kosha.example.com",
+  "app_own_not_found": "Nessun server Kosha ha risposto su {host}.",
+  "app_own_too_old": "{host} usa una versione precedente di Kosha. Aggiornala per accedere da questa app.",
+  "app_own_use_default": "Usa invece getkosha.app",
+  "app_finishing_title": "Accesso in corso",
+  "app_finishing_signed_in": "Accesso effettuato su {host}",
+  "app_finishing_accounts": "Caricamento dei tuoi conti",
+  "app_finishing_offline": "Salvo una copia su questo telefono per l’uso offline",
+  "app_signin_error_title": "L’accesso non è stato completato",
+  "app_signin_error_body": "Il browser si è chiuso prima che Kosha ricevesse risposta da {host}. Non è cambiato nulla.",
+  "app_lock_title": "Kosha è bloccato",
+  "app_lock_after": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Bloccato dopo un minuto di assenza.",
+        "countPlural=*": "Bloccato dopo {count} minuti di assenza."
+      }
+    }
+  ],
+  "app_lock_left": "Bloccato quando hai lasciato Kosha.",
+  "app_lock_unlock": "Sblocca",
+  "app_lock_prompt": "Sblocca Kosha",
+  "app_offline_waiting": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} movimento è salvato su questo telefono. Kosha lo invia appena torni online, poi aggiorna i totali.",
+        "countPlural=*": "{count} movimenti sono salvati su questo telefono. Kosha li invia appena torni online, poi aggiorna i totali."
+      }
+    }
+  ],
+  "app_offline_none": "Vedi ciò che questo telefono ha salvato. Kosha lo aggiorna quando torni online.",
+  "app_waiting": "in attesa",
+  "app_loading": "Mostro ciò che questo telefono ha salvato mentre Kosha controlla le novità.",
+  "app_signout_waiting": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} movimento non è ancora stato inviato. Uscendo viene eliminato.",
+        "countPlural=*": "{count} movimenti non sono ancora stati inviati. Uscendo vengono eliminati."
+      }
+    }
+  ],
+  "app_previous_year": "Anno precedente",
+  "app_next_year": "Anno successivo",
+  "app_month_swipe": "Scorri di lato Panoramica, Attività o Ricorrenti per spostarti di un mese.",
+  "app_signout_clears": "Uscendo si cancella ciò che questo dispositivo ha salvato.",
+  "app_widget_name": "Aggiunta rapida",
+  "app_widget_description": "Aggiungi una spesa o un’entrata dalla schermata Home."
 }

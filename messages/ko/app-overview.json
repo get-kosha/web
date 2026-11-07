@@ -1,3 +1,53 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_ov_show_totals_in": "합계 표시 통화",
+  "app_ov_pick_month": "월 선택",
+  "app_ov_not_started": "시작 전",
+  "app_ov_month_so_far": "지금까지 {amount}",
+  "app_ov_main_currency": "기본 통화",
+  "app_ov_converted_today": "오늘 환율로 환산했어요.",
+  "app_ov_your_currencies": "설정의 통화",
+  "app_ov_first_entry": "+를 눌러 첫 기록을 추가하세요.",
+  "app_ov_from_statements": "은행 명세서에서",
+  "app_ov_import": "가져오기",
+  "app_ov_hide_card": "이 카드 숨기기",
+  "app_ov_accounts": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "계좌 {count}개"
+      }
+    }
+  ],
+  "app_ov_chart_later": "차트는 첫 달이 지나면 시작돼요.",
+  "app_ov_all_recurring": "정기 거래에서 모두 보기 →",
+  "app_ov_quick_add_row": "{amount} · {payee} 추가",
+  "app_ov_saved_offline": "오프라인으로 저장했어요: {amount}, {payee}",
+  "app_ask_privacy": "Kosha는 {#link}공유하도록 허용한 내용{/link}만 {provider}에 보내요.",
+  "app_ask_check": "중요한 숫자는 내역에서 확인하세요.",
+  "app_ask_looking": "찾아보는 중",
+  "app_act_empty_title": "이번 달 거래가 없어요",
+  "app_act_empty_body": "추가한 거래가 여기에 표시돼요. 금액과 거래처만 입력하면 몇 초면 끝나요.",
+  "app_act_or_import": "또는 명세서 가져오기",
+  "app_act_receipt_deleted": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "첨부 파일 {count}개도 함께 삭제돼요."
+      }
+    }
+  ],
+  "app_act_any": "전체",
+  "app_act_at_least": "최소",
+  "app_act_show_corrections": "잔액 보정 표시",
+  "app_act_event_all_dates": "이벤트 · 전체 기간",
+  "app_act_by_hand": "이벤트에 직접 추가함",
+  "app_act_take_photo": "사진 찍기",
+  "app_act_choose_photos": "사진에서 선택",
+  "app_act_file_hint": "PDF 또는 이미지 (급여 명세서 등)",
+  "app_act_up_to": "파일당 최대 10MB예요.",
+  "app_act_not_counted": "지출이나 수입으로 계산되지 않아요",
+  "app_act_fee_counted": "{category}(으)로 계산"
 }

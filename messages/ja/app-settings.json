@@ -1,3 +1,87 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_set_profile_desc": "名前、写真、メールアドレス",
+  "app_set_security_desc": "パスキー、2段階認証、アプリのロック、デバイス",
+  "app_set_general_desc": "言語、タイムゾーン、追加時の既定値",
+  "app_set_appearance_desc": "テーマ、アクセント、密度、金額を隠す",
+  "app_set_categories_desc": "アイコン、名前、サブカテゴリ、統合",
+  "app_set_events_desc": "旅行やイベント",
+  "app_set_rules_learning": "編集から学習中",
+  "app_set_recurring_desc": "請求とサブスクリプションの既定値",
+  "app_set_ai_features_on": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{count}個の機能がオン"
+      }
+    }
+  ],
+  "app_set_data_desc": "明細を取り込み、CSVやJSONで書き出し",
+  "app_set_apps_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "連携中のアプリ {count}件"
+      }
+    }
+  ],
+  "app_set_keys_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "キー {count}件"
+      }
+    }
+  ],
+  "app_set_delete_desc": "元に戻せない操作",
+  "app_set_footer": "Kosha {version} ({build}) · {server}",
+  "app_set_unlock": "指紋または顔でロック解除",
+  "app_set_unlock_desc": "Koshaを開くときに確認します。端末のPINも使えます。",
+  "app_set_unlock_kw": "ロック 生体認証 指紋 顔 PIN app lock fingerprint face",
+  "app_set_unlock_unavailable": "先にこの端末で画面ロックを設定してください。",
+  "app_set_on_phone": "この端末",
+  "app_set_lock_after": "再ロックまでの時間",
+  "app_set_lock_instantly": "すぐに",
+  "app_set_lock_minutes": "{n}分",
+  "app_set_lock_hour": "1時間",
+  "app_set_lock_note": "この端末だけの設定です。",
+  "app_set_opens_web": "これらは {host} を開き、終わるとアプリに戻ります。",
+  "app_set_hide_desc": "長押しするまで金額をぼかします。アカウントメニューにも同じスイッチがあります。",
+  "app_set_account_colours": "口座の色",
+  "app_set_account_colours_desc": "口座ごとに小さな色の印を付けます。オフにするとウェブと同じ見た目になります。",
+  "app_set_add_currency": "通貨を追加",
+  "app_set_currencies_note": "長押しして並べ替えます。一番上がメイン通貨で、純資産と合計はこの通貨で計算されます。概要の上部にある通貨切り替えは、この順番で切り替わります。",
+  "app_set_rate_in": "1 {from} は {to} で",
+  "app_set_move_up": "上へ移動",
+  "app_set_move_down": "下へ移動",
+  "app_set_subcategories": "サブカテゴリ",
+  "app_set_rule_used": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{count}回使用"
+      }
+    }
+  ],
+  "app_set_ai_intro": "任意です。なくてもKoshaのすべての機能が使えます。",
+  "app_set_ai_add_provider": "プロバイダを追加",
+  "app_set_ai_add_provider_desc": "OpenAI、Gemini、OpenRouter、Ollama、または独自のエンドポイント",
+  "app_set_ai_disconnect_named": "{name} の接続を解除",
+  "app_set_ai_replace": "置き換える",
+  "app_set_ai_key_stored": "サーバーに暗号化して保存されます。Koshaが再び表示することはありません。",
+  "app_set_ai_privacy_intro": "KoshaがAIプロバイダに送れる項目です。それ以外はKoshaの外に出ません。",
+  "app_set_ai_each_sends": "各機能が送る内容",
+  "app_set_ai_sent": "送信内容",
+  "app_set_ai_returned": "返答",
+  "app_set_export_note": "ダウンロードすると共有シートが開くので、ファイルに保存したり送ったりできます。",
+  "app_set_share": "共有",
+  "app_set_delete_intro": "元に戻せません。迷ったら先にエクスポートしてください。",
+  "app_set_delete_account_note": "{host} が開き、メールアドレスとパスワードで3つのステップを経て確認します。",
+  "app_wel_net_worth_starts": "純資産は {amount} から始まります。",
+  "app_wel_import_later": "今はしない場合も、口座または設定 › インポートとエクスポートからいつでもインポートできます。",
+  "app_wel_formats": "オンラインバンキングのCSV、OFX、QFXファイル、またはPDFの明細。"
 }

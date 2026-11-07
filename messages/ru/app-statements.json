@@ -1,3 +1,98 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_rcn_quick_title": "Быстрая проверка",
+  "app_rcn_statement_title": "По выписке",
+  "app_rcn_tick_off": "Отметить записи",
+  "app_rcn_import_instead": "Импортировать выписку",
+  "app_rcn_formats": "CSV, OFX или QFX из вашего банка.",
+  "app_rcn_formats_pdf": "CSV, OFX, QFX или PDF из вашего банка.",
+  "app_rcn_below_zero": "Ниже нуля",
+  "app_imp_choose": "Выбрать файлы",
+  "app_imp_choose_more": "Выбрать ещё файлы",
+  "app_imp_formats": "CSV, OFX или QFX. Все банки и карты, сколько угодно месяцев.",
+  "app_imp_formats_pdf": "CSV, OFX, QFX или PDF. Все банки и карты, сколько угодно месяцев.",
+  "app_imp_share_hint": "Выписку можно также отправить в Kosha из «Файлов» или приложения банка.",
+  "app_imp_read_progress": "Готово {done} из {total}",
+  "app_imp_reading": "Читаем…",
+  "app_imp_reading_ai": "Читаем с помощью ИИ…",
+  "app_imp_check_accounts": "Проверить счета",
+  "app_imp_offline": "Для импорта нужно подключение. Выберите файлы, когда снова будете в сети.",
+  "app_imp_closing_matches": "Конечный остаток совпадает",
+  "app_imp_card_bill": "оплата карты с банковского счёта",
+  "app_imp_check_pdf": "Сверьте с PDF",
+  "app_imp_recurring": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} платёж похож на регулярный",
+        "countPlural=few": "{count} платежа похожи на регулярные",
+        "countPlural=many": "{count} платежей похожи на регулярные",
+        "countPlural=*": "{count} платежа похожи на регулярные"
+      }
+    }
+  ],
+  "app_imp_n_files": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} файл",
+        "countPlural=few": "{count} файла",
+        "countPlural=many": "{count} файлов",
+        "countPlural=*": "{count} файла"
+      }
+    }
+  ],
+  "app_imp_n_accounts": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} счёт",
+        "countPlural=few": "{count} счёта",
+        "countPlural=many": "{count} счетов",
+        "countPlural=*": "{count} счёта"
+      }
+    }
+  ],
+  "app_imp_n_payees": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} контрагент",
+        "countPlural=few": "{count} контрагента",
+        "countPlural=many": "{count} контрагентов",
+        "countPlural=*": "{count} контрагента"
+      }
+    }
+  ],
+  "app_imp_n_transfers": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} перевод",
+        "countPlural=few": "{count} перевода",
+        "countPlural=many": "{count} переводов",
+        "countPlural=*": "{count} перевода"
+      }
+    }
+  ],
+  "app_imp_n_new": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} новая",
+        "countPlural=few": "{count} новые",
+        "countPlural=many": "{count} новых",
+        "countPlural=*": "{count} новые"
+      }
+    }
+  ],
+  "app_imp_summary": "{transactions} · {accounts}",
+  "app_imp_done_summary": "{transactions} · {accounts}.",
+  "app_imp_done_summary_transfers": "{transactions} · {accounts}, а также {transfers} между ними."
 }

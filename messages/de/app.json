@@ -13,5 +13,66 @@
   "app_stepper_less": "Weniger",
   "app_stepper_more": "Mehr",
   "app_most_used": "Meistgenutzt",
-  "app_next": "Weiter"
+  "app_next": "Weiter",
+  "app_signin_continue": "Weiter zur Anmeldung",
+  "app_signin_demo": "Demo ausprobieren",
+  "app_signin_note": "Melde dich auf {host} mit deinem Passwort, einem Passkey oder Google an oder erstelle ein Konto. Kosha bringt dich danach hierher zurück.",
+  "app_signin_own_server": "Eigenen Server verwenden",
+  "app_own_title": "Eigener Server",
+  "app_own_lead": "Kosha ist Open Source. Wenn du es selbst betreibst, gib die Adresse ein und melde dich dort an.",
+  "app_own_label": "Serveradresse",
+  "app_own_found": "Kosha auf {host} gefunden",
+  "app_own_invalid": "Gib eine vollständige URL ein, z. B. https://kosha.example.com",
+  "app_own_not_found": "Unter {host} hat kein Kosha-Server geantwortet.",
+  "app_own_too_old": "Auf {host} läuft eine ältere Kosha-Version. Aktualisiere sie, um dich in dieser App anzumelden.",
+  "app_own_use_default": "Stattdessen getkosha.app verwenden",
+  "app_finishing_title": "Du wirst angemeldet",
+  "app_finishing_signed_in": "Auf {host} angemeldet",
+  "app_finishing_accounts": "Deine Konten werden geladen",
+  "app_finishing_offline": "Eine Kopie für offline wird auf diesem Telefon gespeichert",
+  "app_signin_error_title": "Die Anmeldung wurde nicht abgeschlossen",
+  "app_signin_error_body": "Der Browser wurde geschlossen, bevor Kosha eine Antwort von {host} bekam. Es wurde nichts geändert.",
+  "app_lock_title": "Kosha ist gesperrt",
+  "app_lock_after": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Nach einer Minute Abwesenheit gesperrt.",
+        "countPlural=*": "Nach {count} Minuten Abwesenheit gesperrt."
+      }
+    }
+  ],
+  "app_lock_left": "Gesperrt, als du Kosha verlassen hast.",
+  "app_lock_unlock": "Entsperren",
+  "app_lock_prompt": "Kosha entsperren",
+  "app_offline_waiting": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} Eintrag ist auf diesem Telefon gespeichert. Kosha sendet ihn, sobald du wieder online bist, und aktualisiert dann deine Summen.",
+        "countPlural=*": "{count} Einträge sind auf diesem Telefon gespeichert. Kosha sendet sie, sobald du wieder online bist, und aktualisiert dann deine Summen."
+      }
+    }
+  ],
+  "app_offline_none": "Du siehst, was dieses Telefon gespeichert hat. Kosha aktualisiert es, sobald du wieder online bist.",
+  "app_waiting": "wartet",
+  "app_loading": "Du siehst, was dieses Telefon gespeichert hat, während Kosha nach Neuem sucht.",
+  "app_signout_waiting": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} Eintrag wurde noch nicht gesendet. Beim Abmelden wird er gelöscht.",
+        "countPlural=*": "{count} Einträge wurden noch nicht gesendet. Beim Abmelden werden sie gelöscht."
+      }
+    }
+  ],
+  "app_previous_year": "Vorheriges Jahr",
+  "app_next_year": "Nächstes Jahr",
+  "app_month_swipe": "Wische in Übersicht, Aktivität oder Wiederkehrend seitwärts, um einen Monat weiterzugehen.",
+  "app_signout_clears": "Beim Abmelden wird gelöscht, was dieses Gerät gespeichert hat.",
+  "app_widget_name": "Schnell erfassen",
+  "app_widget_description": "Erfasse Ausgaben oder Einnahmen direkt vom Startbildschirm."
 }

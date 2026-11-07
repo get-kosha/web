@@ -1,3 +1,109 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_rec_asks_each_time": "Kosha ti chiede l'importo ogni volta",
+  "app_rec_asks_that_day": "Kosha ti chiede l'importo quel giorno",
+  "app_rec_attach_bill": "Allega bolletta",
+  "app_rec_documents_by_month": "Documenti per mese",
+  "app_rec_due_on": "scade il {day}",
+  "app_rec_next": "prossimo il {day}",
+  "app_rec_none_in_month": "Nessuna scadenza a {month}.",
+  "app_rec_on_due_date": "Alla data di scadenza",
+  "app_rec_overdue": "Scaduto il {day} · non segnato come pagato",
+  "app_rec_paid_on": "pagato il {day}",
+  "app_rec_per_month_short": "{amount}/mese",
+  "app_rec_record_payment": "Registra pagamento",
+  "app_rec_to_account": "Verso {account}",
+  "app_rec_unit_day": "Giorno",
+  "app_rec_unit_week": "Settimana",
+  "app_rec_unit_month": "Mese",
+  "app_rec_unit_year": "Anno",
+  "app_rec_usually": "Di solito circa {amount}",
+  "app_rec_zip_hint": "Kosha mette in uno zip quelli che spunti e apre il menu di condivisione.",
+  "app_rec_average_last": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "media dell'ultimo pagamento",
+        "countPlural=*": "media degli ultimi {count}"
+      }
+    }
+  ],
+  "app_rec_backfill": [
+    {
+      "declarations": ["input count", "input date", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Kosha registrerà i pagamenti dal {date} a oggi: {count} pagamento.",
+        "countPlural=*": "Kosha registrerà i pagamenti dal {date} a oggi: {count} pagamenti."
+      }
+    }
+  ],
+  "app_rec_payments_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} pagamento",
+        "countPlural=*": "{count} pagamenti"
+      }
+    }
+  ],
+  "app_rec_share_zip": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Condividi {count} come zip",
+        "countPlural=*": "Condividi {count} come zip"
+      }
+    }
+  ],
+  "app_acc_credit_used": "{percent} di {limit} usato",
+  "app_acc_debt_hint": "Il patrimonio netto conta ciò che devi come debito.",
+  "app_acc_from_account": "Da {account}",
+  "app_acc_fx_cost": "costo {amount}",
+  "app_acc_fx_empty": "Ancora nessun cambio valuta. Qui compaiono i trasferimenti tra conti in valute diverse.",
+  "app_acc_fx_fee": "commissione {amount}",
+  "app_acc_fx_market": "mercato {rate}",
+  "app_acc_fx_no_fee": "nessuna commissione",
+  "app_acc_fx_rate": "Tasso {rate}",
+  "app_acc_gain_over_in": "guadagno sul capitale versato",
+  "app_acc_import_hint": "CSV, OFX, QFX o PDF",
+  "app_acc_import_hint_no_pdf": "CSV, OFX o QFX",
+  "app_acc_kosha_shows": "Kosha mostra {amount}",
+  "app_acc_owed": "{account}, dovuto",
+  "app_acc_reconcile_hint": "Confrontalo con un estratto conto",
+  "app_acc_still_counted": "ancora nel patrimonio netto",
+  "app_acc_value": "Valore",
+  "app_acc_currencies": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} valuta",
+        "countPlural=*": "{count} valute"
+      }
+    }
+  ],
+  "app_acc_fx_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} cambio",
+        "countPlural=*": "{count} cambi"
+      }
+    }
+  ],
+  "app_acc_fx_this_year": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} quest'anno",
+        "countPlural=*": "{count} quest'anno"
+      }
+    }
+  ]
 }

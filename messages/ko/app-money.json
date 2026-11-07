@@ -1,3 +1,102 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_rec_asks_each_time": "Kosha가 매번 금액을 물어봐요",
+  "app_rec_asks_that_day": "그날 Kosha가 금액을 물어봐요",
+  "app_rec_attach_bill": "청구서 첨부",
+  "app_rec_documents_by_month": "월별 문서",
+  "app_rec_due_on": "{day} 예정",
+  "app_rec_next": "다음 {day}",
+  "app_rec_none_in_month": "{month}에는 예정된 결제가 없어요.",
+  "app_rec_on_due_date": "예정일에",
+  "app_rec_overdue": "{day} 예정이었어요 · 결제 표시 안 됨",
+  "app_rec_paid_on": "{day} 결제함",
+  "app_rec_per_month_short": "{amount}/월",
+  "app_rec_record_payment": "결제 기록",
+  "app_rec_to_account": "{account}(으)로",
+  "app_rec_unit_day": "일",
+  "app_rec_unit_week": "주",
+  "app_rec_unit_month": "월",
+  "app_rec_unit_year": "년",
+  "app_rec_usually": "보통 약 {amount}",
+  "app_rec_zip_hint": "선택한 문서를 Kosha가 zip으로 묶고 공유 메뉴를 열어요.",
+  "app_rec_average_last": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "최근 {count}회 평균"
+      }
+    }
+  ],
+  "app_rec_backfill": [
+    {
+      "declarations": ["input count", "input date", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "Kosha가 {date}부터 오늘까지의 결제 {count}건을 기록할 거예요."
+      }
+    }
+  ],
+  "app_rec_payments_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "결제 {count}건"
+      }
+    }
+  ],
+  "app_rec_share_zip": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{count}개 zip으로 공유"
+      }
+    }
+  ],
+  "app_acc_credit_used": "{limit} 중 {percent} 사용",
+  "app_acc_debt_hint": "순자산에서는 갚아야 할 금액을 부채로 계산해요.",
+  "app_acc_from_account": "{account}에서",
+  "app_acc_fx_cost": "비용 {amount}",
+  "app_acc_fx_empty": "아직 환전이 없어요. 통화가 다른 계좌 간 이체가 여기에 표시돼요.",
+  "app_acc_fx_fee": "수수료 {amount}",
+  "app_acc_fx_market": "시장 {rate}",
+  "app_acc_fx_no_fee": "수수료 없음",
+  "app_acc_fx_rate": "환율 {rate}",
+  "app_acc_gain_over_in": "투자금 대비 수익",
+  "app_acc_import_hint": "CSV, OFX, QFX 또는 PDF",
+  "app_acc_import_hint_no_pdf": "CSV, OFX 또는 QFX",
+  "app_acc_kosha_shows": "Kosha에는 {amount}",
+  "app_acc_owed": "{account}, 미결제",
+  "app_acc_reconcile_hint": "은행 거래 내역서와 대조해요",
+  "app_acc_still_counted": "순자산에는 포함돼요",
+  "app_acc_value": "평가액",
+  "app_acc_currencies": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "통화 {count}개"
+      }
+    }
+  ],
+  "app_acc_fx_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "환전 {count}건"
+      }
+    }
+  ],
+  "app_acc_fx_this_year": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "올해 {count}건"
+      }
+    }
+  ]
 }

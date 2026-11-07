@@ -1,3 +1,55 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_ov_show_totals_in": "Totalen tonen in",
+  "app_ov_pick_month": "Kies een maand",
+  "app_ov_not_started": "Nog niet begonnen",
+  "app_ov_month_so_far": "{amount} tot nu",
+  "app_ov_main_currency": "Je hoofdvaluta",
+  "app_ov_converted_today": "Omgerekend tegen de koersen van vandaag.",
+  "app_ov_your_currencies": "Je valuta’s in Instellingen",
+  "app_ov_first_entry": "Tik op + om je eerste boeking toe te voegen.",
+  "app_ov_from_statements": "Uit je bankafschriften",
+  "app_ov_import": "Importeren",
+  "app_ov_hide_card": "Deze kaart verbergen",
+  "app_ov_accounts": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} rekening",
+        "countPlural=*": "{count} rekeningen"
+      }
+    }
+  ],
+  "app_ov_chart_later": "De grafiek begint na je eerste maand.",
+  "app_ov_all_recurring": "Alles in Terugkerend →",
+  "app_ov_quick_add_row": "{amount} · {payee} toevoegen",
+  "app_ov_saved_offline": "Offline bewaard: {amount}, {payee}",
+  "app_ask_privacy": "Kosha stuurt alleen {#link}wat je deelt{/link} naar {provider}.",
+  "app_ask_check": "Controleer belangrijke bedragen in Activiteit.",
+  "app_ask_looking": "Even opzoeken",
+  "app_act_empty_title": "Geen transacties deze maand",
+  "app_act_empty_body": "Transacties die je toevoegt, verschijnen hier. Het kost een paar seconden: bedrag, begunstigde, klaar.",
+  "app_act_or_import": "Of importeer een afschrift",
+  "app_act_receipt_deleted": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Het bonnetje wordt mee verwijderd.",
+        "countPlural=*": "De {count} bestanden worden mee verwijderd."
+      }
+    }
+  ],
+  "app_act_any": "Alle",
+  "app_act_at_least": "Minstens",
+  "app_act_show_corrections": "Saldocorrecties tonen",
+  "app_act_event_all_dates": "Evenement · alle datums",
+  "app_act_by_hand": "met de hand aan het evenement toegevoegd",
+  "app_act_take_photo": "Foto maken",
+  "app_act_choose_photos": "Kiezen uit foto’s",
+  "app_act_file_hint": "Pdf of afbeelding, zoals een loonstrook",
+  "app_act_up_to": "Maximaal 10 MB per bestand.",
+  "app_act_not_counted": "Telt niet als uitgave of inkomsten",
+  "app_act_fee_counted": "telt als {category}"
 }

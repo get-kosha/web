@@ -1,3 +1,53 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_add_start": "Comece pelo valor",
+  "app_add_ready_next": "Pronto para a próxima. A conta e a data continuam.",
+  "app_add_income_note": "Dinheiro que entra aparece com um mais",
+  "app_add_transfer_note": "Não conta como despesa. A taxa, sim.",
+  "app_add_converted": "≈ {amount} na cotação de hoje",
+  "app_add_why_expense_new": "{payee} é novo, então o Kosha não consegue adivinhar. Escolha uma e a despesa é adicionada.",
+  "app_add_why_income_new": "{payee} é novo, então o Kosha não consegue adivinhar. Escolha uma e a receita é adicionada.",
+  "app_add_why_expense": "O Kosha ainda não consegue adivinhar. Escolha uma e a despesa é adicionada.",
+  "app_add_why_income": "O Kosha ainda não consegue adivinhar. Escolha uma e a receita é adicionada.",
+  "app_add_most_used_first": "As mais usadas primeiro.",
+  "app_add_used_before": "Já usadas",
+  "app_add_picked_by_date": "{dates} · escolhido pela data",
+  "app_add_files": "Arquivos",
+  "app_add_attach": "Anexar",
+  "app_add_days_with_entries": "Dias com transações",
+  "app_add_time_help_24": "Gire uma roda ou toque em uma linha. Formato de 24 horas, conforme o seu idioma.",
+  "app_add_time_help_12": "Gire uma roda ou toque em uma linha. Formato de 12 horas, conforme o seu idioma.",
+  "app_add_privacy": "O Kosha envia para {provider} só {#link}o que você compartilha{/link}.",
+  "app_add_camera_hint": "Enquadre o recibo dentro da moldura.",
+  "app_add_choose_photo": "Escolher uma foto",
+  "app_add_take_photo": "Tirar foto",
+  "app_add_flash_on": "Flash ligado",
+  "app_add_flash_off": "Flash desligado",
+  "app_add_camera_needed": "O Kosha precisa da câmera para ler um recibo. Você também pode escolher uma foto.",
+  "app_add_allow_camera": "Permitir a câmera",
+  "app_add_filled_receipt": "Lido do seu recibo",
+  "app_add_filled_ai": "Preenchido pela IA",
+  "app_add_check_it": "Confira antes de adicionar.",
+  "app_add_check_photo": "Confira antes de adicionar. A foto fica anexada.",
+  "app_add_times": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} vez",
+        "countPlural=*": "{count} vezes"
+      }
+    }
+  ],
+  "app_add_available_of": "{available} disponível de {limit}",
+  "app_add_swap": "Inverter de e para",
+  "app_add_fee_amount": "{amount} de taxa",
+  "app_add_category_none": "Categoria, ainda não escolhida",
+  "app_add_category_picked": "Categoria, {name}",
+  "app_add_category_usual": "Categoria, {name}, a de costume para este favorecido",
+  "app_add_category_ai": "Categoria, {name}, sugerida pela IA",
+  "app_add_account_guessed": "Conta, {name}, sugerida",
+  "app_add_clear_payee": "Limpar favorecido",
+  "app_add_time_row": "Hora, {time}, alterar",
+  "app_add_back_to_date": "Voltar à data"
 }

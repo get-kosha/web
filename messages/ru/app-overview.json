@@ -1,3 +1,59 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_ov_show_totals_in": "Показывать суммы в",
+  "app_ov_pick_month": "Выберите месяц",
+  "app_ov_not_started": "Ещё не начался",
+  "app_ov_month_so_far": "{amount} пока",
+  "app_ov_main_currency": "Ваша основная валюта",
+  "app_ov_converted_today": "Пересчитано по сегодняшним курсам.",
+  "app_ov_your_currencies": "Ваши валюты в настройках",
+  "app_ov_first_entry": "Нажмите +, чтобы добавить первую запись.",
+  "app_ov_from_statements": "Из банковских выписок",
+  "app_ov_import": "Импорт",
+  "app_ov_hide_card": "Скрыть эту карточку",
+  "app_ov_accounts": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} счёт",
+        "countPlural=few": "{count} счёта",
+        "countPlural=many": "{count} счетов",
+        "countPlural=*": "{count} счёта"
+      }
+    }
+  ],
+  "app_ov_chart_later": "График появится после первого месяца.",
+  "app_ov_all_recurring": "Все в «Регулярных» →",
+  "app_ov_quick_add_row": "Добавить {amount} · {payee}",
+  "app_ov_saved_offline": "Сохранено офлайн: {amount}, {payee}",
+  "app_ask_privacy": "Kosha отправляет {provider} только {#link}то, чем вы делитесь{/link}.",
+  "app_ask_check": "Проверяйте важные цифры в разделе «Операции».",
+  "app_ask_looking": "Ищу",
+  "app_act_empty_title": "В этом месяце операций нет",
+  "app_act_empty_body": "Добавленные операции появятся здесь. Это пара секунд: сумма, получатель, готово.",
+  "app_act_or_import": "Или импортируйте выписку",
+  "app_act_receipt_deleted": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Прикреплённый файл удалится вместе с ней.",
+        "countPlural=few": "{count} прикреплённых файла удалятся вместе с ней.",
+        "countPlural=many": "{count} прикреплённых файлов удалятся вместе с ней.",
+        "countPlural=*": "{count} прикреплённого файла удалятся вместе с ней."
+      }
+    }
+  ],
+  "app_act_any": "Любое",
+  "app_act_at_least": "Не меньше",
+  "app_act_show_corrections": "Показать корректировки баланса",
+  "app_act_event_all_dates": "Событие · все даты",
+  "app_act_by_hand": "добавлено в событие вручную",
+  "app_act_take_photo": "Сделать фото",
+  "app_act_choose_photos": "Выбрать из фото",
+  "app_act_file_hint": "PDF или изображение, например расчётный листок",
+  "app_act_up_to": "До 10 МБ каждый.",
+  "app_act_not_counted": "Не считается ни расходом, ни доходом",
+  "app_act_fee_counted": "учитывается как «{category}»"
 }

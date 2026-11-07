@@ -1,3 +1,55 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_ov_show_totals_in": "Show totals in",
+  "app_ov_pick_month": "Pick a month",
+  "app_ov_not_started": "Not started",
+  "app_ov_month_so_far": "{amount} so far",
+  "app_ov_main_currency": "Your main currency",
+  "app_ov_converted_today": "Converted at today’s rates.",
+  "app_ov_your_currencies": "Your currencies in Settings",
+  "app_ov_first_entry": "Tap + to add your first entry.",
+  "app_ov_from_statements": "From your bank statements",
+  "app_ov_import": "Import",
+  "app_ov_hide_card": "Hide this card",
+  "app_ov_accounts": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} account",
+        "countPlural=*": "{count} accounts"
+      }
+    }
+  ],
+  "app_ov_chart_later": "The chart starts after your first month.",
+  "app_ov_all_recurring": "All in Recurring →",
+  "app_ov_quick_add_row": "Add {amount} · {payee}",
+  "app_ov_saved_offline": "Saved offline {amount}, {payee}",
+  "app_ask_privacy": "Kosha sends only {#link}what you share{/link} with {provider}.",
+  "app_ask_check": "Check important figures in Activity.",
+  "app_ask_looking": "Looking it up",
+  "app_act_empty_title": "No transactions this month",
+  "app_act_empty_body": "Entries you add show up here. It takes a few seconds: amount, payee, done.",
+  "app_act_or_import": "Or import a statement",
+  "app_act_receipt_deleted": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Its receipt is deleted with it.",
+        "countPlural=*": "Its {count} files are deleted with it."
+      }
+    }
+  ],
+  "app_act_any": "Any",
+  "app_act_at_least": "At least",
+  "app_act_show_corrections": "Show balance corrections",
+  "app_act_event_all_dates": "Event · all dates",
+  "app_act_by_hand": "added to the event by hand",
+  "app_act_take_photo": "Take a photo",
+  "app_act_choose_photos": "Choose from photos",
+  "app_act_file_hint": "PDF or image, such as a payslip",
+  "app_act_up_to": "Up to 10 MB each.",
+  "app_act_not_counted": "Not counted as spending or income",
+  "app_act_fee_counted": "counted as {category}"
 }

@@ -1,3 +1,102 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_rec_asks_each_time": "Kosha 每次都会询问金额",
+  "app_rec_asks_that_day": "Kosha 会在当天询问金额",
+  "app_rec_attach_bill": "附上账单",
+  "app_rec_documents_by_month": "按月查看文件",
+  "app_rec_due_on": "{day} 到期",
+  "app_rec_next": "下次 {day}",
+  "app_rec_none_in_month": "{month}没有到期的付款。",
+  "app_rec_on_due_date": "在到期日",
+  "app_rec_overdue": "{day} 已到期 · 未标记为已支付",
+  "app_rec_paid_on": "{day} 已支付",
+  "app_rec_per_month_short": "{amount}/月",
+  "app_rec_record_payment": "记录付款",
+  "app_rec_to_account": "转入 {account}",
+  "app_rec_unit_day": "天",
+  "app_rec_unit_week": "周",
+  "app_rec_unit_month": "月",
+  "app_rec_unit_year": "年",
+  "app_rec_usually": "通常约 {amount}",
+  "app_rec_zip_hint": "Kosha 会把勾选的文件打包为 zip，并打开分享菜单。",
+  "app_rec_average_last": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "最近 {count} 次的平均值"
+      }
+    }
+  ],
+  "app_rec_backfill": [
+    {
+      "declarations": ["input count", "input date", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "Kosha 将记录从 {date} 到今天的付款：共 {count} 笔。"
+      }
+    }
+  ],
+  "app_rec_payments_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{count} 笔付款"
+      }
+    }
+  ],
+  "app_rec_share_zip": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "将 {count} 个文件打包为 zip 分享"
+      }
+    }
+  ],
+  "app_acc_credit_used": "已用 {limit} 中的 {percent}",
+  "app_acc_debt_hint": "净资产会把你欠的钱算作负债。",
+  "app_acc_from_account": "来自 {account}",
+  "app_acc_fx_cost": "成本 {amount}",
+  "app_acc_fx_empty": "还没有货币兑换。不同币种账户之间的转账会显示在这里。",
+  "app_acc_fx_fee": "手续费 {amount}",
+  "app_acc_fx_market": "市场 {rate}",
+  "app_acc_fx_no_fee": "无手续费",
+  "app_acc_fx_rate": "汇率 {rate}",
+  "app_acc_gain_over_in": "相对投入的收益",
+  "app_acc_import_hint": "CSV、OFX、QFX 或 PDF",
+  "app_acc_import_hint_no_pdf": "CSV、OFX 或 QFX",
+  "app_acc_kosha_shows": "Kosha 显示 {amount}",
+  "app_acc_owed": "{account}（欠款）",
+  "app_acc_reconcile_hint": "与银行对账单核对",
+  "app_acc_still_counted": "仍计入净资产",
+  "app_acc_value": "市值",
+  "app_acc_currencies": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{count} 种货币"
+      }
+    }
+  ],
+  "app_acc_fx_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{count} 次兑换"
+      }
+    }
+  ],
+  "app_acc_fx_this_year": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "今年 {count} 次"
+      }
+    }
+  ]
 }

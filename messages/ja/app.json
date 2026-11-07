@@ -13,5 +13,63 @@
   "app_stepper_less": "減らす",
   "app_stepper_more": "増やす",
   "app_most_used": "よく使う",
-  "app_next": "次へ"
+  "app_next": "次へ",
+  "app_signin_continue": "サインインへ進む",
+  "app_signin_demo": "デモを試す",
+  "app_signin_note": "{host} でパスワード、パスキー、または Google を使ってサインインするか、アカウントを作成します。完了すると Kosha に戻ります。",
+  "app_signin_own_server": "自分のサーバーを使う",
+  "app_own_title": "自分のサーバー",
+  "app_own_lead": "Kosha はオープンソースです。自分で動かしている場合は、そのアドレスを入力してサインインします。",
+  "app_own_label": "サーバーのアドレス",
+  "app_own_found": "{host} で Kosha が見つかりました",
+  "app_own_invalid": "https://kosha.example.com のような完全な URL を入力してください",
+  "app_own_not_found": "{host} で Kosha サーバーが応答しませんでした。",
+  "app_own_too_old": "{host} の Kosha は古いバージョンです。このアプリからサインインするには更新してください。",
+  "app_own_use_default": "代わりに getkosha.app を使う",
+  "app_finishing_title": "サインインしています",
+  "app_finishing_signed_in": "{host} にサインインしました",
+  "app_finishing_accounts": "口座を読み込んでいます",
+  "app_finishing_offline": "オフライン用にこのスマートフォンにコピーを保存しています",
+  "app_signin_error_title": "サインインが完了しませんでした",
+  "app_signin_error_body": "{host} から応答が届く前にブラウザが閉じられました。何も変更されていません。",
+  "app_lock_title": "Kosha はロックされています",
+  "app_lock_after": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{count} 分離れたのでロックされました。"
+      }
+    }
+  ],
+  "app_lock_left": "Kosha を離れたときにロックされました。",
+  "app_lock_unlock": "ロックを解除",
+  "app_lock_prompt": "Kosha のロックを解除",
+  "app_offline_waiting": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{count} 件の記録がこのスマートフォンに保存されています。オンラインに戻るとすぐに送信し、合計を更新します。"
+      }
+    }
+  ],
+  "app_offline_none": "表示されているのはこのスマートフォンに保存された内容です。オンラインに戻ると Kosha が更新します。",
+  "app_waiting": "送信待ち",
+  "app_loading": "Kosha が新しい情報を確認する間、このスマートフォンに保存された内容を表示しています。",
+  "app_signout_waiting": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{count} 件の記録がまだ送信されていません。サインアウトすると削除されます。"
+      }
+    }
+  ],
+  "app_previous_year": "前の年",
+  "app_next_year": "次の年",
+  "app_month_swipe": "概要・アクティビティ・定期を横にスワイプすると 1 か月移動します。",
+  "app_signout_clears": "サインアウトすると、このデバイスに保存された内容は消去されます。",
+  "app_widget_name": "クイック追加",
+  "app_widget_description": "ホーム画面から支出や収入を追加できます。"
 }

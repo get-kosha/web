@@ -1,3 +1,55 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_ov_show_totals_in": "Mostrar totais em",
+  "app_ov_pick_month": "Escolha um mês",
+  "app_ov_not_started": "Não começou",
+  "app_ov_month_so_far": "{amount} até agora",
+  "app_ov_main_currency": "Sua moeda principal",
+  "app_ov_converted_today": "Convertido pelas cotações de hoje.",
+  "app_ov_your_currencies": "Suas moedas nos Ajustes",
+  "app_ov_first_entry": "Toque em + para adicionar sua primeira entrada.",
+  "app_ov_from_statements": "Dos seus extratos bancários",
+  "app_ov_import": "Importar",
+  "app_ov_hide_card": "Ocultar este cartão",
+  "app_ov_accounts": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} conta",
+        "countPlural=*": "{count} contas"
+      }
+    }
+  ],
+  "app_ov_chart_later": "O gráfico começa depois do seu primeiro mês.",
+  "app_ov_all_recurring": "Tudo em Recorrentes →",
+  "app_ov_quick_add_row": "Adicionar {amount} · {payee}",
+  "app_ov_saved_offline": "Salvo offline: {amount}, {payee}",
+  "app_ask_privacy": "O Kosha envia para {provider} só {#link}o que você compartilha{/link}.",
+  "app_ask_check": "Confira os valores importantes em Atividade.",
+  "app_ask_looking": "Procurando",
+  "app_act_empty_title": "Nenhuma transação neste mês",
+  "app_act_empty_body": "Os lançamentos que você adicionar aparecem aqui. Leva poucos segundos: valor, favorecido, pronto.",
+  "app_act_or_import": "Ou importe um extrato",
+  "app_act_receipt_deleted": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "O recibo é excluído junto.",
+        "countPlural=*": "Os {count} arquivos são excluídos junto."
+      }
+    }
+  ],
+  "app_act_any": "Qualquer",
+  "app_act_at_least": "No mínimo",
+  "app_act_show_corrections": "Mostrar ajustes de saldo",
+  "app_act_event_all_dates": "Evento · todas as datas",
+  "app_act_by_hand": "adicionado ao evento manualmente",
+  "app_act_take_photo": "Tirar uma foto",
+  "app_act_choose_photos": "Escolher nas fotos",
+  "app_act_file_hint": "PDF ou imagem, como um holerite",
+  "app_act_up_to": "Até 10 MB cada.",
+  "app_act_not_counted": "Não conta como despesa nem receita",
+  "app_act_fee_counted": "conta como {category}"
 }

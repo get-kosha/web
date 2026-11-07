@@ -13,5 +13,66 @@
   "app_stepper_less": "Less",
   "app_stepper_more": "More",
   "app_most_used": "Most used",
-  "app_next": "Next"
+  "app_next": "Next",
+  "app_signin_continue": "Continue to sign in",
+  "app_signin_demo": "Try the demo",
+  "app_signin_note": "Sign in or create an account on {host} with your password, a passkey or Google. Kosha brings you back here.",
+  "app_signin_own_server": "Use your own server",
+  "app_own_title": "Your own server",
+  "app_own_lead": "Kosha is open source. If you run it yourself, enter its address and sign in there.",
+  "app_own_label": "Server address",
+  "app_own_found": "Found Kosha at {host}",
+  "app_own_invalid": "Enter a full URL, like https://kosha.example.com",
+  "app_own_not_found": "No Kosha server answered at {host}.",
+  "app_own_too_old": "{host} runs an older Kosha. Update it to sign in from this app.",
+  "app_own_use_default": "Use getkosha.app instead",
+  "app_finishing_title": "Signing you in",
+  "app_finishing_signed_in": "Signed in on {host}",
+  "app_finishing_accounts": "Loading your accounts",
+  "app_finishing_offline": "Keeping a copy on this phone for offline",
+  "app_signin_error_title": "Sign-in didn’t finish",
+  "app_signin_error_body": "The browser closed before Kosha heard back from {host}. Nothing was changed.",
+  "app_lock_title": "Kosha is locked",
+  "app_lock_after": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Locked after a minute away.",
+        "countPlural=*": "Locked after {count} minutes away."
+      }
+    }
+  ],
+  "app_lock_left": "Locked when you left Kosha.",
+  "app_lock_unlock": "Unlock",
+  "app_lock_prompt": "Unlock Kosha",
+  "app_offline_waiting": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} entry is saved on this phone. Kosha sends it as soon as you’re back online, then updates your totals.",
+        "countPlural=*": "{count} entries are saved on this phone. Kosha sends them as soon as you’re back online, then updates your totals."
+      }
+    }
+  ],
+  "app_offline_none": "What you see is what this phone saved. Kosha updates it when you’re back online.",
+  "app_waiting": "waiting",
+  "app_loading": "Showing what this phone saved, while Kosha checks for anything new.",
+  "app_signout_waiting": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} entry hasn’t been sent yet. Signing out deletes it.",
+        "countPlural=*": "{count} entries haven’t been sent yet. Signing out deletes them."
+      }
+    }
+  ],
+  "app_previous_year": "Previous year",
+  "app_next_year": "Next year",
+  "app_month_swipe": "Swipe Overview, Activity or Recurring sideways to move one month.",
+  "app_signout_clears": "Signing out clears what this device saved.",
+  "app_widget_name": "Quick add",
+  "app_widget_description": "Add an expense or income from your home screen."
 }

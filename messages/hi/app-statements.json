@@ -1,3 +1,86 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_rcn_quick_title": "झटपट जाँच",
+  "app_rcn_statement_title": "स्टेटमेंट से",
+  "app_rcn_tick_off": "एंट्रियाँ टिक करें",
+  "app_rcn_import_instead": "इसके बजाय स्टेटमेंट इंपोर्ट करें",
+  "app_rcn_formats": "आपके बैंक से CSV, OFX या QFX।",
+  "app_rcn_formats_pdf": "आपके बैंक से CSV, OFX, QFX या PDF।",
+  "app_rcn_below_zero": "शून्य से कम",
+  "app_imp_choose": "फ़ाइलें चुनें",
+  "app_imp_choose_more": "और फ़ाइलें चुनें",
+  "app_imp_formats": "CSV, OFX या QFX। हर बैंक और कार्ड, जितने चाहें उतने महीने।",
+  "app_imp_formats_pdf": "CSV, OFX, QFX या PDF। हर बैंक और कार्ड, जितने चाहें उतने महीने।",
+  "app_imp_share_hint": "आप Files या अपने बैंकिंग ऐप से भी स्टेटमेंट Kosha पर शेयर कर सकते हैं।",
+  "app_imp_read_progress": "{total} में से {done} पूरे",
+  "app_imp_reading": "पढ़ रहे हैं…",
+  "app_imp_reading_ai": "AI से पढ़ रहे हैं…",
+  "app_imp_check_accounts": "खाते जाँचें",
+  "app_imp_offline": "इंपोर्ट के लिए कनेक्शन चाहिए। वापस ऑनलाइन होने पर फ़ाइलें चुनें।",
+  "app_imp_closing_matches": "अंतिम बैलेंस मेल खाता है",
+  "app_imp_card_bill": "बैंक से कार्ड बिल का भुगतान",
+  "app_imp_check_pdf": "PDF से मिलान करें",
+  "app_imp_recurring": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} भुगतान नियमित लगता है",
+        "countPlural=*": "{count} भुगतान नियमित लगते हैं"
+      }
+    }
+  ],
+  "app_imp_n_files": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} फ़ाइल",
+        "countPlural=*": "{count} फ़ाइलें"
+      }
+    }
+  ],
+  "app_imp_n_accounts": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} खाता",
+        "countPlural=*": "{count} खाते"
+      }
+    }
+  ],
+  "app_imp_n_payees": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} पार्टी",
+        "countPlural=*": "{count} पार्टियाँ"
+      }
+    }
+  ],
+  "app_imp_n_transfers": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} ट्रांसफ़र",
+        "countPlural=*": "{count} ट्रांसफ़र"
+      }
+    }
+  ],
+  "app_imp_n_new": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} नया",
+        "countPlural=*": "{count} नए"
+      }
+    }
+  ],
+  "app_imp_summary": "{accounts} में {transactions}",
+  "app_imp_done_summary": "{accounts} में {transactions}।",
+  "app_imp_done_summary_transfers": "{accounts} में {transactions}, और उनके बीच {transfers} जोड़े गए।"
 }

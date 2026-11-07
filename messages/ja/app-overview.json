@@ -1,3 +1,53 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_ov_show_totals_in": "合計の表示通貨",
+  "app_ov_pick_month": "月を選ぶ",
+  "app_ov_not_started": "まだです",
+  "app_ov_month_so_far": "現在 {amount}",
+  "app_ov_main_currency": "メイン通貨",
+  "app_ov_converted_today": "今日のレートで換算しています。",
+  "app_ov_your_currencies": "設定の通貨",
+  "app_ov_first_entry": "+ をタップして最初の記録を追加しましょう。",
+  "app_ov_from_statements": "銀行の明細から",
+  "app_ov_import": "インポート",
+  "app_ov_hide_card": "このカードを隠す",
+  "app_ov_accounts": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{count} 件の口座"
+      }
+    }
+  ],
+  "app_ov_chart_later": "グラフは最初の1か月が過ぎると表示されます。",
+  "app_ov_all_recurring": "すべて定期で見る →",
+  "app_ov_quick_add_row": "{amount} · {payee} を追加",
+  "app_ov_saved_offline": "オフラインで保存しました：{amount}、{payee}",
+  "app_ask_privacy": "Kosha が {provider} に送るのは{#link}共有を許可した内容{/link}だけです。",
+  "app_ask_check": "大事な数字は履歴で確認してください。",
+  "app_ask_looking": "調べています",
+  "app_act_empty_title": "今月の取引はありません",
+  "app_act_empty_body": "追加した取引がここに表示されます。金額と支払先を入れるだけで数秒で終わります。",
+  "app_act_or_import": "または明細をインポート",
+  "app_act_receipt_deleted": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "添付ファイル（{count} 件）も一緒に削除されます。"
+      }
+    }
+  ],
+  "app_act_any": "すべて",
+  "app_act_at_least": "下限",
+  "app_act_show_corrections": "残高修正を表示",
+  "app_act_event_all_dates": "イベント · 全期間",
+  "app_act_by_hand": "手動でイベントに追加",
+  "app_act_take_photo": "写真を撮る",
+  "app_act_choose_photos": "写真から選ぶ",
+  "app_act_file_hint": "PDF または画像（給与明細など）",
+  "app_act_up_to": "1ファイル 10 MB まで。",
+  "app_act_not_counted": "支出にも収入にも計上されません",
+  "app_act_fee_counted": "{category}として計上"
 }

@@ -1,3 +1,55 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_ov_show_totals_in": "कुल रकम इसमें दिखाएँ",
+  "app_ov_pick_month": "महीना चुनें",
+  "app_ov_not_started": "शुरू नहीं हुआ",
+  "app_ov_month_so_far": "अब तक {amount}",
+  "app_ov_main_currency": "आपकी मुख्य मुद्रा",
+  "app_ov_converted_today": "आज की दरों पर बदला गया।",
+  "app_ov_your_currencies": "सेटिंग्स में आपकी मुद्राएँ",
+  "app_ov_first_entry": "पहली एंट्री जोड़ने के लिए + दबाएँ।",
+  "app_ov_from_statements": "आपके बैंक स्टेटमेंट से",
+  "app_ov_import": "इम्पोर्ट करें",
+  "app_ov_hide_card": "यह कार्ड छिपाएँ",
+  "app_ov_accounts": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} खाता",
+        "countPlural=*": "{count} खाते"
+      }
+    }
+  ],
+  "app_ov_chart_later": "चार्ट आपके पहले महीने के बाद शुरू होगा।",
+  "app_ov_all_recurring": "नियमित में सब देखें →",
+  "app_ov_quick_add_row": "{amount} · {payee} जोड़ें",
+  "app_ov_saved_offline": "ऑफ़लाइन सेव किया: {amount}, {payee}",
+  "app_ask_privacy": "Kosha {provider} को सिर्फ़ {#link}वही भेजता है जो आप साझा करते हैं{/link}।",
+  "app_ask_check": "ज़रूरी आँकड़े गतिविधि में जाँच लें।",
+  "app_ask_looking": "खोज रहे हैं",
+  "app_act_empty_title": "इस महीने कोई लेन-देन नहीं",
+  "app_act_empty_body": "आप जो एंट्रियाँ जोड़ेंगे, वे यहाँ दिखेंगी। बस कुछ सेकंड: रकम, किसे दिया, हो गया।",
+  "app_act_or_import": "या स्टेटमेंट इम्पोर्ट करें",
+  "app_act_receipt_deleted": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "इसकी रसीद भी साथ में हट जाएगी।",
+        "countPlural=*": "इसकी {count} फ़ाइलें भी साथ में हट जाएँगी।"
+      }
+    }
+  ],
+  "app_act_any": "कोई भी",
+  "app_act_at_least": "कम से कम",
+  "app_act_show_corrections": "बैलेंस सुधार दिखाएँ",
+  "app_act_event_all_dates": "इवेंट · सभी तारीखें",
+  "app_act_by_hand": "इवेंट में हाथ से जोड़ा गया",
+  "app_act_take_photo": "फ़ोटो लें",
+  "app_act_choose_photos": "फ़ोटो में से चुनें",
+  "app_act_file_hint": "PDF या इमेज, जैसे सैलरी स्लिप",
+  "app_act_up_to": "हर फ़ाइल 10 MB तक।",
+  "app_act_not_counted": "खर्च या आय में नहीं गिना जाता",
+  "app_act_fee_counted": "{category} में गिना जाता है"
 }

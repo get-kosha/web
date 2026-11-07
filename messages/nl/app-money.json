@@ -1,3 +1,109 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_rec_asks_each_time": "Kosha vraagt elke keer om het bedrag",
+  "app_rec_asks_that_day": "Kosha vraagt die dag om het bedrag",
+  "app_rec_attach_bill": "Rekening bijvoegen",
+  "app_rec_documents_by_month": "Documenten per maand",
+  "app_rec_due_on": "vervalt {day}",
+  "app_rec_next": "volgende {day}",
+  "app_rec_none_in_month": "Niets te betalen in {month}.",
+  "app_rec_on_due_date": "Op de vervaldatum",
+  "app_rec_overdue": "Vervallen op {day} · niet als betaald gemarkeerd",
+  "app_rec_paid_on": "betaald {day}",
+  "app_rec_per_month_short": "{amount}/mnd",
+  "app_rec_record_payment": "Betaling vastleggen",
+  "app_rec_to_account": "Naar {account}",
+  "app_rec_unit_day": "Dag",
+  "app_rec_unit_week": "Week",
+  "app_rec_unit_month": "Maand",
+  "app_rec_unit_year": "Jaar",
+  "app_rec_usually": "Meestal ongeveer {amount}",
+  "app_rec_zip_hint": "Kosha zet de aangevinkte in een zip en opent het deelmenu.",
+  "app_rec_average_last": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "gemiddelde van de laatste betaling",
+        "countPlural=*": "gemiddelde van de laatste {count}"
+      }
+    }
+  ],
+  "app_rec_backfill": [
+    {
+      "declarations": ["input count", "input date", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Kosha legt de betalingen van {date} tot vandaag vast: {count} betaling.",
+        "countPlural=*": "Kosha legt de betalingen van {date} tot vandaag vast: {count} betalingen."
+      }
+    }
+  ],
+  "app_rec_payments_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} betaling",
+        "countPlural=*": "{count} betalingen"
+      }
+    }
+  ],
+  "app_rec_share_zip": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} delen als zip",
+        "countPlural=*": "{count} delen als zip"
+      }
+    }
+  ],
+  "app_acc_credit_used": "{percent} van {limit} gebruikt",
+  "app_acc_debt_hint": "Het nettovermogen telt wat je verschuldigd bent als schuld.",
+  "app_acc_from_account": "Van {account}",
+  "app_acc_fx_cost": "kosten {amount}",
+  "app_acc_fx_empty": "Nog geen valutawissels. Overboekingen tussen rekeningen in verschillende valuta staan hier.",
+  "app_acc_fx_fee": "kosten {amount}",
+  "app_acc_fx_market": "markt {rate}",
+  "app_acc_fx_no_fee": "geen kosten",
+  "app_acc_fx_rate": "Koers {rate}",
+  "app_acc_gain_over_in": "winst op inleg",
+  "app_acc_import_hint": "CSV, OFX, QFX of PDF",
+  "app_acc_import_hint_no_pdf": "CSV, OFX of QFX",
+  "app_acc_kosha_shows": "Kosha toont {amount}",
+  "app_acc_owed": "{account}, verschuldigd",
+  "app_acc_reconcile_hint": "Vergelijk met een bankafschrift",
+  "app_acc_still_counted": "tellen mee in het nettovermogen",
+  "app_acc_value": "Waarde",
+  "app_acc_currencies": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} valuta",
+        "countPlural=*": "{count} valuta's"
+      }
+    }
+  ],
+  "app_acc_fx_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} wissel",
+        "countPlural=*": "{count} wissels"
+      }
+    }
+  ],
+  "app_acc_fx_this_year": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} dit jaar",
+        "countPlural=*": "{count} dit jaar"
+      }
+    }
+  ]
 }

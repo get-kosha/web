@@ -1,3 +1,55 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_ov_show_totals_in": "Afficher les totaux en",
+  "app_ov_pick_month": "Choisir un mois",
+  "app_ov_not_started": "Pas encore commencé",
+  "app_ov_month_so_far": "{amount} pour l’instant",
+  "app_ov_main_currency": "Votre devise principale",
+  "app_ov_converted_today": "Converti aux taux du jour.",
+  "app_ov_your_currencies": "Vos devises dans les réglages",
+  "app_ov_first_entry": "Touchez + pour ajouter votre première entrée.",
+  "app_ov_from_statements": "À partir de vos relevés bancaires",
+  "app_ov_import": "Importer",
+  "app_ov_hide_card": "Masquer cette carte",
+  "app_ov_accounts": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} compte",
+        "countPlural=*": "{count} comptes"
+      }
+    }
+  ],
+  "app_ov_chart_later": "Le graphique commence après votre premier mois.",
+  "app_ov_all_recurring": "Tout dans Récurrents →",
+  "app_ov_quick_add_row": "Ajouter {amount} · {payee}",
+  "app_ov_saved_offline": "Enregistré hors ligne : {amount}, {payee}",
+  "app_ask_privacy": "Kosha n’envoie à {provider} que {#link}ce que vous partagez{/link}.",
+  "app_ask_check": "Vérifiez les chiffres importants dans Activité.",
+  "app_ask_looking": "Recherche en cours",
+  "app_act_empty_title": "Aucune opération ce mois-ci",
+  "app_act_empty_body": "Les opérations que vous ajoutez apparaissent ici. Quelques secondes suffisent : montant, bénéficiaire, terminé.",
+  "app_act_or_import": "Ou importez un relevé",
+  "app_act_receipt_deleted": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Son reçu est supprimé avec elle.",
+        "countPlural=*": "Ses {count} fichiers sont supprimés avec elle."
+      }
+    }
+  ],
+  "app_act_any": "Tous",
+  "app_act_at_least": "Au moins",
+  "app_act_show_corrections": "Afficher les corrections de solde",
+  "app_act_event_all_dates": "Événement · toutes les dates",
+  "app_act_by_hand": "ajouté à l’événement à la main",
+  "app_act_take_photo": "Prendre une photo",
+  "app_act_choose_photos": "Choisir dans les photos",
+  "app_act_file_hint": "PDF ou image, comme une fiche de paie",
+  "app_act_up_to": "Jusqu’à 10 Mo chacun.",
+  "app_act_not_counted": "Ne compte ni comme dépense ni comme revenu",
+  "app_act_fee_counted": "compté en {category}"
 }

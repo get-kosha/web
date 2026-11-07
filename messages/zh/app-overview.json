@@ -1,3 +1,53 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_ov_show_totals_in": "合计显示为",
+  "app_ov_pick_month": "选择月份",
+  "app_ov_not_started": "尚未开始",
+  "app_ov_month_so_far": "目前 {amount}",
+  "app_ov_main_currency": "你的主要货币",
+  "app_ov_converted_today": "按今天的汇率换算。",
+  "app_ov_your_currencies": "设置中的货币",
+  "app_ov_first_entry": "点按 + 添加第一笔记录。",
+  "app_ov_from_statements": "来自你的银行对账单",
+  "app_ov_import": "导入",
+  "app_ov_hide_card": "隐藏此卡片",
+  "app_ov_accounts": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{count} 个账户"
+      }
+    }
+  ],
+  "app_ov_chart_later": "图表会在第一个月后开始显示。",
+  "app_ov_all_recurring": "在定期中查看全部 →",
+  "app_ov_quick_add_row": "添加 {amount} · {payee}",
+  "app_ov_saved_offline": "已离线保存：{amount}，{payee}",
+  "app_ask_privacy": "Kosha 只会把{#link}你允许共享的内容{/link}发送给 {provider}。",
+  "app_ask_check": "重要数字请在明细中核对。",
+  "app_ask_looking": "正在查找",
+  "app_act_empty_title": "本月还没有交易",
+  "app_act_empty_body": "你添加的交易会显示在这里。只需几秒：金额、收款方，完成。",
+  "app_act_or_import": "或导入对账单",
+  "app_act_receipt_deleted": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "附件（{count} 个）也会一并删除。"
+      }
+    }
+  ],
+  "app_act_any": "任意",
+  "app_act_at_least": "至少",
+  "app_act_show_corrections": "显示余额更正",
+  "app_act_event_all_dates": "事件 · 所有日期",
+  "app_act_by_hand": "手动加入事件",
+  "app_act_take_photo": "拍照",
+  "app_act_choose_photos": "从照片中选择",
+  "app_act_file_hint": "PDF 或图片，比如工资单",
+  "app_act_up_to": "每个最多 10 MB。",
+  "app_act_not_counted": "不计入支出或收入",
+  "app_act_fee_counted": "计入{category}"
 }

@@ -1,3 +1,87 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_set_profile_desc": "姓名、照片和邮箱",
+  "app_set_security_desc": "通行密钥、双重验证、应用锁、设备",
+  "app_set_general_desc": "语言、时区、添加时的默认值",
+  "app_set_appearance_desc": "主题、强调色、密度、隐藏金额",
+  "app_set_categories_desc": "图标、名称、子分类、合并",
+  "app_set_events_desc": "旅行和活动",
+  "app_set_rules_learning": "从你的修改中学习",
+  "app_set_recurring_desc": "账单和订阅的默认设置",
+  "app_set_ai_features_on": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "已开启 {count} 项功能"
+      }
+    }
+  ],
+  "app_set_data_desc": "导入对账单，导出 CSV 或 JSON",
+  "app_set_apps_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{count} 个已连接的应用"
+      }
+    }
+  ],
+  "app_set_keys_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{count} 个密钥"
+      }
+    }
+  ],
+  "app_set_delete_desc": "永久性操作",
+  "app_set_footer": "Kosha {version} ({build}) · {server}",
+  "app_set_unlock": "使用指纹或面容解锁",
+  "app_set_unlock_desc": "打开 Kosha 时验证。也可以使用手机 PIN 码。",
+  "app_set_unlock_kw": "应用锁 生物识别 指纹 面容 PIN app lock fingerprint face",
+  "app_set_unlock_unavailable": "请先在这部手机上设置锁屏。",
+  "app_set_on_phone": "在这部手机上",
+  "app_set_lock_after": "再次锁定的时间",
+  "app_set_lock_instantly": "立即",
+  "app_set_lock_minutes": "{n} 分钟",
+  "app_set_lock_hour": "1 小时",
+  "app_set_lock_note": "仅限这部手机。",
+  "app_set_opens_web": "这些会打开 {host}，完成后带你回来。",
+  "app_set_hide_desc": "模糊金额，长按时显示。账号菜单中也有此开关。",
+  "app_set_account_colours": "账户颜色",
+  "app_set_account_colours_desc": "每个账户显示一个小色块。关闭后与网页版一致。",
+  "app_set_add_currency": "添加货币",
+  "app_set_currencies_note": "长按并拖动以调整顺序。最上面的是主货币，净资产和合计都以它计算。概览顶部的货币切换会按此顺序切换。",
+  "app_set_rate_in": "1 {from} 折合 {to}",
+  "app_set_move_up": "上移",
+  "app_set_move_down": "下移",
+  "app_set_subcategories": "子分类",
+  "app_set_rule_used": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "已使用 {count} 次"
+      }
+    }
+  ],
+  "app_set_ai_intro": "可选。没有它 Kosha 也能完整使用。",
+  "app_set_ai_add_provider": "添加服务商",
+  "app_set_ai_add_provider_desc": "OpenAI、Gemini、OpenRouter、Ollama 或你自己的端点",
+  "app_set_ai_disconnect_named": "断开 {name}",
+  "app_set_ai_replace": "替换",
+  "app_set_ai_key_stored": "加密保存在服务器上。Kosha 不会再显示它。",
+  "app_set_ai_privacy_intro": "Kosha 可以发送给 AI 服务商的字段。其他内容都留在 Kosha 中。",
+  "app_set_ai_each_sends": "每项功能发送的内容",
+  "app_set_ai_sent": "发送内容",
+  "app_set_ai_returned": "返回内容",
+  "app_set_export_note": "下载会打开分享菜单，你可以保存到“文件”或发送出去。",
+  "app_set_share": "分享",
+  "app_set_delete_intro": "这些操作无法撤销。不确定的话请先导出。",
+  "app_set_delete_account_note": "将打开 {host}，你需要分三步用邮箱和密码确认。",
+  "app_wel_net_worth_starts": "净资产从 {amount} 开始。",
+  "app_wel_import_later": "现在不导入？之后随时可以在“账户”或“设置 › 导入与导出”中导入。",
+  "app_wel_formats": "网上银行导出的 CSV、OFX 或 QFX 文件，或 PDF 对账单。"
 }

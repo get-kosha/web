@@ -1,3 +1,52 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_add_start": "金額から入力",
+  "app_add_ready_next": "次を入力できます。口座と日付はそのままです。",
+  "app_add_income_note": "収入はプラスで表示されます",
+  "app_add_transfer_note": "支出には含まれません。手数料は含まれます。",
+  "app_add_converted": "今日のレートで約{amount}",
+  "app_add_why_expense_new": "{payee}は初めてなので、Koshaはカテゴリを推測できません。選ぶと支出が追加されます。",
+  "app_add_why_income_new": "{payee}は初めてなので、Koshaはカテゴリを推測できません。選ぶと収入が追加されます。",
+  "app_add_why_expense": "Koshaはまだカテゴリを推測できません。選ぶと支出が追加されます。",
+  "app_add_why_income": "Koshaはまだカテゴリを推測できません。選ぶと収入が追加されます。",
+  "app_add_most_used_first": "よく使うものから表示します。",
+  "app_add_used_before": "使ったことがある",
+  "app_add_picked_by_date": "{dates} · 日付から自動選択",
+  "app_add_files": "ファイル",
+  "app_add_attach": "添付",
+  "app_add_days_with_entries": "取引がある日",
+  "app_add_time_help_24": "ホイールを回すか、行をタップします。言語の設定に合わせて24時間表示です。",
+  "app_add_time_help_12": "ホイールを回すか、行をタップします。言語の設定に合わせて12時間表示です。",
+  "app_add_privacy": "Koshaが{provider}に送るのは、{#link}共有を許可した情報{/link}だけです。",
+  "app_add_camera_hint": "レシートを枠内に収めてください。",
+  "app_add_choose_photo": "写真を選ぶ",
+  "app_add_take_photo": "撮影",
+  "app_add_flash_on": "フラッシュ オン",
+  "app_add_flash_off": "フラッシュ オフ",
+  "app_add_camera_needed": "レシートを読み取るにはカメラが必要です。写真を選ぶこともできます。",
+  "app_add_allow_camera": "カメラを許可",
+  "app_add_filled_receipt": "レシートから読み取りました",
+  "app_add_filled_ai": "AIが入力しました",
+  "app_add_check_it": "追加する前に確認してください。",
+  "app_add_check_photo": "追加する前に確認してください。写真は添付されます。",
+  "app_add_times": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{count}回"
+      }
+    }
+  ],
+  "app_add_available_of": "{limit}のうち{available}利用可能",
+  "app_add_swap": "振替元と振替先を入れ替える",
+  "app_add_fee_amount": "手数料 {amount}",
+  "app_add_category_none": "カテゴリ、未選択",
+  "app_add_category_picked": "カテゴリ、{name}",
+  "app_add_category_usual": "カテゴリ、{name}、この取引先でいつも使うもの",
+  "app_add_category_ai": "カテゴリ、{name}、AIの提案",
+  "app_add_account_guessed": "口座、{name}、推測",
+  "app_add_clear_payee": "取引先を消去",
+  "app_add_time_row": "時刻、{time}、変更",
+  "app_add_back_to_date": "日付に戻る"
 }

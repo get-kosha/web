@@ -1,3 +1,52 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_add_start": "先输入金额",
+  "app_add_ready_next": "可以添加下一笔了。账户和日期保持不变。",
+  "app_add_income_note": "收入以加号显示",
+  "app_add_transfer_note": "不计为支出，手续费计入。",
+  "app_add_converted": "按今日汇率约 {amount}",
+  "app_add_why_expense_new": "{payee} 是新的交易对象，Kosha 无法猜出分类。选择一个分类，这笔支出就会添加。",
+  "app_add_why_income_new": "{payee} 是新的交易对象，Kosha 无法猜出分类。选择一个分类，这笔收入就会添加。",
+  "app_add_why_expense": "Kosha 还猜不出分类。选择一个分类，这笔支出就会添加。",
+  "app_add_why_income": "Kosha 还猜不出分类。选择一个分类，这笔收入就会添加。",
+  "app_add_most_used_first": "最常用的排在前面。",
+  "app_add_used_before": "用过的",
+  "app_add_picked_by_date": "{dates} · 按日期选择",
+  "app_add_files": "文件",
+  "app_add_attach": "添加附件",
+  "app_add_days_with_entries": "有记录的日子",
+  "app_add_time_help_24": "滑动滚轮或点按一行。按你的语言使用 24 小时制。",
+  "app_add_time_help_12": "滑动滚轮或点按一行。按你的语言使用 12 小时制。",
+  "app_add_privacy": "Kosha 只会把{#link}你允许分享的内容{/link}发送给 {provider}。",
+  "app_add_camera_hint": "把收据放进框内。",
+  "app_add_choose_photo": "选择照片",
+  "app_add_take_photo": "拍照",
+  "app_add_flash_on": "闪光灯开",
+  "app_add_flash_off": "闪光灯关",
+  "app_add_camera_needed": "扫描收据需要使用相机。你也可以选择一张照片。",
+  "app_add_allow_camera": "允许使用相机",
+  "app_add_filled_receipt": "已从你的收据中读取",
+  "app_add_filled_ai": "由 AI 填写",
+  "app_add_check_it": "添加前请检查。",
+  "app_add_check_photo": "添加前请检查。照片已附上。",
+  "app_add_times": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{count} 次"
+      }
+    }
+  ],
+  "app_add_available_of": "可用 {available}，额度 {limit}",
+  "app_add_swap": "交换转出和转入",
+  "app_add_fee_amount": "手续费 {amount}",
+  "app_add_category_none": "分类，尚未选择",
+  "app_add_category_picked": "分类，{name}",
+  "app_add_category_usual": "分类，{name}，此交易对象常用",
+  "app_add_category_ai": "分类，{name}，AI 建议",
+  "app_add_account_guessed": "账户，{name}，推测",
+  "app_add_clear_payee": "清除交易对象",
+  "app_add_time_row": "时间，{time}，更改",
+  "app_add_back_to_date": "返回日期"
 }

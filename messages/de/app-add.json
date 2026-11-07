@@ -1,3 +1,53 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_add_start": "Fang mit dem Betrag an",
+  "app_add_ready_next": "Bereit für die nächste. Konto und Datum bleiben.",
+  "app_add_income_note": "Einnahmen stehen mit Plus",
+  "app_add_transfer_note": "Zählt nicht als Ausgabe. Die Gebühr schon.",
+  "app_add_converted": "≈ {amount} zum heutigen Kurs",
+  "app_add_why_expense_new": "{payee} ist neu, deshalb kann Kosha keine erraten. Wähl sie aus, und die Ausgabe wird hinzugefügt.",
+  "app_add_why_income_new": "{payee} ist neu, deshalb kann Kosha keine erraten. Wähl sie aus, und die Einnahme wird hinzugefügt.",
+  "app_add_why_expense": "Kosha kann noch keine erraten. Wähl sie aus, und die Ausgabe wird hinzugefügt.",
+  "app_add_why_income": "Kosha kann noch keine erraten. Wähl sie aus, und die Einnahme wird hinzugefügt.",
+  "app_add_most_used_first": "Meistgenutzte zuerst.",
+  "app_add_used_before": "Schon verwendet",
+  "app_add_picked_by_date": "{dates} · nach Datum gewählt",
+  "app_add_files": "Dateien",
+  "app_add_attach": "Anhängen",
+  "app_add_days_with_entries": "Tage mit Buchungen",
+  "app_add_time_help_24": "Dreh ein Rad oder tipp auf eine Zeile. 24-Stunden-Format, nach deiner Sprache.",
+  "app_add_time_help_12": "Dreh ein Rad oder tipp auf eine Zeile. 12-Stunden-Format, nach deiner Sprache.",
+  "app_add_privacy": "Kosha sendet nur, {#link}was du freigibst{/link}, an {provider}.",
+  "app_add_camera_hint": "Halte den Beleg in den Rahmen.",
+  "app_add_choose_photo": "Foto auswählen",
+  "app_add_take_photo": "Foto aufnehmen",
+  "app_add_flash_on": "Blitz an",
+  "app_add_flash_off": "Blitz aus",
+  "app_add_camera_needed": "Kosha braucht die Kamera, um einen Beleg zu scannen. Du kannst auch ein Foto auswählen.",
+  "app_add_allow_camera": "Kamera erlauben",
+  "app_add_filled_receipt": "Aus deinem Beleg gelesen",
+  "app_add_filled_ai": "Von der KI ausgefüllt",
+  "app_add_check_it": "Prüf alles, bevor du es hinzufügst.",
+  "app_add_check_photo": "Prüf alles, bevor du es hinzufügst. Das Foto ist angehängt.",
+  "app_add_times": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count}-mal",
+        "countPlural=*": "{count}-mal"
+      }
+    }
+  ],
+  "app_add_available_of": "{available} von {limit} verfügbar",
+  "app_add_swap": "Von und Auf tauschen",
+  "app_add_fee_amount": "{amount} Gebühr",
+  "app_add_category_none": "Kategorie, noch nicht gewählt",
+  "app_add_category_picked": "Kategorie, {name}",
+  "app_add_category_usual": "Kategorie, {name}, üblich für diesen Zahlungspartner",
+  "app_add_category_ai": "Kategorie, {name}, von der KI vorgeschlagen",
+  "app_add_account_guessed": "Konto, {name}, erraten",
+  "app_add_clear_payee": "Zahlungspartner leeren",
+  "app_add_time_row": "Uhrzeit, {time}, ändern",
+  "app_add_back_to_date": "Zurück zum Datum"
 }

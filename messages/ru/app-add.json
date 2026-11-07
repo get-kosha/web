@@ -1,3 +1,55 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_add_start": "Начните с суммы",
+  "app_add_ready_next": "Можно добавить следующую. Счёт и дата остаются.",
+  "app_add_income_note": "Поступления показываются с плюсом",
+  "app_add_transfer_note": "Не считается расходом. Комиссия считается.",
+  "app_add_converted": "≈ {amount} по сегодняшнему курсу",
+  "app_add_why_expense_new": "{payee} встречается впервые, поэтому Kosha не может угадать категорию. Выберите её, и расход добавится.",
+  "app_add_why_income_new": "{payee} встречается впервые, поэтому Kosha не может угадать категорию. Выберите её, и доход добавится.",
+  "app_add_why_expense": "Kosha пока не может угадать категорию. Выберите её, и расход добавится.",
+  "app_add_why_income": "Kosha пока не может угадать категорию. Выберите её, и доход добавится.",
+  "app_add_most_used_first": "Сначала частые.",
+  "app_add_used_before": "Уже были",
+  "app_add_picked_by_date": "{dates} · выбрано по дате",
+  "app_add_files": "Файлы",
+  "app_add_attach": "Прикрепить",
+  "app_add_days_with_entries": "Дни с операциями",
+  "app_add_time_help_24": "Прокрутите колесо или нажмите на строку. 24-часовой формат, по вашему языку.",
+  "app_add_time_help_12": "Прокрутите колесо или нажмите на строку. 12-часовой формат, по вашему языку.",
+  "app_add_privacy": "Kosha отправляет в {provider} только {#link}то, чем вы делитесь{/link}.",
+  "app_add_camera_hint": "Поместите чек в рамку.",
+  "app_add_choose_photo": "Выбрать фото",
+  "app_add_take_photo": "Сделать фото",
+  "app_add_flash_on": "Вспышка включена",
+  "app_add_flash_off": "Вспышка выключена",
+  "app_add_camera_needed": "Чтобы сканировать чек, Kosha нужна камера. Можно также выбрать фото.",
+  "app_add_allow_camera": "Разрешить камеру",
+  "app_add_filled_receipt": "Заполнено по чеку",
+  "app_add_filled_ai": "Заполнено ИИ",
+  "app_add_check_it": "Проверьте перед добавлением.",
+  "app_add_check_photo": "Проверьте перед добавлением. Фото прикреплено.",
+  "app_add_times": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} раз",
+        "countPlural=few": "{count} раза",
+        "countPlural=many": "{count} раз",
+        "countPlural=*": "{count} раза"
+      }
+    }
+  ],
+  "app_add_available_of": "доступно {available} из {limit}",
+  "app_add_swap": "Поменять местами",
+  "app_add_fee_amount": "комиссия {amount}",
+  "app_add_category_none": "Категория, не выбрана",
+  "app_add_category_picked": "Категория, {name}",
+  "app_add_category_usual": "Категория, {name}, обычная для этого контрагента",
+  "app_add_category_ai": "Категория, {name}, предложена ИИ",
+  "app_add_account_guessed": "Счёт, {name}, угадан",
+  "app_add_clear_payee": "Очистить контрагента",
+  "app_add_time_row": "Время, {time}, изменить",
+  "app_add_back_to_date": "Назад к дате"
 }

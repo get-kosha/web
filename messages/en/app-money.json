@@ -1,3 +1,109 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_rec_asks_each_time": "Kosha asks for the amount each time",
+  "app_rec_asks_that_day": "Kosha asks for the amount that day",
+  "app_rec_attach_bill": "Attach bill",
+  "app_rec_documents_by_month": "Documents by month",
+  "app_rec_due_on": "due {day}",
+  "app_rec_next": "next {day}",
+  "app_rec_none_in_month": "Nothing due in {month}.",
+  "app_rec_on_due_date": "On the due date",
+  "app_rec_overdue": "Was due {day} · not marked paid",
+  "app_rec_paid_on": "paid {day}",
+  "app_rec_per_month_short": "{amount}/mo",
+  "app_rec_record_payment": "Record payment",
+  "app_rec_to_account": "To {account}",
+  "app_rec_unit_day": "Day",
+  "app_rec_unit_week": "Week",
+  "app_rec_unit_month": "Month",
+  "app_rec_unit_year": "Year",
+  "app_rec_usually": "Usually about {amount}",
+  "app_rec_zip_hint": "Kosha zips the ones you tick and opens the share sheet.",
+  "app_rec_average_last": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "average of the last payment",
+        "countPlural=*": "average of the last {count}"
+      }
+    }
+  ],
+  "app_rec_backfill": [
+    {
+      "declarations": ["input count", "input date", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Kosha will record payments from {date} until today: {count} payment.",
+        "countPlural=*": "Kosha will record payments from {date} until today: {count} payments."
+      }
+    }
+  ],
+  "app_rec_payments_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} payment",
+        "countPlural=*": "{count} payments"
+      }
+    }
+  ],
+  "app_rec_share_zip": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Share {count} as zip",
+        "countPlural=*": "Share {count} as zip"
+      }
+    }
+  ],
+  "app_acc_credit_used": "{percent} of {limit} used",
+  "app_acc_debt_hint": "Net worth counts what you owe as debt.",
+  "app_acc_from_account": "From {account}",
+  "app_acc_fx_cost": "cost {amount}",
+  "app_acc_fx_empty": "No currency exchanges yet. Transfers between accounts in different currencies show here.",
+  "app_acc_fx_fee": "fee {amount}",
+  "app_acc_fx_market": "market {rate}",
+  "app_acc_fx_no_fee": "no fee",
+  "app_acc_fx_rate": "Rate {rate}",
+  "app_acc_gain_over_in": "gain over money in",
+  "app_acc_import_hint": "CSV, OFX, QFX or PDF",
+  "app_acc_import_hint_no_pdf": "CSV, OFX or QFX",
+  "app_acc_kosha_shows": "Kosha shows {amount}",
+  "app_acc_owed": "{account}, owed",
+  "app_acc_reconcile_hint": "Check it against a bank statement",
+  "app_acc_still_counted": "still in net worth",
+  "app_acc_value": "Value",
+  "app_acc_currencies": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} currency",
+        "countPlural=*": "{count} currencies"
+      }
+    }
+  ],
+  "app_acc_fx_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} exchange",
+        "countPlural=*": "{count} exchanges"
+      }
+    }
+  ],
+  "app_acc_fx_this_year": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} this year",
+        "countPlural=*": "{count} this year"
+      }
+    }
+  ]
 }

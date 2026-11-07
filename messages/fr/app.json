@@ -13,5 +13,66 @@
   "app_stepper_less": "Moins",
   "app_stepper_more": "Plus",
   "app_most_used": "Les plus utilisées",
-  "app_next": "Suivant"
+  "app_next": "Suivant",
+  "app_signin_continue": "Continuer vers la connexion",
+  "app_signin_demo": "Essayer la démo",
+  "app_signin_note": "Connectez-vous ou créez un compte sur {host} avec votre mot de passe, une clé d’accès ou Google. Kosha vous ramène ici.",
+  "app_signin_own_server": "Utiliser votre propre serveur",
+  "app_own_title": "Votre propre serveur",
+  "app_own_lead": "Kosha est open source. Si vous l’hébergez vous-même, saisissez son adresse et connectez-vous là-bas.",
+  "app_own_label": "Adresse du serveur",
+  "app_own_found": "Kosha trouvé sur {host}",
+  "app_own_invalid": "Saisissez une URL complète, comme https://kosha.example.com",
+  "app_own_not_found": "Aucun serveur Kosha n’a répondu sur {host}.",
+  "app_own_too_old": "{host} utilise une ancienne version de Kosha. Mettez-la à jour pour vous connecter depuis cette app.",
+  "app_own_use_default": "Utiliser getkosha.app à la place",
+  "app_finishing_title": "Connexion en cours",
+  "app_finishing_signed_in": "Connecté sur {host}",
+  "app_finishing_accounts": "Chargement de vos comptes",
+  "app_finishing_offline": "Une copie est gardée sur ce téléphone pour le hors-ligne",
+  "app_signin_error_title": "La connexion n’a pas abouti",
+  "app_signin_error_body": "Le navigateur s’est fermé avant que Kosha ait une réponse de {host}. Rien n’a été modifié.",
+  "app_lock_title": "Kosha est verrouillé",
+  "app_lock_after": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Verrouillé après une minute d’absence.",
+        "countPlural=*": "Verrouillé après {count} minutes d’absence."
+      }
+    }
+  ],
+  "app_lock_left": "Verrouillé quand vous avez quitté Kosha.",
+  "app_lock_unlock": "Déverrouiller",
+  "app_lock_prompt": "Déverrouiller Kosha",
+  "app_offline_waiting": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} opération est enregistrée sur ce téléphone. Kosha l’envoie dès votre retour en ligne, puis met à jour vos totaux.",
+        "countPlural=*": "{count} opérations sont enregistrées sur ce téléphone. Kosha les envoie dès votre retour en ligne, puis met à jour vos totaux."
+      }
+    }
+  ],
+  "app_offline_none": "Vous voyez ce que ce téléphone a enregistré. Kosha le met à jour dès votre retour en ligne.",
+  "app_waiting": "en attente",
+  "app_loading": "Affichage de ce que ce téléphone a enregistré, pendant que Kosha vérifie s’il y a du nouveau.",
+  "app_signout_waiting": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} opération n’a pas encore été envoyée. La déconnexion la supprime.",
+        "countPlural=*": "{count} opérations n’ont pas encore été envoyées. La déconnexion les supprime."
+      }
+    }
+  ],
+  "app_previous_year": "Année précédente",
+  "app_next_year": "Année suivante",
+  "app_month_swipe": "Balayez Aperçu, Activité ou Récurrents sur le côté pour changer de mois.",
+  "app_signout_clears": "La déconnexion efface ce que cet appareil a enregistré.",
+  "app_widget_name": "Ajout rapide",
+  "app_widget_description": "Ajoutez une dépense ou un revenu depuis l’écran d’accueil."
 }

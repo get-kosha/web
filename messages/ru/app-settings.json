@@ -1,3 +1,99 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_set_profile_desc": "Имя, фото и email",
+  "app_set_security_desc": "Ключи доступа, двухфакторная защита, блокировка, устройства",
+  "app_set_general_desc": "Язык, часовой пояс, значения при добавлении",
+  "app_set_appearance_desc": "Тема, акцент, плотность, скрытие сумм",
+  "app_set_categories_desc": "Значки, названия, подкатегории, объединение",
+  "app_set_events_desc": "Поездки и события",
+  "app_set_rules_learning": "учится на ваших правках",
+  "app_set_recurring_desc": "Настройки для счетов и подписок",
+  "app_set_ai_features_on": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "включена {count} функция",
+        "countPlural=few": "включены {count} функции",
+        "countPlural=many": "включено {count} функций",
+        "countPlural=*": "включено {count} функции"
+      }
+    }
+  ],
+  "app_set_data_desc": "Выписки внутрь, CSV или JSON наружу",
+  "app_set_apps_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} подключённое приложение",
+        "countPlural=few": "{count} подключённых приложения",
+        "countPlural=many": "{count} подключённых приложений",
+        "countPlural=*": "{count} подключённого приложения"
+      }
+    }
+  ],
+  "app_set_keys_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} ключ",
+        "countPlural=few": "{count} ключа",
+        "countPlural=many": "{count} ключей",
+        "countPlural=*": "{count} ключа"
+      }
+    }
+  ],
+  "app_set_delete_desc": "Необратимые действия",
+  "app_set_footer": "Kosha {version} ({build}) · {server}",
+  "app_set_unlock": "Разблокировка по отпечатку или лицу",
+  "app_set_unlock_desc": "Запрашивается при открытии Kosha. PIN-код телефона тоже подойдёт.",
+  "app_set_unlock_kw": "блокировка биометрия отпечаток лицо PIN app lock fingerprint face",
+  "app_set_unlock_unavailable": "Сначала настройте блокировку экрана на этом телефоне.",
+  "app_set_on_phone": "На этом телефоне",
+  "app_set_lock_after": "Снова блокировать через",
+  "app_set_lock_instantly": "Сразу",
+  "app_set_lock_minutes": "{n} мин",
+  "app_set_lock_hour": "1 ч",
+  "app_set_lock_note": "Только на этом телефоне.",
+  "app_set_opens_web": "Они открывают {host} и возвращают вас обратно.",
+  "app_set_hide_desc": "Размывать суммы, пока вы не нажмёте и не удержите их. Этот переключатель есть и в меню аккаунта.",
+  "app_set_account_colours": "Цвета счетов",
+  "app_set_account_colours_desc": "Небольшая цветная метка у каждого счёта. Если выключить, всё как в веб-версии.",
+  "app_set_add_currency": "Добавить валюту",
+  "app_set_currencies_note": "Нажмите и перетащите, чтобы изменить порядок. Верхняя — основная валюта: в ней считаются капитал и итоги. Переключатель валюты вверху Обзора перебирает их в этом порядке.",
+  "app_set_rate_in": "1 {from} в {to}",
+  "app_set_move_up": "Переместить вверх",
+  "app_set_move_down": "Переместить вниз",
+  "app_set_subcategories": "Подкатегории",
+  "app_set_rule_used": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "применено {count} раз",
+        "countPlural=few": "применено {count} раза",
+        "countPlural=many": "применено {count} раз",
+        "countPlural=*": "применено {count} раза"
+      }
+    }
+  ],
+  "app_set_ai_intro": "Необязательно. Kosha полностью работает и без этого.",
+  "app_set_ai_add_provider": "Добавить провайдера",
+  "app_set_ai_add_provider_desc": "OpenAI, Gemini, OpenRouter, Ollama или свой адрес",
+  "app_set_ai_disconnect_named": "Отключить {name}",
+  "app_set_ai_replace": "Заменить",
+  "app_set_ai_key_stored": "Хранится на сервере в зашифрованном виде. Kosha больше его не покажет.",
+  "app_set_ai_privacy_intro": "Поля, которые Kosha может отправлять вашему ИИ-провайдеру. Всё остальное остаётся в Kosha.",
+  "app_set_ai_each_sends": "Что отправляет каждая функция",
+  "app_set_ai_sent": "Отправлено",
+  "app_set_ai_returned": "Ответ",
+  "app_set_export_note": "Загрузки открывают меню «Поделиться», чтобы сохранить файл в «Файлы» или отправить его.",
+  "app_set_share": "Поделиться",
+  "app_set_delete_intro": "Это нельзя отменить. Если сомневаетесь, сначала сделайте экспорт.",
+  "app_set_delete_account_note": "Откроется {host}, где вы подтвердите удаление email и паролем за три шага.",
+  "app_wel_net_worth_starts": "Капитал на старте: {amount}.",
+  "app_wel_import_later": "Не сейчас? Импортировать можно в любой момент в разделе «Счета» или «Настройки › Импорт и экспорт».",
+  "app_wel_formats": "Файлы CSV, OFX или QFX из интернет-банка либо выписки в PDF."
 }

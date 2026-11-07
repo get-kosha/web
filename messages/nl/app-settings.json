@@ -1,3 +1,91 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_set_profile_desc": "Naam, foto en e-mail",
+  "app_set_security_desc": "Passkeys, tweestapsverificatie, app-vergrendeling, apparaten",
+  "app_set_general_desc": "Taal, tijdzone, standaarden bij toevoegen",
+  "app_set_appearance_desc": "Thema, accentkleur, dichtheid, bedragen verbergen",
+  "app_set_categories_desc": "Pictogrammen, namen, subcategorieën, samenvoegen",
+  "app_set_events_desc": "Reizen en gelegenheden",
+  "app_set_rules_learning": "leert van je wijzigingen",
+  "app_set_recurring_desc": "Standaarden voor rekeningen en abonnementen",
+  "app_set_ai_features_on": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} functie aan",
+        "countPlural=*": "{count} functies aan"
+      }
+    }
+  ],
+  "app_set_data_desc": "Afschriften erin, CSV of JSON eruit",
+  "app_set_apps_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} gekoppelde app",
+        "countPlural=*": "{count} gekoppelde apps"
+      }
+    }
+  ],
+  "app_set_keys_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} sleutel",
+        "countPlural=*": "{count} sleutels"
+      }
+    }
+  ],
+  "app_set_delete_desc": "Definitieve acties",
+  "app_set_footer": "Kosha {version} ({build}) · {server}",
+  "app_set_unlock": "Ontgrendelen met vingerafdruk of gezicht",
+  "app_set_unlock_desc": "Vraagt erom als je Kosha opent. De pincode van je telefoon werkt ook.",
+  "app_set_unlock_kw": "app-vergrendeling biometrie vingerafdruk gezicht pincode app lock fingerprint face",
+  "app_set_unlock_unavailable": "Stel eerst een schermvergrendeling in op deze telefoon.",
+  "app_set_on_phone": "Op deze telefoon",
+  "app_set_lock_after": "Opnieuw vergrendelen na",
+  "app_set_lock_instantly": "Direct",
+  "app_set_lock_minutes": "{n} min",
+  "app_set_lock_hour": "1 uur",
+  "app_set_lock_note": "Alleen op deze telefoon.",
+  "app_set_opens_web": "Deze openen {host} en brengen je terug.",
+  "app_set_hide_desc": "Bedragen vervagen totdat je ze ingedrukt houdt. Deze schakelaar staat ook in het accountmenu.",
+  "app_set_account_colours": "Rekeningkleuren",
+  "app_set_account_colours_desc": "Een klein kleurvlak voor elke rekening. Uit ziet eruit zoals op het web.",
+  "app_set_add_currency": "Valuta toevoegen",
+  "app_set_currencies_note": "Houd ingedrukt en sleep om de volgorde te wijzigen. De bovenste is je hoofdvaluta, dus vermogen en totalen worden daarin opgeteld. De valutaknop bovenaan Overzicht doorloopt ze in deze volgorde.",
+  "app_set_rate_in": "1 {from} in {to}",
+  "app_set_move_up": "Omhoog",
+  "app_set_move_down": "Omlaag",
+  "app_set_subcategories": "Subcategorieën",
+  "app_set_rule_used": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} keer gebruikt",
+        "countPlural=*": "{count} keer gebruikt"
+      }
+    }
+  ],
+  "app_set_ai_intro": "Optioneel. Kosha werkt ook volledig zonder.",
+  "app_set_ai_add_provider": "Aanbieder toevoegen",
+  "app_set_ai_add_provider_desc": "OpenAI, Gemini, OpenRouter, Ollama of je eigen endpoint",
+  "app_set_ai_disconnect_named": "{name} ontkoppelen",
+  "app_set_ai_replace": "Vervangen",
+  "app_set_ai_key_stored": "Versleuteld opgeslagen op de server. Kosha toont hem nooit meer.",
+  "app_set_ai_privacy_intro": "Velden die Kosha naar je AI-aanbieder mag sturen. Al het andere blijft in Kosha.",
+  "app_set_ai_each_sends": "Wat elke functie verstuurt",
+  "app_set_ai_sent": "Verstuurd",
+  "app_set_ai_returned": "Antwoord",
+  "app_set_export_note": "Downloads openen het deelmenu, zodat je ze in Bestanden kunt bewaren of doorsturen.",
+  "app_set_share": "Delen",
+  "app_set_delete_intro": "Dit kan niet ongedaan worden gemaakt. Exporteer eerst als je twijfelt.",
+  "app_set_delete_account_note": "Opent {host}, waar je in drie stappen bevestigt met je e-mail en wachtwoord.",
+  "app_wel_net_worth_starts": "Je vermogen begint bij {amount}.",
+  "app_wel_import_later": "Niet nu? Je kunt ze altijd importeren via Rekeningen of Instellingen › Import & export.",
+  "app_wel_formats": "CSV-, OFX- of QFX-bestanden uit je internetbankieren, of pdf-afschriften."
 }

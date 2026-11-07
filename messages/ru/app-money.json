@@ -1,3 +1,123 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_rec_asks_each_time": "Kosha каждый раз спрашивает сумму",
+  "app_rec_asks_that_day": "Kosha спросит сумму в этот день",
+  "app_rec_attach_bill": "Прикрепить счёт",
+  "app_rec_documents_by_month": "Документы по месяцам",
+  "app_rec_due_on": "срок {day}",
+  "app_rec_next": "следующий {day}",
+  "app_rec_none_in_month": "{month}: платежей нет.",
+  "app_rec_on_due_date": "В день платежа",
+  "app_rec_overdue": "Срок был {day} · не отмечено как оплаченное",
+  "app_rec_paid_on": "оплачено {day}",
+  "app_rec_per_month_short": "{amount}/мес.",
+  "app_rec_record_payment": "Записать платёж",
+  "app_rec_to_account": "На {account}",
+  "app_rec_unit_day": "День",
+  "app_rec_unit_week": "Неделя",
+  "app_rec_unit_month": "Месяц",
+  "app_rec_unit_year": "Год",
+  "app_rec_usually": "Обычно около {amount}",
+  "app_rec_zip_hint": "Kosha упакует отмеченные в ZIP и откроет меню «Поделиться».",
+  "app_rec_average_last": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "в среднем за последний {count} платёж",
+        "countPlural=few": "в среднем за последние {count} платежа",
+        "countPlural=many": "в среднем за последние {count} платежей",
+        "countPlural=*": "в среднем за последние {count} платежа"
+      }
+    }
+  ],
+  "app_rec_backfill": [
+    {
+      "declarations": ["input count", "input date", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Kosha запишет платежи с {date} по сегодняшний день: {count} платёж.",
+        "countPlural=few": "Kosha запишет платежи с {date} по сегодняшний день: {count} платежа.",
+        "countPlural=many": "Kosha запишет платежи с {date} по сегодняшний день: {count} платежей.",
+        "countPlural=*": "Kosha запишет платежи с {date} по сегодняшний день: {count} платежа."
+      }
+    }
+  ],
+  "app_rec_payments_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} платёж",
+        "countPlural=few": "{count} платежа",
+        "countPlural=many": "{count} платежей",
+        "countPlural=*": "{count} платежа"
+      }
+    }
+  ],
+  "app_rec_share_zip": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Поделиться ({count}) в ZIP",
+        "countPlural=few": "Поделиться ({count}) в ZIP",
+        "countPlural=many": "Поделиться ({count}) в ZIP",
+        "countPlural=*": "Поделиться ({count}) в ZIP"
+      }
+    }
+  ],
+  "app_acc_credit_used": "использовано {percent} из {limit}",
+  "app_acc_debt_hint": "В чистых активах ваш долг по карте учитывается как задолженность.",
+  "app_acc_from_account": "С {account}",
+  "app_acc_fx_cost": "издержки {amount}",
+  "app_acc_fx_empty": "Обменов валют пока нет. Здесь появятся переводы между счетами в разных валютах.",
+  "app_acc_fx_fee": "комиссия {amount}",
+  "app_acc_fx_market": "рынок {rate}",
+  "app_acc_fx_no_fee": "без комиссии",
+  "app_acc_fx_rate": "Курс {rate}",
+  "app_acc_gain_over_in": "доход сверх вложенного",
+  "app_acc_import_hint": "CSV, OFX, QFX или PDF",
+  "app_acc_import_hint_no_pdf": "CSV, OFX или QFX",
+  "app_acc_kosha_shows": "В Kosha: {amount}",
+  "app_acc_owed": "{account}, долг",
+  "app_acc_reconcile_hint": "Сверьте с банковской выпиской",
+  "app_acc_still_counted": "учитываются в чистых активах",
+  "app_acc_value": "Стоимость",
+  "app_acc_currencies": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} валюта",
+        "countPlural=few": "{count} валюты",
+        "countPlural=many": "{count} валют",
+        "countPlural=*": "{count} валюты"
+      }
+    }
+  ],
+  "app_acc_fx_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} обмен",
+        "countPlural=few": "{count} обмена",
+        "countPlural=many": "{count} обменов",
+        "countPlural=*": "{count} обмена"
+      }
+    }
+  ],
+  "app_acc_fx_this_year": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} в этом году",
+        "countPlural=few": "{count} в этом году",
+        "countPlural=many": "{count} в этом году",
+        "countPlural=*": "{count} в этом году"
+      }
+    }
+  ]
 }

@@ -1,3 +1,80 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_rcn_quick_title": "かんたんチェック",
+  "app_rcn_statement_title": "明細で確認",
+  "app_rcn_tick_off": "取引にチェックを付ける",
+  "app_rcn_import_instead": "明細を読み込む",
+  "app_rcn_formats": "銀行のCSV、OFX、QFXに対応。",
+  "app_rcn_formats_pdf": "銀行のCSV、OFX、QFX、PDFに対応。",
+  "app_rcn_below_zero": "マイナス",
+  "app_imp_choose": "ファイルを選ぶ",
+  "app_imp_choose_more": "ファイルを追加",
+  "app_imp_formats": "CSV、OFX、QFXに対応。すべての銀行とカードの、何か月分でも追加できます。",
+  "app_imp_formats_pdf": "CSV、OFX、QFX、PDFに対応。すべての銀行とカードの、何か月分でも追加できます。",
+  "app_imp_share_hint": "ファイルアプリや銀行アプリから明細をKoshaに共有することもできます。",
+  "app_imp_read_progress": "{total}件中{done}件完了",
+  "app_imp_reading": "読み込み中…",
+  "app_imp_reading_ai": "AIで読み込み中…",
+  "app_imp_check_accounts": "口座を確認",
+  "app_imp_offline": "読み込みにはインターネット接続が必要です。オンラインに戻ってからファイルを選んでください。",
+  "app_imp_closing_matches": "期末残高が一致",
+  "app_imp_card_bill": "銀行口座からのカード代金支払い",
+  "app_imp_check_pdf": "PDFと照らし合わせてください",
+  "app_imp_recurring": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "定期的な支払いらしきものが{count}件"
+      }
+    }
+  ],
+  "app_imp_n_files": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{count}ファイル"
+      }
+    }
+  ],
+  "app_imp_n_accounts": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{count}口座"
+      }
+    }
+  ],
+  "app_imp_n_payees": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "取引先{count}件"
+      }
+    }
+  ],
+  "app_imp_n_transfers": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "振替{count}件"
+      }
+    }
+  ],
+  "app_imp_n_new": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "新規{count}件"
+      }
+    }
+  ],
+  "app_imp_summary": "{accounts}に{transactions}",
+  "app_imp_done_summary": "{accounts}に{transactions}を追加しました。",
+  "app_imp_done_summary_transfers": "{accounts}に{transactions}を追加し、口座間の{transfers}をつなげました。"
 }

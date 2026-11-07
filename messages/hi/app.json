@@ -13,5 +13,66 @@
   "app_stepper_less": "कम करें",
   "app_stepper_more": "बढ़ाएँ",
   "app_most_used": "सबसे ज़्यादा इस्तेमाल",
-  "app_next": "आगे"
+  "app_next": "आगे",
+  "app_signin_continue": "साइन इन जारी रखें",
+  "app_signin_demo": "डेमो आज़माएँ",
+  "app_signin_note": "{host} पर अपने पासवर्ड, पासकी या Google से साइन इन करें या खाता बनाएँ। Kosha आपको यहाँ वापस ले आएगा।",
+  "app_signin_own_server": "अपना सर्वर इस्तेमाल करें",
+  "app_own_title": "आपका अपना सर्वर",
+  "app_own_lead": "Kosha ओपन सोर्स है। अगर आप इसे ख़ुद चलाते हैं, तो उसका पता डालें और वहीं साइन इन करें।",
+  "app_own_label": "सर्वर का पता",
+  "app_own_found": "{host} पर Kosha मिला",
+  "app_own_invalid": "पूरा URL डालें, जैसे https://kosha.example.com",
+  "app_own_not_found": "{host} पर किसी Kosha सर्वर ने जवाब नहीं दिया।",
+  "app_own_too_old": "{host} पर Kosha का पुराना संस्करण चल रहा है। इस ऐप से साइन इन करने के लिए उसे अपडेट करें।",
+  "app_own_use_default": "इसके बजाय getkosha.app इस्तेमाल करें",
+  "app_finishing_title": "साइन इन हो रहा है",
+  "app_finishing_signed_in": "{host} पर साइन इन हो गया",
+  "app_finishing_accounts": "आपके खाते लोड हो रहे हैं",
+  "app_finishing_offline": "ऑफ़लाइन के लिए इस फ़ोन पर एक कॉपी रखी जा रही है",
+  "app_signin_error_title": "साइन इन पूरा नहीं हुआ",
+  "app_signin_error_body": "Kosha को {host} से जवाब मिलने से पहले ब्राउज़र बंद हो गया। कुछ भी नहीं बदला।",
+  "app_lock_title": "Kosha लॉक है",
+  "app_lock_after": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "एक मिनट दूर रहने के बाद लॉक हुआ।",
+        "countPlural=*": "{count} मिनट दूर रहने के बाद लॉक हुआ।"
+      }
+    }
+  ],
+  "app_lock_left": "Kosha छोड़ते ही लॉक हो गया।",
+  "app_lock_unlock": "अनलॉक करें",
+  "app_lock_prompt": "Kosha अनलॉक करें",
+  "app_offline_waiting": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} एंट्री इस फ़ोन पर सहेजी गई है। ऑनलाइन होते ही Kosha उसे भेज देगा, फिर आपके कुल अपडेट करेगा।",
+        "countPlural=*": "{count} एंट्रियाँ इस फ़ोन पर सहेजी गई हैं। ऑनलाइन होते ही Kosha उन्हें भेज देगा, फिर आपके कुल अपडेट करेगा।"
+      }
+    }
+  ],
+  "app_offline_none": "आप वही देख रहे हैं जो इस फ़ोन ने सहेजा था। ऑनलाइन होते ही Kosha इसे अपडेट करेगा।",
+  "app_waiting": "प्रतीक्षा में",
+  "app_loading": "Kosha नई चीज़ें देख रहा है, तब तक इस फ़ोन में सहेजा हुआ दिख रहा है।",
+  "app_signout_waiting": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} एंट्री अभी भेजी नहीं गई है। साइन आउट करने पर वह मिट जाएगी।",
+        "countPlural=*": "{count} एंट्रियाँ अभी भेजी नहीं गई हैं। साइन आउट करने पर वे मिट जाएँगी।"
+      }
+    }
+  ],
+  "app_previous_year": "पिछला साल",
+  "app_next_year": "अगला साल",
+  "app_month_swipe": "एक महीना आगे-पीछे जाने के लिए ओवरव्यू, गतिविधि या आवर्ती को बगल में स्वाइप करें।",
+  "app_signout_clears": "साइन आउट करने पर इस डिवाइस में सहेजी चीज़ें मिट जाती हैं।",
+  "app_widget_name": "झटपट जोड़ें",
+  "app_widget_description": "होम स्क्रीन से खर्च या आमदनी जोड़ें।"
 }

@@ -13,5 +13,63 @@
   "app_stepper_less": "减少",
   "app_stepper_more": "增加",
   "app_most_used": "最常用",
-  "app_next": "下一步"
+  "app_next": "下一步",
+  "app_signin_continue": "继续登录",
+  "app_signin_demo": "试用演示",
+  "app_signin_note": "在 {host} 用密码、通行密钥或 Google 登录或创建账户。完成后 Kosha 会带你回到这里。",
+  "app_signin_own_server": "使用你自己的服务器",
+  "app_own_title": "你自己的服务器",
+  "app_own_lead": "Kosha 是开源的。如果你自己部署了它，请输入地址并在那里登录。",
+  "app_own_label": "服务器地址",
+  "app_own_found": "在 {host} 找到了 Kosha",
+  "app_own_invalid": "请输入完整的网址，例如 https://kosha.example.com",
+  "app_own_not_found": "{host} 上没有 Kosha 服务器响应。",
+  "app_own_too_old": "{host} 运行的是旧版 Kosha。请更新后再从此应用登录。",
+  "app_own_use_default": "改用 getkosha.app",
+  "app_finishing_title": "正在登录",
+  "app_finishing_signed_in": "已在 {host} 登录",
+  "app_finishing_accounts": "正在加载你的账户",
+  "app_finishing_offline": "正在此手机上保留副本以便离线使用",
+  "app_signin_error_title": "登录未完成",
+  "app_signin_error_body": "浏览器在 Kosha 收到 {host} 的回复前就关闭了。没有任何更改。",
+  "app_lock_title": "Kosha 已锁定",
+  "app_lock_after": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "离开 {count} 分钟后已锁定。"
+      }
+    }
+  ],
+  "app_lock_left": "你离开 Kosha 时已锁定。",
+  "app_lock_unlock": "解锁",
+  "app_lock_prompt": "解锁 Kosha",
+  "app_offline_waiting": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{count} 条记录已保存在此手机上。恢复联网后 Kosha 会立即发送并更新你的合计。"
+      }
+    }
+  ],
+  "app_offline_none": "你看到的是此手机保存的内容。恢复联网后 Kosha 会更新。",
+  "app_waiting": "等待中",
+  "app_loading": "正在显示此手机保存的内容，同时 Kosha 在检查新内容。",
+  "app_signout_waiting": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "还有 {count} 条记录未发送。退出登录会删除它们。"
+      }
+    }
+  ],
+  "app_previous_year": "上一年",
+  "app_next_year": "下一年",
+  "app_month_swipe": "在概览、动态或周期页面左右滑动可切换一个月。",
+  "app_signout_clears": "退出登录会清除此设备保存的内容。",
+  "app_widget_name": "快速添加",
+  "app_widget_description": "在主屏幕上添加支出或收入。"
 }

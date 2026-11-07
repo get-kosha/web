@@ -1,3 +1,86 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_rcn_quick_title": "Quick check",
+  "app_rcn_statement_title": "With a statement",
+  "app_rcn_tick_off": "Tick entries off",
+  "app_rcn_import_instead": "Import the statement instead",
+  "app_rcn_formats": "CSV, OFX or QFX from your bank.",
+  "app_rcn_formats_pdf": "CSV, OFX, QFX or PDF from your bank.",
+  "app_rcn_below_zero": "Below zero",
+  "app_imp_choose": "Choose files",
+  "app_imp_choose_more": "Choose more files",
+  "app_imp_formats": "CSV, OFX or QFX. Every bank and card, as many months as you like.",
+  "app_imp_formats_pdf": "CSV, OFX, QFX or PDF. Every bank and card, as many months as you like.",
+  "app_imp_share_hint": "You can also share a statement to Kosha from Files or your banking app.",
+  "app_imp_read_progress": "{done} of {total} done",
+  "app_imp_reading": "Reading…",
+  "app_imp_reading_ai": "Reading, with AI…",
+  "app_imp_check_accounts": "Check accounts",
+  "app_imp_offline": "Importing needs a connection. Choose your files once you're back online.",
+  "app_imp_closing_matches": "Closing balance matches",
+  "app_imp_card_bill": "card bill paid from the bank",
+  "app_imp_check_pdf": "Check against the PDF",
+  "app_imp_recurring": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} payment looks recurring",
+        "countPlural=*": "{count} payments look recurring"
+      }
+    }
+  ],
+  "app_imp_n_files": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} file",
+        "countPlural=*": "{count} files"
+      }
+    }
+  ],
+  "app_imp_n_accounts": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} account",
+        "countPlural=*": "{count} accounts"
+      }
+    }
+  ],
+  "app_imp_n_payees": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} payee",
+        "countPlural=*": "{count} payees"
+      }
+    }
+  ],
+  "app_imp_n_transfers": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} transfer",
+        "countPlural=*": "{count} transfers"
+      }
+    }
+  ],
+  "app_imp_n_new": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} new",
+        "countPlural=*": "{count} new"
+      }
+    }
+  ],
+  "app_imp_summary": "{transactions} in {accounts}",
+  "app_imp_done_summary": "{transactions} in {accounts}.",
+  "app_imp_done_summary_transfers": "{transactions} in {accounts}, with {transfers} between them linked."
 }

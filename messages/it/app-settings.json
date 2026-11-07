@@ -1,3 +1,91 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_set_profile_desc": "Nome, foto ed email",
+  "app_set_security_desc": "Passkey, due fattori, blocco app, dispositivi",
+  "app_set_general_desc": "Lingua, fuso orario, predefiniti per l'aggiunta",
+  "app_set_appearance_desc": "Tema, colore d'accento, densità, nascondi importi",
+  "app_set_categories_desc": "Icone, nomi, sottocategorie, unione",
+  "app_set_events_desc": "Viaggi e occasioni",
+  "app_set_rules_learning": "impara dalle tue modifiche",
+  "app_set_recurring_desc": "Predefiniti per bollette e abbonamenti",
+  "app_set_ai_features_on": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} funzione attiva",
+        "countPlural=*": "{count} funzioni attive"
+      }
+    }
+  ],
+  "app_set_data_desc": "Estratti conto in entrata, CSV o JSON in uscita",
+  "app_set_apps_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} app collegata",
+        "countPlural=*": "{count} app collegate"
+      }
+    }
+  ],
+  "app_set_keys_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} chiave",
+        "countPlural=*": "{count} chiavi"
+      }
+    }
+  ],
+  "app_set_delete_desc": "Azioni permanenti",
+  "app_set_footer": "Kosha {version} ({build}) · {server}",
+  "app_set_unlock": "Sblocca con impronta o volto",
+  "app_set_unlock_desc": "Lo chiede quando apri Kosha. Funziona anche il PIN del telefono.",
+  "app_set_unlock_kw": "blocco biometria impronta volto PIN app lock fingerprint face",
+  "app_set_unlock_unavailable": "Imposta prima un blocco schermo su questo telefono.",
+  "app_set_on_phone": "Su questo telefono",
+  "app_set_lock_after": "Blocca di nuovo dopo",
+  "app_set_lock_instantly": "Subito",
+  "app_set_lock_minutes": "{n} min",
+  "app_set_lock_hour": "1 ora",
+  "app_set_lock_note": "Solo su questo telefono.",
+  "app_set_opens_web": "Questi aprono {host} e ti riportano qui.",
+  "app_set_hide_desc": "Sfoca gli importi finché non li tieni premuti. Questo interruttore c'è anche nel menu dell'account.",
+  "app_set_account_colours": "Colori dei conti",
+  "app_set_account_colours_desc": "Un piccolo segno colorato per ogni conto. Spento, appare come sul web.",
+  "app_set_add_currency": "Aggiungi una valuta",
+  "app_set_currencies_note": "Tieni premuto e trascina per riordinare. Quella in alto è la tua valuta principale, quindi patrimonio netto e totali si sommano in essa. Il selettore di valuta in cima alla Panoramica le scorre in questo ordine.",
+  "app_set_rate_in": "1 {from} in {to}",
+  "app_set_move_up": "Sposta su",
+  "app_set_move_down": "Sposta giù",
+  "app_set_subcategories": "Sottocategorie",
+  "app_set_rule_used": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "usata {count} volta",
+        "countPlural=*": "usata {count} volte"
+      }
+    }
+  ],
+  "app_set_ai_intro": "Facoltativa. Kosha funziona del tutto anche senza.",
+  "app_set_ai_add_provider": "Aggiungi un fornitore",
+  "app_set_ai_add_provider_desc": "OpenAI, Gemini, OpenRouter, Ollama o il tuo endpoint",
+  "app_set_ai_disconnect_named": "Scollega {name}",
+  "app_set_ai_replace": "Sostituisci",
+  "app_set_ai_key_stored": "Salvata cifrata sul server. Kosha non la mostra mai più.",
+  "app_set_ai_privacy_intro": "I campi che Kosha può inviare al tuo fornitore di IA. Tutto il resto resta in Kosha.",
+  "app_set_ai_each_sends": "Cosa invia ogni funzione",
+  "app_set_ai_sent": "Inviato",
+  "app_set_ai_returned": "Risposta",
+  "app_set_export_note": "I download aprono il menu di condivisione, così puoi salvarli in File o inviarli.",
+  "app_set_share": "Condividi",
+  "app_set_delete_intro": "Non si può annullare. Esporta prima se hai dubbi.",
+  "app_set_delete_account_note": "Apre {host}, dove confermi con email e password in tre passaggi.",
+  "app_wel_net_worth_starts": "Il patrimonio netto parte da {amount}.",
+  "app_wel_import_later": "Non ora? Puoi importarli quando vuoi da Conti o Impostazioni › Importa ed esporta.",
+  "app_wel_formats": "File CSV, OFX o QFX dal tuo home banking, o estratti conto in PDF."
 }

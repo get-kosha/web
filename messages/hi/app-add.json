@@ -1,3 +1,53 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_add_start": "रकम से शुरू करें",
+  "app_add_ready_next": "अगली के लिए तैयार। खाता और तारीख वही रहेंगे।",
+  "app_add_income_note": "आने वाला पैसा प्लस के साथ दिखता है",
+  "app_add_transfer_note": "खर्च में नहीं गिना जाता। शुल्क गिना जाता है।",
+  "app_add_converted": "आज की दर पर ≈ {amount}",
+  "app_add_why_expense_new": "{payee} नया है, इसलिए Kosha श्रेणी का अंदाज़ा नहीं लगा सकता। श्रेणी चुनें और खर्च जुड़ जाएगा।",
+  "app_add_why_income_new": "{payee} नया है, इसलिए Kosha श्रेणी का अंदाज़ा नहीं लगा सकता। श्रेणी चुनें और आय जुड़ जाएगी।",
+  "app_add_why_expense": "Kosha अभी श्रेणी का अंदाज़ा नहीं लगा सकता। श्रेणी चुनें और खर्च जुड़ जाएगा।",
+  "app_add_why_income": "Kosha अभी श्रेणी का अंदाज़ा नहीं लगा सकता। श्रेणी चुनें और आय जुड़ जाएगी।",
+  "app_add_most_used_first": "सबसे ज़्यादा इस्तेमाल वाली पहले।",
+  "app_add_used_before": "पहले इस्तेमाल किए",
+  "app_add_picked_by_date": "{dates} · तारीख से चुना गया",
+  "app_add_files": "फ़ाइलें",
+  "app_add_attach": "जोड़ें",
+  "app_add_days_with_entries": "लेन-देन वाले दिन",
+  "app_add_time_help_24": "पहिया घुमाएँ या किसी पंक्ति पर टैप करें। आपकी भाषा के हिसाब से 24-घंटे का समय।",
+  "app_add_time_help_12": "पहिया घुमाएँ या किसी पंक्ति पर टैप करें। आपकी भाषा के हिसाब से 12-घंटे का समय।",
+  "app_add_privacy": "Kosha {provider} को सिर्फ़ {#link}वही भेजता है जो आप साझा करते हैं{/link}।",
+  "app_add_camera_hint": "रसीद को फ़्रेम के अंदर रखें।",
+  "app_add_choose_photo": "फ़ोटो चुनें",
+  "app_add_take_photo": "फ़ोटो लें",
+  "app_add_flash_on": "फ़्लैश चालू",
+  "app_add_flash_off": "फ़्लैश बंद",
+  "app_add_camera_needed": "रसीद स्कैन करने के लिए Kosha को कैमरा चाहिए। आप फ़ोटो भी चुन सकते हैं।",
+  "app_add_allow_camera": "कैमरा की अनुमति दें",
+  "app_add_filled_receipt": "आपकी रसीद से पढ़ा गया",
+  "app_add_filled_ai": "AI ने भरा है",
+  "app_add_check_it": "जोड़ने से पहले जाँच लें।",
+  "app_add_check_photo": "जोड़ने से पहले जाँच लें। फ़ोटो जुड़ी हुई है।",
+  "app_add_times": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} बार",
+        "countPlural=*": "{count} बार"
+      }
+    }
+  ],
+  "app_add_available_of": "{limit} में से {available} उपलब्ध",
+  "app_add_swap": "से और को आपस में बदलें",
+  "app_add_fee_amount": "{amount} शुल्क",
+  "app_add_category_none": "श्रेणी, अभी नहीं चुनी",
+  "app_add_category_picked": "श्रेणी, {name}",
+  "app_add_category_usual": "श्रेणी, {name}, इस पार्टी के लिए आम",
+  "app_add_category_ai": "श्रेणी, {name}, AI का सुझाव",
+  "app_add_account_guessed": "खाता, {name}, अंदाज़ा",
+  "app_add_clear_payee": "पार्टी हटाएँ",
+  "app_add_time_row": "समय, {time}, बदलें",
+  "app_add_back_to_date": "तारीख पर वापस"
 }

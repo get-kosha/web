@@ -1,3 +1,86 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_rcn_quick_title": "Schnell prüfen",
+  "app_rcn_statement_title": "Mit einem Kontoauszug",
+  "app_rcn_tick_off": "Einträge abhaken",
+  "app_rcn_import_instead": "Stattdessen den Kontoauszug importieren",
+  "app_rcn_formats": "CSV, OFX oder QFX von deiner Bank.",
+  "app_rcn_formats_pdf": "CSV, OFX, QFX oder PDF von deiner Bank.",
+  "app_rcn_below_zero": "Unter null",
+  "app_imp_choose": "Dateien auswählen",
+  "app_imp_choose_more": "Weitere Dateien auswählen",
+  "app_imp_formats": "CSV, OFX oder QFX. Jede Bank und Karte, so viele Monate, wie du willst.",
+  "app_imp_formats_pdf": "CSV, OFX, QFX oder PDF. Jede Bank und Karte, so viele Monate, wie du willst.",
+  "app_imp_share_hint": "Du kannst einen Kontoauszug auch aus Dateien oder deiner Banking-App an Kosha teilen.",
+  "app_imp_read_progress": "{done} von {total} fertig",
+  "app_imp_reading": "Wird gelesen…",
+  "app_imp_reading_ai": "Wird mit KI gelesen…",
+  "app_imp_check_accounts": "Konten prüfen",
+  "app_imp_offline": "Zum Importieren brauchst du eine Verbindung. Wähl deine Dateien aus, sobald du wieder online bist.",
+  "app_imp_closing_matches": "Schlusssaldo stimmt",
+  "app_imp_card_bill": "Kartenrechnung vom Konto bezahlt",
+  "app_imp_check_pdf": "Mit dem PDF abgleichen",
+  "app_imp_recurring": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} Zahlung wirkt wiederkehrend",
+        "countPlural=*": "{count} Zahlungen wirken wiederkehrend"
+      }
+    }
+  ],
+  "app_imp_n_files": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} Datei",
+        "countPlural=*": "{count} Dateien"
+      }
+    }
+  ],
+  "app_imp_n_accounts": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} Konto",
+        "countPlural=*": "{count} Konten"
+      }
+    }
+  ],
+  "app_imp_n_payees": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} Zahlungspartner",
+        "countPlural=*": "{count} Zahlungspartner"
+      }
+    }
+  ],
+  "app_imp_n_transfers": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} Umbuchung",
+        "countPlural=*": "{count} Umbuchungen"
+      }
+    }
+  ],
+  "app_imp_n_new": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} neu",
+        "countPlural=*": "{count} neu"
+      }
+    }
+  ],
+  "app_imp_summary": "{transactions} in {accounts}",
+  "app_imp_done_summary": "{transactions} in {accounts}.",
+  "app_imp_done_summary_transfers": "{transactions} in {accounts}, mit {transfers} dazwischen verknüpft."
 }

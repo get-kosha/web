@@ -1,3 +1,91 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_set_profile_desc": "Name, photo and email",
+  "app_set_security_desc": "Passkeys, two-factor, app lock, devices",
+  "app_set_general_desc": "Language, time zone, adding defaults",
+  "app_set_appearance_desc": "Theme, accent, density, hide amounts",
+  "app_set_categories_desc": "Icons, names, subcategories, merging",
+  "app_set_events_desc": "Trips and occasions",
+  "app_set_rules_learning": "learning from your edits",
+  "app_set_recurring_desc": "Defaults for bills and subscriptions",
+  "app_set_ai_features_on": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} feature on",
+        "countPlural=*": "{count} features on"
+      }
+    }
+  ],
+  "app_set_data_desc": "Statements in, CSV or JSON out",
+  "app_set_apps_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} connected app",
+        "countPlural=*": "{count} connected apps"
+      }
+    }
+  ],
+  "app_set_keys_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} key",
+        "countPlural=*": "{count} keys"
+      }
+    }
+  ],
+  "app_set_delete_desc": "Permanent actions",
+  "app_set_footer": "Kosha {version} ({build}) · {server}",
+  "app_set_unlock": "Unlock with fingerprint or face",
+  "app_set_unlock_desc": "Asks when you open Kosha. Your phone's PIN works too.",
+  "app_set_unlock_kw": "app lock biometric fingerprint face pin",
+  "app_set_unlock_unavailable": "Set up a screen lock on this phone first.",
+  "app_set_on_phone": "On this phone",
+  "app_set_lock_after": "Lock again after",
+  "app_set_lock_instantly": "Instantly",
+  "app_set_lock_minutes": "{n} min",
+  "app_set_lock_hour": "1 hr",
+  "app_set_lock_note": "Only on this phone.",
+  "app_set_opens_web": "These open {host} and bring you back.",
+  "app_set_hide_desc": "Blur money until you touch and hold it. The account menu has this switch too.",
+  "app_set_account_colours": "Account colours",
+  "app_set_account_colours_desc": "A small colour mark for each account. Off looks like the web.",
+  "app_set_add_currency": "Add a currency",
+  "app_set_currencies_note": "Hold and drag to reorder. The one on top is your default, so net worth and totals add up in it. The currency switch at the top of Overview steps through them in this order.",
+  "app_set_rate_in": "1 {from} in {to}",
+  "app_set_move_up": "Move up",
+  "app_set_move_down": "Move down",
+  "app_set_subcategories": "Subcategories",
+  "app_set_rule_used": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "used {count} time",
+        "countPlural=*": "used {count} times"
+      }
+    }
+  ],
+  "app_set_ai_intro": "Optional. Kosha works fully without it.",
+  "app_set_ai_add_provider": "Add a provider",
+  "app_set_ai_add_provider_desc": "OpenAI, Gemini, OpenRouter, Ollama or your own endpoint",
+  "app_set_ai_disconnect_named": "Disconnect {name}",
+  "app_set_ai_replace": "Replace",
+  "app_set_ai_key_stored": "Stored encrypted on the server. Kosha never shows it again.",
+  "app_set_ai_privacy_intro": "Fields Kosha may send to your AI provider. Everything else stays in Kosha.",
+  "app_set_ai_each_sends": "What each feature sends",
+  "app_set_ai_sent": "Sent",
+  "app_set_ai_returned": "Returned",
+  "app_set_export_note": "Downloads open the share sheet, so you can save them to Files or send them on.",
+  "app_set_share": "Share",
+  "app_set_delete_intro": "These can't be undone. Export first if unsure.",
+  "app_set_delete_account_note": "Opens {host}, where you confirm with your email and password in three steps.",
+  "app_wel_net_worth_starts": "Net worth starts at {amount}.",
+  "app_wel_import_later": "Not now? You can import them any time from Accounts or Settings › Import & export.",
+  "app_wel_formats": "CSV, OFX or QFX files from your online banking, or PDF statements."
 }

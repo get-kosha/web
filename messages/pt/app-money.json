@@ -1,3 +1,109 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_rec_asks_each_time": "O Kosha pergunta o valor a cada vez",
+  "app_rec_asks_that_day": "O Kosha pergunta o valor nesse dia",
+  "app_rec_attach_bill": "Anexar conta",
+  "app_rec_documents_by_month": "Documentos por mês",
+  "app_rec_due_on": "vence em {day}",
+  "app_rec_next": "próximo em {day}",
+  "app_rec_none_in_month": "Nada vence em {month}.",
+  "app_rec_on_due_date": "Na data de vencimento",
+  "app_rec_overdue": "Venceu em {day} · não marcado como pago",
+  "app_rec_paid_on": "pago em {day}",
+  "app_rec_per_month_short": "{amount}/mês",
+  "app_rec_record_payment": "Registrar pagamento",
+  "app_rec_to_account": "Para {account}",
+  "app_rec_unit_day": "Dia",
+  "app_rec_unit_week": "Semana",
+  "app_rec_unit_month": "Mês",
+  "app_rec_unit_year": "Ano",
+  "app_rec_usually": "Normalmente cerca de {amount}",
+  "app_rec_zip_hint": "O Kosha compacta os que você marcar em um zip e abre o menu de compartilhamento.",
+  "app_rec_average_last": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "média do último pagamento",
+        "countPlural=*": "média dos últimos {count}"
+      }
+    }
+  ],
+  "app_rec_backfill": [
+    {
+      "declarations": ["input count", "input date", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "O Kosha vai registrar os pagamentos de {date} até hoje: {count} pagamento.",
+        "countPlural=*": "O Kosha vai registrar os pagamentos de {date} até hoje: {count} pagamentos."
+      }
+    }
+  ],
+  "app_rec_payments_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} pagamento",
+        "countPlural=*": "{count} pagamentos"
+      }
+    }
+  ],
+  "app_rec_share_zip": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Compartilhar {count} em zip",
+        "countPlural=*": "Compartilhar {count} em zip"
+      }
+    }
+  ],
+  "app_acc_credit_used": "{percent} de {limit} usado",
+  "app_acc_debt_hint": "O patrimônio líquido conta o que você deve como dívida.",
+  "app_acc_from_account": "De {account}",
+  "app_acc_fx_cost": "custo {amount}",
+  "app_acc_fx_empty": "Ainda não há câmbios. Transferências entre contas em moedas diferentes aparecem aqui.",
+  "app_acc_fx_fee": "taxa {amount}",
+  "app_acc_fx_market": "mercado {rate}",
+  "app_acc_fx_no_fee": "sem taxa",
+  "app_acc_fx_rate": "Taxa {rate}",
+  "app_acc_gain_over_in": "ganho sobre o aportado",
+  "app_acc_import_hint": "CSV, OFX, QFX ou PDF",
+  "app_acc_import_hint_no_pdf": "CSV, OFX ou QFX",
+  "app_acc_kosha_shows": "O Kosha mostra {amount}",
+  "app_acc_owed": "{account}, devido",
+  "app_acc_reconcile_hint": "Confira com um extrato bancário",
+  "app_acc_still_counted": "ainda no patrimônio líquido",
+  "app_acc_value": "Valor",
+  "app_acc_currencies": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} moeda",
+        "countPlural=*": "{count} moedas"
+      }
+    }
+  ],
+  "app_acc_fx_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} câmbio",
+        "countPlural=*": "{count} câmbios"
+      }
+    }
+  ],
+  "app_acc_fx_this_year": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} este ano",
+        "countPlural=*": "{count} este ano"
+      }
+    }
+  ]
 }

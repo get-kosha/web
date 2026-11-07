@@ -1,3 +1,87 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_set_profile_desc": "이름, 사진, 이메일",
+  "app_set_security_desc": "패스키, 2단계 인증, 앱 잠금, 기기",
+  "app_set_general_desc": "언어, 시간대, 추가 기본값",
+  "app_set_appearance_desc": "테마, 강조 색상, 밀도, 금액 숨기기",
+  "app_set_categories_desc": "아이콘, 이름, 하위 카테고리, 병합",
+  "app_set_events_desc": "여행과 행사",
+  "app_set_rules_learning": "수정 내용에서 학습 중",
+  "app_set_recurring_desc": "청구서와 구독의 기본값",
+  "app_set_ai_features_on": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "기능 {count}개 켜짐"
+      }
+    }
+  ],
+  "app_set_data_desc": "명세서 가져오기, CSV나 JSON 내보내기",
+  "app_set_apps_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "연결된 앱 {count}개"
+      }
+    }
+  ],
+  "app_set_keys_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "키 {count}개"
+      }
+    }
+  ],
+  "app_set_delete_desc": "되돌릴 수 없는 작업",
+  "app_set_footer": "Kosha {version} ({build}) · {server}",
+  "app_set_unlock": "지문이나 얼굴로 잠금 해제",
+  "app_set_unlock_desc": "Kosha를 열 때 확인해요. 휴대폰 PIN도 쓸 수 있어요.",
+  "app_set_unlock_kw": "앱 잠금 생체 인증 지문 얼굴 PIN app lock fingerprint face",
+  "app_set_unlock_unavailable": "먼저 이 휴대폰에 화면 잠금을 설정하세요.",
+  "app_set_on_phone": "이 휴대폰에서",
+  "app_set_lock_after": "다시 잠그는 시간",
+  "app_set_lock_instantly": "즉시",
+  "app_set_lock_minutes": "{n}분",
+  "app_set_lock_hour": "1시간",
+  "app_set_lock_note": "이 휴대폰에만 적용돼요.",
+  "app_set_opens_web": "{host}에서 열리고 끝나면 돌아와요.",
+  "app_set_hide_desc": "길게 누르기 전까지 금액을 흐리게 해요. 계정 메뉴에도 이 스위치가 있어요.",
+  "app_set_account_colours": "계좌 색상",
+  "app_set_account_colours_desc": "계좌마다 작은 색상 표시를 해요. 끄면 웹과 같은 모습이에요.",
+  "app_set_add_currency": "통화 추가",
+  "app_set_currencies_note": "길게 눌러 끌면 순서를 바꿀 수 있어요. 맨 위가 기본 통화라서 순자산과 합계가 이 통화로 계산돼요. 개요 상단의 통화 전환은 이 순서대로 바뀌어요.",
+  "app_set_rate_in": "1 {from}을 {to}로",
+  "app_set_move_up": "위로 이동",
+  "app_set_move_down": "아래로 이동",
+  "app_set_subcategories": "하위 카테고리",
+  "app_set_rule_used": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{count}회 사용"
+      }
+    }
+  ],
+  "app_set_ai_intro": "선택 사항이에요. 없어도 Kosha의 모든 기능을 쓸 수 있어요.",
+  "app_set_ai_add_provider": "제공업체 추가",
+  "app_set_ai_add_provider_desc": "OpenAI, Gemini, OpenRouter, Ollama 또는 직접 만든 엔드포인트",
+  "app_set_ai_disconnect_named": "{name} 연결 해제",
+  "app_set_ai_replace": "바꾸기",
+  "app_set_ai_key_stored": "서버에 암호화해 저장돼요. Kosha는 다시 보여 주지 않아요.",
+  "app_set_ai_privacy_intro": "Kosha가 AI 제공업체에 보낼 수 있는 항목이에요. 나머지는 Kosha 안에 남아요.",
+  "app_set_ai_each_sends": "기능별로 보내는 내용",
+  "app_set_ai_sent": "보낸 내용",
+  "app_set_ai_returned": "받은 내용",
+  "app_set_export_note": "다운로드하면 공유 시트가 열려서 파일에 저장하거나 보낼 수 있어요.",
+  "app_set_share": "공유",
+  "app_set_delete_intro": "되돌릴 수 없어요. 확실하지 않다면 먼저 내보내세요.",
+  "app_set_delete_account_note": "{host}이 열리고, 이메일과 비밀번호로 세 단계에 걸쳐 확인해요.",
+  "app_wel_net_worth_starts": "순자산은 {amount}에서 시작해요.",
+  "app_wel_import_later": "나중에 할까요? 계좌나 설정 › 가져오기 및 내보내기에서 언제든 가져올 수 있어요.",
+  "app_wel_formats": "온라인 뱅킹의 CSV, OFX, QFX 파일이나 PDF 명세서."
 }

@@ -1,3 +1,109 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_rec_asks_each_time": "Kosha vous demande le montant à chaque fois",
+  "app_rec_asks_that_day": "Kosha vous demande le montant ce jour-là",
+  "app_rec_attach_bill": "Joindre la facture",
+  "app_rec_documents_by_month": "Documents par mois",
+  "app_rec_due_on": "dû le {day}",
+  "app_rec_next": "prochain le {day}",
+  "app_rec_none_in_month": "Rien à payer en {month}.",
+  "app_rec_on_due_date": "À la date d'échéance",
+  "app_rec_overdue": "Dû le {day} · pas marqué comme payé",
+  "app_rec_paid_on": "payé le {day}",
+  "app_rec_per_month_short": "{amount}/mois",
+  "app_rec_record_payment": "Enregistrer le paiement",
+  "app_rec_to_account": "Vers {account}",
+  "app_rec_unit_day": "Jour",
+  "app_rec_unit_week": "Semaine",
+  "app_rec_unit_month": "Mois",
+  "app_rec_unit_year": "Année",
+  "app_rec_usually": "Habituellement environ {amount}",
+  "app_rec_zip_hint": "Kosha met ceux que vous cochez dans un zip et ouvre le menu de partage.",
+  "app_rec_average_last": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "moyenne du dernier paiement",
+        "countPlural=*": "moyenne des {count} derniers"
+      }
+    }
+  ],
+  "app_rec_backfill": [
+    {
+      "declarations": ["input count", "input date", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Kosha enregistrera les paiements du {date} jusqu'à aujourd'hui : {count} paiement.",
+        "countPlural=*": "Kosha enregistrera les paiements du {date} jusqu'à aujourd'hui : {count} paiements."
+      }
+    }
+  ],
+  "app_rec_payments_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} paiement",
+        "countPlural=*": "{count} paiements"
+      }
+    }
+  ],
+  "app_rec_share_zip": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Partager {count} en zip",
+        "countPlural=*": "Partager {count} en zip"
+      }
+    }
+  ],
+  "app_acc_credit_used": "{percent} de {limit} utilisés",
+  "app_acc_debt_hint": "La valeur nette compte ce que vous devez comme une dette.",
+  "app_acc_from_account": "De {account}",
+  "app_acc_fx_cost": "coût {amount}",
+  "app_acc_fx_empty": "Aucun change pour l'instant. Les virements entre comptes de devises différentes s'affichent ici.",
+  "app_acc_fx_fee": "frais {amount}",
+  "app_acc_fx_market": "marché {rate}",
+  "app_acc_fx_no_fee": "sans frais",
+  "app_acc_fx_rate": "Taux {rate}",
+  "app_acc_gain_over_in": "gain sur les apports",
+  "app_acc_import_hint": "CSV, OFX, QFX ou PDF",
+  "app_acc_import_hint_no_pdf": "CSV, OFX ou QFX",
+  "app_acc_kosha_shows": "Kosha affiche {amount}",
+  "app_acc_owed": "{account}, dû",
+  "app_acc_reconcile_hint": "Le comparer à un relevé bancaire",
+  "app_acc_still_counted": "toujours dans la valeur nette",
+  "app_acc_value": "Valeur",
+  "app_acc_currencies": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} devise",
+        "countPlural=*": "{count} devises"
+      }
+    }
+  ],
+  "app_acc_fx_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} change",
+        "countPlural=*": "{count} changes"
+      }
+    }
+  ],
+  "app_acc_fx_this_year": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} cette année",
+        "countPlural=*": "{count} cette année"
+      }
+    }
+  ]
 }

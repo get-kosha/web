@@ -1,3 +1,109 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_rec_asks_each_time": "Kosha हर बार रकम पूछता है",
+  "app_rec_asks_that_day": "उस दिन Kosha रकम पूछेगा",
+  "app_rec_attach_bill": "बिल जोड़ें",
+  "app_rec_documents_by_month": "महीने के हिसाब से दस्तावेज़",
+  "app_rec_due_on": "{day} को देय",
+  "app_rec_next": "अगला {day}",
+  "app_rec_none_in_month": "{month} में कुछ देय नहीं है।",
+  "app_rec_on_due_date": "देय तारीख़ पर",
+  "app_rec_overdue": "{day} को देय था · चुकाया गया नहीं चिह्नित",
+  "app_rec_paid_on": "{day} को चुकाया",
+  "app_rec_per_month_short": "{amount}/माह",
+  "app_rec_record_payment": "भुगतान दर्ज करें",
+  "app_rec_to_account": "{account} में",
+  "app_rec_unit_day": "दिन",
+  "app_rec_unit_week": "हफ़्ता",
+  "app_rec_unit_month": "महीना",
+  "app_rec_unit_year": "साल",
+  "app_rec_usually": "आम तौर पर लगभग {amount}",
+  "app_rec_zip_hint": "आप जिन पर टिक करते हैं, Kosha उन्हें zip बनाकर शेयर मेन्यू खोलता है।",
+  "app_rec_average_last": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "पिछले भुगतान का औसत",
+        "countPlural=*": "पिछले {count} का औसत"
+      }
+    }
+  ],
+  "app_rec_backfill": [
+    {
+      "declarations": ["input count", "input date", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Kosha {date} से आज तक के भुगतान दर्ज करेगा: {count} भुगतान।",
+        "countPlural=*": "Kosha {date} से आज तक के भुगतान दर्ज करेगा: {count} भुगतान।"
+      }
+    }
+  ],
+  "app_rec_payments_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} भुगतान",
+        "countPlural=*": "{count} भुगतान"
+      }
+    }
+  ],
+  "app_rec_share_zip": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} को zip में शेयर करें",
+        "countPlural=*": "{count} को zip में शेयर करें"
+      }
+    }
+  ],
+  "app_acc_credit_used": "{limit} में से {percent} इस्तेमाल",
+  "app_acc_debt_hint": "नेट वर्थ में आपका बकाया कर्ज़ के रूप में गिना जाता है।",
+  "app_acc_from_account": "{account} से",
+  "app_acc_fx_cost": "लागत {amount}",
+  "app_acc_fx_empty": "अभी कोई करेंसी एक्सचेंज नहीं है। अलग-अलग करेंसी वाले खातों के बीच ट्रांसफ़र यहाँ दिखते हैं।",
+  "app_acc_fx_fee": "शुल्क {amount}",
+  "app_acc_fx_market": "बाज़ार {rate}",
+  "app_acc_fx_no_fee": "कोई शुल्क नहीं",
+  "app_acc_fx_rate": "दर {rate}",
+  "app_acc_gain_over_in": "लगाए पैसे पर लाभ",
+  "app_acc_import_hint": "CSV, OFX, QFX या PDF",
+  "app_acc_import_hint_no_pdf": "CSV, OFX या QFX",
+  "app_acc_kosha_shows": "Kosha में {amount}",
+  "app_acc_owed": "{account}, बकाया",
+  "app_acc_reconcile_hint": "बैंक स्टेटमेंट से मिलान करें",
+  "app_acc_still_counted": "नेट वर्थ में अब भी शामिल",
+  "app_acc_value": "वैल्यू",
+  "app_acc_currencies": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} करेंसी",
+        "countPlural=*": "{count} करेंसी"
+      }
+    }
+  ],
+  "app_acc_fx_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} एक्सचेंज",
+        "countPlural=*": "{count} एक्सचेंज"
+      }
+    }
+  ],
+  "app_acc_fx_this_year": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "इस साल {count}",
+        "countPlural=*": "इस साल {count}"
+      }
+    }
+  ]
 }

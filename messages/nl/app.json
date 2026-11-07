@@ -13,5 +13,66 @@
   "app_stepper_less": "Minder",
   "app_stepper_more": "Meer",
   "app_most_used": "Meest gebruikt",
-  "app_next": "Volgende"
+  "app_next": "Volgende",
+  "app_signin_continue": "Doorgaan naar inloggen",
+  "app_signin_demo": "Probeer de demo",
+  "app_signin_note": "Log in of maak een account aan op {host} met je wachtwoord, een passkey of Google. Kosha brengt je daarna hier terug.",
+  "app_signin_own_server": "Je eigen server gebruiken",
+  "app_own_title": "Je eigen server",
+  "app_own_lead": "Kosha is open source. Draai je het zelf, vul dan het adres in en log daar in.",
+  "app_own_label": "Serveradres",
+  "app_own_found": "Kosha gevonden op {host}",
+  "app_own_invalid": "Vul een volledige URL in, zoals https://kosha.example.com",
+  "app_own_not_found": "Er antwoordde geen Kosha-server op {host}.",
+  "app_own_too_old": "{host} draait een oudere Kosha. Werk die bij om in deze app in te loggen.",
+  "app_own_use_default": "Gebruik in plaats daarvan getkosha.app",
+  "app_finishing_title": "Je wordt ingelogd",
+  "app_finishing_signed_in": "Ingelogd op {host}",
+  "app_finishing_accounts": "Je rekeningen worden geladen",
+  "app_finishing_offline": "Er wordt een kopie op deze telefoon bewaard voor offline gebruik",
+  "app_signin_error_title": "Inloggen is niet afgerond",
+  "app_signin_error_body": "De browser sloot voordat Kosha antwoord kreeg van {host}. Er is niets gewijzigd.",
+  "app_lock_title": "Kosha is vergrendeld",
+  "app_lock_after": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Vergrendeld na een minuut weg.",
+        "countPlural=*": "Vergrendeld na {count} minuten weg."
+      }
+    }
+  ],
+  "app_lock_left": "Vergrendeld toen je Kosha verliet.",
+  "app_lock_unlock": "Ontgrendelen",
+  "app_lock_prompt": "Kosha ontgrendelen",
+  "app_offline_waiting": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} boeking staat op deze telefoon. Kosha verstuurt die zodra je weer online bent en werkt dan je totalen bij.",
+        "countPlural=*": "{count} boekingen staan op deze telefoon. Kosha verstuurt ze zodra je weer online bent en werkt dan je totalen bij."
+      }
+    }
+  ],
+  "app_offline_none": "Je ziet wat deze telefoon heeft bewaard. Kosha werkt het bij zodra je weer online bent.",
+  "app_waiting": "wacht",
+  "app_loading": "Je ziet wat deze telefoon heeft bewaard, terwijl Kosha op nieuwe dingen controleert.",
+  "app_signout_waiting": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} boeking is nog niet verstuurd. Uitloggen verwijdert die.",
+        "countPlural=*": "{count} boekingen zijn nog niet verstuurd. Uitloggen verwijdert ze."
+      }
+    }
+  ],
+  "app_previous_year": "Vorig jaar",
+  "app_next_year": "Volgend jaar",
+  "app_month_swipe": "Veeg in Overzicht, Activiteit of Terugkerend opzij om een maand te verschuiven.",
+  "app_signout_clears": "Uitloggen wist wat dit apparaat heeft bewaard.",
+  "app_widget_name": "Snel toevoegen",
+  "app_widget_description": "Voeg een uitgave of inkomsten toe vanaf je startscherm."
 }

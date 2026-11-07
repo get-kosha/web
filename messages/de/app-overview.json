@@ -1,3 +1,55 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_ov_show_totals_in": "Summen anzeigen in",
+  "app_ov_pick_month": "Monat wählen",
+  "app_ov_not_started": "Noch nicht begonnen",
+  "app_ov_month_so_far": "{amount} bisher",
+  "app_ov_main_currency": "Deine Hauptwährung",
+  "app_ov_converted_today": "Zu heutigen Kursen umgerechnet.",
+  "app_ov_your_currencies": "Deine Währungen in den Einstellungen",
+  "app_ov_first_entry": "Tippe auf +, um deinen ersten Eintrag hinzuzufügen.",
+  "app_ov_from_statements": "Aus deinen Kontoauszügen",
+  "app_ov_import": "Importieren",
+  "app_ov_hide_card": "Diese Karte ausblenden",
+  "app_ov_accounts": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} Konto",
+        "countPlural=*": "{count} Konten"
+      }
+    }
+  ],
+  "app_ov_chart_later": "Das Diagramm beginnt nach deinem ersten Monat.",
+  "app_ov_all_recurring": "Alle unter Wiederkehrend →",
+  "app_ov_quick_add_row": "{amount} · {payee} hinzufügen",
+  "app_ov_saved_offline": "Offline gespeichert: {amount}, {payee}",
+  "app_ask_privacy": "Kosha sendet nur {#link}was du freigibst{/link} an {provider}.",
+  "app_ask_check": "Prüfe wichtige Zahlen unter Aktivität.",
+  "app_ask_looking": "Wird nachgeschlagen",
+  "app_act_empty_title": "Diesen Monat noch keine Buchungen",
+  "app_act_empty_body": "Was du hinzufügst, erscheint hier. Das dauert nur Sekunden: Betrag, Empfänger, fertig.",
+  "app_act_or_import": "Oder einen Kontoauszug importieren",
+  "app_act_receipt_deleted": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Der Beleg wird mit gelöscht.",
+        "countPlural=*": "Die {count} Dateien werden mit gelöscht."
+      }
+    }
+  ],
+  "app_act_any": "Beliebig",
+  "app_act_at_least": "Mindestens",
+  "app_act_show_corrections": "Korrekturen anzeigen",
+  "app_act_event_all_dates": "Ereignis · alle Zeiträume",
+  "app_act_by_hand": "von Hand zum Ereignis hinzugefügt",
+  "app_act_take_photo": "Foto aufnehmen",
+  "app_act_choose_photos": "Aus Fotos wählen",
+  "app_act_file_hint": "PDF oder Bild, etwa eine Gehaltsabrechnung",
+  "app_act_up_to": "Jeweils bis zu 10 MB.",
+  "app_act_not_counted": "Zählt weder als Ausgabe noch als Einnahme",
+  "app_act_fee_counted": "zählt als {category}"
 }

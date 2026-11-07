@@ -13,5 +13,72 @@
   "app_stepper_less": "Меньше",
   "app_stepper_more": "Больше",
   "app_most_used": "Частые",
-  "app_next": "Далее"
+  "app_next": "Далее",
+  "app_signin_continue": "Перейти ко входу",
+  "app_signin_demo": "Попробовать демо",
+  "app_signin_note": "Войдите или создайте аккаунт на {host} с паролем, ключом доступа или через Google. Kosha вернёт вас сюда.",
+  "app_signin_own_server": "Использовать свой сервер",
+  "app_own_title": "Свой сервер",
+  "app_own_lead": "Kosha — открытый проект. Если вы запускаете его сами, введите адрес и войдите там.",
+  "app_own_label": "Адрес сервера",
+  "app_own_found": "Kosha найден на {host}",
+  "app_own_invalid": "Введите полный URL, например https://kosha.example.com",
+  "app_own_not_found": "По адресу {host} сервер Kosha не ответил.",
+  "app_own_too_old": "На {host} старая версия Kosha. Обновите её, чтобы войти из этого приложения.",
+  "app_own_use_default": "Использовать getkosha.app",
+  "app_finishing_title": "Выполняем вход",
+  "app_finishing_signed_in": "Вход выполнен на {host}",
+  "app_finishing_accounts": "Загружаем ваши счета",
+  "app_finishing_offline": "Сохраняем копию на телефоне для работы без сети",
+  "app_signin_error_title": "Вход не завершён",
+  "app_signin_error_body": "Браузер закрылся до того, как Kosha получил ответ от {host}. Ничего не изменилось.",
+  "app_lock_title": "Kosha заблокирован",
+  "app_lock_after": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Заблокировано через {count} минуту отсутствия.",
+        "countPlural=few": "Заблокировано через {count} минуты отсутствия.",
+        "countPlural=many": "Заблокировано через {count} минут отсутствия.",
+        "countPlural=*": "Заблокировано через {count} минуты отсутствия."
+      }
+    }
+  ],
+  "app_lock_left": "Заблокировано, когда вы вышли из Kosha.",
+  "app_lock_unlock": "Разблокировать",
+  "app_lock_prompt": "Разблокировать Kosha",
+  "app_offline_waiting": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} запись сохранена на телефоне. Kosha отправит её, как только появится сеть, и обновит итоги.",
+        "countPlural=few": "{count} записи сохранены на телефоне. Kosha отправит их, как только появится сеть, и обновит итоги.",
+        "countPlural=many": "{count} записей сохранено на телефоне. Kosha отправит их, как только появится сеть, и обновит итоги.",
+        "countPlural=*": "{count} записи сохранено на телефоне. Kosha отправит их, как только появится сеть, и обновит итоги."
+      }
+    }
+  ],
+  "app_offline_none": "Вы видите то, что сохранено на телефоне. Kosha обновит это, когда появится сеть.",
+  "app_waiting": "ожидает",
+  "app_loading": "Показываем сохранённое на телефоне, пока Kosha проверяет новое.",
+  "app_signout_waiting": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} запись ещё не отправлена. При выходе она удалится.",
+        "countPlural=few": "{count} записи ещё не отправлены. При выходе они удалятся.",
+        "countPlural=many": "{count} записей ещё не отправлено. При выходе они удалятся.",
+        "countPlural=*": "{count} записи ещё не отправлено. При выходе они удалятся."
+      }
+    }
+  ],
+  "app_previous_year": "Предыдущий год",
+  "app_next_year": "Следующий год",
+  "app_month_swipe": "Проведите вбок на экранах «Обзор», «Операции» или «Регулярные», чтобы сменить месяц.",
+  "app_signout_clears": "При выходе удаляется всё, что сохранено на этом устройстве.",
+  "app_widget_name": "Быстрое добавление",
+  "app_widget_description": "Добавляйте расходы и доходы с главного экрана."
 }

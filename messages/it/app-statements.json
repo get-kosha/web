@@ -1,3 +1,86 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_rcn_quick_title": "Controllo rapido",
+  "app_rcn_statement_title": "Con un estratto conto",
+  "app_rcn_tick_off": "Spunta le voci",
+  "app_rcn_import_instead": "Importa invece l'estratto conto",
+  "app_rcn_formats": "CSV, OFX o QFX dalla tua banca.",
+  "app_rcn_formats_pdf": "CSV, OFX, QFX o PDF dalla tua banca.",
+  "app_rcn_below_zero": "Sotto zero",
+  "app_imp_choose": "Scegli i file",
+  "app_imp_choose_more": "Scegli altri file",
+  "app_imp_formats": "CSV, OFX o QFX. Ogni banca e carta, tutti i mesi che vuoi.",
+  "app_imp_formats_pdf": "CSV, OFX, QFX o PDF. Ogni banca e carta, tutti i mesi che vuoi.",
+  "app_imp_share_hint": "Puoi anche condividere un estratto conto con Kosha da File o dall'app della tua banca.",
+  "app_imp_read_progress": "{done} di {total} pronti",
+  "app_imp_reading": "Lettura…",
+  "app_imp_reading_ai": "Lettura con l'IA…",
+  "app_imp_check_accounts": "Controlla i conti",
+  "app_imp_offline": "Per importare serve una connessione. Scegli i file quando torni online.",
+  "app_imp_closing_matches": "Il saldo finale corrisponde",
+  "app_imp_card_bill": "saldo della carta pagato dalla banca",
+  "app_imp_check_pdf": "Controlla con il PDF",
+  "app_imp_recurring": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} pagamento sembra ricorrente",
+        "countPlural=*": "{count} pagamenti sembrano ricorrenti"
+      }
+    }
+  ],
+  "app_imp_n_files": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} file",
+        "countPlural=*": "{count} file"
+      }
+    }
+  ],
+  "app_imp_n_accounts": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} conto",
+        "countPlural=*": "{count} conti"
+      }
+    }
+  ],
+  "app_imp_n_payees": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} beneficiario",
+        "countPlural=*": "{count} beneficiari"
+      }
+    }
+  ],
+  "app_imp_n_transfers": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} trasferimento",
+        "countPlural=*": "{count} trasferimenti"
+      }
+    }
+  ],
+  "app_imp_n_new": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} nuova",
+        "countPlural=*": "{count} nuove"
+      }
+    }
+  ],
+  "app_imp_summary": "{transactions} in {accounts}",
+  "app_imp_done_summary": "{transactions} in {accounts}.",
+  "app_imp_done_summary_transfers": "{transactions} in {accounts}, con {transfers} tra loro collegati."
 }

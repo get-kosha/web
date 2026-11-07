@@ -13,5 +13,63 @@
   "app_stepper_less": "줄이기",
   "app_stepper_more": "늘리기",
   "app_most_used": "자주 사용",
-  "app_next": "다음"
+  "app_next": "다음",
+  "app_signin_continue": "로그인 계속하기",
+  "app_signin_demo": "데모 사용해 보기",
+  "app_signin_note": "{host}에서 비밀번호, 패스키 또는 Google로 로그인하거나 계정을 만드세요. 끝나면 Kosha로 돌아와요.",
+  "app_signin_own_server": "내 서버 사용",
+  "app_own_title": "내 서버",
+  "app_own_lead": "Kosha는 오픈 소스예요. 직접 운영한다면 주소를 입력하고 그곳에서 로그인하세요.",
+  "app_own_label": "서버 주소",
+  "app_own_found": "{host}에서 Kosha를 찾았어요",
+  "app_own_invalid": "https://kosha.example.com처럼 전체 URL을 입력하세요",
+  "app_own_not_found": "{host}에서 Kosha 서버가 응답하지 않았어요.",
+  "app_own_too_old": "{host}의 Kosha가 오래된 버전이에요. 이 앱에서 로그인하려면 업데이트하세요.",
+  "app_own_use_default": "대신 getkosha.app 사용",
+  "app_finishing_title": "로그인하는 중",
+  "app_finishing_signed_in": "{host}에 로그인했어요",
+  "app_finishing_accounts": "계정을 불러오는 중",
+  "app_finishing_offline": "오프라인용으로 이 휴대폰에 사본을 저장하는 중",
+  "app_signin_error_title": "로그인이 끝나지 않았어요",
+  "app_signin_error_body": "Kosha가 {host}의 응답을 받기 전에 브라우저가 닫혔어요. 바뀐 것은 없어요.",
+  "app_lock_title": "Kosha가 잠겨 있어요",
+  "app_lock_after": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{count}분 동안 자리를 비워 잠겼어요."
+      }
+    }
+  ],
+  "app_lock_left": "Kosha를 나갈 때 잠겼어요.",
+  "app_lock_unlock": "잠금 해제",
+  "app_lock_prompt": "Kosha 잠금 해제",
+  "app_offline_waiting": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{count}개의 항목이 이 휴대폰에 저장되어 있어요. 다시 연결되면 Kosha가 바로 보내고 합계를 업데이트해요."
+      }
+    }
+  ],
+  "app_offline_none": "지금 보이는 건 이 휴대폰에 저장된 내용이에요. 다시 연결되면 Kosha가 업데이트해요.",
+  "app_waiting": "대기 중",
+  "app_loading": "Kosha가 새 내용을 확인하는 동안 이 휴대폰에 저장된 내용을 보여 드려요.",
+  "app_signout_waiting": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "아직 보내지 않은 항목이 {count}개 있어요. 로그아웃하면 삭제돼요."
+      }
+    }
+  ],
+  "app_previous_year": "이전 연도",
+  "app_next_year": "다음 연도",
+  "app_month_swipe": "개요, 활동, 반복 화면을 옆으로 밀면 한 달씩 이동해요.",
+  "app_signout_clears": "로그아웃하면 이 기기에 저장된 내용이 지워져요.",
+  "app_widget_name": "빠른 추가",
+  "app_widget_description": "홈 화면에서 지출이나 수입을 추가하세요."
 }

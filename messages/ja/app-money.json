@@ -1,3 +1,102 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_rec_asks_each_time": "毎回Koshaが金額を確認します",
+  "app_rec_asks_that_day": "当日にKoshaが金額を確認します",
+  "app_rec_attach_bill": "請求書を添付",
+  "app_rec_documents_by_month": "月ごとの書類",
+  "app_rec_due_on": "{day}期日",
+  "app_rec_next": "次回 {day}",
+  "app_rec_none_in_month": "{month}の支払いはありません。",
+  "app_rec_on_due_date": "期日に",
+  "app_rec_overdue": "{day}が期日 · 支払い済みにしていません",
+  "app_rec_paid_on": "{day}支払い済み",
+  "app_rec_per_month_short": "{amount}/月",
+  "app_rec_record_payment": "支払いを記録",
+  "app_rec_to_account": "{account}へ",
+  "app_rec_unit_day": "日",
+  "app_rec_unit_week": "週",
+  "app_rec_unit_month": "月",
+  "app_rec_unit_year": "年",
+  "app_rec_usually": "通常は約{amount}",
+  "app_rec_zip_hint": "チェックした書類をKoshaがzipにまとめ、共有メニューを開きます。",
+  "app_rec_average_last": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "直近{count}回の平均"
+      }
+    }
+  ],
+  "app_rec_backfill": [
+    {
+      "declarations": ["input count", "input date", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{date}から今日までの支払い{count}件をKoshaが記録します。"
+      }
+    }
+  ],
+  "app_rec_payments_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{count}回の支払い"
+      }
+    }
+  ],
+  "app_rec_share_zip": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{count}件をzipで共有"
+      }
+    }
+  ],
+  "app_acc_credit_used": "{limit}のうち{percent}を利用",
+  "app_acc_debt_hint": "純資産では、未払い額を負債として数えます。",
+  "app_acc_from_account": "{account}から",
+  "app_acc_fx_cost": "コスト {amount}",
+  "app_acc_fx_empty": "両替はまだありません。通貨の異なる口座間の振替がここに表示されます。",
+  "app_acc_fx_fee": "手数料 {amount}",
+  "app_acc_fx_market": "市場 {rate}",
+  "app_acc_fx_no_fee": "手数料なし",
+  "app_acc_fx_rate": "レート {rate}",
+  "app_acc_gain_over_in": "投資額に対する利益",
+  "app_acc_import_hint": "CSV、OFX、QFX、PDF",
+  "app_acc_import_hint_no_pdf": "CSV、OFX、QFX",
+  "app_acc_kosha_shows": "Koshaでは{amount}",
+  "app_acc_owed": "{account}（未払い）",
+  "app_acc_reconcile_hint": "銀行の明細書と照合します",
+  "app_acc_still_counted": "純資産には含まれます",
+  "app_acc_value": "評価額",
+  "app_acc_currencies": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{count}通貨"
+      }
+    }
+  ],
+  "app_acc_fx_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "両替{count}件"
+      }
+    }
+  ],
+  "app_acc_fx_this_year": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "今年{count}件"
+      }
+    }
+  ]
 }

@@ -1,3 +1,86 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_rcn_quick_title": "Snelle controle",
+  "app_rcn_statement_title": "Met een afschrift",
+  "app_rcn_tick_off": "Posten afvinken",
+  "app_rcn_import_instead": "Het afschrift importeren",
+  "app_rcn_formats": "CSV, OFX of QFX van je bank.",
+  "app_rcn_formats_pdf": "CSV, OFX, QFX of pdf van je bank.",
+  "app_rcn_below_zero": "Onder nul",
+  "app_imp_choose": "Bestanden kiezen",
+  "app_imp_choose_more": "Meer bestanden kiezen",
+  "app_imp_formats": "CSV, OFX of QFX. Elke bank en kaart, zoveel maanden als je wilt.",
+  "app_imp_formats_pdf": "CSV, OFX, QFX of pdf. Elke bank en kaart, zoveel maanden als je wilt.",
+  "app_imp_share_hint": "Je kunt een afschrift ook vanuit Bestanden of je bankapp met Kosha delen.",
+  "app_imp_read_progress": "{done} van {total} klaar",
+  "app_imp_reading": "Bezig met lezen…",
+  "app_imp_reading_ai": "Bezig met lezen, met AI…",
+  "app_imp_check_accounts": "Rekeningen controleren",
+  "app_imp_offline": "Importeren werkt alleen met een verbinding. Kies je bestanden zodra je weer online bent.",
+  "app_imp_closing_matches": "Eindsaldo klopt",
+  "app_imp_card_bill": "creditcardrekening betaald vanaf de bank",
+  "app_imp_check_pdf": "Controleer met de pdf",
+  "app_imp_recurring": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} betaling lijkt terugkerend",
+        "countPlural=*": "{count} betalingen lijken terugkerend"
+      }
+    }
+  ],
+  "app_imp_n_files": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} bestand",
+        "countPlural=*": "{count} bestanden"
+      }
+    }
+  ],
+  "app_imp_n_accounts": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} rekening",
+        "countPlural=*": "{count} rekeningen"
+      }
+    }
+  ],
+  "app_imp_n_payees": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} tegenpartij",
+        "countPlural=*": "{count} tegenpartijen"
+      }
+    }
+  ],
+  "app_imp_n_transfers": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} overboeking",
+        "countPlural=*": "{count} overboekingen"
+      }
+    }
+  ],
+  "app_imp_n_new": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} nieuw",
+        "countPlural=*": "{count} nieuw"
+      }
+    }
+  ],
+  "app_imp_summary": "{transactions} in {accounts}",
+  "app_imp_done_summary": "{transactions} in {accounts}.",
+  "app_imp_done_summary_transfers": "{transactions} in {accounts}, met {transfers} ertussen gekoppeld."
 }
