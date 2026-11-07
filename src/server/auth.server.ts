@@ -192,10 +192,11 @@ export const auth = betterAuth({
       allowUnauthenticatedClientRegistration: true,
       // Claude Code and other local clients register http://localhost callbacks on a changing port.
       clientRegistrationDefaultApplicationType: "infer",
-      // A phone on a flaky network can lose the reply to a refresh and send the same refresh token again; within
-      // a minute it gets the same reply instead of being signed out. Only Kosha's apps get this overlap: for every
-      // other client, a trigger in migrations/0010_app_sign_in.sql clears the window, so a reused token is replay.
-      refreshTokenReuseInterval: 60,
+      // A phone can lose the reply to a refresh and send the same refresh token again once it's back online; it
+      // gets the same reply instead of a replay that would sign it out. Only Kosha's apps get this overlap: a
+      // trigger in migrations/0010_app_sign_in.sql clears it for every other client, and one in 0012 closes it
+      // as soon as the replacing token is used. A week caps it for a phone that stays offline.
+      refreshTokenReuseInterval: 7 * 24 * 60 * 60,
       extensions: [{ claims: { accessToken: grantClaim } }],
     }),
     appClients,
