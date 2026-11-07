@@ -35,7 +35,10 @@ export async function decryptKey(cipher: string, iv: string) {
 
 const LOCAL_NAME = /^(localhost|.*\.localhost|.*\.local|.*\.internal)$/i
 
-/** Checks a self-hosted endpoint's URL: http or https, and not a local name or a private IP address. */
+/**
+ * Checks a self-hosted endpoint's URL: http or https, and not a local name or a private IP address. `npm run dev`
+ * runs on the developer's own machine, so dev allows local endpoints (a local model, or `scripts/ai-stub.ts`).
+ */
 export function checkBaseUrl(raw: string) {
   let url: URL
   try {
@@ -44,20 +47,22 @@ export function checkBaseUrl(raw: string) {
     throw new Error(m.ai_url_invalid())
   }
   if (url.protocol !== "https:" && url.protocol !== "http:") throw new Error(m.ai_url_protocol())
-  if (LOCAL_NAME.test(url.hostname) || isPrivateIp(url.hostname)) throw new Error(m.ai_url_private())
+  if (!import.meta.env.DEV && (LOCAL_NAME.test(url.hostname) || isPrivateIp(url.hostname)))
+    throw new Error(m.ai_url_private())
   return url.toString().replace(/\/+$/, "")
 }
 
 /**
  * Refuses a self-hosted endpoint whose name resolves to a private address, looked up over DNS-over-HTTPS.
  * Cloudflare documents that Workers sockets can't reach private addresses, but says nothing of fetch() to a
- * public name that points at one, and `npm run dev` runs on your own network, so Kosha checks itself.
+ * public name that points at one, so Kosha checks itself. Dev skips it, like checkBaseUrl.
  * ponytail: the name is resolved again by fetch, so a DNS server that answers differently the second time
  * (rebinding) gets past this; Workers can't fetch a pinned IP address to close that.
  */
 async function checkResolves(url: string) {
   const host = new URL(url).hostname
-  if (/^[\d.]+$|^\[/.test(host)) return // an IP address, which checkBaseUrl already judged
+  // Dev allows local endpoints, and checkBaseUrl has already judged a bare IP address.
+  if (import.meta.env.DEV || /^[\d.]+$|^\[/.test(host)) return
   const answers = await Promise.all(
     ["A", "AAAA"].map(async (type) => {
       const res = await fetch(`https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(host)}&type=${type}`, {
