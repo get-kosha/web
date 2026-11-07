@@ -114,7 +114,7 @@ export function SubscriptionForm({
           amount: Math.abs(cents) * (income ? 1 : -1),
           toWalletId: transfer ? toWalletId : null,
           toAmount: crossCurrency && !variable ? parseAmount(toAmount) : null,
-          variable: transfer && variable,
+          variable,
         },
       })
       await router.invalidate()
@@ -261,15 +261,13 @@ export function SubscriptionForm({
         </div>
       </div>
 
-      {transfer && (
-        <label className="flex items-start gap-2 text-sm">
-          <input type="checkbox" className="mt-1" checked={variable} onChange={(e) => setVariable(e.target.checked)} />
-          <span>
-            {m.subs_variable()}
-            <span className="block text-xs text-muted-foreground">{m.subs_variable_hint()}</span>
-          </span>
-        </label>
-      )}
+      <label className="flex items-start gap-2 text-sm">
+        <input type="checkbox" className="mt-1" checked={variable} onChange={(e) => setVariable(e.target.checked)} />
+        <span>
+          {m.subs_variable()}
+          <span className="block text-xs text-muted-foreground">{m.subs_variable_hint()}</span>
+        </span>
+      </label>
       {crossCurrency && !variable && (
         <div className="grid gap-1.5">
           <Label htmlFor="sub-to-amount">
@@ -316,7 +314,7 @@ export function SubscriptionForm({
         <Input id="sub-note" value={note} onChange={(e) => setNote(e.target.value)} />
       </div>
 
-      {!(transfer && variable) && (
+      {!variable && (
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" checked={autoPay} onChange={(e) => setAutoPay(e.target.checked)} />
           {m.subs_auto_pay()}

@@ -108,7 +108,7 @@ const toCategory = (c: ManagedCategory) => ({
   ruleCount: c.rules,
 })
 
-const toPayment = (i: Instance) => ({
+const toPayment = (i: Instance, s: { wallet_id: string }) => ({
   dueDay: i.due_day,
   day: i.day,
   amount: i.amount,
@@ -116,6 +116,7 @@ const toPayment = (i: Instance) => ({
   status: i.status,
   edited: i.edited,
   transactionId: i.tx_id,
+  accountId: i.wallet_id ?? s.wallet_id,
 })
 
 const toRecurring = (s: SubscriptionView) => ({
@@ -137,8 +138,8 @@ const toRecurring = (s: SubscriptionView) => ({
   variable: !!s.variable,
   ended: s.ended,
   monthlyCost: round(s.monthly),
-  next: s.next && toPayment(s.next),
-  payments: s.instances.map(toPayment),
+  next: s.next && toPayment(s.next, s),
+  payments: s.instances.map((i) => toPayment(i, s)),
 })
 
 type TransferRow = Awaited<ReturnType<typeof finance.listTransfers>>[number]
@@ -794,7 +795,10 @@ const HANDLERS: Handlers = {
         400,
         `${input.dueDay} isn't a payment day of this schedule. Due days come from list_recurring.`
       )
-    const changed = [input.amount, input.received, input.day, input.note].some((v) => v !== undefined)
+    const issues: Issue[] = []
+    checkRefs("", { accountId: input.accountId }, await lookups(uid), issues)
+    check(issues)
+    const changed = [input.amount, input.received, input.day, input.note, input.accountId].some((v) => v !== undefined)
     await finance.updateOccurrence(uid, {
       id: s.id,
       dueDay: input.dueDay,
@@ -803,9 +807,11 @@ const HANDLERS: Handlers = {
       received: input.received,
       day: input.day,
       note: input.note,
+      walletId: input.accountId,
     })
-    const after = (await findRecurring(uid, s.id)).instances.find((i) => i.due_day === input.dueDay)
-    return { payment: after ? toPayment(after) : null }
+    const now = await findRecurring(uid, s.id)
+    const after = now.instances.find((i) => i.due_day === input.dueDay)
+    return { payment: after ? toPayment(after, now) : null }
   },
 
   // Gains

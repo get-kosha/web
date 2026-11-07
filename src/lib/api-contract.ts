@@ -166,8 +166,9 @@ const Payment = z.object({
   amount: Cents,
   note: z.string(),
   status: z.enum(["paid", "skipped", "overdue", "due", "upcoming"]),
-  edited: z.boolean().describe("Amount, day or note changed for this payment only."),
+  edited: z.boolean().describe("Amount, day, note or account changed for this payment only."),
   transactionId: Id.nullable(),
+  accountId: Id.describe("The account it's paid from: the schedule's, unless changed for this payment."),
 })
 const Unit = z.enum(["day", "week", "month", "year"])
 const Recurring = z.object({
@@ -293,6 +294,7 @@ const payment = {
   status: "upcoming" as const,
   edited: false,
   transactionId: null,
+  accountId: "a1",
 }
 const recurring = {
   id: "s1",
@@ -1023,7 +1025,12 @@ export const OPERATIONS = {
       note: Note.default(""),
       toAccountId: Id.optional().describe("Makes it a recurring transfer to this account."),
       toAmount: Positive.optional().describe("Transfers between currencies: what arrives each time."),
-      variable: z.boolean().default(false).describe("Transfers only: ask for the amount each time."),
+      variable: z
+        .boolean()
+        .default(false)
+        .describe(
+          "The amount changes each time, like an energy bill: payments wait for you to enter it instead of being recorded on their day, and amount is the usual one."
+        ),
       linkTransactionIds: z
         .array(Id)
         .max(500)
@@ -1095,6 +1102,9 @@ export const OPERATIONS = {
       received: Positive.optional().describe("Transfers between currencies: what arrived."),
       day: Day.optional().describe("Moves the payment to another day."),
       note: Note.optional(),
+      accountId: Id.optional().describe(
+        "Pays this one from another account (for a transfer, the account it leaves). Give amount in that account's currency when it differs."
+      ),
     }),
     output: z.object({
       payment: Payment.nullable().describe("The payment after the change; null once it is paid and in the past."),

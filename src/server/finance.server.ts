@@ -1074,7 +1074,7 @@ export async function saveSubscription(uid: string, data: z.infer<typeof subInpu
     transfer ? "repetitive" : data.kind,
     data.toWalletId,
     transfer ? data.toAmount : null,
-    transfer && data.variable ? 1 : 0,
+    data.variable ? 1 : 0,
   ]
   const writes = [
     old
@@ -1143,6 +1143,8 @@ export const occurrenceInput = z.object({
   received: z.number().int().positive().optional(),
   day: day.optional(),
   note: z.string().max(2000).optional(),
+  /** Pays this one from another account. Left out: the account it already uses, else the schedule's. */
+  walletId: z.string().min(1).optional(),
 })
 
 /** Change one occurrence without touching the rest of the schedule. */
@@ -1196,6 +1198,18 @@ export async function updateOccurrence(uid: string, data: z.infer<typeof occurre
   const today = dayOf(now, tz)
   const day = data.day ?? (existing ? dayOf(existing.date, tz) : data.dueDay)
   const date = data.action === "pay" && day > today ? now : unixOf(day, tz, 12)
+  const walletId = data.walletId ?? existing?.wallet_id ?? sub.wallet_id
+  const wallet =
+    walletId === sub.wallet_id
+      ? { currency: sub.currency }
+      : await DB.prepare("SELECT currency FROM wallets WHERE user_id = ? AND id = ?")
+          .bind(uid, walletId)
+          .first<{ currency: string }>()
+  if (!wallet) throw notFound(m.server_account_not_found())
+  if (walletId === sub.to_wallet_id) throw new HttpError(400, m.server_pick_two_accounts())
+  // The schedule's amount is in its own account's currency; from an account in another one, say how much.
+  if (data.amount === undefined && wallet.currency !== sub.currency && walletId !== existing?.wallet_id)
+    throw new HttpError(400, m.server_amount_required())
   const amount = data.amount ?? existing?.amount ?? sub.amount
   const note = data.note ?? existing?.note ?? sub.note
   const paid = data.action === "pay" ? 1 : 0
@@ -1206,13 +1220,13 @@ export async function updateOccurrence(uid: string, data: z.infer<typeof occurre
       data.received ??
       (data.amount === undefined && otherHalf
         ? otherHalf.amount
-        : receivedFor(sub, amount, sub.currency, sub.to_currency ?? sub.currency, await getRates()))
+        : receivedFor(sub, amount, wallet.currency, sub.to_currency ?? sub.currency, await getRates()))
     await DB.batch(
       transferLegs(uid, {
         transferId: tid,
         outId: existing?.id ?? `${tid}:out`,
         inId: otherHalf?.id ?? `${tid}:in`,
-        from: sub.wallet_id,
+        from: walletId,
         to: sub.to_wallet_id,
         sent: amount,
         received,
@@ -1230,11 +1244,12 @@ export async function updateOccurrence(uid: string, data: z.infer<typeof occurre
   await DB.prepare(`INSERT INTO transactions (user_id, id, wallet_id, category_id, name, note, amount, date, paid, kind, subscription_id, due_day)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ON CONFLICT(user_id, subscription_id, due_day) DO UPDATE SET note = excluded.note, amount = excluded.amount, date = excluded.date,
-      paid = excluded.paid, kind = excluded.kind, updated_at = unixepoch()`)
+      paid = excluded.paid, kind = excluded.kind, wallet_id = excluded.wallet_id, updated_at = unixepoch(),
+      reconciled_id = CASE WHEN amount = excluded.amount AND wallet_id = excluded.wallet_id THEN reconciled_id END`)
     .bind(
       uid,
       crypto.randomUUID(),
-      sub.wallet_id,
+      walletId,
       sub.category_id,
       sub.name,
       note,

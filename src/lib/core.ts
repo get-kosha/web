@@ -404,6 +404,7 @@ export type Materialized = {
   paid: number
   kind: string | null
   note: string
+  wallet_id?: string
 }
 export type Instance = {
   due_day: string
@@ -413,6 +414,8 @@ export type Instance = {
   status: "paid" | "skipped" | "overdue" | "due" | "upcoming"
   edited: boolean
   tx_id: string | null
+  /** The account its row uses, which may differ from the schedule's; null before it has a row. */
+  wallet_id: string | null
 }
 
 /**
@@ -453,6 +456,7 @@ export function instances(
       status,
       edited: !!r && r.kind !== "skipped" && !r.paid,
       tx_id: r?.id ?? null,
+      wallet_id: r?.wallet_id ?? null,
     })
     if (due >= today) future++
   }

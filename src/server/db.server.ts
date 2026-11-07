@@ -304,6 +304,7 @@ export async function loadSubscriptions(uid: string, today: string) {
         paid: r.paid,
         kind: r.kind,
         note: r.note,
+        wallet_id: r.wallet_id,
       }))
     const history = own.filter((r) => r.paid).map((r) => ({ ...r, day: dayOf(r.date, tz) }))
     const upcoming = instances(s, materialized, today, 6)

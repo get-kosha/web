@@ -102,7 +102,16 @@ const inst = instances(
   [
     { id: "p", due_day: "2026-09-10", day: "2026-09-10", amount: -999, paid: 1, kind: null, note: "" },
     { id: "s", due_day: "2026-12-10", day: "2026-12-10", amount: -999, paid: 0, kind: "skipped", note: "" },
-    { id: "e", due_day: "2027-01-10", day: "2027-01-12", amount: -1299, paid: 0, kind: null, note: "price up" },
+    {
+      id: "e",
+      due_day: "2027-01-10",
+      day: "2027-01-12",
+      amount: -1299,
+      paid: 0,
+      kind: null,
+      note: "price up",
+      wallet_id: "w2",
+    },
   ],
   "2026-11-10",
   4
@@ -114,6 +123,9 @@ assert.deepEqual(
 assert.equal(inst[3].amount, -1299)
 assert.equal(inst[3].day, "2027-01-12")
 assert.equal(inst[3].edited, true)
+// A payment moved to another account says so; one without a row uses the schedule's.
+assert.equal(inst[3].wallet_id, "w2")
+assert.equal(inst[1].wallet_id, null)
 
 console.log("subscriptions ok")
 
