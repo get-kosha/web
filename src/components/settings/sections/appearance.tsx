@@ -19,7 +19,7 @@ const ACCENTS = [
   ["blue", m.settings_appearance_blue, "#2563eb"],
   ["amber", m.settings_appearance_amber, "#b45309"],
   ["rose", m.settings_appearance_rose, "#be123c"],
-  ["graphite", m.settings_appearance_graphite, "#3f3f46"],
+  ["graphite", m.settings_appearance_graphite, "#27272a"],
 ] as const
 
 export function Appearance() {

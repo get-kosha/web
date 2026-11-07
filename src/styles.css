@@ -3,7 +3,7 @@
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/geist";
 @import "@fontsource-variable/geist-mono";
-/* The wordmark's face. Only the landing page sets type in it; its files load only where it is used. */
+/* Bricolage Grotesque: display type on the landing, sign-in and legal pages only. The logo is outlined SVG. */
 @import "@fontsource-variable/bricolage-grotesque";
 
 @custom-variant dark (&:is(.dark *));

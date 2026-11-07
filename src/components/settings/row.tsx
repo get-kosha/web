@@ -116,7 +116,7 @@ export function Segmented<T extends string>({
           type="button"
           aria-pressed={value === v}
           onClick={() => onChange(v)}
-          className="h-7 rounded-[7px] px-[11px] text-[12.5px] whitespace-nowrap text-muted-foreground transition-[background-color,color,box-shadow] duration-200 ease-out hover:text-foreground aria-pressed:bg-card aria-pressed:font-medium aria-pressed:text-foreground aria-pressed:shadow-[0_1px_2px_rgba(0,0,0,0.1)] max-md:h-10 max-md:flex-1 dark:aria-pressed:bg-[#2a2a2f]"
+          className="h-7 rounded-[7px] px-[11px] text-[12.5px] whitespace-nowrap text-muted-foreground transition-[background-color,color,box-shadow] duration-200 ease-out hover:text-foreground aria-pressed:bg-card aria-pressed:font-medium aria-pressed:text-foreground aria-pressed:shadow-[0_1px_2px_rgba(0,0,0,0.1)] max-md:h-11 max-md:flex-1 dark:aria-pressed:bg-[#2a2a2f]"
         >
           {text}
         </button>

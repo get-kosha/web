@@ -115,7 +115,7 @@ export function AccountMenu({ user, onShortcuts }: { user: Person; onShortcuts: 
                 aria-label={label()}
                 aria-pressed={theme === v}
                 onClick={() => saveTheme(v)}
-                className="inline-flex h-[26px] w-8 items-center justify-center rounded-[7px] text-muted-foreground transition-[background-color,color] duration-200 hover:text-foreground aria-pressed:bg-card aria-pressed:text-foreground aria-pressed:shadow-[0_1px_2px_rgba(0,0,0,0.1)] max-md:h-9 max-md:w-11 dark:aria-pressed:bg-[#2a2a2f]"
+                className="inline-flex h-[26px] w-8 items-center justify-center rounded-[7px] text-muted-foreground transition-[background-color,color] duration-200 hover:text-foreground aria-pressed:bg-card aria-pressed:text-foreground aria-pressed:shadow-[0_1px_2px_rgba(0,0,0,0.1)] max-md:h-11 max-md:w-11 dark:aria-pressed:bg-[#2a2a2f]"
               >
                 <Icon className="size-4" />
               </button>
