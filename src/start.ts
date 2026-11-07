@@ -11,7 +11,14 @@ const redirect = (to: string) => new Response(null, { status: 302, headers: { Lo
 // read the session cookie.
 const BEARER = /^\/(api\/v1(\/|$)|api\/app\/|mcp$)/
 const PUBLIC = /^\/(api\/auth\/|api\/v1(\/|$)|api\/app\/|mcp$|\.well-known\/)/
-const SIGNED_OUT_PAGES = new Set(["/", "/privacy", "/terms", "/forgot-password", "/reset-password"])
+const SIGNED_OUT_PAGES = new Set([
+  "/",
+  "/privacy",
+  "/terms",
+  "/forgot-password",
+  "/reset-password",
+  "/app/oauth/callback",
+])
 const requireUser = createMiddleware().server(async ({ next, request }) => {
   const url = new URL(request.url)
   if (PUBLIC.test(url.pathname)) return next()
@@ -21,7 +28,7 @@ const requireUser = createMiddleware().server(async ({ next, request }) => {
     return user && !url.searchParams.has("sig") ? redirect(safeReturn(url.searchParams.get("returnTo"))) : next()
   if (user) return next()
   // A signed-out visit to / gets the landing page (the _app layout renders it instead of the app), and the
-  // legal and password reset pages are public too. Any GET or HEAD qualifies, so link-preview bots that send Accept: */* can
+  // legal and password reset pages and the apps' sign-in callback are public too. Any GET or HEAD qualifies, so link-preview bots that send Accept: */* can
   // read the card. Server functions live under /_serverFn/, so nothing else answers at these paths.
   if ((request.method === "GET" || request.method === "HEAD") && SIGNED_OUT_PAGES.has(url.pathname)) return next()
   const page = request.method === "GET" && request.headers.get("accept")?.includes("text/html")
@@ -38,14 +45,16 @@ const locale = createMiddleware().server(({ next, request }) =>
 
 // Server functions are same-origin RPC, so reject cross-site calls to them and to POST server routes (/api/auth).
 // The bearer-token endpoints are left out, because they ignore cookies, so a cross-site request can't act as the user.
-// So are the OAuth endpoints apps call directly: they authenticate with a code, PKCE verifier or token, never a
-// cookie, and native apps send no Origin header.
+// So are the OAuth endpoints apps and MCP clients call directly (native apps send no Origin header), but only
+// without cookies: they authenticate with a code, PKCE verifier or token, never a session. A request that carries
+// cookies is checked like any other, so another site can't, say, register a client owned by the user.
 const COOKIELESS = /^\/api\/auth\/oauth2\/(token|revoke|introspect|register)$/
 const csrf = createCsrfMiddleware({
   filter: (ctx) => {
     if (ctx.handlerType === "serverFn") return true
     const path = new URL(ctx.request.url).pathname
-    return ctx.request.method === "POST" && !BEARER.test(path) && !COOKIELESS.test(path)
+    if (ctx.request.method !== "POST" || BEARER.test(path)) return false
+    return !COOKIELESS.test(path) || ctx.request.headers.has("cookie")
   },
 })
 

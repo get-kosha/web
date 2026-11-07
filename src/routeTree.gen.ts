@@ -39,6 +39,7 @@ import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiExportKoshaDotjsonRouteImport } from './routes/api/export/kosha[.]json'
 import { Route as ApiExportTransactionsDotcsvRouteImport } from './routes/api/export/transactions[.]csv'
 import { Route as ApiV1SplatRouteImport } from './routes/api/v1/$'
+import { Route as AppOauthCallbackRouteImport } from './routes/app.oauth.callback'
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
@@ -190,6 +191,11 @@ const ApiV1SplatRoute = ApiV1SplatRouteImport.update({
   path: '/api/v1/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppOauthCallbackRoute = AppOauthCallbackRouteImport.update({
+  id: '/app/oauth/callback',
+  path: '/app/oauth/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
@@ -220,6 +226,7 @@ export interface FileRoutesByFullPath {
   '/api/export/kosha.json': typeof ApiExportKoshaDotjsonRoute
   '/api/export/transactions.csv': typeof ApiExportTransactionsDotcsvRoute
   '/api/v1/$': typeof ApiV1SplatRoute
+  '/app/oauth/callback': typeof AppOauthCallbackRoute
   '/settings/': typeof AppSettingsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -250,6 +257,7 @@ export interface FileRoutesByTo {
   '/api/export/kosha.json': typeof ApiExportKoshaDotjsonRoute
   '/api/export/transactions.csv': typeof ApiExportTransactionsDotcsvRoute
   '/api/v1/$': typeof ApiV1SplatRoute
+  '/app/oauth/callback': typeof AppOauthCallbackRoute
   '/settings': typeof AppSettingsIndexRoute
 }
 export interface FileRoutesById {
@@ -283,6 +291,7 @@ export interface FileRoutesById {
   '/api/export/kosha.json': typeof ApiExportKoshaDotjsonRoute
   '/api/export/transactions.csv': typeof ApiExportTransactionsDotcsvRoute
   '/api/v1/$': typeof ApiV1SplatRoute
+  '/app/oauth/callback': typeof AppOauthCallbackRoute
   '/_app/settings/': typeof AppSettingsIndexRoute
 }
 export interface FileRouteTypes {
@@ -316,6 +325,7 @@ export interface FileRouteTypes {
     | '/api/export/kosha.json'
     | '/api/export/transactions.csv'
     | '/api/v1/$'
+    | '/app/oauth/callback'
     | '/settings/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -346,6 +356,7 @@ export interface FileRouteTypes {
     | '/api/export/kosha.json'
     | '/api/export/transactions.csv'
     | '/api/v1/$'
+    | '/app/oauth/callback'
     | '/settings'
   id:
     | '__root__'
@@ -378,6 +389,7 @@ export interface FileRouteTypes {
     | '/api/export/kosha.json'
     | '/api/export/transactions.csv'
     | '/api/v1/$'
+    | '/app/oauth/callback'
     | '/_app/settings/'
   fileRoutesById: FileRoutesById
 }
@@ -398,6 +410,7 @@ export interface RootRouteChildren {
   ApiExportKoshaDotjsonRoute: typeof ApiExportKoshaDotjsonRoute
   ApiExportTransactionsDotcsvRoute: typeof ApiExportTransactionsDotcsvRoute
   ApiV1SplatRoute: typeof ApiV1SplatRoute
+  AppOauthCallbackRoute: typeof AppOauthCallbackRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -612,6 +625,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiV1SplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app/oauth/callback': {
+      id: '/app/oauth/callback'
+      path: '/app/oauth/callback'
+      fullPath: '/app/oauth/callback'
+      preLoaderRoute: typeof AppOauthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -678,6 +698,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiExportKoshaDotjsonRoute: ApiExportKoshaDotjsonRoute,
   ApiExportTransactionsDotcsvRoute: ApiExportTransactionsDotcsvRoute,
   ApiV1SplatRoute: ApiV1SplatRoute,
+  AppOauthCallbackRoute: AppOauthCallbackRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

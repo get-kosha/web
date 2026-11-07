@@ -1120,19 +1120,21 @@ export async function fromAccessToken(token: string, audience: string[]): Promis
   if (claims.cnf || typeof claims.sub !== "string") return null
   const client = String(claims.azp)
   // Disconnecting an app in Settings deletes its consent, so its tokens stop working at once. Kosha's own apps
-  // skip consent; signing out revokes their refresh token instead, so a token works while the sign-in it came
-  // from (its session, `sid`) still has a live refresh token.
-  // ponytail: a token without `sid` (its browser session was deleted since) falls back to any live refresh token
-  // of this user and app, so for up to an hour it outlives a sign-out on another phone.
+  // skip consent; signing out revokes their refresh token instead, so a token works while its own sign-in
+  // (grant_id, set by grantClaim in auth.server.ts) still has a live refresh token.
   const app = APP_CLIENTS.has(client)
-  const sid = typeof claims.sid === "string" ? claims.sid : null
-  const live = app
-    ? `SELECT 1 FROM "oauthRefreshToken" WHERE "userId" = ? AND "clientId" = ? AND "revoked" IS NULL AND "expiresAt" > ?${sid ? ` AND "sessionId" = ?` : ""}`
-    : `SELECT 1 FROM "oauthConsent" WHERE "userId" = ? AND "clientId" = ?`
-  const ok = await db()
-    .prepare(live)
-    .bind(claims.sub, client, ...(app ? [new Date().toISOString(), ...(sid ? [sid] : [])] : []))
-    .first()
+  const grant = typeof claims.grant_id === "string" ? claims.grant_id : null
+  if (app && !grant) return null
+  const ok = app
+    ? await db()
+        .prepare(`SELECT 1 FROM "oauthRefreshToken" WHERE "userId" = ? AND "clientId" = ? AND "authorizationCodeId" = ?
+          AND "revoked" IS NULL AND "expiresAt" > ?`)
+        .bind(claims.sub, client, grant, new Date().toISOString())
+        .first()
+    : await db()
+        .prepare(`SELECT 1 FROM "oauthConsent" WHERE "userId" = ? AND "clientId" = ?`)
+        .bind(claims.sub, client)
+        .first()
   if (!ok) return null
   const scopes = String(claims.scope ?? "").split(" ")
   // The demo account is read-only, whatever a token says.
@@ -1414,15 +1416,18 @@ export async function deleteApiKey(uid: string, id: string) {
   await db().prepare("DELETE FROM api_keys WHERE user_id = ? AND id = ?").bind(uid, id).run()
 }
 
-/** Apps the user approved on the consent screen, with the scopes they were given. */
+/**
+ * Apps the user approved on the consent screen, with the scopes they were given. Kosha's own apps aren't listed:
+ * a phone's sign-in is ended from the phone, and a consent kept from the app.getkosha: redirect isn't one.
+ */
 export async function listConnectedApps(uid: string) {
   const { results } = await db()
     .prepare(`SELECT c."clientId" AS client_id, k."name" AS name, k."uri" AS uri, k."redirectUris" AS redirect_uris,
         c."scopes" AS scopes, c."createdAt" AS created_at,
         (SELECT MAX(r."createdAt") FROM "oauthRefreshToken" r WHERE r."userId" = c."userId" AND r."clientId" = c."clientId") AS last_used
       FROM "oauthConsent" c JOIN "oauthClient" k ON k."clientId" = c."clientId"
-      WHERE c."userId" = ? ORDER BY c."createdAt" DESC`)
-    .bind(uid)
+      WHERE c."userId" = ? AND c."clientId" NOT IN (?, ?) ORDER BY c."createdAt" DESC`)
+    .bind(uid, ...APP_CLIENTS)
     .all<{
       client_id: string
       name: string | null

@@ -3,7 +3,10 @@ import { betterAuth } from "better-auth"
 import { tanstackStartCookies } from "better-auth/tanstack-start"
 import { passkey } from "@better-auth/passkey"
 import { jwt, twoFactor } from "better-auth/plugins"
+import { createAuthMiddleware } from "better-auth/api"
+import type { BetterAuthPlugin } from "better-auth"
 import { mcp } from "@better-auth/mcp"
+import { getOAuthProviderApi, type OAuthClaimExtensionInput } from "@better-auth/oauth-provider"
 import { dash, sentinel } from "@better-auth/infra"
 import { getRequest } from "@tanstack/react-start/server"
 import { DEFAULT_CATEGORIES } from "@/lib/defaults"
@@ -21,9 +24,17 @@ export const OAUTH_ISSUER = `${ORIGIN}/api/auth`
 export const API_RESOURCE = `${ORIGIN}/api/v1`
 /**
  * Kosha's own phone apps: public clients registered by migrations/0009_app_clients.sql, so every server has
- * them. They skip the consent screen, and only they may call /api/app.
+ * them. They skip the consent screen when they sign in through APP_CALLBACK, and only they may call /api/app.
  */
 export const APP_CLIENTS = new Set(["kosha-android", "kosha-ios"])
+/**
+ * Where the apps receive their sign-in: a link only the real app can claim (Android App Links and iOS universal
+ * links, through /.well-known/assetlinks.json and apple-app-site-association). The page there catches the
+ * redirect when the app didn't.
+ */
+export const APP_CALLBACK = `${ORIGIN}/app/oauth/callback`
+/** The apps' older redirect. Any app on the phone can register this scheme, so it always asks for consent. */
+const APP_SCHEME_CALLBACK = "app.getkosha:/oauth/callback"
 /** What an MCP connection may do. A read-only connection sees only the read tools. */
 export const API_SCOPES = { read: "kosha:read", write: "kosha:write" } as const
 
@@ -35,6 +46,54 @@ export const googleSignIn = !!(GOOGLE.GOOGLE_CLIENT_ID && GOOGLE.GOOGLE_CLIENT_S
 // (new email addresses, plus whatever the dashboard turns on). Off without a key, so a self-hosted copy never
 // calls them.
 const DASH_KEY = (env as { BETTER_AUTH_API_KEY?: string }).BETTER_AUTH_API_KEY
+
+/**
+ * Stamps an app's access token with the sign-in it belongs to: the authorization code's stored id, which every
+ * refresh token of that sign-in keeps through rotation. fromAccessToken accepts the token only while that
+ * sign-in has a live refresh token, so signing out ends exactly that sign-in, at once.
+ */
+async function grantClaim({ ctx, opts, client, grantType }: OAuthClaimExtensionInput) {
+  if (!APP_CLIENTS.has(client.clientId)) return {}
+  const body = (ctx.body ?? {}) as { code?: string; refresh_token?: string }
+  const hash = getOAuthProviderApi(ctx, opts).hashToken
+  if (grantType === "authorization_code" && body.code) return { grant_id: await hash(body.code, "authorization_code") }
+  if (grantType === "refresh_token" && body.refresh_token) {
+    const row = await env.DB.prepare(`SELECT "authorizationCodeId" FROM "oauthRefreshToken" WHERE "token" = ?`)
+      .bind(await hash(body.refresh_token, "refresh_token"))
+      .first<{ authorizationCodeId: string | null }>()
+    if (row?.authorizationCodeId) return { grant_id: row.authorizationCodeId }
+  }
+  return {}
+}
+
+/**
+ * Points Kosha's apps (migrations/0009_app_clients.sql) at this server's own callback and REST API, which a
+ * migration can't know. Runs once per isolate, after mcp() has stored its resources.
+ */
+const appClients = {
+  id: "kosha-app-clients",
+  init: async () => {
+    const DB = env.DB
+    const ids = [...APP_CLIENTS]
+    try {
+      await DB.batch([
+        DB.prepare(
+          `UPDATE "oauthClient" SET "redirectUris" = ?1 WHERE "clientId" IN (?2, ?3) AND "redirectUris" IS NOT ?1`
+        ).bind(JSON.stringify([APP_CALLBACK, APP_SCHEME_CALLBACK]), ...ids),
+        DB.prepare(`INSERT OR IGNORE INTO "oauthClientResource" ("id", "clientId", "resourceId", "createdAt")
+          SELECT c."clientId" || ' ' || r."identifier", c."clientId", r."identifier", ?1
+          FROM "oauthClient" c JOIN "oauthResource" r ON r."identifier" = ?4 WHERE c."clientId" IN (?2, ?3)`).bind(
+          new Date().toISOString(),
+          ...ids,
+          API_RESOURCE
+        ),
+      ])
+    } catch (e) {
+      // Before the migrations have run there is nothing to update; the next isolate tries again.
+      console.error("Couldn't set up Kosha's app clients", e)
+    }
+  },
+} satisfies BetterAuthPlugin
 
 export const auth = betterAuth({
   database: env.DB,
@@ -74,6 +133,20 @@ export const auth = betterAuth({
     // Work Better Auth doesn't wait on, such as sending a reset email, outlives the response through waitUntil.
     backgroundTasks: { handler: waitUntil },
   },
+  hooks: {
+    // RFC 8252 §8.6: only a redirect the app has claimed proves which app gets the code. Kosha's apps skip
+    // consent for APP_CALLBACK; any other redirect of theirs, such as the app.getkosha: scheme that another
+    // app could register, shows the consent screen every time, remembered consent or not.
+    before: createAuthMiddleware(async (ctx) => {
+      if (ctx.path !== "/oauth2/authorize") return
+      const post = ctx.method === "POST"
+      const params = ((post ? ctx.body : ctx.query) ?? {}) as Record<string, unknown>
+      if (!APP_CLIENTS.has(String(params.client_id)) || params.redirect_uri === APP_CALLBACK) return
+      // prompt=none can't be combined with consent, so a silent request fails rather than skipping the screen.
+      const prompt = [...new Set([...String(params.prompt ?? "").split(" "), "consent"])].filter(Boolean).join(" ")
+      return { context: post ? { body: { ...params, prompt } } : { query: { ...params, prompt } } }
+    }),
+  },
   user: {
     // Deleting an account removes every row of the user's finance data first (Settings › Account › Delete).
     deleteUser: { enabled: true, beforeDelete: (user) => deleteUserData(user.id) },
@@ -107,9 +180,9 @@ export const auth = betterAuth({
     mcp({
       resource: MCP_RESOURCE,
       resources: [API_RESOURCE],
-      // Both resources are the same API with the same scopes, so any client may ask for either. Linking each
-      // client to its resources would need the server's origin in migrations/0009_app_clients.sql.
-      enforcePerClientResources: false,
+      // RFC 8707: a client gets tokens only for the resources it's linked to. Registration links new clients to
+      // both (mcp() adds /mcp); appClients() below links Kosha's apps to the REST API alone.
+      clientRegistrationDefaultResources: [API_RESOURCE],
       cachedTrustedClients: APP_CLIENTS,
       loginPage: "/login",
       consentPage: "/consent",
@@ -119,9 +192,13 @@ export const auth = betterAuth({
       allowUnauthenticatedClientRegistration: true,
       // Claude Code and other local clients register http://localhost callbacks on a changing port.
       clientRegistrationDefaultApplicationType: "infer",
-      // A retried refresh with a used token is replay, not a lost response.
-      refreshTokenReuseInterval: 0,
+      // A phone on a flaky network can lose the reply to a refresh and send the same refresh token again; within
+      // a minute it gets the same reply instead of being signed out. Only Kosha's apps get this overlap: for every
+      // other client, a trigger in migrations/0010_app_sign_in.sql clears the window, so a reused token is replay.
+      refreshTokenReuseInterval: 60,
+      extensions: [{ claims: { accessToken: grantClaim } }],
     }),
+    appClients,
     ...(DASH_KEY
       ? [
           dash({ apiKey: DASH_KEY }),
