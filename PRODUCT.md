@@ -8,7 +8,7 @@ web
 
 ## Users
 
-People with money in more than one place and more than one currency: bank accounts, cash, credit cards and investments, often across countries. They log spending on their phone as it happens and review the month on a desktop.
+Anyone who wants to know where their money goes, whether they have one bank account and a card or accounts, cards and investments in several currencies. They log spending on their phone as it happens and review the month on a desktop.
 
 ## Product Purpose
 
@@ -16,7 +16,7 @@ Kosha is a personal finance tracker. It keeps every account in one place, conver
 
 ## Positioning
 
-Built for multi-currency lives. Net worth respects account types (credit cards count what is owed, investments count their latest gain), transfers and currency exchanges never count as spending, and exchange costs are shown against the market rate. Entry is one line of text (`12.50 groceries yesterday`) or an amount-first phone screen.
+Built around the habit of writing each payment down as it happens: entry takes seconds, and the month makes sense at a glance. Multi-currency is one capability among many, never the headline. Net worth respects account types (credit cards count what is owed, investments count their latest gain), transfers and currency exchanges never count as spending, and exchange costs are shown against the market rate. Entry is one line of text (`12.50 groceries yesterday`) or an amount-first phone screen.
 
 ## Operating Context
 
@@ -33,7 +33,7 @@ Built for multi-currency lives. Net worth respects account types (credit cards c
 
 ## Brand Commitments
 
-- Name: Kosha (कोश, Sanskrit for treasury). Tagline: "Every account. Every currency. One treasury."
+- Name: Kosha (कोश, Sanskrit for treasury). Tagline: "Personal finance, a few seconds at a time." (since 2026-11-07, when the owner asked that the tagline stop centring multi-currency; it replaced "Every account. Every currency. One treasury.")
 - Symbol: a K whose arm is a coin. Peacock `#0F524E`, marigold `#F4A62A`, paper `#F3F5F0`. Wordmark: lowercase "kosha", Bricolage Grotesque Bold.
 - Inside the app, brand colours appear only in the mark. Marketing surfaces (the landing page) may use peacock and marigold as grounds (confirmed by the owner, 2026-11-06).
 - Source code: github.com/amruthpillai/kosha, public and MIT licensed (confirmed by the owner; the LICENSE file is still to be added).

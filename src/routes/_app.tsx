@@ -28,7 +28,7 @@ export const Route = createFileRoute("/_app")({
   // A guest never renders anything that reads the meta, so the cast only skips the fetch.
   loader: ({ context }) => (context.guest ? (null as unknown as Meta) : getMeta()),
   head: ({ match }) =>
-    match.context.guest ? { meta: [{ title: "Kosha · Personal finance for every account and currency" }] } : {},
+    match.context.guest ? { meta: [{ title: "Kosha · Personal finance, a few seconds at a time" }] } : {},
   component: AppLayout,
 })
 

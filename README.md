@@ -5,9 +5,9 @@
   </picture>
 </p>
 
-<p align="center"><strong>Every account. Every currency. One treasury.</strong></p>
+<p align="center"><strong>Personal finance, a few seconds at a time.</strong></p>
 
-<p align="center">A personal finance tracker for people with money in more than one place and more than one currency.<br><a href="https://getkosha.app">getkosha.app</a></p>
+<p align="center">A personal finance tracker for every account you have, in any currency. Add each payment as you pay, and see where the month went.<br><a href="https://getkosha.app">getkosha.app</a></p>
 
 <p align="center">
   <picture>

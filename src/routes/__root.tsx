@@ -21,12 +21,12 @@ export const Route = createRootRoute({
       {
         name: "description",
         content:
-          "Every account, every currency, one treasury. A personal finance tracker for money in more than one place.",
+          "Add each payment in a few seconds, then see where the month went. A free, open-source personal finance tracker for every account, in any currency.",
       },
       { property: "og:type", content: "website" },
       { property: "og:site_name", content: "Kosha" },
       { property: "og:title", content: "Kosha" },
-      { property: "og:description", content: "Every account. Every currency. One treasury." },
+      { property: "og:description", content: "Personal finance, a few seconds at a time." },
       // ponytail: hard-coded production origin, so self-hosted copies share getkosha.app's card image
       { property: "og:url", content: "https://getkosha.app" },
       { property: "og:image", content: "https://getkosha.app/og.png" },

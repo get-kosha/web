@@ -22,6 +22,18 @@
   --color-peacock: #0f524e;
   --color-marigold: #f4a62a;
   --color-paper: #f3f5f0;
+  /* Landing-page grounds that keep their colour in both modes. */
+  --color-ink: #111113;
+  --color-ink-deep: #050506;
+  --color-chalk: #f3f3f4;
+  --color-peacock-night: #0c1716;
+  --color-marigold-light: #f7b648;
+  /* Landing-page depth: app windows lifted off a brand ground, the phone, the flying entry, a paper receipt. */
+  --shadow-window: 0 30px 80px -30px rgb(15 82 78 / 0.45);
+  --shadow-window-dark: 0 30px 80px -30px rgb(0 0 0 / 0.8);
+  --shadow-device: 0 40px 80px -30px rgb(17 17 19 / 0.6);
+  --shadow-chip: 0 12px 30px -8px rgb(17 17 19 / 0.5);
+  --shadow-paper: 0 10px 30px -12px rgb(17 17 19 / 0.35);
   /* Motion: strong curves for UI. ease-out overrides Tailwind's weak default. */
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
@@ -255,6 +267,29 @@
   [data-reveal="bars"][data-shown] :is(.bar-grow, .bar-grow-x) {
     transform: none;
     animation: kosha-fade 300ms ease-out backwards;
+  }
+}
+/* Landing page: one focus ring, drawn in whichever ink contrasts with the ground it sits on. Each brand
+   ground sets --ring-on; app windows and the phone set it back to the foreground. */
+[data-landing] * {
+  /* Set before focus too, so transition-colors never fades the ring in. */
+  outline-color: var(--ring-on, var(--foreground));
+}
+[data-landing] :focus-visible {
+  outline: 2px solid var(--ring-on, var(--foreground));
+  outline-offset: 2px;
+}
+/* Landing page: the scan line that passes once down the receipt. */
+@keyframes kosha-scan {
+  from {
+    transform: translateY(-100%);
+  }
+  85% {
+    opacity: 1;
+  }
+  to {
+    transform: translateY(620%);
+    opacity: 0;
   }
 }
 /* Hero figures: cents in the muted ink, inside NumberFlow's shadow DOM. */
@@ -521,10 +556,4 @@ nav[data-tabbar] {
 }
 :root[data-motion="reduced"]::view-transition-new(page) {
   animation: kosha-fade 120ms ease-out both !important;
-}
-
-/* Landing page: a 2px ring in the text's own colour, which reads on every brand ground. */
-[data-landing] :is(a, button, pre[tabindex]):focus-visible {
-  outline: 2px solid currentColor;
-  outline-offset: 2px;
 }

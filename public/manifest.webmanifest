@@ -2,7 +2,7 @@
   "id": "/",
   "name": "Kosha",
   "short_name": "Kosha",
-  "description": "Every account. Every currency. One treasury.",
+  "description": "Personal finance, a few seconds at a time.",
   "start_url": "/add",
   "scope": "/",
   "display": "standalone",
