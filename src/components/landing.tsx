@@ -428,8 +428,9 @@ const DEPLOY = `npx wrangler d1 create kosha
 # put the database_id and BETTER_AUTH_URL in wrangler.jsonc
 npx wrangler secret put BETTER_AUTH_SECRET
 npx wrangler secret put AI_KEY_SECRET
-# profile pictures use R2; without it, remove r2_buckets
+# photos and attachments use R2; without it, remove r2_buckets
 npx wrangler r2 bucket create kosha-avatars
+npx wrangler r2 bucket create kosha-attachments
 npm run deploy`
 
 /** What comes with an account at getkosha.app, each line true of the app today. */
