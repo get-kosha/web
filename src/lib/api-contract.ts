@@ -120,9 +120,14 @@ const Transfer = z.object({
   toCurrency: Currency,
   note: z.string(),
 })
+const Time = z
+  .string()
+  .regex(/^([01]\d|2[0-3]):[0-5]\d$/)
+  .describe("24-hour HH:MM in your Kosha time zone.")
 const Transaction = z.object({
   id: Id,
   day: Day,
+  time: Time.describe("When it happened, 24-hour HH:MM in your Kosha time zone."),
   payee: z.string(),
   amount: Cents,
   currency: Currency.describe("The account's currency."),
@@ -150,6 +155,7 @@ const Transaction = z.object({
     .boolean()
     .describe("Checked against a bank statement. Changing its amount, account or day un-reconciles it."),
   bankRef: z.string().nullable().describe("The bank's id for the statement line it was imported from."),
+  attachmentCount: z.number().int().describe("How many receipts or other files are attached."),
 })
 const Payment = z.object({
   dueDay: Day.describe("The scheduled day; identifies the payment."),
@@ -231,6 +237,7 @@ const Settings = z.object({
 const tx = {
   id: "9b2f1c6e-5d3a-4f1b-8c7e-2a6d0e4f1b3c",
   day: "2026-11-04",
+  time: "18:42",
   payee: "Tesco",
   amount: -2350,
   currency: "eur",
@@ -248,6 +255,7 @@ const tx = {
   transfer: null,
   reconciled: false,
   bankRef: null,
+  attachmentCount: 0,
 }
 const account = {
   id: "a1",
@@ -467,6 +475,7 @@ export const OPERATIONS = {
           categoryId: Id.optional().describe("Left out: your payee rules, then AI when Auto-categorise is on."),
           subcategoryId: Id.optional().describe("A subcategory of categoryId."),
           day: Day.optional(),
+          time: Time.optional().describe("Left out: now for today, else noon."),
           note: Note.default(""),
           tags: Tags.default([]),
           eventId: Id.nullable()
@@ -512,6 +521,7 @@ export const OPERATIONS = {
           categoryId: Id.optional(),
           subcategoryId: Id.nullable().optional().describe("null clears it."),
           day: Day.optional(),
+          time: Time.optional().describe("Left out: an entry that keeps its day keeps its time."),
           note: Note.optional(),
           tags: Tags.optional().describe("Replaces the tags."),
           eventId: Id.nullable().optional().describe("null removes it from its event."),
@@ -1293,6 +1303,7 @@ export const OPERATIONS = {
           density: "comfortable",
           figures: "mono",
           hide_amounts: "0",
+          account_colours: "1",
           round_hero: "0",
           default_wallet: "last",
           add_kind: "expense",
@@ -1337,6 +1348,7 @@ export const OPERATIONS = {
           density: "comfortable",
           figures: "mono",
           hide_amounts: "0",
+          account_colours: "1",
           round_hero: "0",
           default_wallet: "last",
           add_kind: "expense",

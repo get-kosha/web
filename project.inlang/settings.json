@@ -22,7 +22,12 @@
       "./messages/{locale}/settings-sections.json",
       "./messages/{locale}/server.json",
       "./messages/{locale}/ai.json",
-      "./messages/{locale}/app.json"
+      "./messages/{locale}/app.json",
+      "./messages/{locale}/app-add.json",
+      "./messages/{locale}/app-overview.json",
+      "./messages/{locale}/app-money.json",
+      "./messages/{locale}/app-statements.json",
+      "./messages/{locale}/app-settings.json"
     ]
   }
 }

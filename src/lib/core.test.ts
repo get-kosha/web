@@ -366,6 +366,7 @@ assert.deepEqual(parsePrefs({}), {
   density: "comfortable",
   figures: "mono",
   hide_amounts: "0",
+  account_colours: "1",
   round_hero: "0",
   default_wallet: "last",
   add_kind: "expense",

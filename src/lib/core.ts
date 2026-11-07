@@ -669,6 +669,8 @@ export const PREFS = {
   density: pref(z.enum(["comfortable", "compact"]), "comfortable"),
   figures: pref(z.enum(["mono", "proportional"]), "mono"),
   hide_amounts: pref(z.enum(["0", "1"]), "0"),
+  // The phone apps: each account's colour mark ("1") or the web's ink-only look ("0"). The web ignores it.
+  account_colours: pref(z.enum(["0", "1"]), "1"),
   round_hero: pref(z.enum(["0", "1"]), "0"),
   default_wallet: pref(z.string().max(64), "last"),
   add_kind: pref(z.enum(["expense", "income"]), "expense"),

@@ -35,6 +35,7 @@ import {
   netWorth,
   occurrencesBetween,
   tagList,
+  timeOf,
   type Instance,
   type TitleRule,
 } from "@/lib/core"
@@ -185,6 +186,7 @@ type Lookups = Awaited<ReturnType<typeof lookups>>
 const toTransaction = (t: Tx, tz: string, l: Lookups) => ({
   id: t.id,
   day: dayOf(t.date, tz),
+  time: timeOf(t.date, tz),
   payee: t.name,
   amount: t.amount,
   currency: l.accounts.get(t.wallet_id)?.currency ?? "",
@@ -209,12 +211,15 @@ const toTransaction = (t: Tx, tz: string, l: Lookups) => ({
     : null,
   reconciled: !!t.reconciled_id,
   bankRef: t.bank_ref ?? null,
+  attachmentCount: t.files ?? 0,
 })
 
 /** Transactions by id, in the order asked for. */
 async function loadTransactions(uid: string, list: string[]) {
   const { results } = await db()
-    .prepare(`SELECT t.*, ${COUNTERPART} WHERE t.user_id = ? AND t.id IN (SELECT value FROM json_each(?))`)
+    .prepare(`SELECT t.*,
+      (SELECT COUNT(*) FROM attachments a WHERE a.user_id = t.user_id AND a.transaction_id = t.id) AS files,
+      ${COUNTERPART} WHERE t.user_id = ? AND t.id IN (SELECT value FROM json_each(?))`)
     .bind(uid, ids(list))
     .all<Tx>()
   const byId = new Map(results.map((t) => [t.id, t]))
@@ -421,6 +426,7 @@ const HANDLERS: Handlers = {
         note: t.note,
         amount: t.amount,
         day: t.day ?? today,
+        time: t.time,
         paid: t.status === "paid",
         tags: cleanTags(t.tags),
         eventId: t.eventId,
@@ -471,6 +477,7 @@ const HANDLERS: Handlers = {
           note: p.note ?? r.note,
           amount: p.amount ?? r.amount,
           day: p.day ?? dayOf(r.date, tz),
+          time: p.time,
           paid: p.status ? p.status === "paid" : !!r.paid,
           tags: p.tags && cleanTags(p.tags),
           eventId: p.eventId,

@@ -26,7 +26,7 @@ Arabic, Hebrew and other right-to-left languages are not supported yet: the layo
 ## How the message files work
 
 - `messages/<locale>/<area>.json` holds one area's messages. Every locale has the same files and the same keys as `messages/en/`, and `npm test` fails if one is missing or extra.
-- `app.json` holds messages only Kosha's phone apps show (keypad keys, the time wheel and so on). The Android and iOS apps build their strings from every area, so the web and the apps share one translation.
+- `app.json` and `app-*.json` hold messages only Kosha's phone apps show (keypad keys, the time wheel and so on). The Android and iOS apps build their strings from every area, so the web and the apps share one translation.
 - Values are [inlang message format](https://inlang.com/m/reootnfj/plugin-inlang-messageFormat). Paraglide JS compiles them into `m.<key>()` functions in `src/paraglide/`.
 - `{name}` is a variable and `{#tag}…{/tag}` is markup the code fills in (a link, bold text). Keep both exactly; move them anywhere in the sentence.
 - A plural message is an array with `declarations`, `selectors` and `match`. Keep `declarations` and `selectors` as in English. The `match` keys must cover every [CLDR plural category](https://www.unicode.org/cldr/charts/latest/supplemental/language_plural_rules.html) of the language (`one`, `few`, `many`, `other`…), and `*` matches any category: `"countPlural=one": "…", "countPlural=*": "…"`. A missing category shows the raw key, and `npm test` checks every count in every language.

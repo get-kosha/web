@@ -4,7 +4,7 @@
 // and they take only access tokens issued to APP_CLIENTS. Errors and messages follow Accept-Language.
 
 import { z } from "zod"
-import { DEMO_READ_ONLY } from "@/lib/core"
+import { DEMO_READ_ONLY, dayOf, monthRange } from "@/lib/core"
 import { csvAccountHint, guessLayout, isOfx, layoutSignature, parseCsv, parseOfx, readCsv } from "@/lib/statement"
 import { m } from "@/paraglide/messages"
 import * as aiKeys from "@/server/ai.server"
@@ -36,7 +36,7 @@ import {
   setAvatar,
   updateProfile,
 } from "@/server/auth.server"
-import { HttpError, db } from "@/server/db.server"
+import { HttpError, db, getSettings } from "@/server/db.server"
 import { everythingJson, transactionsCsv } from "@/server/export.server"
 import * as finance from "@/server/finance.server"
 import * as statements from "@/server/statements.server"
@@ -102,6 +102,19 @@ async function readStatement(uid: string, input: z.infer<typeof readInput>) {
   }
 }
 
+const query = (url: URL) => Object.fromEntries(url.searchParams)
+
+/** The days of a month that have paid entries, for the dots in the date picker. */
+async function daysWithEntries(uid: string, month: string) {
+  const { tz } = await getSettings(uid)
+  const [from, to] = monthRange(month, tz)
+  const { results } = await db()
+    .prepare("SELECT DISTINCT date FROM transactions WHERE user_id = ? AND paid = 1 AND date >= ? AND date < ?")
+    .bind(uid, from, to)
+    .all<{ date: number }>()
+  return { days: [...new Set(results.map((r) => dayOf(r.date, tz)))].sort() }
+}
+
 // Each route is "METHOD /path" with {name} for a path parameter. GET only reads; anything else needs kosha:write.
 const ROUTES: Record<string, Handler> = {
   // Everything most screens need: accounts, categories, rules, events, tags, rates, settings, which AI features
@@ -121,6 +134,36 @@ const ROUTES: Record<string, Handler> = {
       version: APP_API_VERSION,
     }
   },
+  // The web's own reads where the public API's shapes are thinner: Overview's pace curves and cards, the Accounts
+  // page's per-account history and month flows, schedules with their payment history, and the days that have entries.
+  "GET /dashboard": ({ uid, url }) => finance.dashboard(uid, finance.dashboardInput.parse(query(url))),
+  "GET /accounts-overview": ({ uid, url }) => finance.accountsOverview(uid, finance.dashboardInput.parse(query(url))),
+  "GET /subscriptions": async ({ uid }) => {
+    const [subscriptions, income] = await Promise.all([finance.listSubscriptions(uid), finance.recentIncome(uid)])
+    return { subscriptions, income }
+  },
+  "GET /payee-history": ({ uid, url }) =>
+    finance.payeeHistory(uid, z.string().min(1).max(200).parse(url.searchParams.get("name"))),
+  "GET /days": ({ uid, url }) =>
+    daysWithEntries(
+      uid,
+      z
+        .string()
+        .regex(/^\d{4}-\d{2}$/)
+        .parse(url.searchParams.get("month"))
+    ),
+  // The recap Overview shows for a month, if one was written. Reading never writes one.
+  "GET /recap": ({ uid, url }) => ai.getRecap(uid, url.searchParams.get("month") ?? undefined),
+  // Auto-categorise for a payee Kosha hasn't seen.
+  "POST /ai/category": async (c) => ai.suggestCategory(c.uid, await body(c, ai.categoryInput)),
+  // Reconcile: one account's state, finishing with a statement, and the AI's view of a difference.
+  "GET /reconcile": ({ uid, url }) =>
+    statements.reconcileData(uid, z.string().min(1).parse(url.searchParams.get("walletId"))),
+  "POST /reconcile/finish": async (c) => statements.finishReconcile(c.uid, await body(c, statements.finishInput)),
+  "POST /reconcile/undo": async (c) =>
+    statements.undoReconcile(c.uid, (await body(c, z.object({ id: z.string().min(1) }))).id),
+  "POST /reconcile/explain": async (c) => ai.explainDifference(c.uid, await body(c, ai.differenceInput)),
+
   // Every preference in PREFS, the AI ones included (the public update_settings leaves those out).
   "PATCH /preferences": async (c) => finance.savePreferences(c.uid, await body(c, finance.prefsInput)),
   // Sign-in methods (for Settings › Sign-in & security) and what Delete & reset would remove.
