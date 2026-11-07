@@ -7,7 +7,7 @@ import { AiMark } from "@/components/ai"
 import { CategoryIcon } from "@/components/category-icon"
 import { Meta, RATES, Rolling, appWindow, mockButton, mockPrimary, out, sum } from "@/components/landing-demos"
 import { Switch } from "@/components/ui/switch"
-import { convert, exchange, fmt, intlLocale, redactForAi, type AiShares } from "@/lib/core"
+import { convert, fmt, intlLocale, redactForAi, type AiShares } from "@/lib/core"
 import { differenceHints, payeeFor, starterCategory } from "@/lib/statement"
 import { cn } from "@/lib/utils"
 import { m } from "@/paraglide/messages"
@@ -321,58 +321,6 @@ export function ReconcileDemo() {
   )
 }
 
-// ---------- Statements: recurring payments, spotted ----------
-
-const SPOTTED = [
-  { id: "gym", name: "PureGym", payments: 7, amount: 3499 },
-  { id: "icloud", name: "iCloud+", payments: 12, amount: 299 },
-]
-
-export function SpottedDemo() {
-  const [made, setMade] = useState<Set<string>>(new Set())
-  return (
-    <div className={cn(appWindow, "h-full")}>
-      <ul className="divide-y">
-        {SPOTTED.map((s) => {
-          const on = made.has(s.id)
-          return (
-            <li key={s.id} className="flex min-h-16 flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3 @min-[480px]:px-5">
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm">{s.name}</span>
-                <Meta>
-                  {on ? (
-                    m.landing_spotted_made({ count: s.payments })
-                  ) : (
-                    <>
-                      <span>{m.landing_spotted_every_month()}</span>
-                      <span>{m.landing_spotted_payments({ count: s.payments })}</span>
-                    </>
-                  )}
-                </Meta>
-              </span>
-              <span className="num text-sm">{out(s.amount)}</span>
-              <button
-                type="button"
-                onClick={() =>
-                  setMade((m) => {
-                    const n = new Set(m)
-                    if (on) n.delete(s.id)
-                    else n.add(s.id)
-                    return n
-                  })
-                }
-                className={cn(on ? mockButton : mockPrimary, "@max-[420px]:w-full")}
-              >
-                {on ? m.common_undo() : m.landing_spotted_make()}
-              </button>
-            </li>
-          )
-        })}
-      </ul>
-    </div>
-  )
-}
-
 // ---------- Accounts: one net worth across currencies ----------
 
 type DemoAccount = {
@@ -507,48 +455,6 @@ export function NetWorthDemo() {
   )
 }
 
-// The 12 Nov exchange through Wise: €502.55 left the account, €2.55 of it a fee, the rest arrived as pounds.
-const SWAP = exchange(-50255, -255, 42175, 0.8478)
-
-/** What an exchange through Wise cost against the market rate, worked out as the app does. */
-export function ExchangeDemo() {
-  return (
-    <div className={cn(appWindow, "px-4 py-4 @min-[480px]:px-5")}>
-      <div className="flex items-baseline justify-between gap-3 text-[13px]">
-        <span className="truncate font-medium">
-          {m.landing_exchange_route({ from: m.landing_account_current(), to: m.landing_account_savings_uk() })}
-        </span>
-        <span className="shrink-0 text-xs text-muted-foreground">
-          {m.landing_exchange_when({ day: shortDay("2026-11-12") })}
-        </span>
-      </div>
-      <dl className="mt-3 grid grid-cols-3 gap-x-4 gap-y-3 text-xs @min-[520px]:grid-cols-6">
-        {[
-          ["sent", m.landing_exchange_sent(), fmt(50255, "eur")],
-          ["fee", m.landing_exchange_fee(), fmt(255, "eur")],
-          ["received", m.landing_exchange_received(), fmt(42175, "gbp")],
-          ["rate", m.landing_exchange_rate(), four(SWAP.rate)],
-          ["market", m.landing_exchange_market(), four(SWAP.marketRate!)],
-          ["cost", m.landing_exchange_cost(), fmt(Math.round(SWAP.totalCost), "eur")],
-        ].map(([k, label, v]) => (
-          <div key={k} className="min-w-0">
-            <dt className="text-muted-foreground">{label}</dt>
-            <dd
-              className={cn(
-                "num mt-1 truncate text-sm",
-                k === "market" && "text-muted-foreground",
-                k === "cost" && "text-warning"
-              )}
-            >
-              {v}
-            </dd>
-          </div>
-        ))}
-      </dl>
-    </div>
-  )
-}
-
 /** Transfers: two linked rows each, one out and one in, and an exchange's fee as its own expense. */
 const transfers = (): { day: string; rows: { account: string; text: string }[]; fee?: string }[] => [
   {
@@ -618,62 +524,6 @@ export function TransferDemo() {
       <p className="mt-auto border-t bg-muted/50 px-4 py-3 text-xs text-muted-foreground">
         {m.landing_transfer_note()}
       </p>
-    </div>
-  )
-}
-
-/** An event: everything added between its dates, totalled. */
-export function TripDemo() {
-  const parts = [
-    { name: m.landing_cat_travel(), icon: "ph:airplane-tilt", cents: 58000 },
-    { name: m.landing_cat_dining(), icon: "ph:fork-knife", cents: 12450 },
-    { name: m.landing_cat_other(), icon: "ph:shopping-bag", cents: 3810 },
-  ]
-  const total = sum(parts.map((p) => p.cents))
-  return (
-    <div className={cn(appWindow, "flex h-full flex-col px-4 py-4 @min-[480px]:px-5")}>
-      <div className="flex items-baseline justify-between gap-3 text-[13px]">
-        <span className="font-medium">{m.landing_trip_name()}</span>
-        <span className="text-xs text-muted-foreground">
-          {new Intl.DateTimeFormat(intlLocale(), dayFormat()).formatRange(noon("2026-10-12"), noon("2026-10-16"))}
-        </span>
-      </div>
-      <p className="num mt-2 text-2xl tracking-[-0.03em]">{fmt(total, "eur")}</p>
-      <p className="text-xs text-muted-foreground">{m.landing_trip_entries({ count: 23 })}</p>
-      <ul className="mt-4 flex flex-col border-t text-[13px]">
-        {[
-          ["Hotel Lis", 30400],
-          ["TAP Air Portugal", 21840],
-          ["Comboios de Portugal", 3920],
-          ["Time Out Market", 4620],
-          ["Pastéis de Belém", 1180],
-        ].map(([name, cents]) => (
-          <li key={name} className="flex min-h-9 items-center justify-between gap-3 border-b">
-            <span className="truncate">{name}</span>
-            <span className="num shrink-0 text-xs text-muted-foreground">{out(cents as number)}</span>
-          </li>
-        ))}
-      </ul>
-      <div className="mt-auto pt-5">
-        <div className="flex h-2 overflow-hidden rounded-full bg-muted" aria-hidden="true">
-          {parts.map((p, i) => (
-            <span
-              key={p.name}
-              className={cn("h-full", ["bg-chart-2", "bg-chart-3", "bg-chart-4"][i])}
-              style={{ width: `${(p.cents / total) * 100}%` }}
-            />
-          ))}
-        </div>
-        <ul className="mt-3 flex flex-col gap-1.5 text-xs">
-          {parts.map((p) => (
-            <li key={p.name} className="flex items-center gap-2">
-              <CategoryIcon icon={p.icon} className="size-3.5" />
-              <span className="flex-1">{p.name}</span>
-              <span className="num">{fmt(p.cents, "eur")}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
     </div>
   )
 }

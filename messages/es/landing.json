@@ -8,10 +8,9 @@
   "landing_try_demo": "Probar la cuenta demo",
   "landing_ai_badge": "IA",
   "landing_hero_title": "{#first}Anota lo que gastaste.{/first} {#second}Sabrás dónde lo dejaste.{/second}",
-  "landing_hero_lead": "Anota cada pago en el móvil mientras pagas. En tu escritorio, mira cómo va el mes y compruébalo con tu banco.",
-  "landing_hero_licence": "Gratis y de código abierto, con licencia MIT.",
+  "landing_hero_lead": "Kosha es una app gratuita y de código abierto para controlar tus gastos. Anota cada pago en el móvil en pocos segundos y, en tu escritorio, mira cómo va el mes comparado con uno habitual.",
   "landing_pocket_title": "La semana pasada llevó {seconds} segundos",
-  "landing_pocket_lead": "{count} pagos, cada uno anotado en el momento, la mayoría en unos cinco segundos. Te das cuenta de lo que gastas mientras lo tienes fresco, y los totales del mes cuadran sin tener que reconstruir nada después.",
+  "landing_pocket_lead": "{count} pagos, cada uno anotado en el momento. Te das cuenta de lo que gastas mientras lo tienes fresco, y a fin de mes no hay nada que reconstruir.",
   "landing_quick_add_title": "Escríbelo en una línea",
   "landing_quick_add_body": "Kosha lee el importe, la fecha y la cuenta, y deduce el resto a partir de lo que anotaste antes.",
   "landing_sentence_title": "O descríbelo",
@@ -33,19 +32,13 @@
   "landing_attention_title": "Resuelve lo que requiere atención",
   "landing_attention_body": "Kosha te avisa de una tarjeta por pagar, una factura sin marcar como pagada, una categoría por encima de lo habitual y un valor desactualizado.",
   "landing_statements_title": "Una vez al mes, compruébalo con el banco",
-  "landing_statements_lead": "Importa un año de extractos para empezar y Kosha conocerá tu mes habitual desde el primer día. Cada mes después, marca lo que coincide y enumera lo que falta.",
+  "landing_statements_lead": "Kosha nunca te pide las claves de tu banco. Importa un año de extractos y conocerá tu mes habitual desde el primer día. Cada mes después, marca lo que coincide y enumera lo que falta.",
   "landing_import_title": "Importa todos los extractos de una vez",
   "landing_import_body": "Kosha lee archivos CSV, OFX y QFX, y PDF cuando la IA está activada. El texto del banco se convierte en beneficiarios que reconoces.",
-  "landing_spotted_title": "Detecta las facturas que no has configurado",
-  "landing_spotted_body": "Kosha detecta los beneficiarios a los que pagas con un ritmo regular. Haz uno recurrente y sus pagos anteriores se archivan con él.",
   "landing_reconcile_title": "Descubre por qué no cuadra",
   "landing_reconcile_body": "Cuando la diferencia no es cero, Kosha hace las comprobaciones de un contable, como dígitos intercambiados, un signo equivocado o un duplicado. Prueba a arreglar este.",
   "landing_accounts_title": "Todas tus cuentas en un solo patrimonio neto",
   "landing_accounts_lead": "Kosha suma cuentas bancarias, efectivo, tarjetas e inversiones, cada una en su moneda, con tipos de cambio diarios. Las tarjetas cuentan lo que debes, y las inversiones lo que aportaste más su último rendimiento.",
-  "landing_exchange_title": "Mira cuánto costó un cambio de divisas",
-  "landing_exchange_body": "Kosha suma la comisión a lo que perdió el tipo del proveedor frente al tipo de mercado de ese día.",
-  "landing_trip_title": "Mira cuánto costó un viaje",
-  "landing_trip_body": "Crea un evento con las fechas del viaje y los movimientos nuevos de ese periodo se unen a él.",
   "landing_transfer_title": "Mueve dinero",
   "landing_transfer_body": "Las transferencias entre tus cuentas nunca cuentan como gasto.",
   "landing_ai_title": "IA con tu propia clave",
@@ -59,12 +52,13 @@
   "landing_closing_lead": "Kosha es gratis y de código abierto con licencia MIT. Úsalo aquí o ejecuta tu propia instancia en Cloudflare.",
   "landing_hosted_title": "Usa getkosha.app",
   "landing_hosted_body": "Tu cuenta, en tu navegador y en tu móvil. Nada que instalar desde una tienda de apps.",
+  "landing_fact_no_bank": "Sin las claves de tu banco",
   "landing_fact_passkeys": "Llaves de acceso y códigos de verificación en dos pasos",
   "landing_fact_offline": "Añade movimientos sin conexión en el móvil",
-  "landing_fact_import": "Importa archivos CSV, OFX y QFX",
   "landing_fact_export": "Exporta a CSV o JSON cuando quieras",
   "landing_fact_ai": "IA solo con tu propia clave",
   "landing_fact_currency": "Cualquier moneda, con tipos diarios",
+  "landing_fact_languages": "Disponible en {count} idiomas",
   "landing_self_host_title": "Ejecuta tu propia instancia",
   "landing_self_host_body": "Un Cloudflare Worker y una base de datos D1. El README tiene todos los pasos, incluido un script que importa una copia de seguridad de Cashew.",
   "landing_self_host_commands_label": "Comandos para desplegar tu propia instancia",
@@ -78,8 +72,6 @@
   "landing_cat_transit": "Transporte",
   "landing_cat_entertainment": "Ocio",
   "landing_cat_salary": "Sueldo",
-  "landing_cat_travel": "Viajes",
-  "landing_cat_other": "Otros",
   "landing_import_files_label": "Archivos de extractos",
   "landing_import_accounts": "Cuentas",
   "landing_import_accounts_value": "4, por número de cuenta",
@@ -111,28 +103,6 @@
   "landing_reconcile_tick_note": "Marca lo que aparece en el extracto.",
   "landing_reconcile_adds_up": "Cuadra.",
   "landing_reconcile_finish": "Terminar la conciliación",
-  "landing_spotted_every_month": "Cada mes",
-  "landing_spotted_payments": [
-    {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
-      "match": {
-        "countPlural=one": "{count} pago",
-        "countPlural=*": "{count} pagos"
-      }
-    }
-  ],
-  "landing_spotted_made": [
-    {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
-      "match": {
-        "countPlural=one": "Ahora es recurrente, con su pago anterior",
-        "countPlural=*": "Ahora es recurrente, con sus {count} pagos anteriores"
-      }
-    }
-  ],
-  "landing_spotted_make": "Hacer recurrente",
   "landing_networth_group_bank": "Banco y efectivo",
   "landing_networth_group_credit": "Tarjetas de crédito",
   "landing_networth_group_investments": "Inversiones",
@@ -144,30 +114,11 @@
   "landing_networth_bank_meta": "Banco, {currency}",
   "landing_networth_investment_meta": "Inversión, {currency}",
   "landing_networth_rates": "{rate}, tipos actualizados hoy",
-  "landing_exchange_route": "De {from} a {to}",
-  "landing_exchange_when": "{day}, con Wise",
-  "landing_exchange_sent": "Enviado",
-  "landing_exchange_fee": "Comisión",
-  "landing_exchange_received": "Recibido",
-  "landing_exchange_rate": "Tipo",
-  "landing_exchange_market": "Mercado",
-  "landing_exchange_cost": "Coste",
   "landing_transfer_linked": "Vinculada a la fila de arriba",
   "landing_transfer_label": "Transferencia",
   "landing_transfer_fee": "Comisión de transferencia",
   "landing_transfer_fee_counts": "Cuenta como gasto",
   "landing_transfer_note": "Pagar una tarjeta o pasar dinero a ahorro no cuenta como ingreso ni como gasto. Solo cuenta la comisión.",
-  "landing_trip_name": "Lisboa",
-  "landing_trip_entries": [
-    {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
-      "match": {
-        "countPlural=one": "{count} movimiento",
-        "countPlural=*": "{count} movimientos"
-      }
-    }
-  ],
   "landing_ai_share_payee": "Nombres de beneficiarios",
   "landing_ai_share_amount": "Importes",
   "landing_ai_share_date": "Fechas exactas",

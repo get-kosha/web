@@ -8,10 +8,9 @@
   "landing_try_demo": "Demokonto ausprobieren",
   "landing_ai_badge": "KI",
   "landing_hero_title": "{#first}Ausgabe notiert.{/first} {#second}Monat kapiert.{/second}",
-  "landing_hero_lead": "Trag jede Zahlung direkt beim Bezahlen am Handy ein. Am Schreibtisch siehst du dann, wie der Monat läuft, und gleichst alles mit deiner Bank ab.",
-  "landing_hero_licence": "Kostenlos und Open Source, unter MIT-Lizenz.",
+  "landing_hero_lead": "Kosha ist ein kostenloses Open-Source-Haushaltsbuch. Trag jede Zahlung in wenigen Sekunden am Handy ein und sieh am Schreibtisch, wie der Monat im Vergleich zu einem typischen läuft.",
   "landing_pocket_title": "Eine ganze Woche in {seconds} Sekunden",
-  "landing_pocket_lead": "{count} Zahlungen, jede gleich beim Bezahlen notiert, die meisten in rund fünf Sekunden. So merkst du sofort, wofür dein Geld draufgeht. Und am Monatsende stimmen die Summen, ohne dass du hinterher etwas zusammensuchen musst.",
+  "landing_pocket_lead": "{count} Zahlungen, jede gleich beim Bezahlen notiert. So merkst du sofort, wofür dein Geld draufgeht, und am Monatsende musst du nichts zusammensuchen.",
   "landing_quick_add_title": "In einer Zeile eintippen",
   "landing_quick_add_body": "Kosha erkennt Betrag, Datum und Konto und ergänzt den Rest anhand deiner bisherigen Buchungen.",
   "landing_sentence_title": "Oder in eigenen Worten",
@@ -33,19 +32,13 @@
   "landing_attention_title": "Offene Punkte abhaken",
   "landing_attention_body": "Kosha erinnert dich an eine Kreditkarte, die ausgeglichen werden will, eine Rechnung, die noch nicht als bezahlt markiert ist, eine Kategorie über dem Üblichen und einen veralteten Wert.",
   "landing_statements_title": "Einmal im Monat mit der Bank abgleichen",
-  "landing_statements_lead": "Importiere zum Start die Kontoauszüge eines Jahres, und Kosha kennt deinen typischen Monat vom ersten Tag an. Danach hakt es jeden Monat ab, was übereinstimmt, und zeigt dir, was fehlt.",
+  "landing_statements_lead": "Kosha fragt nie nach den Zugangsdaten deiner Bank. Importiere die Kontoauszüge eines Jahres, und Kosha kennt deinen typischen Monat vom ersten Tag an. Danach hakt es jeden Monat ab, was übereinstimmt, und zeigt dir, was fehlt.",
   "landing_import_title": "Alle Kontoauszüge auf einmal importieren",
   "landing_import_body": "Kosha liest CSV-, OFX- und QFX-Dateien, mit KI auch PDFs. Aus kryptischen Buchungstexten werden Zahlungspartner, die du wiedererkennst.",
-  "landing_spotted_title": "Regelmäßige Zahlungen aufspüren",
-  "landing_spotted_body": "Kosha erkennt Zahlungspartner, die du in festem Rhythmus bezahlst. Legst du daraus eine wiederkehrende Zahlung an, landen auch die bisherigen Zahlungen dort.",
   "landing_reconcile_title": "Herausfinden, warum es nicht aufgeht",
   "landing_reconcile_body": "Steht die Differenz nicht auf null, prüft Kosha wie ein Buchhalter: vertauschte Ziffern, falsches Vorzeichen, doppelte Buchungen. Probier es gleich hier aus.",
   "landing_accounts_title": "Alle Konten, ein Vermögen",
   "landing_accounts_lead": "Kosha rechnet Bankkonten, Bargeld, Kreditkarten und Geldanlagen zusammen, jedes in seiner Währung, zu tagesaktuellen Wechselkursen. Bei Karten zählt, was du schuldest, bei Geldanlagen, was du eingezahlt hast, plus die aktuelle Wertentwicklung.",
-  "landing_exchange_title": "Was der Geldwechsel wirklich kostet",
-  "landing_exchange_body": "Kosha rechnet zur Gebühr hinzu, was dich der Kurs des Anbieters an dem Tag gegenüber dem Marktkurs gekostet hat.",
-  "landing_trip_title": "Was die Reise gekostet hat",
-  "landing_trip_body": "Leg ein Ereignis mit den Reisedaten an, und neue Buchungen in diesem Zeitraum landen automatisch darin.",
   "landing_transfer_title": "Geld umbuchen",
   "landing_transfer_body": "Umbuchungen zwischen deinen Konten zählen nie als Ausgaben.",
   "landing_ai_title": "KI mit deinem eigenen Schlüssel",
@@ -59,12 +52,13 @@
   "landing_closing_lead": "Kosha ist kostenlos und Open Source unter MIT-Lizenz. Nutze es direkt hier oder betreib deine eigene Instanz auf Cloudflare.",
   "landing_hosted_title": "getkosha.app nutzen",
   "landing_hosted_body": "Dein Konto im Browser und auf dem Handy. Ganz ohne App-Store.",
+  "landing_fact_no_bank": "Keine Bank-Zugangsdaten nötig",
   "landing_fact_passkeys": "Passkeys und Zwei-Faktor-Codes",
   "landing_fact_offline": "Unterwegs auch offline buchen",
-  "landing_fact_import": "Import von CSV, OFX und QFX",
   "landing_fact_export": "Export als CSV oder JSON, jederzeit",
   "landing_fact_ai": "KI nur mit eigenem Schlüssel",
   "landing_fact_currency": "Jede Währung, zu Tageskursen",
+  "landing_fact_languages": "In {count} Sprachen verfügbar",
   "landing_self_host_title": "Eigene Instanz betreiben",
   "landing_self_host_body": "Ein Cloudflare Worker und eine D1-Datenbank. Im README steht jeder Schritt, samt einem Skript, das ein Cashew-Backup importiert.",
   "landing_self_host_commands_label": "Befehle, um deine eigene Instanz bereitzustellen",
@@ -78,8 +72,6 @@
   "landing_cat_transit": "Verkehr",
   "landing_cat_entertainment": "Unterhaltung",
   "landing_cat_salary": "Gehalt",
-  "landing_cat_travel": "Reisen",
-  "landing_cat_other": "Sonstiges",
   "landing_import_files_label": "Kontoauszüge",
   "landing_import_accounts": "Konten",
   "landing_import_accounts_value": "4, nach Kontonummer",
@@ -111,28 +103,6 @@
   "landing_reconcile_tick_note": "Hak ab, was auf dem Kontoauszug steht.",
   "landing_reconcile_adds_up": "Alles stimmt.",
   "landing_reconcile_finish": "Abgleich abschließen",
-  "landing_spotted_every_month": "Monatlich",
-  "landing_spotted_payments": [
-    {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
-      "match": {
-        "countPlural=one": "{count} Zahlung",
-        "countPlural=other": "{count} Zahlungen"
-      }
-    }
-  ],
-  "landing_spotted_made": [
-    {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
-      "match": {
-        "countPlural=one": "Jetzt wiederkehrend, samt der bisherigen Zahlung",
-        "countPlural=other": "Jetzt wiederkehrend, samt {count} bisheriger Zahlungen"
-      }
-    }
-  ],
-  "landing_spotted_make": "Als wiederkehrend anlegen",
   "landing_networth_group_bank": "Bank und Bargeld",
   "landing_networth_group_credit": "Kreditkarten",
   "landing_networth_group_investments": "Geldanlagen",
@@ -144,30 +114,11 @@
   "landing_networth_bank_meta": "Bankkonto, {currency}",
   "landing_networth_investment_meta": "Geldanlage, {currency}",
   "landing_networth_rates": "{rate}, Kurse von heute",
-  "landing_exchange_route": "Von {from} auf {to}",
-  "landing_exchange_when": "{day}, über Wise",
-  "landing_exchange_sent": "Gesendet",
-  "landing_exchange_fee": "Gebühr",
-  "landing_exchange_received": "Erhalten",
-  "landing_exchange_rate": "Kurs",
-  "landing_exchange_market": "Marktkurs",
-  "landing_exchange_cost": "Kosten",
   "landing_transfer_linked": "Mit der Zeile darüber verknüpft",
   "landing_transfer_label": "Umbuchung",
   "landing_transfer_fee": "Umbuchungsgebühr",
   "landing_transfer_fee_counts": "Zählt als Ausgabe",
   "landing_transfer_note": "Kreditkarte ausgleichen oder Geld aufs Sparkonto legen zählt weder als Einnahme noch als Ausgabe. Nur die Gebühr zählt.",
-  "landing_trip_name": "Lissabon",
-  "landing_trip_entries": [
-    {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
-      "match": {
-        "countPlural=one": "{count} Buchung",
-        "countPlural=other": "{count} Buchungen"
-      }
-    }
-  ],
   "landing_ai_share_payee": "Namen der Zahlungspartner",
   "landing_ai_share_amount": "Beträge",
   "landing_ai_share_date": "Genaues Datum",

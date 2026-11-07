@@ -5,17 +5,7 @@ import { CheckIcon, GithubLogoIcon, SparkleIcon } from "@phosphor-icons/react/ss
 import { ParaglideMessage } from "@inlang/paraglide-js-react"
 import { KoshaLogo } from "@/components/kosha-mark"
 import { LanguageSwitch } from "@/components/language-switch"
-import {
-  AiSeesDemo,
-  ApiDemo,
-  ExchangeDemo,
-  ImportDemo,
-  NetWorthDemo,
-  ReconcileDemo,
-  SpottedDemo,
-  TransferDemo,
-  TripDemo,
-} from "@/components/landing-checks"
+import { AiSeesDemo, ApiDemo, ImportDemo, NetWorthDemo, ReconcileDemo, TransferDemo } from "@/components/landing-checks"
 import {
   AskDemo,
   AttentionDemo,
@@ -32,6 +22,7 @@ import {
 } from "@/components/landing-demos"
 import { cn } from "@/lib/utils"
 import { m } from "@/paraglide/messages"
+import { locales } from "@/paraglide/runtime"
 
 const SOURCE = "https://github.com/amruthpillai/kosha"
 const SIGN_UP = "/login?mode=up"
@@ -58,8 +49,8 @@ const coin = "pointer-events-none absolute -z-10 rounded-full bg-marigold max-lg
 type Tone = "paper" | "peacock" | "marigold" | "ink"
 const quiet: Record<Tone, string> = {
   paper: "text-subtle-foreground",
-  peacock: "text-paper/80",
-  marigold: "text-ink/75",
+  peacock: "text-paper/92",
+  marigold: "text-ink/85",
   ink: "text-chalk/70",
 }
 
@@ -78,7 +69,7 @@ function Section({ id, className, children }: { id: string; className?: string; 
 /** A chapter's heading, set large on the left, with its one-paragraph lead beside it. */
 function ChapterHead({ id, title, lead, tone }: { id: string; title: ReactNode; lead: ReactNode; tone: Tone }) {
   return (
-    <div className="grid gap-x-12 gap-y-5 lg:grid-cols-12 lg:items-end">
+    <div className="grid gap-x-6 gap-y-5 lg:grid-cols-12 lg:items-end">
       <h2 id={`${id}-title`} className={cn(h2, "lg:col-span-7")}>
         {title}
       </h2>
@@ -188,25 +179,7 @@ export function Landing({ demo }: { demo: boolean }) {
         </Section>
 
         <Section id="desk" className={paper}>
-          <div className={grid}>
-            <div className="lg:col-span-7">
-              <h2 id="desk-title" className={cn(h2, "max-w-[16ch]")}>
-                {m.landing_desk_title()}
-              </h2>
-              <p className={cn("mt-6 max-w-[36rem] text-[17px] leading-relaxed text-pretty", quiet.paper)}>
-                {m.landing_desk_lead()}
-              </p>
-            </div>
-            <Cell
-              tone="paper"
-              ai
-              className="lg:col-span-5"
-              title={m.landing_recap_title()}
-              body={m.landing_recap_body()}
-            >
-              <RecapDemo />
-            </Cell>
-          </div>
+          <ChapterHead id="desk" tone="paper" title={m.landing_desk_title()} lead={m.landing_desk_lead()} />
           <div className={cn(grid, "mt-14 lg:mt-20")}>
             <Cell
               tone="paper"
@@ -246,20 +219,22 @@ export function Landing({ demo }: { demo: boolean }) {
             lead={m.landing_statements_lead()}
           />
           <div className={cn(grid, "mt-14 lg:mt-20")}>
-            <div className="flex flex-col gap-12 lg:col-span-5">
-              <Cell tone="marigold" title={m.landing_import_title()} body={m.landing_import_body()}>
-                <ImportDemo />
-              </Cell>
-              <Cell tone="marigold" title={m.landing_spotted_title()} body={m.landing_spotted_body()}>
-                <SpottedDemo />
-              </Cell>
-            </div>
-            {/* The reconciliation stays in view while the import and spotted payments scroll past it. */}
-            <div className="lg:sticky lg:top-8 lg:col-span-7 lg:self-start">
-              <Cell tone="marigold" title={m.landing_reconcile_title()} body={m.landing_reconcile_body()}>
-                <ReconcileDemo />
-              </Cell>
-            </div>
+            <Cell
+              tone="marigold"
+              className="lg:col-span-5 lg:self-start"
+              title={m.landing_import_title()}
+              body={m.landing_import_body()}
+            >
+              <ImportDemo />
+            </Cell>
+            <Cell
+              tone="marigold"
+              className="lg:col-span-7"
+              title={m.landing_reconcile_title()}
+              body={m.landing_reconcile_body()}
+            >
+              <ReconcileDemo />
+            </Cell>
           </div>
         </Section>
 
@@ -269,24 +244,32 @@ export function Landing({ demo }: { demo: boolean }) {
             <div className="lg:col-span-6">
               <NetWorthDemo />
             </div>
-            <div className="flex flex-col gap-12 lg:col-span-6">
-              <Cell tone="paper" title={m.landing_exchange_title()} body={m.landing_exchange_body()}>
-                <ExchangeDemo />
-              </Cell>
-              <div className="grid flex-1 gap-x-6 gap-y-12 sm:grid-cols-2">
-                <Cell tone="paper" title={m.landing_trip_title()} body={m.landing_trip_body()}>
-                  <TripDemo />
-                </Cell>
-                <Cell tone="paper" title={m.landing_transfer_title()} body={m.landing_transfer_body()}>
-                  <TransferDemo />
-                </Cell>
-              </div>
-            </div>
+            <Cell
+              tone="paper"
+              className="lg:col-span-6 lg:self-start"
+              title={m.landing_transfer_title()}
+              body={m.landing_transfer_body()}
+            >
+              <TransferDemo />
+            </Cell>
           </div>
         </Section>
 
+        {/* Every AI feature that isn't a way to add sits here, beside the switches for what AI can see. */}
         <Section id="ai" className="bg-ink text-chalk [--ring-on:var(--color-chalk)] dark:bg-ink-deep">
-          <ChapterHead id="ai" tone="ink" title={m.landing_ai_title()} lead={m.landing_ai_lead()} />
+          <div className={grid}>
+            <div className="lg:col-span-7">
+              <h2 id="ai-title" className={cn(h2, "max-w-[16ch]")}>
+                {m.landing_ai_title()}
+              </h2>
+              <p className={cn("mt-6 max-w-[36rem] text-[17px] leading-relaxed text-pretty", quiet.ink)}>
+                {m.landing_ai_lead()}
+              </p>
+            </div>
+            <Cell tone="ink" className="lg:col-span-5" title={m.landing_recap_title()} body={m.landing_recap_body()}>
+              <RecapDemo />
+            </Cell>
+          </div>
           <div className={cn(grid, "mt-14 lg:mt-20")}>
             <Cell
               tone="ink"
@@ -363,29 +346,38 @@ function Hero({ demo }: { demo: boolean }) {
           </h1>
 
           <div className="mt-8 grid gap-x-12 gap-y-8 lg:mt-6 lg:grid-cols-12 lg:items-center">
-            <div className="lg:col-span-6">
-              <p className="max-w-[34rem] text-lg leading-relaxed text-pretty text-subtle-foreground">
-                {m.landing_hero_lead()}
-              </p>
-              <p className="mt-3 text-sm text-muted-foreground">
-                {m.landing_hero_licence()}
+            <p className="max-w-[34rem] text-lg leading-relaxed text-pretty text-subtle-foreground lg:col-span-6">
+              {m.landing_hero_lead()}
+            </p>
+            {/* The facts sit under the buttons, where a visitor looks for the catch before signing up. */}
+            <div className="flex flex-col gap-4 lg:col-span-6 lg:items-end">
+              <div className="flex flex-wrap gap-3 lg:justify-end">
+                <a href={SIGN_UP} className={cn(button, solid)}>
+                  {m.landing_create_account()}
+                </a>
+                <a href={SOURCE} className={cn(button, outline)}>
+                  <GithubLogoIcon className="size-[18px]" aria-hidden="true" /> {m.landing_view_on_github()}
+                </a>
+              </div>
+              <ul className="flex flex-wrap gap-x-5 gap-y-1.5 text-sm text-subtle-foreground lg:justify-end">
+                {HERO_FACTS.map((f) => (
+                  <li key={f()} className="flex items-center gap-1.5">
+                    <CheckIcon
+                      weight="bold"
+                      className="size-3.5 shrink-0 text-peacock dark:text-marigold"
+                      aria-hidden="true"
+                    />
+                    {f()}
+                  </li>
+                ))}
                 {demo && (
-                  <>
-                    {" "}
+                  <li>
                     <a href={DEMO_SIGN_IN} className={cn(textLink, "whitespace-nowrap")}>
                       {m.landing_try_demo()}
                     </a>
-                  </>
+                  </li>
                 )}
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-3 lg:col-span-6 lg:justify-self-end">
-              <a href={SIGN_UP} className={cn(button, solid)}>
-                {m.landing_create_account()}
-              </a>
-              <a href={SOURCE} className={cn(button, outline)}>
-                <GithubLogoIcon className="size-[18px]" aria-hidden="true" /> {m.landing_view_on_github()}
-              </a>
+              </ul>
             </div>
           </div>
 
@@ -408,14 +400,17 @@ npx wrangler r2 bucket create kosha-avatars
 npx wrangler r2 bucket create kosha-attachments
 npm run deploy`
 
+/** What the first screen promises beside the lead. The closing list repeats the first word for word. */
+const HERO_FACTS = [m.landing_fact_no_bank, m.landing_fact_currency]
+
 /** What comes with an account at getkosha.app, each line true of the app today. */
 const FACTS = [
+  m.landing_fact_no_bank,
+  m.landing_fact_export,
   m.landing_fact_passkeys,
   m.landing_fact_offline,
-  m.landing_fact_import,
-  m.landing_fact_export,
   m.landing_fact_ai,
-  m.landing_fact_currency,
+  () => m.landing_fact_languages({ count: locales.length }),
 ]
 
 const footerLink = "inline-flex min-h-11 items-center rounded-sm hover:text-paper"

@@ -8,10 +8,9 @@
   "landing_try_demo": "デモアカウントを試す",
   "landing_ai_badge": "AI",
   "landing_hero_title": "{#first}サッと記録、{/first}{#second}ちゃんと把握。{/second}",
-  "landing_hero_lead": "支払ったらその場でスマホに記録。机に向かったら、今月の様子を確かめて、銀行の明細と照合できます。",
-  "landing_hero_licence": "無料でオープンソース、MITライセンスです。",
+  "landing_hero_lead": "Koshaは無料のオープンソース家計簿アプリです。支払いはスマホで数秒で記録。机に向かったら、今月がいつもの月と比べてどうかを確かめられます。",
   "landing_pocket_title": "先週の記録にかかったのは{seconds}秒",
-  "landing_pocket_lead": "{count}件の支払いを、その都度、ほとんど5秒ほどで記録。記憶が新しいうちに使ったお金に気づけて、あとでまとめて入力しなくても月の合計が正確になります。",
+  "landing_pocket_lead": "{count}件の支払いを、その都度記録。記憶が新しいうちに使ったお金に気づけて、月末にまとめて思い出す必要もありません。",
   "landing_quick_add_title": "1行で入力",
   "landing_quick_add_body": "金額、日付、口座をKoshaが読み取り、残りはこれまでの入力から推測します。",
   "landing_sentence_title": "文章でも入力",
@@ -33,19 +32,13 @@
   "landing_attention_title": "対応が必要なものを片付ける",
   "landing_attention_body": "支払うべきカード、支払い済みにしていない請求、いつもより多いカテゴリ、古くなった評価額をKoshaが知らせます。",
   "landing_statements_title": "月に一度、銀行と照合",
-  "landing_statements_lead": "最初に1年分の明細をインポートすれば、初日からいつもの月がわかります。その後は毎月、一致する取引にチェックを付け、足りないものを一覧にします。",
+  "landing_statements_lead": "Koshaが銀行のログイン情報を求めることはありません。最初に1年分の明細をインポートすれば、初日からいつもの月がわかります。その後は毎月、一致する取引にチェックを付け、足りないものを一覧にします。",
   "landing_import_title": "すべての明細をまとめてインポート",
   "landing_import_body": "CSV、OFX、QFXファイルに対応し、AIがオンならPDFも読み取ります。銀行の摘要は、見てわかる取引先名に変わります。",
-  "landing_spotted_title": "未登録の請求を見つける",
-  "landing_spotted_body": "一定の間隔で支払っている取引先をKoshaが見つけます。定期にすれば、過去の支払いもまとめられます。",
   "landing_reconcile_title": "合わない理由を突き止める",
   "landing_reconcile_body": "差額がゼロにならないときは、数字の入れ違い、符号の誤り、重複など、経理担当者がするようなチェックをKoshaが行います。この例を直してみてください。",
   "landing_accounts_title": "すべての口座をひとつの純資産に",
   "landing_accounts_lead": "銀行口座、現金、カード、投資を、それぞれの通貨のまま毎日の為替レートで合計します。カードは未払い残高を、投資は投入額に最新の評価損益を加えた額を計上します。",
-  "landing_exchange_title": "両替のコストを確認",
-  "landing_exchange_body": "手数料に、その日の市場レートと比べて業者のレートで損した分を足して計算します。",
-  "landing_trip_title": "旅行の費用を確認",
-  "landing_trip_body": "旅行の日程でイベントを作成すると、その期間に追加した取引がまとめられます。",
   "landing_transfer_title": "お金を移動",
   "landing_transfer_body": "口座間の振替は支出として計上されません。",
   "landing_ai_title": "自分のキーで使うAI",
@@ -59,12 +52,13 @@
   "landing_closing_lead": "KoshaはMITライセンスの無料オープンソースです。ここで使うことも、Cloudflareで自分専用のKoshaを動かすこともできます。",
   "landing_hosted_title": "getkosha.app を使う",
   "landing_hosted_body": "ブラウザでもスマホでも、あなたのアカウントで。ストアからのインストールは不要です。",
+  "landing_fact_no_bank": "銀行のログイン情報は不要",
   "landing_fact_passkeys": "パスキーと2段階認証コード",
   "landing_fact_offline": "スマホでオフラインでも取引を追加",
-  "landing_fact_import": "CSV、OFX、QFXファイルをインポート",
   "landing_fact_export": "いつでもCSVやJSONにエクスポート",
   "landing_fact_ai": "AIは自分のキーでのみ使用",
   "landing_fact_currency": "どんな通貨も毎日のレートで",
+  "landing_fact_languages": "{count}言語に対応",
   "landing_self_host_title": "自分でホストする",
   "landing_self_host_body": "Cloudflare Worker 1つとD1データベースで動きます。READMEには、Cashewのバックアップをインポートするスクリプトを含め、すべての手順が載っています。",
   "landing_self_host_commands_label": "自分専用のKoshaをデプロイするコマンド",
@@ -78,8 +72,6 @@
   "landing_cat_transit": "交通",
   "landing_cat_entertainment": "娯楽",
   "landing_cat_salary": "給与",
-  "landing_cat_travel": "旅行",
-  "landing_cat_other": "その他",
   "landing_import_files_label": "明細ファイル",
   "landing_import_accounts": "口座",
   "landing_import_accounts_value": "4口座（口座番号で判別）",
@@ -111,26 +103,6 @@
   "landing_reconcile_tick_note": "明細にあるものにチェックを付けます。",
   "landing_reconcile_adds_up": "一致しました。",
   "landing_reconcile_finish": "照合を完了",
-  "landing_spotted_every_month": "毎月",
-  "landing_spotted_payments": [
-    {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
-      "match": {
-        "countPlural=other": "支払い{count}件"
-      }
-    }
-  ],
-  "landing_spotted_made": [
-    {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
-      "match": {
-        "countPlural=other": "過去{count}件の支払いとあわせて定期に登録しました"
-      }
-    }
-  ],
-  "landing_spotted_make": "定期にする",
   "landing_networth_group_bank": "銀行・現金",
   "landing_networth_group_credit": "クレジットカード",
   "landing_networth_group_investments": "投資",
@@ -142,29 +114,11 @@
   "landing_networth_bank_meta": "銀行、{currency}",
   "landing_networth_investment_meta": "投資、{currency}",
   "landing_networth_rates": "{rate}、今日レート更新",
-  "landing_exchange_route": "{from} → {to}",
-  "landing_exchange_when": "{day}、Wise経由",
-  "landing_exchange_sent": "送金額",
-  "landing_exchange_fee": "手数料",
-  "landing_exchange_received": "受取額",
-  "landing_exchange_rate": "レート",
-  "landing_exchange_market": "市場",
-  "landing_exchange_cost": "コスト",
   "landing_transfer_linked": "上の行と紐付け済み",
   "landing_transfer_label": "振替",
   "landing_transfer_fee": "振替手数料",
   "landing_transfer_fee_counts": "支出として計上",
   "landing_transfer_note": "カードの支払いや貯蓄への移動は、収入にも支出にも含まれません。計上されるのは手数料だけです。",
-  "landing_trip_name": "リスボン",
-  "landing_trip_entries": [
-    {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
-      "match": {
-        "countPlural=other": "{count}件の取引"
-      }
-    }
-  ],
   "landing_ai_share_payee": "取引先名",
   "landing_ai_share_amount": "金額",
   "landing_ai_share_date": "正確な日付",

@@ -8,10 +8,9 @@
   "landing_try_demo": "데모 계정 써 보기",
   "landing_ai_badge": "AI",
   "landing_hero_title": "{#first}쓴 만큼 적고,{/first} {#second}간 곳은 알고.{/second}",
-  "landing_hero_lead": "결제할 때마다 휴대폰으로 바로 기록하세요. 책상 앞에서는 이번 달 흐름을 확인하고 은행 내역과 대조해 보세요.",
-  "landing_hero_licence": "MIT 라이선스의 무료 오픈소스예요.",
+  "landing_hero_lead": "Kosha는 무료 오픈소스 가계부예요. 결제할 때마다 휴대폰으로 몇 초 만에 기록하고, 책상 앞에서는 이번 달이 평소와 비교해 어떤지 확인하세요.",
   "landing_pocket_title": "지난주 기록에 걸린 시간 {seconds}초",
-  "landing_pocket_lead": "결제 {count}건을 그때그때 기록했고, 대부분 5초 정도면 충분했어요. 쓴 돈을 기억이 생생할 때 알아차리고, 나중에 짜 맞출 필요 없이 한 달 합계가 정확해요.",
+  "landing_pocket_lead": "결제 {count}건을 그때그때 기록했어요. 쓴 돈을 기억이 생생할 때 알아차리고, 월말에 짜 맞출 필요가 없어요.",
   "landing_quick_add_title": "한 줄로 입력",
   "landing_quick_add_body": "Kosha가 금액, 날짜, 계좌를 읽고, 나머지는 지난 입력을 바탕으로 추측해요.",
   "landing_sentence_title": "말하듯 설명",
@@ -33,19 +32,13 @@
   "landing_attention_title": "확인할 일 정리",
   "landing_attention_body": "갚아야 할 카드, 결제 완료로 표시하지 않은 고정비, 평소보다 많이 쓴 카테고리, 오래된 평가액을 Kosha가 알려 줘요.",
   "landing_statements_title": "한 달에 한 번, 은행과 대조",
-  "landing_statements_lead": "처음에 1년 치 명세서를 가져오면 첫날부터 평소 한 달이 어떤지 알 수 있어요. 그 뒤로는 매달 일치하는 거래를 체크하고 빠진 거래를 보여 줘요.",
+  "landing_statements_lead": "Kosha는 은행 로그인 정보를 묻지 않아요. 1년 치 명세서를 가져오면 첫날부터 평소 한 달이 어떤지 알 수 있어요. 그 뒤로는 매달 일치하는 거래를 체크하고 빠진 거래를 보여 줘요.",
   "landing_import_title": "모든 명세서를 한 번에 가져오기",
   "landing_import_body": "Kosha는 CSV, OFX, QFX 파일을 읽고, AI를 켜면 PDF도 읽어요. 알아보기 힘든 은행 문구는 익숙한 거래처 이름으로 바뀌어요.",
-  "landing_spotted_title": "등록하지 않은 고정비 찾기",
-  "landing_spotted_body": "일정한 주기로 결제하는 거래처를 Kosha가 찾아내요. 정기 거래로 만들면 지난 결제도 함께 묶여요.",
   "landing_reconcile_title": "잔액이 맞지 않는 이유 찾기",
   "landing_reconcile_body": "차액이 0이 아니면 Kosha가 자릿수 바뀜, 부호 오류, 중복 같은 장부 점검을 해 줘요. 이 차액을 직접 해결해 보세요.",
   "landing_accounts_title": "모든 계좌를 하나의 순자산으로",
   "landing_accounts_lead": "Kosha는 은행 계좌, 현금, 카드, 투자를 각자의 통화 그대로 매일 환율로 합산해요. 카드는 미결제 금액을, 투자는 투자 원금에 최근 손익을 더해 계산해요.",
-  "landing_exchange_title": "환전 비용 확인",
-  "landing_exchange_body": "Kosha는 수수료에 그날 시장 환율 대비 업체 환율로 손해 본 금액을 더해 보여 줘요.",
-  "landing_trip_title": "여행 경비 확인",
-  "landing_trip_body": "여행 날짜로 이벤트를 만들면, 그 기간에 추가한 거래가 이벤트에 들어가요.",
   "landing_transfer_title": "계좌 간 이체",
   "landing_transfer_body": "내 계좌끼리의 이체는 지출로 계산되지 않아요.",
   "landing_ai_title": "내 키로 쓰는 AI",
@@ -59,12 +52,13 @@
   "landing_closing_lead": "Kosha는 MIT 라이선스의 무료 오픈소스예요. 여기서 쓰거나 Cloudflare에서 직접 운영하세요.",
   "landing_hosted_title": "getkosha.app 사용",
   "landing_hosted_body": "브라우저와 휴대폰에서 쓰는 내 계정. 앱 스토어에서 설치할 필요 없어요.",
+  "landing_fact_no_bank": "은행 로그인 필요 없음",
   "landing_fact_passkeys": "패스키와 2단계 인증 코드",
   "landing_fact_offline": "휴대폰에서 오프라인으로 거래 추가",
-  "landing_fact_import": "CSV, OFX, QFX 파일 가져오기",
   "landing_fact_export": "언제든 CSV나 JSON으로 내보내기",
   "landing_fact_ai": "AI는 내 키로만",
   "landing_fact_currency": "모든 통화, 매일 환율 적용",
+  "landing_fact_languages": "{count}개 언어 지원",
   "landing_self_host_title": "직접 운영하기",
   "landing_self_host_body": "Cloudflare Worker 하나와 D1 데이터베이스면 충분해요. README에 Cashew 백업을 가져오는 스크립트를 포함해 모든 단계가 나와 있어요.",
   "landing_self_host_commands_label": "직접 배포하는 명령어",
@@ -78,8 +72,6 @@
   "landing_cat_transit": "교통",
   "landing_cat_entertainment": "여가",
   "landing_cat_salary": "급여",
-  "landing_cat_travel": "여행",
-  "landing_cat_other": "기타",
   "landing_import_files_label": "명세서 파일",
   "landing_import_accounts": "계좌",
   "landing_import_accounts_value": "계좌번호 기준 4개",
@@ -111,26 +103,6 @@
   "landing_reconcile_tick_note": "명세서에 있는 거래를 체크하세요.",
   "landing_reconcile_adds_up": "잔액이 맞아요.",
   "landing_reconcile_finish": "대조 마치기",
-  "landing_spotted_every_month": "매월",
-  "landing_spotted_payments": [
-    {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
-      "match": {
-        "countPlural=other": "결제 {count}건"
-      }
-    }
-  ],
-  "landing_spotted_made": [
-    {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
-      "match": {
-        "countPlural=other": "지난 결제 {count}건과 함께 정기 거래가 됐어요"
-      }
-    }
-  ],
-  "landing_spotted_make": "정기 거래로 만들기",
   "landing_networth_group_bank": "은행 및 현금",
   "landing_networth_group_credit": "신용카드",
   "landing_networth_group_investments": "투자",
@@ -142,29 +114,11 @@
   "landing_networth_bank_meta": "은행, {currency}",
   "landing_networth_investment_meta": "투자, {currency}",
   "landing_networth_rates": "{rate}, 오늘 환율 업데이트됨",
-  "landing_exchange_route": "{from} → {to}",
-  "landing_exchange_when": "{day}, Wise 이용",
-  "landing_exchange_sent": "보낸 금액",
-  "landing_exchange_fee": "수수료",
-  "landing_exchange_received": "받은 금액",
-  "landing_exchange_rate": "환율",
-  "landing_exchange_market": "시장 환율",
-  "landing_exchange_cost": "비용",
   "landing_transfer_linked": "위 거래와 연결됨",
   "landing_transfer_label": "이체",
   "landing_transfer_fee": "이체 수수료",
   "landing_transfer_fee_counts": "지출로 계산돼요",
   "landing_transfer_note": "카드 대금 납부와 저축 이체는 수입과 지출에서 빠져요. 수수료만 지출로 계산돼요.",
-  "landing_trip_name": "리스본",
-  "landing_trip_entries": [
-    {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
-      "match": {
-        "countPlural=other": "거래 {count}건"
-      }
-    }
-  ],
   "landing_ai_share_payee": "거래처 이름",
   "landing_ai_share_amount": "금액",
   "landing_ai_share_date": "정확한 날짜",

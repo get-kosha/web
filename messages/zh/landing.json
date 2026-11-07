@@ -8,10 +8,9 @@
   "landing_try_demo": "试用演示账号",
   "landing_ai_badge": "AI",
   "landing_hero_title": "{#first}花了就记，{/first}{#second}心里有底。{/second}",
-  "landing_hero_lead": "付款时随手在手机上记一笔。坐到桌前，看看这个月过得怎么样，再和银行对一对账。",
-  "landing_hero_licence": "免费开源，采用 MIT 许可证。",
+  "landing_hero_lead": "Kosha 是一款免费、开源的记账应用。在手机上几秒钟就能记下一笔付款，坐到桌前再看看这个月和往常相比怎么样。",
   "landing_pocket_title": "上周只花了 {seconds} 秒",
-  "landing_pocket_lead": "{count} 笔付款，每笔都在发生时记下，大多只用了五秒左右。趁记忆犹新留意自己花了什么，月底的总数自然准确，不用事后东拼西凑。",
+  "landing_pocket_lead": "{count} 笔付款，每笔都在发生时记下。趁记忆犹新留意自己花了什么，月底也不用再东拼西凑。",
   "landing_quick_add_title": "一行输入",
   "landing_quick_add_body": "Kosha 读取金额、日期和账户，其余内容根据你以前的记录推测。",
   "landing_sentence_title": "或者直接描述",
@@ -33,19 +32,13 @@
   "landing_attention_title": "处理待办事项",
   "landing_attention_body": "Kosha 会提醒你：需要还款的信用卡、未标记已支付的账单、高于往常的分类，以及过期的市值。",
   "landing_statements_title": "每月一次，和银行对账",
-  "landing_statements_lead": "一开始导入一年的对账单，Kosha 从第一天起就了解你的往常月份。之后每个月，它会勾选匹配的交易并列出缺少的交易。",
+  "landing_statements_lead": "Kosha 从不索要你的网银登录信息。导入一年的对账单，Kosha 从第一天起就了解你的往常月份。之后每个月，它会勾选匹配的交易并列出缺少的交易。",
   "landing_import_title": "一次导入所有对账单",
   "landing_import_body": "Kosha 可读取 CSV、OFX 和 QFX 文件，开启 AI 后还能读取 PDF。银行文本会变成你认得的交易对象。",
-  "landing_spotted_title": "发现还没设置的账单",
-  "landing_spotted_body": "Kosha 会识别你按固定规律付款的交易对象。设为定期后，它过去的付款都会归入其中。",
   "landing_reconcile_title": "找出对不上的原因",
   "landing_reconcile_body": "差额不为零时，Kosha 会像会计一样排查，比如数字颠倒、正负号错误或重复记录。试着修正这一笔。",
   "landing_accounts_title": "所有账户汇成一个净资产",
   "landing_accounts_lead": "Kosha 按每日汇率汇总银行账户、现金、信用卡和投资，各自保留原币种。信用卡计入欠款，投资计入投入本金加最新收益。",
-  "landing_exchange_title": "看看换汇花了多少",
-  "landing_exchange_body": "Kosha 把手续费与服务商汇率相对当天市场汇率的损失相加。",
-  "landing_trip_title": "看看一趟旅行花了多少",
-  "landing_trip_body": "用旅行日期创建一个事件，该时间范围内的新交易都会归入其中。",
   "landing_transfer_title": "转账",
   "landing_transfer_body": "你的账户之间的转账永远不计入支出。",
   "landing_ai_title": "AI 使用你自己的密钥",
@@ -59,12 +52,13 @@
   "landing_closing_lead": "Kosha 免费开源，采用 MIT 许可证。可以在这里使用，也可以在 Cloudflare 上运行你自己的实例。",
   "landing_hosted_title": "使用 getkosha.app",
   "landing_hosted_body": "你的账号，在浏览器和手机上都能用。无需从应用商店安装。",
+  "landing_fact_no_bank": "无需网银登录信息",
   "landing_fact_passkeys": "通行密钥和双重验证码",
   "landing_fact_offline": "在手机上离线添加交易",
-  "landing_fact_import": "导入 CSV、OFX 和 QFX 文件",
   "landing_fact_export": "随时导出为 CSV 或 JSON",
   "landing_fact_ai": "AI 仅使用你自己的密钥",
   "landing_fact_currency": "任意货币，按每日汇率",
+  "landing_fact_languages": "支持 {count} 种语言",
   "landing_self_host_title": "运行你自己的实例",
   "landing_self_host_body": "一个 Cloudflare Worker 加一个 D1 数据库。README 写有每一步，还包括一个导入 Cashew 备份的脚本。",
   "landing_self_host_commands_label": "部署你自己实例的命令",
@@ -78,8 +72,6 @@
   "landing_cat_transit": "交通",
   "landing_cat_entertainment": "娱乐",
   "landing_cat_salary": "工资",
-  "landing_cat_travel": "旅行",
-  "landing_cat_other": "其他",
   "landing_import_files_label": "对账单文件",
   "landing_import_accounts": "账户",
   "landing_import_accounts_value": "4 个，按账户号码识别",
@@ -111,26 +103,6 @@
   "landing_reconcile_tick_note": "勾选对账单上有的交易。",
   "landing_reconcile_adds_up": "对上了。",
   "landing_reconcile_finish": "完成对账",
-  "landing_spotted_every_month": "每月",
-  "landing_spotted_payments": [
-    {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
-      "match": {
-        "countPlural=other": "{count} 笔付款"
-      }
-    }
-  ],
-  "landing_spotted_made": [
-    {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
-      "match": {
-        "countPlural=other": "已设为定期，包含过去的 {count} 笔付款"
-      }
-    }
-  ],
-  "landing_spotted_make": "设为定期",
   "landing_networth_group_bank": "银行与现金",
   "landing_networth_group_credit": "信用卡",
   "landing_networth_group_investments": "投资",
@@ -142,29 +114,11 @@
   "landing_networth_bank_meta": "银行，{currency}",
   "landing_networth_investment_meta": "投资，{currency}",
   "landing_networth_rates": "{rate}，汇率今天已更新",
-  "landing_exchange_route": "{from} 至 {to}",
-  "landing_exchange_when": "{day}，通过 Wise",
-  "landing_exchange_sent": "转出",
-  "landing_exchange_fee": "手续费",
-  "landing_exchange_received": "到账",
-  "landing_exchange_rate": "汇率",
-  "landing_exchange_market": "市场汇率",
-  "landing_exchange_cost": "成本",
   "landing_transfer_linked": "与上一行关联",
   "landing_transfer_label": "转账",
   "landing_transfer_fee": "转账手续费",
   "landing_transfer_fee_counts": "计入支出",
   "landing_transfer_note": "还信用卡和转入储蓄不计入收入和支出，只有手续费计入。",
-  "landing_trip_name": "里斯本",
-  "landing_trip_entries": [
-    {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
-      "match": {
-        "countPlural=other": "{count} 笔交易"
-      }
-    }
-  ],
   "landing_ai_share_payee": "交易对象名称",
   "landing_ai_share_amount": "金额",
   "landing_ai_share_date": "具体日期",

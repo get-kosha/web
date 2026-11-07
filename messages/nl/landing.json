@@ -8,10 +8,9 @@
   "landing_try_demo": "Probeer het demo-account",
   "landing_ai_badge": "AI",
   "landing_hero_title": "{#first}Uitgave genoteerd.{/first} {#second}Maand gecontroleerd.{/second}",
-  "landing_hero_lead": "Voeg elke betaling toe op je telefoon terwijl je betaalt. Zie aan je bureau hoe de maand gaat en vergelijk hem met je bank.",
-  "landing_hero_licence": "Gratis en open source, onder de MIT-licentie.",
+  "landing_hero_lead": "Kosha is een gratis, open-source app om je uitgaven bij te houden. Voeg elke betaling in een paar seconden toe op je telefoon en zie aan je bureau hoe de maand gaat vergeleken met een gebruikelijke maand.",
   "landing_pocket_title": "Vorige week kostte {seconds} seconden",
-  "landing_pocket_lead": "{count} betalingen, elk genoteerd op het moment zelf, de meeste in ongeveer vijf seconden. Je merkt wat je uitgeeft terwijl het nog vers is, en de totalen van de maand kloppen zonder dat je later iets bij elkaar hoeft te puzzelen.",
+  "landing_pocket_lead": "{count} betalingen, elk genoteerd op het moment zelf. Je merkt wat je uitgeeft terwijl het nog vers is, en aan het eind van de maand hoef je niets bij elkaar te puzzelen.",
   "landing_quick_add_title": "Typ het in één regel",
   "landing_quick_add_body": "Kosha leest het bedrag, de datum en de rekening, en raadt de rest op basis van wat je eerder invoerde.",
   "landing_sentence_title": "Of beschrijf het",
@@ -33,19 +32,13 @@
   "landing_attention_title": "Werk weg wat aandacht nodig heeft",
   "landing_attention_body": "Kosha signaleert een creditcard die afgelost moet worden, een vaste last die niet als betaald is gemarkeerd, een categorie boven het gebruikelijke en een waarde die verouderd is.",
   "landing_statements_title": "Eén keer per maand: vergelijk met de bank",
-  "landing_statements_lead": "Importeer om te beginnen een jaar aan afschriften, dan kent Kosha vanaf dag één je gebruikelijke maand. Daarna vinkt het elke maand af wat klopt en toont het wat er ontbreekt.",
+  "landing_statements_lead": "Kosha vraagt nooit om je inloggegevens van de bank. Importeer een jaar aan afschriften en Kosha kent vanaf dag één je gebruikelijke maand. Daarna vinkt het elke maand af wat klopt en toont het wat er ontbreekt.",
   "landing_import_title": "Importeer alle afschriften in één keer",
   "landing_import_body": "Kosha leest CSV-, OFX- en QFX-bestanden, en pdf's als AI aanstaat. Banktekst wordt omgezet in tegenpartijen die je herkent.",
-  "landing_spotted_title": "Vind de vaste lasten die je nog niet hebt ingesteld",
-  "landing_spotted_body": "Kosha herkent tegenpartijen die je in een vast ritme betaalt. Maak er een terugkerend en de eerdere betalingen worden eronder geplaatst.",
   "landing_reconcile_title": "Ontdek waarom het niet klopt",
   "landing_reconcile_body": "Als het verschil niet nul is, doet Kosha de controles van een boekhouder, zoals omgedraaide cijfers, een verkeerd teken of een dubbele transactie. Probeer deze maar eens op te lossen.",
   "landing_accounts_title": "Elke rekening in één vermogen",
   "landing_accounts_lead": "Kosha telt bankrekeningen, contant geld, creditcards en beleggingen bij elkaar op, elk in de eigen valuta, tegen dagelijkse wisselkoersen. Creditcards tellen wat je verschuldigd bent, en beleggingen tellen wat je erin stopte plus het laatste rendement.",
-  "landing_exchange_title": "Zie wat een valutawissel kostte",
-  "landing_exchange_body": "Kosha telt de kosten op bij wat de koers van de aanbieder die dag verloor ten opzichte van de marktkoers.",
-  "landing_trip_title": "Zie wat een reis kostte",
-  "landing_trip_body": "Maak een evenement met de data van je reis, en nieuwe transacties in die periode horen er vanzelf bij.",
   "landing_transfer_title": "Geld verplaatsen",
   "landing_transfer_body": "Overboekingen tussen je eigen rekeningen tellen nooit als uitgaven.",
   "landing_ai_title": "AI met je eigen sleutel",
@@ -59,12 +52,13 @@
   "landing_closing_lead": "Kosha is gratis en open source onder de MIT-licentie. Gebruik het hier, of draai je eigen installatie op Cloudflare.",
   "landing_hosted_title": "Gebruik getkosha.app",
   "landing_hosted_body": "Je account, in je browser en op je telefoon. Niets te installeren uit een app store.",
+  "landing_fact_no_bank": "Geen bankinlog nodig",
   "landing_fact_passkeys": "Passkeys en tweestapsverificatie",
   "landing_fact_offline": "Offline transacties toevoegen op je telefoon",
-  "landing_fact_import": "CSV-, OFX- en QFX-bestanden importeren",
   "landing_fact_export": "Altijd exporteren naar CSV of JSON",
   "landing_fact_ai": "AI alleen met je eigen sleutel",
   "landing_fact_currency": "Elke valuta, tegen dagkoersen",
+  "landing_fact_languages": "Beschikbaar in {count} talen",
   "landing_self_host_title": "Draai je eigen installatie",
   "landing_self_host_body": "Eén Cloudflare Worker en een D1-database. In de README staat elke stap, inclusief een script dat een Cashew-back-up importeert.",
   "landing_self_host_commands_label": "Commando's om je eigen installatie te deployen",
@@ -78,8 +72,6 @@
   "landing_cat_transit": "Vervoer",
   "landing_cat_entertainment": "Uitgaan & vrije tijd",
   "landing_cat_salary": "Salaris",
-  "landing_cat_travel": "Reizen",
-  "landing_cat_other": "Overig",
   "landing_import_files_label": "Afschriftbestanden",
   "landing_import_accounts": "Rekeningen",
   "landing_import_accounts_value": "4, op rekeningnummer",
@@ -111,28 +103,6 @@
   "landing_reconcile_tick_note": "Vink af wat op het afschrift staat.",
   "landing_reconcile_adds_up": "Het klopt.",
   "landing_reconcile_finish": "Afstemming afronden",
-  "landing_spotted_every_month": "Elke maand",
-  "landing_spotted_payments": [
-    {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
-      "match": {
-        "countPlural=one": "{count} betaling",
-        "countPlural=other": "{count} betalingen"
-      }
-    }
-  ],
-  "landing_spotted_made": [
-    {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
-      "match": {
-        "countPlural=one": "Nu terugkerend, met de eerdere betaling",
-        "countPlural=other": "Nu terugkerend, met de {count} eerdere betalingen"
-      }
-    }
-  ],
-  "landing_spotted_make": "Terugkerend maken",
   "landing_networth_group_bank": "Bank en contant",
   "landing_networth_group_credit": "Creditcards",
   "landing_networth_group_investments": "Beleggingen",
@@ -144,30 +114,11 @@
   "landing_networth_bank_meta": "Bank, {currency}",
   "landing_networth_investment_meta": "Belegging, {currency}",
   "landing_networth_rates": "{rate}, koersen vandaag bijgewerkt",
-  "landing_exchange_route": "{from} naar {to}",
-  "landing_exchange_when": "{day}, via Wise",
-  "landing_exchange_sent": "Verstuurd",
-  "landing_exchange_fee": "Kosten",
-  "landing_exchange_received": "Ontvangen",
-  "landing_exchange_rate": "Koers",
-  "landing_exchange_market": "Markt",
-  "landing_exchange_cost": "Totale kosten",
   "landing_transfer_linked": "Gekoppeld aan de regel erboven",
   "landing_transfer_label": "Overboeking",
   "landing_transfer_fee": "Overboekingskosten",
   "landing_transfer_fee_counts": "Telt als uitgave",
   "landing_transfer_note": "Een creditcard aflossen en geld naar je spaarrekening zetten blijven buiten inkomsten en uitgaven. Alleen de kosten tellen mee.",
-  "landing_trip_name": "Lissabon",
-  "landing_trip_entries": [
-    {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
-      "match": {
-        "countPlural=one": "{count} transactie",
-        "countPlural=other": "{count} transacties"
-      }
-    }
-  ],
   "landing_ai_share_payee": "Namen van tegenpartijen",
   "landing_ai_share_amount": "Bedragen",
   "landing_ai_share_date": "Exacte datums",
