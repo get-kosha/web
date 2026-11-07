@@ -1120,15 +1120,18 @@ export async function fromAccessToken(token: string, audience: string[]): Promis
   if (claims.cnf || typeof claims.sub !== "string") return null
   const client = String(claims.azp)
   // Disconnecting an app in Settings deletes its consent, so its tokens stop working at once. Kosha's own apps
-  // skip consent; signing out revokes their refresh token instead.
-  // ponytail: a phone that signs out keeps a working access token (an hour at most) while another phone of
-  // the same user stays signed in; checking the token's session would close that.
-  const live = APP_CLIENTS.has(client)
-    ? `SELECT 1 FROM "oauthRefreshToken" WHERE "userId" = ? AND "clientId" = ? AND "revoked" IS NULL AND "expiresAt" > ?`
+  // skip consent; signing out revokes their refresh token instead, so a token works while the sign-in it came
+  // from (its session, `sid`) still has a live refresh token.
+  // ponytail: a token without `sid` (its browser session was deleted since) falls back to any live refresh token
+  // of this user and app, so for up to an hour it outlives a sign-out on another phone.
+  const app = APP_CLIENTS.has(client)
+  const sid = typeof claims.sid === "string" ? claims.sid : null
+  const live = app
+    ? `SELECT 1 FROM "oauthRefreshToken" WHERE "userId" = ? AND "clientId" = ? AND "revoked" IS NULL AND "expiresAt" > ?${sid ? ` AND "sessionId" = ?` : ""}`
     : `SELECT 1 FROM "oauthConsent" WHERE "userId" = ? AND "clientId" = ?`
   const ok = await db()
     .prepare(live)
-    .bind(claims.sub, client, ...(APP_CLIENTS.has(client) ? [new Date().toISOString()] : []))
+    .bind(claims.sub, client, ...(app ? [new Date().toISOString(), ...(sid ? [sid] : [])] : []))
     .first()
   if (!ok) return null
   const scopes = String(claims.scope ?? "").split(" ")
