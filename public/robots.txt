@@ -1,3 +1,10 @@
 # https://www.robotstxt.org/robotstxt.html
 User-agent: *
-Disallow:
+Allow: /
+Allow: /api/v1/docs
+Allow: /api/v1/openapi.json
+Disallow: /api/
+Disallow: /mcp
+Disallow: /consent
+
+Sitemap: https://getkosha.app/sitemap.xml

@@ -1,0 +1,34 @@
+# Kosha
+
+> Kosha is a free, open-source (MIT) personal finance tracker for every account you have, in any currency. Add each payment in a few seconds on your phone, then see where the month went and check it against your bank on a desktop. It runs at https://getkosha.app, and anyone can host their own copy on Cloudflare Workers.
+
+Kosha keeps bank accounts, cash, credit cards and investments in one place. Totals convert at daily exchange rates, and net worth counts what a credit card owes and what an investment has gained. Each person sees only their own data. Sign-in uses a password, a passkey or Google, with optional two-factor codes.
+
+Main features:
+
+- One-line entry such as `12.50 groceries yesterday`, which fills in the amount, category, date and account.
+- The current month: spending so far against your usual pace, a projection to the month's end, and bills still to pay.
+- Subscriptions and bills as schedules, recorded when they fall due.
+- Transfers and currency exchange between your own accounts, which never count as spending.
+- Tags and events (such as a trip) to see what something cost in total.
+- Bank statement import (CSV, OFX, QFX, and PDF with AI) and reconciliation, with checks that explain a difference.
+- Receipts and payslips attached to transactions.
+- Optional AI with the user's own provider key: auto-categorise, natural-language add, receipt scanning, a monthly recap and Ask Kosha. Users choose which fields AI may see.
+- A REST API and an MCP server, so assistants such as Claude, ChatGPT and Cursor can read and add transactions.
+
+## Docs
+
+- [README](https://github.com/amruthpillai/kosha/blob/main/README.md): features, running it locally and deploying your own copy
+- [API reference](https://getkosha.app/api/v1/docs): the REST API under /api/v1, authenticated with API keys from Settings › API & MCP
+- [OpenAPI document](https://getkosha.app/api/v1/openapi.json): the same API as OpenAPI JSON
+- MCP server: https://getkosha.app/mcp (OAuth 2.1 with dynamic client registration; every REST operation is also an MCP tool)
+
+## Policies
+
+- [Privacy policy](https://getkosha.app/privacy): what the hosted service stores and which outside services it uses
+- [Terms of service](https://getkosha.app/terms)
+- [MIT licence](https://github.com/amruthpillai/kosha/blob/main/LICENSE)
+
+## Optional
+
+- [Source code](https://github.com/amruthpillai/kosha)

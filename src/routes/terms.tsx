@@ -1,8 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { LegalPage, MAINTAINER, SOURCE } from "@/components/legal"
+import { publicHead } from "@/lib/core"
 
 export const Route = createFileRoute("/terms")({
-  head: () => ({ meta: [{ title: "Terms of service · Kosha" }] }),
+  head: () =>
+    publicHead("/terms", "Terms of service · Kosha", "The terms for using the hosted Kosha service at getkosha.app."),
   component: Terms,
 })
 

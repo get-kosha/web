@@ -17,6 +17,24 @@ export const isSystemCategory = (id: string) =>
   id === CORRECTION_CATEGORY || id === TRANSFER_CATEGORY || id === "transfer_fee"
 export const NEUTRAL_SQL = `('${CORRECTION_CATEGORY}', '${TRANSFER_CATEGORY}')`
 
+// ponytail: hard-coded production origin, so self-hosted copies share getkosha.app's canonical URLs and card image
+/** The public site's origin, for canonical URLs and share cards. */
+export const SITE = "https://getkosha.app"
+
+/** Title, description, canonical URL and share card text for a page anyone can open signed out. */
+export function publicHead(path: string, title: string, description: string) {
+  return {
+    meta: [
+      { title },
+      { name: "description", content: description },
+      { property: "og:title", content: title },
+      { property: "og:description", content: description },
+      { property: "og:url", content: SITE + path },
+    ],
+    links: [{ rel: "canonical", href: SITE + path }],
+  }
+}
+
 /**
  * The shared demo account (scripts/seed-demo.ts). Its password is public on purpose: anyone can sign in
  * and look around, and the server refuses every change it tries to make. It is known by its id, which

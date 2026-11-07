@@ -1,9 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { LegalPage, MAINTAINER, SOURCE } from "@/components/legal"
+import { publicHead } from "@/lib/core"
 
 // Each statement here describes what the code does today. Change it when the code changes.
 export const Route = createFileRoute("/privacy")({
-  head: () => ({ meta: [{ title: "Privacy policy · Kosha" }] }),
+  head: () =>
+    publicHead(
+      "/privacy",
+      "Privacy policy · Kosha",
+      "What Kosha stores about you, what it never does with your financial data, and which services it relies on."
+    ),
   component: Privacy,
 })
 

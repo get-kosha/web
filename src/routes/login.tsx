@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { signInOptions } from "@/lib/api"
 import { authClient } from "@/lib/auth-client"
-import { DEMO, safeReturn } from "@/lib/core"
+import { DEMO, publicHead, safeReturn } from "@/lib/core"
 
 export const Route = createFileRoute("/login")({
   // Loose: an app signing in through MCP OAuth adds a signed query that must reach the sign-in request.
@@ -20,7 +20,8 @@ export const Route = createFileRoute("/login")({
     error: z.string().optional().catch(undefined),
   }),
   loader: () => signInOptions(),
-  head: () => ({ meta: [{ title: "Sign in · Kosha" }] }),
+  // One canonical URL for every ?mode, ?returnTo and OAuth variant of this page.
+  head: () => publicHead("/login", "Sign in · Kosha", "Sign in to Kosha, or create a free account."),
   component: Login,
 })
 

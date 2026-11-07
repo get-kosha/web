@@ -3,6 +3,7 @@ import { HeadContent, Link, Outlet, Scripts, createRootRoute } from "@tanstack/r
 import { Toaster } from "@/components/ui/sonner"
 import { splashLinks } from "@/lib/splash"
 import { themeScript } from "@/lib/theme"
+import { SITE } from "@/lib/core"
 import appCss from "../styles.css?url"
 
 export const Route = createRootRoute({
@@ -11,8 +12,6 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
-      { name: "theme-color", media: "(prefers-color-scheme: light)", content: "#F6F6F4" },
-      { name: "theme-color", media: "(prefers-color-scheme: dark)", content: "#0B0B0C" },
       { name: "mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
@@ -27,11 +26,11 @@ export const Route = createRootRoute({
       { property: "og:site_name", content: "Kosha" },
       { property: "og:title", content: "Kosha" },
       { property: "og:description", content: "Personal finance, a few seconds at a time." },
-      // ponytail: hard-coded production origin, so self-hosted copies share getkosha.app's card image
-      { property: "og:url", content: "https://getkosha.app" },
-      { property: "og:image", content: "https://getkosha.app/og.png" },
+      { property: "og:url", content: SITE },
+      { property: "og:image", content: `${SITE}/og.png` },
       { property: "og:image:width", content: "1200" },
       { property: "og:image:height", content: "630" },
+      { property: "og:image:alt", content: "Kosha: personal finance, a few seconds at a time" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
@@ -57,6 +56,9 @@ export const Route = createRootRoute({
     <html lang="en" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        {/* Here, not in head(), which keeps one meta per name and would drop the light colour. */}
+        <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F6F6F4" />
+        <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0B0B0C" />
         <HeadContent />
       </head>
       <body className="antialiased">
