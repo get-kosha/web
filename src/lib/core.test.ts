@@ -461,6 +461,19 @@ assert.equal(aiFeatures({ ...on, ai_share_amount: "0" }, true).recap, false)
 assert.equal(aiFeatures({ ...on, ai_ask: "0" }, true).ask, false)
 console.log("ai redaction ok")
 
+// ---------- AI in statement import ----------
+
+// Reading a PDF needs nothing shared, so it stays on with every field hidden; only its own switch turns it off.
+const hideAll = { ai_share_amount: "0", ai_share_payee: "0", ai_share_date: "0" } as const
+assert.equal(aiFeatures({ ...on, ...hideAll }, true).statements, true)
+assert.equal(aiFeatures({ ...on, ai_statements: "0" }, true).statements, false)
+// A tidy-up reply cut off mid-object reads as nothing, so Kosha's own payee names stand.
+assert.equal(readJson('{"lines": [{"key": "tesco", "payee": '), null)
+assert.deepEqual(readJson('Here you go:\n```json\n{"lines": [{"key": "tesco", "payee": "Tesco"}]}\n```')?.lines, [
+  { key: "tesco", payee: "Tesco" },
+])
+console.log("ai statement import ok")
+
 // ---------- public API contract ----------
 
 import { OPERATIONS, matchRoute, openApiSpec, operations, parseQuery } from "./api-contract.ts"
