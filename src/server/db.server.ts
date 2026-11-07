@@ -6,6 +6,7 @@ import {
   monthlyCost,
   occurrencesBetween,
   parsePrefs,
+  remember,
   unixOf,
   type Materialized,
   type Rates,
@@ -232,21 +233,29 @@ async function settle(uid: string) {
   await DB.batch(writes)
 }
 
-// ponytail: one entry per user per isolate, never evicted; fine for a handful of users.
-const settled = new Map<string, { at: number; run: Promise<void> }>()
+type Settled = { at: number; run: Promise<void> }
+// Per isolate, so memory stays bounded however many users it serves: the least recently seen user is dropped first.
+const SETTLED_MAX = 1000
+const settled = new Map<string, Settled>()
 /**
  * Lazily settles a user's subscriptions at most every 10 minutes per isolate (no cron needed).
  * It is safe to run concurrently anywhere, because the (user_id, subscription_id, due_day) index makes inserts idempotent.
  */
 export function ensureSettled(uid: string, force = false) {
   const last = settled.get(uid)
-  if (!force && last && Date.now() - last.at <= 600_000) return last.run
-  const run = settle(uid).catch((e) => {
-    settled.delete(uid)
-    throw e
-  })
-  settled.set(uid, { at: Date.now(), run })
-  return run
+  if (!force && last && Date.now() - last.at <= 600_000) {
+    remember(settled, uid, last, SETTLED_MAX)
+    return last.run
+  }
+  const entry: Settled = {
+    at: Date.now(),
+    run: settle(uid).catch((e) => {
+      if (settled.get(uid) === entry) settled.delete(uid)
+      throw e
+    }),
+  }
+  remember(settled, uid, entry, SETTLED_MAX)
+  return entry.run
 }
 
 type Subscription = SubRow & { auto_pay: number; created_at: number }

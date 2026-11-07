@@ -63,6 +63,13 @@ export function convert(cents: number, from: string, to: string, rates: Rates) {
   return (cents / f) * t
 }
 
+/** Stores `key` as the most recently used entry of `map`, dropping the least recently used past `max`. */
+export function remember<K, V>(map: Map<K, V>, key: K, value: V, max: number) {
+  map.delete(key)
+  map.set(key, value)
+  if (map.size > max) map.delete(map.keys().next().value!)
+}
+
 const moneyFormats = new Map<string, Intl.NumberFormat>()
 export function fmt(cents: number, currency: string, compact = false) {
   const locale = intlLocale()

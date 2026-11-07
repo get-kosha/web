@@ -10,6 +10,7 @@ import {
   guessCategory,
   monthOf,
   monthRange,
+  remember,
   parseAmount,
   pressKey,
   unixOf,
@@ -1102,4 +1103,20 @@ console.log("languages ok")
       assert.equal(monthOf(a - 1, zone), shiftMonth(mo, -1))
       assert.equal(monthOf(b - 1, zone), mo)
     }
+}
+
+// ---------- bounded caches ----------
+{
+  const cache = new Map<string, number>()
+  remember(cache, "a", 1, 2)
+  remember(cache, "b", 2, 2)
+  remember(cache, "a", 3, 2) // a is now the most recent
+  remember(cache, "c", 4, 2) // so b goes
+  assert.deepEqual(
+    [...cache],
+    [
+      ["a", 3],
+      ["c", 4],
+    ]
+  )
 }
