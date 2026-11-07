@@ -29,6 +29,7 @@
   "legal_privacy_services_rates": "As {#strong}taxas de câmbio{/strong} vêm da API pública de moedas fawazahmed0, por meio do jsDelivr. O servidor do Kosha as busca; nenhum dado sobre você é enviado.",
   "legal_privacy_services_api_reference": "{#strong}A página de referência da API{/strong} carrega o visualizador a partir do jsDelivr, que vê o seu endereço IP como qualquer site de onde você carrega arquivos.",
   "legal_privacy_services_google": "O {#strong}Google{/strong}, apenas se você escolher entrar com ele. O Google informa ao Kosha seu nome, endereço de e-mail e foto de perfil, e fica sabendo que você entrou no Kosha.",
+  "legal_privacy_services_better_auth": "O {#strong}Better Auth{/strong}, que faz o sistema de login do Kosha, mantém o painel que o Kosha usa para gerenciar contas. Ele recebe seu nome, endereço de e-mail, atividade de login, endereço IP e dados do navegador, e seu navegador envia a ele uma impressão digital do dispositivo para ajudar a evitar abuso de contas. Ele nunca vê suas contas, transações ou outros dados financeiros.",
   "legal_privacy_services_email": "{#strong}Um provedor de e-mail{/strong}, apenas quando você pede para redefinir sua senha. O Kosha envia a ele o seu endereço de e-mail e o e-mail de redefinição, que contém um link que funciona uma vez, por uma hora. O Kosha não envia nenhum outro e-mail.",
   "legal_privacy_services_ai": "{#strong}Provedores de IA{/strong} que você mesmo adiciona, conforme descrito acima.",
   "legal_privacy_cookies_title": "Cookies e armazenamento no seu dispositivo",

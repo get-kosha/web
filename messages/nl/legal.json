@@ -29,6 +29,7 @@
   "legal_privacy_services_rates": "{#strong}Wisselkoersen{/strong} komen van de openbare fawazahmed0 currency API via jsDelivr. De server van Kosha haalt ze op; er worden geen gegevens over jou verstuurd.",
   "legal_privacy_services_api_reference": "{#strong}De pagina met de API-documentatie{/strong} laadt haar viewer van jsDelivr, dat je IP-adres ziet zoals elke website waarvan je bestanden laadt.",
   "legal_privacy_services_google": "{#strong}Google{/strong}, alleen als je ervoor kiest om daarmee in te loggen. Google geeft Kosha je naam, e-mailadres en profielfoto door, en komt te weten dat je bij Kosha bent ingelogd.",
+  "legal_privacy_services_better_auth": "{#strong}Better Auth{/strong}, dat het inlogsysteem van Kosha maakt, beheert het dashboard waarmee Kosha accounts beheert. Het ontvangt je naam, e-mailadres, inlogactiviteit, IP-adres en browsergegevens, en je browser stuurt het een apparaatvingerafdruk om misbruik van accounts te helpen voorkomen. Het ziet nooit je rekeningen, transacties of andere financiële gegevens.",
   "legal_privacy_services_email": "{#strong}Een e-mailprovider{/strong}, alleen als je vraagt om je wachtwoord te resetten. Kosha stuurt die je e-mailadres en de reset-e-mail, met daarin een link die één keer werkt, een uur lang. Kosha verstuurt verder geen e-mail.",
   "legal_privacy_services_ai": "{#strong}AI-aanbieders{/strong} die je zelf toevoegt, zoals hierboven beschreven.",
   "legal_privacy_cookies_title": "Cookies en opslag op je apparaat",

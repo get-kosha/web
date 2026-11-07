@@ -66,6 +66,9 @@ function Privacy() {
           <ParaglideMessage message={m.legal_privacy_services_google} markup={{ strong }} />
         </li>
         <li>
+          <ParaglideMessage message={m.legal_privacy_services_better_auth} markup={{ strong }} />
+        </li>
+        <li>
           <ParaglideMessage message={m.legal_privacy_services_email} markup={{ strong }} />
         </li>
         <li>

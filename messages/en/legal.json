@@ -29,6 +29,7 @@
   "legal_privacy_services_rates": "{#strong}Exchange rates{/strong} come from the public fawazahmed0 currency API through jsDelivr. Kosha's server fetches them; no data about you is sent.",
   "legal_privacy_services_api_reference": "{#strong}The API reference page{/strong} loads its viewer from jsDelivr, which sees your IP address like any website you load files from.",
   "legal_privacy_services_google": "{#strong}Google{/strong}, only if you choose to sign in with it. Google tells Kosha your name, email address and profile picture, and learns that you signed in to Kosha.",
+  "legal_privacy_services_better_auth": "{#strong}Better Auth{/strong}, which makes Kosha's sign-in system, runs the dashboard Kosha uses to manage accounts. It receives your name, email address, sign-in activity, IP address and browser details, and your browser sends it a device fingerprint to help stop account abuse. It never sees your accounts, transactions or other finance data.",
   "legal_privacy_services_email": "{#strong}An email provider{/strong}, only when you ask to reset your password. Kosha sends it your email address and the reset email, which holds a link that works once, for one hour. Kosha sends no other email.",
   "legal_privacy_services_ai": "{#strong}AI providers{/strong} you add yourself, as described above.",
   "legal_privacy_cookies_title": "Cookies and storage on your device",

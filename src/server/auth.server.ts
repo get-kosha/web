@@ -4,6 +4,7 @@ import { tanstackStartCookies } from "better-auth/tanstack-start"
 import { passkey } from "@better-auth/passkey"
 import { jwt, twoFactor } from "better-auth/plugins"
 import { mcp } from "@better-auth/mcp"
+import { dash, sentinel } from "@better-auth/infra"
 import { getRequest } from "@tanstack/react-start/server"
 import { DEFAULT_CATEGORIES } from "@/lib/defaults"
 import { DEMO, MIN_PASSWORD, intlLocale } from "@/lib/core"
@@ -22,6 +23,11 @@ export const API_SCOPES = { read: "kosha:read", write: "kosha:write" } as const
 const GOOGLE = env as { GOOGLE_CLIENT_ID?: string; GOOGLE_CLIENT_SECRET?: string }
 /** Whether this deployment has a Google OAuth client, so sign-in and Settings can offer Google. */
 export const googleSignIn = !!(GOOGLE.GOOGLE_CLIENT_ID && GOOGLE.GOOGLE_CLIENT_SECRET)
+
+// Better Auth's hosted dashboard (dash.better-auth.com) for managing accounts, and Sentinel, its abuse checks
+// (new email addresses, plus whatever the dashboard turns on). Off without a key, so a self-hosted copy never
+// calls them.
+const DASH_KEY = (env as { BETTER_AUTH_API_KEY?: string }).BETTER_AUTH_API_KEY
 
 export const auth = betterAuth({
   database: env.DB,
@@ -104,6 +110,14 @@ export const auth = betterAuth({
       // A retried refresh with a used token is replay, not a lost response.
       refreshTokenReuseInterval: 0,
     }),
+    ...(DASH_KEY
+      ? [
+          dash({ apiKey: DASH_KEY }),
+          // Normalising rewrites first.last+tag@gmail.com to firstlast@gmail.com before sign-in, so accounts
+          // stored with dots or a tag would stop matching.
+          sentinel({ apiKey: DASH_KEY, security: { emailNormalization: { enabled: false } } }),
+        ]
+      : []),
     tanstackStartCookies(),
   ],
 })

@@ -29,6 +29,7 @@
   "legal_privacy_services_rates": "{#strong}為替レート{/strong}は、jsDelivrを経由して公開のfawazahmed0 currency APIから取得します。取得はKoshaのサーバーが行い、あなたに関するデータは送信しません。",
   "legal_privacy_services_api_reference": "{#strong}APIリファレンスのページ{/strong}は、ビューアをjsDelivrから読み込みます。ファイルを読み込むほかのウェブサイトと同様に、jsDelivrにはあなたのIPアドレスが見えます。",
   "legal_privacy_services_google": "{#strong}Google{/strong}は、あなたがGoogleでのログインを選んだ場合にのみ利用します。GoogleはKoshaにあなたの名前、メールアドレス、プロフィール画像を伝え、あなたがKoshaにログインしたことを知ります。",
+  "legal_privacy_services_better_auth": "Koshaのログイン機能を提供する{#strong}Better Auth{/strong}は、Koshaがアカウント管理に使うダッシュボードを運営しています。Better Authはあなたの名前、メールアドレス、ログイン履歴、IPアドレス、ブラウザの情報を受け取ります。また、アカウントの不正利用を防ぐため、あなたのブラウザから端末のフィンガープリントが送られます。あなたの口座、取引、その他の金融データをBetter Authが見ることはありません。",
   "legal_privacy_services_email": "{#strong}メール配信サービス{/strong}は、あなたがパスワードの再設定を求めた場合にのみ利用します。Koshaはそのサービスに、あなたのメールアドレスと再設定用のメールを送ります。このメールには、1回だけ、1時間以内に使えるリンクが含まれます。Koshaがそれ以外のメールを送ることはありません。",
   "legal_privacy_services_ai": "{#strong}AIプロバイダ{/strong}は、上記のとおり、あなた自身が追加したものです。",
   "legal_privacy_cookies_title": "Cookieとデバイス上の保存",

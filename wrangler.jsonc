@@ -27,7 +27,8 @@
   // Public API and MCP: 120 requests a minute per user (src/server/api.server.ts).
   "ratelimits": [{ "name": "API_LIMITER", "namespace_id": "1001", "simple": { "limit": 120, "period": 60 } }],
   // BETTER_AUTH_SECRET goes in .dev.vars locally and `wrangler secret put` in production. So do the optional
-  // GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET, which turn on Sign in with Google (README).
+  // GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET, which turn on Sign in with Google, and BETTER_AUTH_API_KEY,
+  // which connects the Better Auth dashboard (README).
   "vars": {
     // Public URL of the app. Passkeys are tied to this domain.
     "BETTER_AUTH_URL": "https://getkosha.app",

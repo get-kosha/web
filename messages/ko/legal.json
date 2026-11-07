@@ -29,6 +29,7 @@
   "legal_privacy_services_rates": "{#strong}환율{/strong}은 jsDelivr를 통해 공개 fawazahmed0 currency API에서 가져와요. Kosha 서버가 가져오며, 나에 관한 데이터는 보내지 않아요.",
   "legal_privacy_services_api_reference": "{#strong}API 문서 페이지{/strong}는 뷰어를 jsDelivr에서 불러와요. 파일을 불러오는 다른 웹사이트와 마찬가지로 jsDelivr는 IP 주소를 볼 수 있어요.",
   "legal_privacy_services_google": "{#strong}Google{/strong}: Google로 로그인하기로 선택한 경우에만 이용해요. Google은 Kosha에 이름, 이메일 주소, 프로필 사진을 알려 주고, 내가 Kosha에 로그인했다는 사실을 알게 돼요.",
+  "legal_privacy_services_better_auth": "{#strong}Better Auth{/strong}: Kosha의 로그인 시스템을 만든 곳으로, Kosha가 계정을 관리하는 대시보드를 운영해요. 이름, 이메일 주소, 로그인 기록, IP 주소, 브라우저 정보를 받고, 계정 악용을 막기 위해 브라우저가 기기 지문을 보내요. 계좌, 거래 내역 등 금융 데이터는 절대 보지 않아요.",
   "legal_privacy_services_email": "{#strong}이메일 제공업체{/strong}: 비밀번호 재설정을 요청한 경우에만 이용해요. Kosha는 이메일 주소와 재설정 이메일을 보내며, 이 이메일에는 1시간 동안 한 번만 쓸 수 있는 링크가 들어 있어요. Kosha는 그 밖의 이메일은 보내지 않아요.",
   "legal_privacy_services_ai": "{#strong}AI 제공업체{/strong}: 위에서 설명한 대로 직접 추가한 경우에만 이용해요.",
   "legal_privacy_cookies_title": "기기의 쿠키와 저장소",

@@ -2,9 +2,13 @@ import { createAuthClient } from "better-auth/react"
 import { passkeyClient } from "@better-auth/passkey/client"
 import { twoFactorClient } from "better-auth/client/plugins"
 import { oauthProviderClient } from "@better-auth/oauth-provider/client"
+import { sentinelClient } from "@better-auth/infra/client"
 
-// oauthProviderClient carries an MCP app's signed OAuth request through /login and /consent.
-export const authClient = createAuthClient({ plugins: [passkeyClient(), twoFactorClient(), oauthProviderClient()] })
+// oauthProviderClient carries an MCP app's signed OAuth request through /login and /consent. sentinelClient
+// sends a browser fingerprint with auth requests for the Better Auth dashboard (dash() in auth.server.ts).
+export const authClient = createAuthClient({
+  plugins: [passkeyClient(), twoFactorClient(), oauthProviderClient(), sentinelClient()],
+})
 
 /** Signs out and forgets the pages and data this device saved for offline use. Queued new entries stay for next time. */
 export const signOut = () => signOutTo("/login")
