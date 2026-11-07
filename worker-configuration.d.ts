@@ -3,6 +3,7 @@
 // Runtime types generated with workerd@1.20261104.1 2026-11-01 nodejs_compat
 interface __BaseEnv_Env {
 	AVATARS: R2Bucket;
+	ATTACHMENTS: R2Bucket;
 	DB: D1Database;
 	API_LIMITER: RateLimit;
 	BETTER_AUTH_SECRET: string;

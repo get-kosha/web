@@ -7,6 +7,7 @@ import { mcp } from "@better-auth/mcp"
 import { getRequest } from "@tanstack/react-start/server"
 import { DEFAULT_CATEGORIES } from "@/lib/defaults"
 import { DEMO } from "@/lib/core"
+import { deleteAllAttachments } from "@/server/attachments.server"
 
 const ORIGIN = env.BETTER_AUTH_URL.replace(/\/+$/, "")
 /** The MCP server's URL: what people paste into Claude or ChatGPT, and the audience of its access tokens. */
@@ -75,6 +76,7 @@ export const USER_TABLES = [
   "ai_log",
   "ai_providers",
   "ai_recaps",
+  "attachments",
   "reconciliations",
   "import_layouts",
   "payee_aliases",
@@ -89,10 +91,13 @@ export const USER_TABLES = [
   "wallets",
   "settings",
   "api_keys",
+  // Last, because deleting attachments and transactions fills it through triggers.
+  "attachment_trash",
 ]
 async function deleteUserData(id: string) {
   const DB = env.DB
   await avatars()?.delete(avatarKey(id))
+  await deleteAllAttachments(id)
   await DB.batch([
     ...USER_TABLES.map((t) => DB.prepare(`DELETE FROM ${t} WHERE user_id = ?`).bind(id)),
     DB.prepare('DELETE FROM "passkey" WHERE "userId" = ?').bind(id),

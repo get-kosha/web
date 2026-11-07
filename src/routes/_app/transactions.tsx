@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useRef, useState, type ReactNode } from "react"
-import { MagnifyingGlassIcon, SlidersHorizontalIcon, XIcon } from "@phosphor-icons/react/ssr"
+import { MagnifyingGlassIcon, PaperclipIcon, SlidersHorizontalIcon, XIcon } from "@phosphor-icons/react/ssr"
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router"
 import { z } from "zod"
 import { Button } from "@/components/ui/button"
@@ -455,12 +455,13 @@ function Row({
             type="button"
             data-tx={t.id}
             aria-pressed={selected}
-            aria-label={[title, shown, c?.name].filter(Boolean).join(", ")}
+            aria-label={[title, shown, c?.name, t.files && `${t.files} attached`].filter(Boolean).join(", ")}
             onClick={onClick}
             className="truncate text-left outline-none after:absolute after:inset-0 after:content-['']"
           >
             {title}
           </button>
+          {!!t.files && <PaperclipIcon aria-hidden="true" className="ml-1.5 size-3.5 shrink-0 text-muted-foreground" />}
           {isTransfer && (
             <span className="ml-1.5 shrink-0 rounded-sm bg-muted px-1.5 text-[11px] text-muted-foreground">
               transfer

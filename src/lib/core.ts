@@ -747,3 +747,39 @@ export function readJson(text: string): Record<string, unknown> | null {
     return null
   }
 }
+
+// ---------- attachments ----------
+
+/** The largest receipt or payslip Kosha stores. */
+export const ATTACHMENT_LIMIT = 10 * 1024 * 1024
+/** What the file picker offers. The server still checks the bytes with fileKind. */
+export const ATTACHMENT_ACCEPT = "image/jpeg,image/png,image/webp,application/pdf"
+
+/**
+ * The type of an attachment from its first bytes, or null when it isn't a JPEG, PNG, WebP or PDF. Files are
+ * served with this type, so a file that only claims to be an image can't be served as something else.
+ */
+export function fileKind(b: Uint8Array) {
+  const ascii = (from: number, to: number) => String.fromCharCode(...b.subarray(from, to))
+  if (b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) return "image/jpeg"
+  if (b[0] === 0x89 && ascii(1, 4) === "PNG") return "image/png"
+  if (ascii(0, 4) === "RIFF" && ascii(8, 12) === "WEBP") return "image/webp"
+  if (ascii(0, 5) === "%PDF-") return "application/pdf"
+  return null
+}
+
+/**
+ * File names for a zip of documents: each starts with its payment's month, so "2026-11 payslip.pdf", and a
+ * repeated name gets " (2)" before its extension.
+ */
+export function archiveNames(files: { day: string; name: string }[]) {
+  const seen = new Map<string, number>()
+  return files.map((f) => {
+    const base = `${f.day.slice(0, 7)} ${f.name.replace(/[\\/:*?"<>|]/g, "-")}`
+    const n = (seen.get(base) ?? 0) + 1
+    seen.set(base, n)
+    if (n === 1) return base
+    const dot = base.lastIndexOf(".")
+    return dot > 8 ? `${base.slice(0, dot)} (${n})${base.slice(dot)}` : `${base} (${n})`
+  })
+}

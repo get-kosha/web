@@ -21,6 +21,7 @@ import { CategoryIcon } from "@/components/category-icon"
 import { PageHeader, PageSkeleton, useGlobals, useMeta } from "@/components/shell"
 import { SubscriptionForm } from "@/components/subscription-form"
 import { TransactionForm, TransactionSheet } from "@/components/transaction-form"
+import { ScheduleDocuments } from "@/components/attachments"
 import {
   deleteSubscription,
   dismissRecurring,
@@ -584,6 +585,8 @@ function Detail({ sub, today, displayCurrency }: { sub: SubscriptionView; today:
   const [confirm, setConfirm] = useState<"end" | "delete" | null>(null)
   const [instance, setInstance] = useState<{ i: Instance; pay: boolean } | null>(null)
   const [payment, setPayment] = useState<Tx | null>(null)
+  // Bumped when a payment's sheet closes, so Documents picks up files attached there.
+  const [docsVersion, setDocsVersion] = useState(0)
   const c = meta.categories.find((k) => k.id === sub.category_id)
   const wallet = meta.wallets.find((w) => w.id === sub.wallet_id)
   const toWallet = meta.wallets.find((w) => w.id === sub.to_wallet_id)
@@ -638,6 +641,11 @@ function Detail({ sub, today, displayCurrency }: { sub: SubscriptionView; today:
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Couldn't update the schedule")
     }
+  }
+
+  function closePayment() {
+    setPayment(null)
+    setDocsVersion((v) => v + 1)
   }
 
   async function remove() {
@@ -789,6 +797,8 @@ function Detail({ sub, today, displayCurrency }: { sub: SubscriptionView; today:
         )}
       </section>
 
+      {!isTransfer && <ScheduleDocuments subscriptionId={sub.id} name={sub.name} version={docsVersion} />}
+
       <div className="-mx-2.5 flex flex-wrap items-center justify-between gap-2 border-t pt-3">
         <Button variant="ghost" size="lg" onClick={() => setEditing(true)}>
           Edit
@@ -855,18 +865,9 @@ function Detail({ sub, today, displayCurrency }: { sub: SubscriptionView; today:
         </DialogContent>
       </Dialog>
 
-      <TransactionSheet
-        open={!!payment}
-        title={isTransfer ? "Edit transfer" : "Edit payment"}
-        onClose={() => setPayment(null)}
-      >
+      <TransactionSheet open={!!payment} title={isTransfer ? "Edit transfer" : "Edit payment"} onClose={closePayment}>
         {payment && (
-          <TransactionForm
-            key={payment.id}
-            initial={payment}
-            onDone={() => setPayment(null)}
-            onCancel={() => setPayment(null)}
-          />
+          <TransactionForm key={payment.id} initial={payment} onDone={closePayment} onCancel={closePayment} />
         )}
       </TransactionSheet>
     </div>

@@ -30,6 +30,7 @@ Kosha (कोश, "treasury") keeps every account in one place: bank accounts, c
 - **One account per person.** Each person sees only their own data. Sign in with a password or a passkey, with optional two-factor codes.
 - **Start from your statements.** A new account opens with a banner that takes every statement you have, from every bank and card and as many months as you like, all at once. Kosha sorts the files into accounts (by account number, or the bank's format), counts lines that appear in two statements once, links transfers between your own accounts, and names and sorts each payee from well-known merchants and your rules (and AI, when it's on). You check the result by payee, where a new name or category applies to every transaction from that payee, before anything is saved. Each account then gets an opening balance that makes it meet its latest statement, and is reconciled to it. An account you already had keeps today's balance. **Import statements** is also in search and in Settings › Import & export.
 - **Bank statements and reconciliation.** Drop a CSV, OFX or QFX file from your bank on **Reconcile** (from Accounts, or Settings › Import & export). Kosha works out the columns, remembers them for that bank, ticks every entry that matches a statement line (a few days of posting delay allowed), lists what's missing so you can add it in one go, and flags amounts that are close but not the same, such as a tip. A live bar shows the statement balance, what's ticked and the difference. When it doesn't add up, Kosha runs the bookkeeper's checks: an entry equal to the difference, half of it (a wrong sign), digits swapped (a difference divisible by 9), a misplaced decimal point, a duplicate, or entries at the period's end that will show on the next statement. Finishing marks the entries reconciled, Kosha warns before you change one, and the latest reconciliation can be undone. No file? Tick entries against the statement by hand, or confirm in one tap that your bank shows the same balance.
+- **Receipts and payslips.** Attach photos or PDFs to any transaction, up to 10 MB each. A recurring payment such as a salary lists every file on its payments by month, so you can tick the months you need and download them as one zip.
 - **Recurring payments, spotted.** Recurring lists payees you pay on a steady rhythm (weekly to yearly) that aren't set up yet. One tap makes one a recurring payment and files its past payments under it.
 - **Import from Cashew.** Bring over accounts, categories, transactions and recurring payments.
 - **Optional AI, with your own key.** Connect Anthropic, OpenAI, Gemini, OpenRouter, Ollama or any OpenAI-compatible endpoint in Settings › AI, and turn on what you want:
@@ -84,10 +85,10 @@ npx wrangler secret put AI_KEY_SECRET         # 32+ random characters; changing 
 npm run deploy
 ```
 
-Profile pictures are stored in Cloudflare R2, which asks for a payment card on the account even on the free tier. They are optional:
+Profile pictures and attachments (receipts, payslips) are stored in Cloudflare R2, which asks for a payment card on the account even on the free tier. Each has its own bucket, and both are optional:
 
-- **With R2:** run `npx wrangler r2 bucket create kosha-avatars` once before you deploy.
-- **Without R2:** delete the `r2_buckets` block from `wrangler.jsonc`. Everything else works, and Settings › Profile shows initials and says photos aren't set up.
+- **With R2:** run `npx wrangler r2 bucket create kosha-avatars` and `npx wrangler r2 bucket create kosha-attachments` once before you deploy.
+- **Without R2:** delete the `r2_buckets` block from `wrangler.jsonc`, or just the entry you don't want. Everything else works. Without `AVATARS`, Settings › Profile shows initials and says photos aren't set up. Without `ATTACHMENTS`, the attach buttons don't appear.
 
 Before you deploy, set `BETTER_AUTH_URL` under `vars` in `wrangler.jsonc` to the public URL of the app. Passkeys only work on this domain.
 

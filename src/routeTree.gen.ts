@@ -29,6 +29,7 @@ import { Route as AppWelcomeRouteImport } from './routes/_app/welcome'
 import { Route as ApiAvatarRouteImport } from './routes/api/avatar'
 import { Route as AppSettingsIndexRouteImport } from './routes/_app/settings.index'
 import { Route as AppSettingsSectionRouteImport } from './routes/_app/settings.$section'
+import { Route as ApiAttachmentsIdRouteImport } from './routes/api/attachments/$id'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiExportKoshaDotjsonRouteImport } from './routes/api/export/kosha[.]json'
 import { Route as ApiExportTransactionsDotcsvRouteImport } from './routes/api/export/transactions[.]csv'
@@ -133,6 +134,11 @@ const AppSettingsSectionRoute = AppSettingsSectionRouteImport.update({
   path: '/$section',
   getParentRoute: () => AppSettingsRoute,
 } as any)
+const ApiAttachmentsIdRoute = ApiAttachmentsIdRouteImport.update({
+  id: '/api/attachments/$id',
+  path: '/api/attachments/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -174,6 +180,7 @@ export interface FileRoutesByFullPath {
   '/welcome': typeof AppWelcomeRoute
   '/api/avatar': typeof ApiAvatarRoute
   '/settings/$section': typeof AppSettingsSectionRoute
+  '/api/attachments/$id': typeof ApiAttachmentsIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/export/kosha.json': typeof ApiExportKoshaDotjsonRoute
   '/api/export/transactions.csv': typeof ApiExportTransactionsDotcsvRoute
@@ -198,6 +205,7 @@ export interface FileRoutesByTo {
   '/api/avatar': typeof ApiAvatarRoute
   '/': typeof AppIndexRoute
   '/settings/$section': typeof AppSettingsSectionRoute
+  '/api/attachments/$id': typeof ApiAttachmentsIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/export/kosha.json': typeof ApiExportKoshaDotjsonRoute
   '/api/export/transactions.csv': typeof ApiExportTransactionsDotcsvRoute
@@ -225,6 +233,7 @@ export interface FileRoutesById {
   '/api/avatar': typeof ApiAvatarRoute
   '/_app/': typeof AppIndexRoute
   '/_app/settings/$section': typeof AppSettingsSectionRoute
+  '/api/attachments/$id': typeof ApiAttachmentsIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/export/kosha.json': typeof ApiExportKoshaDotjsonRoute
   '/api/export/transactions.csv': typeof ApiExportTransactionsDotcsvRoute
@@ -252,6 +261,7 @@ export interface FileRouteTypes {
     | '/welcome'
     | '/api/avatar'
     | '/settings/$section'
+    | '/api/attachments/$id'
     | '/api/auth/$'
     | '/api/export/kosha.json'
     | '/api/export/transactions.csv'
@@ -276,6 +286,7 @@ export interface FileRouteTypes {
     | '/api/avatar'
     | '/'
     | '/settings/$section'
+    | '/api/attachments/$id'
     | '/api/auth/$'
     | '/api/export/kosha.json'
     | '/api/export/transactions.csv'
@@ -302,6 +313,7 @@ export interface FileRouteTypes {
     | '/api/avatar'
     | '/_app/'
     | '/_app/settings/$section'
+    | '/api/attachments/$id'
     | '/api/auth/$'
     | '/api/export/kosha.json'
     | '/api/export/transactions.csv'
@@ -316,6 +328,7 @@ export interface RootRouteChildren {
   McpRoute: typeof McpRoute
   DotwellKnownSplatRoute: typeof DotwellKnownSplatRoute
   ApiAvatarRoute: typeof ApiAvatarRoute
+  ApiAttachmentsIdRoute: typeof ApiAttachmentsIdRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiExportKoshaDotjsonRoute: typeof ApiExportKoshaDotjsonRoute
   ApiExportTransactionsDotcsvRoute: typeof ApiExportTransactionsDotcsvRoute
@@ -464,6 +477,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSettingsSectionRouteImport
       parentRoute: typeof AppSettingsRoute
     }
+    '/api/attachments/$id': {
+      id: '/api/attachments/$id'
+      path: '/api/attachments/$id'
+      fullPath: '/api/attachments/$id'
+      preLoaderRoute: typeof ApiAttachmentsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -548,6 +568,7 @@ const rootRouteChildren: RootRouteChildren = {
   McpRoute: McpRoute,
   DotwellKnownSplatRoute: DotwellKnownSplatRoute,
   ApiAvatarRoute: ApiAvatarRoute,
+  ApiAttachmentsIdRoute: ApiAttachmentsIdRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiExportKoshaDotjsonRoute: ApiExportKoshaDotjsonRoute,
   ApiExportTransactionsDotcsvRoute: ApiExportTransactionsDotcsvRoute,

@@ -5,6 +5,7 @@ import { db, getSettings } from "@/server/db.server"
 import * as finance from "@/server/finance.server"
 import * as ai from "@/server/ai-tasks.server"
 import * as statements from "@/server/statements.server"
+import * as files from "@/server/attachments.server"
 import { MCP_RESOURCE, auth, avatars, demoAvailable, getUser, setAvatar, userId } from "@/server/auth.server"
 import {
   consentDetails,
@@ -62,8 +63,10 @@ export const guestVisit = createIsomorphicFn()
 
 export const getMeta = createServerFn({ method: "GET" }).handler(async () => {
   const user = (await getUser())!
-  // `avatars` says whether this deployment has R2 for profile pictures (wrangler.jsonc).
-  return { ...(await finance.loadMeta(user.id)), user, avatars: !!avatars() }
+  // Files left behind by deleted transactions go from R2 after the reply.
+  files.purgeLater(user.id)
+  // `avatars` and `attachments` say whether this deployment has those R2 buckets (wrangler.jsonc).
+  return { ...(await finance.loadMeta(user.id)), user, avatars: !!avatars(), attachments: !!files.attachmentBucket() }
 })
 export type Meta = Awaited<ReturnType<typeof getMeta>>
 
@@ -79,6 +82,34 @@ export const uploadAvatar = createServerFn({ method: "POST" })
   .handler(async ({ data }) => setAvatar(await userId(), data))
 
 export const removeAvatar = createServerFn({ method: "POST" }).handler(async () => setAvatar(await userId(), null))
+
+// ---------- attachments ----------
+
+export type { Attachment } from "@/server/attachments.server"
+
+/** A transaction's receipts and other files. */
+export const listAttachments = createServerFn({ method: "GET" })
+  .validator(z.object({ transactionId: z.string() }))
+  .handler(async ({ data }) => files.listAttachments(await userId(), data.transactionId))
+
+/** Every file on a recurring schedule's payments, such as a salary's payslips. */
+export const listScheduleAttachments = createServerFn({ method: "GET" })
+  .validator(z.object({ subscriptionId: z.string() }))
+  .handler(async ({ data }) => files.scheduleAttachments(await userId(), data.subscriptionId))
+
+/** Attaches a file: a FormData with `transactionId` and `file`, a photo or a PDF. */
+export const uploadAttachment = createServerFn({ method: "POST" })
+  .validator((data: FormData) => {
+    const transactionId = data instanceof FormData ? data.get("transactionId") : null
+    const file = data instanceof FormData ? data.get("file") : null
+    if (typeof transactionId !== "string" || !(file instanceof File)) throw new Error("Choose a file")
+    return { transactionId, file }
+  })
+  .handler(async ({ data }) => files.addAttachment(await userId(), data.transactionId, data.file))
+
+export const deleteAttachment = createServerFn({ method: "POST" })
+  .validator(z.object({ id: z.string() }))
+  .handler(async ({ data }) => files.deleteAttachment(await userId(), data.id))
 
 // ---------- dashboard analytics ----------
 

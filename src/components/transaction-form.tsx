@@ -11,6 +11,7 @@ import {
 } from "@phosphor-icons/react/ssr"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
+import { Attachments } from "@/components/attachments"
 import { Input } from "@/components/ui/input"
 import { WALLET_KEY, startWallet } from "@/lib/add-defaults"
 import {
@@ -349,6 +350,7 @@ export function TransactionForm({
       } else {
         const signed = Math.abs(cents) * (income ? 1 : -1)
         // When an existing transfer becomes an expense or income, delete it and save a new transaction.
+        // ponytail: the transfer's attachments go with it; move them to the new row if people attach to transfers.
         if (initial?.transfer_id) await deleteTransaction({ data: { id: initial.id } })
         await saveTransaction({
           data: {
@@ -518,6 +520,8 @@ export function TransactionForm({
           day,
         })}
       />
+
+      {initial && <Attachments key={initial.id} transactionId={initial.id} />}
 
       {initial?.reconciled_id && (
         <p className="flex items-start gap-2 rounded-lg bg-muted px-3 py-2.5 text-xs text-muted-foreground">

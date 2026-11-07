@@ -98,6 +98,8 @@ export type Tx = {
   reconciled_id?: string | null
   /** The bank's id for an imported line. */
   bank_ref?: string | null
+  /** How many files are attached. Only Activity's list counts them. */
+  files?: number
 }
 export type Event = {
   id: string
@@ -499,11 +501,9 @@ export async function listTransactions(uid: string, data: z.infer<typeof listInp
   const w = `WHERE ${where.join(" AND ")}`
   const DB = db()
   const [rows, count, totals, corrections] = await DB.batch([
-    DB.prepare(`SELECT t.*, ${COUNTERPART} ${w} ORDER BY t.date DESC LIMIT ? OFFSET ?`).bind(
-      ...binds,
-      data.limit + 1,
-      data.offset
-    ),
+    DB.prepare(`SELECT t.*,
+      (SELECT COUNT(*) FROM attachments a WHERE a.user_id = t.user_id AND a.transaction_id = t.id) AS files,
+      ${COUNTERPART} ${w} ORDER BY t.date DESC LIMIT ? OFFSET ?`).bind(...binds, data.limit + 1, data.offset),
     DB.prepare(`SELECT COUNT(*) AS n FROM transactions t ${w}`).bind(...binds),
     // Money out, money in and transfers per currency for the filtered list. The client converts them to the display currency.
     DB.prepare(`SELECT w.currency,
@@ -725,6 +725,10 @@ export async function deleteTransactions(uid: string, list: string[]) {
       ).bind(uid, ids(plain)),
       DB.prepare(
         "UPDATE transactions SET kind = 'skipped', paid = 0, updated_at = unixepoch() WHERE user_id = ? AND id IN (SELECT value FROM json_each(?))"
+      ).bind(uid, ids(occurrences)),
+      // A skipped occurrence keeps its row, so its files go here rather than through the delete trigger.
+      DB.prepare(
+        "DELETE FROM attachments WHERE user_id = ? AND transaction_id IN (SELECT value FROM json_each(?))"
       ).bind(uid, ids(occurrences)),
       DB.prepare("DELETE FROM transactions WHERE user_id = ? AND id IN (SELECT value FROM json_each(?))").bind(
         uid,

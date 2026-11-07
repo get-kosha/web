@@ -26,9 +26,11 @@ import { ExchangeFields, useExchange } from "@/components/transaction-form"
 import { bottomSheet, segment, segmentButton, useMeta } from "@/components/shell"
 import { readEntry, saveTransfer, suggestPayees, type AiEntry, type PayeeSuggestion, type Wallet } from "@/lib/api"
 import { addTransaction } from "@/lib/offline"
+import { Attachments, uploadFiles } from "@/components/attachments"
 import { WALLET_KEY, startWallet } from "@/lib/add-defaults"
 import {
   LOCALE,
+  ATTACHMENT_LIMIT,
   addDays,
   dateOfDay,
   dayOf,
@@ -92,6 +94,8 @@ export function PhoneAdd() {
   const [sheet, setSheet] = useState<Sheet>(null)
   const [note, setNote] = useState("")
   const [tags, setTags] = useState<string[]>([])
+  // Files to attach once the entry is saved, including a receipt AI read.
+  const [files, setFiles] = useState<File[]>([])
   // Until you pick an event this stays undefined, and the entry gets the event its day falls in.
   const [pickedEvent, setPickedEvent] = useState<string | null | undefined>(undefined)
   const eventId = pickedEvent !== undefined ? pickedEvent : eventFor(day, meta.events)
@@ -178,6 +182,7 @@ export function PhoneAdd() {
     setDescribed("")
     setNote("")
     setTags([])
+    setFiles([])
     setPickedEvent(undefined)
     setTime(null)
     x.reset()
@@ -216,7 +221,7 @@ export function PhoneAdd() {
         toast.success(`Moved ${fmt(cents, currency)} from ${wallet.name} to ${toWallet.name}`)
       } else if (chosenCat) {
         const name = payee.trim()
-        const { queued, undo } = await addTransaction(meta.user.id, {
+        const { queued, undo, id } = await addTransaction(meta.user.id, {
           walletId: wallet.id,
           categoryId: chosenCat.id,
           name,
@@ -228,6 +233,8 @@ export function PhoneAdd() {
           tags,
           eventId,
         })
+        if (id && files.length) await uploadFiles(id, files)
+        if (queued && files.length) toast.error("Saved offline without its files. Attach them once you're online.")
         if (!queued) await router.invalidate()
         toast(`${queued ? "Saved offline" : "Added"} ${fmt(signed, currency)}, ${name || chosenCat.name}`, {
           action: {
@@ -289,6 +296,8 @@ export function PhoneAdd() {
     setReading("receipt")
     try {
       fill(await readReceipt(file), "receipt")
+      // Keep the photo with the entry, unless it's too big to store.
+      if (meta.attachments && file.size <= ATTACHMENT_LIMIT) setFiles((f) => [...f, file])
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Couldn't read that receipt")
     } finally {
@@ -331,9 +340,12 @@ export function PhoneAdd() {
 
   // The note chip names what is set: the note, else the event (picked by date too), else the first tag.
   const event = transfer ? undefined : meta.events.find((e) => e.id === eventId)
-  const details = [note.trim(), event?.name, ...(transfer ? [] : tags.map((t) => `#${t}`))].filter(
-    (d): d is string => !!d
-  )
+  const details = [
+    note.trim(),
+    event?.name,
+    ...(transfer ? [] : tags.map((t) => `#${t}`)),
+    !transfer && files.length > 0 && (files.length === 1 ? "1 file" : `${files.length} files`),
+  ].filter((d): d is string => !!d)
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-col px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] max-md:flex-1 md:pt-8">
@@ -665,6 +677,7 @@ export function PhoneAdd() {
                 </span>
                 <EventPicker value={eventId ?? null} onChange={setPickedEvent} day={day} aria-labelledby="add-event" />
               </div>
+              <Attachments staged={files} onStage={setFiles} />
             </>
           )}
           <Button size="lg" className="h-11" onClick={() => setSheet(null)}>

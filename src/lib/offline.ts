@@ -32,7 +32,7 @@ export async function addTransaction(uid: string, data: NewTx) {
   if (navigator.onLine) {
     try {
       const { id } = await saveTransaction({ data })
-      return { queued: false, undo: () => deleteTransaction({ data: { id } }) }
+      return { queued: false, id, undo: () => deleteTransaction({ data: { id } }) }
     } catch (e) {
       if (!unreachable(e)) throw e
     }
@@ -41,6 +41,7 @@ export async function addTransaction(uid: string, data: NewTx) {
   write(uid, [...queued(uid), { key, data }])
   return {
     queued: true,
+    id: null,
     undo: async () =>
       write(
         uid,

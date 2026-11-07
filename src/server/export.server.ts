@@ -75,8 +75,9 @@ export async function transactionsCsv(uid: string) {
 /** Everything the user owns, table by table, without the user_id column. */
 export async function everythingJson(uid: string) {
   const DB = db()
-  // Leave out keys. AI keys are ciphertext only this server can read, and API keys are hashes.
-  const tables = USER_TABLES.filter((t) => t !== "ai_providers" && t !== "api_keys")
+  // Leave out keys. AI keys are ciphertext only this server can read, and API keys are hashes. The attachment
+  // trash is housekeeping, not data.
+  const tables = USER_TABLES.filter((t) => t !== "ai_providers" && t !== "api_keys" && t !== "attachment_trash")
   const res = await DB.batch(tables.map((t) => DB.prepare(`SELECT * FROM ${t} WHERE user_id = ?`).bind(uid)))
   const data = Object.fromEntries(
     tables.map((t, i) => [

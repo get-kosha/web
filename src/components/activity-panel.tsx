@@ -16,6 +16,7 @@ import { CategoryIcon } from "@/components/category-icon"
 import { CategoryPicker, categoryPath } from "@/components/category-picker"
 import { useGlobals, useMeta } from "@/components/shell"
 import { TransactionForm } from "@/components/transaction-form"
+import { Attachments } from "@/components/attachments"
 import { DatePicker, TimePicker } from "@/components/date-time"
 import { EventPicker, TagInput } from "@/components/tags-events"
 import { deleteTransaction, getPayeeHistory, saveTransaction, type Tx } from "@/lib/api"
@@ -345,6 +346,8 @@ export function ActivityPanel({
           className={cn(fieldValue, "placeholder:text-muted-foreground")}
         />
       </div>
+
+      <Attachments key={tx.id} transactionId={tx.id} className="mt-4" />
 
       {recent.length > 1 && (
         <div className="mt-5">

@@ -743,3 +743,25 @@ assert.deepEqual(
   ["y1", "y2", "y3", "y4", "m3"]
 )
 console.log("getting started ok")
+
+// Attachments are typed by their bytes, not their name.
+{
+  const { fileKind, archiveNames } = await import("./core.ts")
+  const bytes = (s: string) => new Uint8Array([...s].map((c) => c.charCodeAt(0)))
+  assert.equal(fileKind(new Uint8Array([0xff, 0xd8, 0xff, 0xe0])), "image/jpeg")
+  assert.equal(fileKind(new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d])), "image/png")
+  assert.equal(fileKind(bytes("RIFF\0\0\0\0WEBPVP8 ")), "image/webp")
+  assert.equal(fileKind(bytes("%PDF-1.7")), "application/pdf")
+  assert.equal(fileKind(bytes("<html><script>")), null)
+  assert.equal(fileKind(new Uint8Array()), null)
+  assert.deepEqual(
+    archiveNames([
+      { day: "2026-10-27", name: "payslip.pdf" },
+      { day: "2026-11-27", name: "payslip.pdf" },
+      { day: "2026-11-27", name: "payslip.pdf" },
+      { day: "2026-11-27", name: "a/b" },
+    ]),
+    ["2026-10 payslip.pdf", "2026-11 payslip.pdf", "2026-11 payslip (2).pdf", "2026-11 a-b"]
+  )
+  console.log("attachments ok")
+}
