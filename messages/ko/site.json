@@ -1,9 +1,9 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
   "site_description": "결제할 때마다 몇 초 만에 기록하고, 한 달 동안 돈이 어디로 갔는지 확인하세요. 모든 계좌와 모든 통화를 지원하는 무료 오픈소스 가계부예요.",
-  "site_tagline": "몇 초면 끝나는 내 돈 관리.",
-  "site_landing_title": "Kosha · 몇 초면 끝나는 내 돈 관리",
-  "site_og_image_alt": "Kosha: 몇 초면 끝나는 내 돈 관리",
+  "site_tagline": "쓴 만큼 적고, 간 곳은 알고.",
+  "site_landing_title": "Kosha · 쓴 만큼 적고, 간 곳은 알고.",
+  "site_og_image_alt": "Kosha: 쓴 만큼 적고, 간 곳은 알고.",
   "pwa_synced": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],

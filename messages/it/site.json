@@ -1,9 +1,9 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
   "site_description": "Aggiungi ogni pagamento in pochi secondi, poi scopri dove è finito il mese. Un'app gratuita e open source per le finanze personali, per tutti i tuoi conti e in qualsiasi valuta.",
-  "site_tagline": "Le tue finanze, pochi secondi alla volta.",
-  "site_landing_title": "Kosha · Le tue finanze, pochi secondi alla volta",
-  "site_og_image_alt": "Kosha: le tue finanze, pochi secondi alla volta",
+  "site_tagline": "Annota ogni spesa. Nessuna sorpresa.",
+  "site_landing_title": "Kosha · Annota ogni spesa. Nessuna sorpresa.",
+  "site_og_image_alt": "Kosha: Annota ogni spesa. Nessuna sorpresa.",
   "pwa_synced": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],

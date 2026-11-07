@@ -7,7 +7,7 @@
   "landing_view_on_github": "Ver no GitHub",
   "landing_try_demo": "Experimentar a conta demo",
   "landing_ai_badge": "IA",
-  "landing_hero_title": "{#first}Finanças pessoais,{/first} {#second}poucos segundos de cada vez{/second}",
+  "landing_hero_title": "{#first}Anote o que gastou.{/first} {#second}Saiba onde parou.{/second}",
   "landing_hero_lead": "Adicione cada pagamento no celular na hora em que pagar. No computador, veja como o mês está indo e confira tudo com o seu banco.",
   "landing_hero_licence": "Gratuito e de código aberto, sob a licença MIT.",
   "landing_pocket_title": "A semana passada levou {seconds} segundos",

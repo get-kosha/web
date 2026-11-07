@@ -7,7 +7,7 @@
   "landing_view_on_github": "GitHubで見る",
   "landing_try_demo": "デモアカウントを試す",
   "landing_ai_badge": "AI",
-  "landing_hero_title": "{#first}家計管理を、{/first}{#second}数秒ずつ。{/second}",
+  "landing_hero_title": "{#first}サッと記録、{/first}{#second}ちゃんと把握。{/second}",
   "landing_hero_lead": "支払ったらその場でスマホに記録。机に向かったら、今月の様子を確かめて、銀行の明細と照合できます。",
   "landing_hero_licence": "無料でオープンソース、MITライセンスです。",
   "landing_pocket_title": "先週の記録にかかったのは{seconds}秒",

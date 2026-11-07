@@ -1,9 +1,9 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
   "site_description": "支払いは数秒で記録、月末にはお金の行き先がひと目でわかります。すべての口座、あらゆる通貨に対応した、無料でオープンソースの家計管理アプリです。",
-  "site_tagline": "家計管理を、数秒ずつ。",
-  "site_landing_title": "Kosha · 家計管理を、数秒ずつ。",
-  "site_og_image_alt": "Kosha：家計管理を、数秒ずつ。",
+  "site_tagline": "サッと記録、ちゃんと把握。",
+  "site_landing_title": "Kosha · サッと記録、ちゃんと把握。",
+  "site_og_image_alt": "Kosha：サッと記録、ちゃんと把握。",
   "pwa_synced": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],

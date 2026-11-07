@@ -1,9 +1,9 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
   "site_description": "Ajoutez chaque paiement en quelques secondes, puis voyez où est passé votre mois. Un outil de suivi des finances personnelles gratuit et open source, pour tous vos comptes, dans toutes les devises.",
-  "site_tagline": "Vos finances personnelles, quelques secondes à la fois.",
-  "site_landing_title": "Kosha · Vos finances personnelles, quelques secondes à la fois",
-  "site_og_image_alt": "Kosha : vos finances personnelles, quelques secondes à la fois",
+  "site_tagline": "Notez ce que vous dépensez. Voyez où c'est passé.",
+  "site_landing_title": "Kosha · Notez ce que vous dépensez. Voyez où c'est passé.",
+  "site_og_image_alt": "Kosha : Notez ce que vous dépensez. Voyez où c'est passé.",
   "pwa_synced": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],

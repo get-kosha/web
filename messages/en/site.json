@@ -1,9 +1,9 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
   "site_description": "Add each payment in a few seconds, then see where the month went. A free, open-source personal finance tracker for every account, in any currency.",
-  "site_tagline": "Personal finance, a few seconds at a time.",
-  "site_landing_title": "Kosha · Personal finance, a few seconds at a time",
-  "site_og_image_alt": "Kosha: personal finance, a few seconds at a time",
+  "site_tagline": "Jot down what you spent. Know where it went.",
+  "site_landing_title": "Kosha · Jot down what you spent. Know where it went.",
+  "site_og_image_alt": "Kosha: Jot down what you spent. Know where it went.",
   "pwa_synced": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],

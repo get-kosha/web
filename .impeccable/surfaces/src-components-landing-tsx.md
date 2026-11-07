@@ -17,7 +17,7 @@ OWN-WORLD: Peacock #0F524E, marigold #F4A62A and paper #F3F5F0 as full-bleed gro
 
 STORY: Hero shows a payment added on the phone landing on the desk. Pocket: four ways to add in seconds. Desk: the month against a usual one, bills to come, recap, Ask Kosha. Once a month: import statements and reconcile with bookkeeper hints. Every account in one net worth. AI with your own key and only the fields you allow, plus API/MCP. Close: start with the next thing you buy; use it here or run your own.
 
-FIRST VIEWPORT: Paper ground. Left 5 columns: h1 "Personal finance, a few seconds at a time", one sentence, Create an account (solid) and View on GitHub (outline), a small demo link. Right 7 columns: the desk window (November so far, pace line, today's entries) with the phone add screen overlapping its lower left, marigold coin behind. Pressing Add on the phone flies the entry into the desk list and rolls the month total.
+FIRST VIEWPORT: Paper ground. Left 5 columns: h1 "Jot down what you spent. Know where it went.", one sentence, Create an account (solid) and View on GitHub (outline), a small demo link. Right 7 columns: the desk window (November so far, pace line, today's entries) with the phone add screen overlapping its lower left, marigold coin behind. Pressing Add on the phone flies the entry into the desk list and rolls the month total.
 
 FORM: Pocket and desk, dealt lead (position 6 of 7 on the ranked list), cadence chapters folded into the headings. seed: 6f441e624231a2b0
 

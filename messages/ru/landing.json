@@ -7,7 +7,7 @@
   "landing_view_on_github": "Открыть на GitHub",
   "landing_try_demo": "Попробовать демо-аккаунт",
   "landing_ai_badge": "ИИ",
-  "landing_hero_title": "{#first}Личные финансы —{/first} {#second}по паре секунд за раз{/second}",
+  "landing_hero_title": "{#first}Потратили — записали.{/first} {#second}Куда ушло — узнали.{/second}",
   "landing_hero_lead": "Добавляйте каждый платёж с телефона в момент оплаты. А за компьютером смотрите, как идёт месяц, и сверяйте всё с банком.",
   "landing_hero_licence": "Бесплатно, с открытым исходным кодом, лицензия MIT.",
   "landing_pocket_title": "Вся прошлая неделя — {seconds} сек.",

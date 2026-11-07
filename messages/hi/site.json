@@ -1,9 +1,9 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
   "site_description": "हर भुगतान कुछ ही सेकंड में जोड़ें, फिर देखें कि महीने का पैसा कहाँ गया। हर खाते और हर मुद्रा के लिए एक मुफ़्त, ओपन-सोर्स पर्सनल फ़ाइनेंस ट्रैकर।",
-  "site_tagline": "आपका हिसाब-किताब, बस कुछ सेकंड में।",
-  "site_landing_title": "Kosha · आपका हिसाब-किताब, बस कुछ सेकंड में",
-  "site_og_image_alt": "Kosha: आपका हिसाब-किताब, बस कुछ सेकंड में",
+  "site_tagline": "जो खर्च किया, लिख लीजिए। पैसा कहाँ गया, जान लीजिए।",
+  "site_landing_title": "Kosha · जो खर्च किया, लिख लीजिए। पैसा कहाँ गया, जान लीजिए।",
+  "site_og_image_alt": "Kosha: जो खर्च किया, लिख लीजिए। पैसा कहाँ गया, जान लीजिए।",
   "pwa_synced": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],

@@ -7,7 +7,7 @@
   "landing_view_on_github": "GitHub에서 보기",
   "landing_try_demo": "데모 계정 써 보기",
   "landing_ai_badge": "AI",
-  "landing_hero_title": "{#first}몇 초면 끝나는{/first} {#second}내 돈 관리{/second}",
+  "landing_hero_title": "{#first}쓴 만큼 적고,{/first} {#second}간 곳은 알고.{/second}",
   "landing_hero_lead": "결제할 때마다 휴대폰으로 바로 기록하세요. 책상 앞에서는 이번 달 흐름을 확인하고 은행 내역과 대조해 보세요.",
   "landing_hero_licence": "MIT 라이선스의 무료 오픈소스예요.",
   "landing_pocket_title": "지난주 기록에 걸린 시간 {seconds}초",

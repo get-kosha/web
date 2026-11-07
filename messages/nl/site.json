@@ -1,9 +1,9 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
   "site_description": "Voeg elke betaling in een paar seconden toe en zie waar je maand gebleven is. Een gratis, open-source app om je financiën bij te houden, voor elke rekening en in elke valuta.",
-  "site_tagline": "Je financiën, een paar seconden per keer.",
-  "site_landing_title": "Kosha · Je financiën, een paar seconden per keer",
-  "site_og_image_alt": "Kosha: je financiën, een paar seconden per keer",
+  "site_tagline": "Uitgave genoteerd. Maand gecontroleerd.",
+  "site_landing_title": "Kosha · Uitgave genoteerd. Maand gecontroleerd.",
+  "site_og_image_alt": "Kosha: Uitgave genoteerd. Maand gecontroleerd.",
   "pwa_synced": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],

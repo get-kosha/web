@@ -145,7 +145,7 @@ What each term means in Kosha. Pick one word per concept and use it everywhere.
 | privacy policy / terms           | The legal pages.                                                                                         |
 | self-hosted copy                 | Someone running their own Kosha.                                                                         |
 | Install / Reload                 | App install and update prompts.                                                                          |
-| tagline                          | Personal finance, a few seconds at a time.                                                               |
+| tagline                          | Jot down what you spent. Know where it went.                                                             |
 
 ## Terms by language
 
@@ -252,112 +252,112 @@ What each term means in Kosha. Pick one word per concept and use it everywhere.
 | privacy policy / terms           | Datenschutzerklärung / Nutzungsbedingungen |
 | self-hosted copy                 | eigene Instanz                             |
 | Install / Reload                 | Installieren / Neu laden                   |
-| tagline                          | Deine Finanzen, Sekunde für Sekunde        |
+| tagline                          | Ausgabe notiert. Monat kapiert.            |
 
 ### Español (`es`)
 
-| English                          | Español                                  |
-| -------------------------------- | ---------------------------------------- |
-| Kosha                            | Kosha                                    |
-| account                          | cuenta                                   |
-| Kosha account / your account     | cuenta de Kosha                          |
-| sign in / sign out               | iniciar sesión / cerrar sesión           |
-| create an account / sign up      | crear una cuenta / registrarse           |
-| demo account                     | cuenta demo                              |
-| transaction / entry              | movimiento                               |
-| payee                            | beneficiario                             |
-| category                         | categoría                                |
-| tag                              | etiqueta                                 |
-| event                            | evento                                   |
-| expense / spending               | gasto / gastos                           |
-| income                           | ingresos                                 |
-| transfer                         | transferencia                            |
-| transfer fee                     | comisión de transferencia                |
-| correction                       | corrección                               |
-| opening balance                  | saldo inicial                            |
-| balance                          | saldo                                    |
-| statement                        | extracto                                 |
-| statement balance                | saldo del extracto                       |
-| reconcile / reconciliation       | conciliar / conciliación                 |
-| reconciled                       | conciliado                               |
-| import                           | importar / importación                   |
-| export                           | exportar / exportación                   |
-| net worth                        | patrimonio neto                          |
-| credit card                      | tarjeta de crédito                       |
-| available credit                 | crédito disponible                       |
-| credit limit                     | límite de crédito                        |
-| investment                       | inversión                                |
-| gain                             | rendimiento                              |
-| bank account                     | cuenta bancaria                          |
-| cash                             | efectivo                                 |
-| primary currency                 | moneda principal                         |
-| display currency                 | moneda de visualización                  |
-| exchange rate                    | tipo de cambio                           |
-| Overview                         | Resumen                                  |
-| Activity                         | Actividad                                |
-| Recurring                        | Recurrentes                              |
-| recurring payment / subscription | pago recurrente / suscripción            |
-| due                              | vence / vencido                          |
-| auto-pay                         | pago automático                          |
-| skip                             | omitir                                   |
-| upcoming                         | próximo                                  |
-| Add / quick add                  | Añadir / entrada rápida                  |
-| usual pace                       | ritmo habitual                           |
-| projection                       | proyección                               |
-| rule / payee rule                | regla / regla de beneficiario            |
-| attachment / receipt / payslip   | adjunto / recibo / nómina                |
-| archive                          | archivar                                 |
-| Settings                         | Ajustes                                  |
-| General                          | General                                  |
-| Appearance                       | Apariencia                               |
-| Profile                          | Perfil                                   |
-| Sign-in & security               | Inicio de sesión y seguridad             |
-| Import & export                  | Importar y exportar                      |
-| Delete & reset                   | Borrar y restablecer                     |
-| API & MCP                        | API y MCP                                |
-| passkey                          | llave de acceso                          |
-| two-factor authentication        | verificación en dos pasos                |
-| backup codes                     | códigos de respaldo                      |
-| AI                               | IA                                       |
-| provider                         | proveedor                                |
-| What AI can see                  | Lo que ve la IA                          |
-| Auto-categorise                  | Categorizar automáticamente              |
-| Natural-language add             | Añadir con tus palabras                  |
-| Receipt scanning                 | Escanear recibos                         |
-| Monthly recap                    | Repaso del mes                           |
-| Ask Kosha / Ask                  | Pregunta a Kosha / Preguntar             |
-| hide amounts                     | ocultar importes                         |
-| Balance correction               | Corrección de saldo                      |
-| Reconciliation adjustment        | Ajuste de conciliación                   |
-| tick / ticked                    | marcar / marcado                         |
-| difference                       | diferencia                               |
-| money in / money out             | entradas / salidas                       |
-| owed                             | adeudado                                 |
-| current account                  | cuenta corriente                         |
-| market rate                      | tipo de mercado                          |
-| fee                              | comisión                                 |
-| Out / In / Net                   | Salidas / Entradas / Neto                |
-| bill                             | factura                                  |
-| Make recurring                   | Hacer recurrente                         |
-| Needs attention                  | Requiere atención                        |
-| Coming up                        | Próximamente                             |
-| Default account                  | Cuenta predeterminada                    |
-| Payee rules                      | Reglas de beneficiarios                  |
-| Theme / Accent colour / Density  | Tema / Color de acento / Densidad        |
-| Keyboard shortcuts               | Atajos de teclado                        |
-| API key                          | clave de API                             |
-| Connected apps                   | Apps conectadas                          |
-| Request log                      | Registro de solicitudes                  |
-| Use AI features                  | Usar funciones de IA                     |
-| look-up                          | consulta                                 |
-| endpoint                         | endpoint                                 |
-| Signed-in devices                | Dispositivos con sesión iniciada         |
-| authenticator app                | app de autenticación                     |
-| Delete account                   | Eliminar cuenta de Kosha                 |
-| privacy policy / terms           | política de privacidad / términos        |
-| self-hosted copy                 | instancia propia                         |
-| Install / Reload                 | Instalar / Recargar                      |
-| tagline                          | Tus finanzas, en unos segundos cada vez. |
+| English                          | Español                                         |
+| -------------------------------- | ----------------------------------------------- |
+| Kosha                            | Kosha                                           |
+| account                          | cuenta                                          |
+| Kosha account / your account     | cuenta de Kosha                                 |
+| sign in / sign out               | iniciar sesión / cerrar sesión                  |
+| create an account / sign up      | crear una cuenta / registrarse                  |
+| demo account                     | cuenta demo                                     |
+| transaction / entry              | movimiento                                      |
+| payee                            | beneficiario                                    |
+| category                         | categoría                                       |
+| tag                              | etiqueta                                        |
+| event                            | evento                                          |
+| expense / spending               | gasto / gastos                                  |
+| income                           | ingresos                                        |
+| transfer                         | transferencia                                   |
+| transfer fee                     | comisión de transferencia                       |
+| correction                       | corrección                                      |
+| opening balance                  | saldo inicial                                   |
+| balance                          | saldo                                           |
+| statement                        | extracto                                        |
+| statement balance                | saldo del extracto                              |
+| reconcile / reconciliation       | conciliar / conciliación                        |
+| reconciled                       | conciliado                                      |
+| import                           | importar / importación                          |
+| export                           | exportar / exportación                          |
+| net worth                        | patrimonio neto                                 |
+| credit card                      | tarjeta de crédito                              |
+| available credit                 | crédito disponible                              |
+| credit limit                     | límite de crédito                               |
+| investment                       | inversión                                       |
+| gain                             | rendimiento                                     |
+| bank account                     | cuenta bancaria                                 |
+| cash                             | efectivo                                        |
+| primary currency                 | moneda principal                                |
+| display currency                 | moneda de visualización                         |
+| exchange rate                    | tipo de cambio                                  |
+| Overview                         | Resumen                                         |
+| Activity                         | Actividad                                       |
+| Recurring                        | Recurrentes                                     |
+| recurring payment / subscription | pago recurrente / suscripción                   |
+| due                              | vence / vencido                                 |
+| auto-pay                         | pago automático                                 |
+| skip                             | omitir                                          |
+| upcoming                         | próximo                                         |
+| Add / quick add                  | Añadir / entrada rápida                         |
+| usual pace                       | ritmo habitual                                  |
+| projection                       | proyección                                      |
+| rule / payee rule                | regla / regla de beneficiario                   |
+| attachment / receipt / payslip   | adjunto / recibo / nómina                       |
+| archive                          | archivar                                        |
+| Settings                         | Ajustes                                         |
+| General                          | General                                         |
+| Appearance                       | Apariencia                                      |
+| Profile                          | Perfil                                          |
+| Sign-in & security               | Inicio de sesión y seguridad                    |
+| Import & export                  | Importar y exportar                             |
+| Delete & reset                   | Borrar y restablecer                            |
+| API & MCP                        | API y MCP                                       |
+| passkey                          | llave de acceso                                 |
+| two-factor authentication        | verificación en dos pasos                       |
+| backup codes                     | códigos de respaldo                             |
+| AI                               | IA                                              |
+| provider                         | proveedor                                       |
+| What AI can see                  | Lo que ve la IA                                 |
+| Auto-categorise                  | Categorizar automáticamente                     |
+| Natural-language add             | Añadir con tus palabras                         |
+| Receipt scanning                 | Escanear recibos                                |
+| Monthly recap                    | Repaso del mes                                  |
+| Ask Kosha / Ask                  | Pregunta a Kosha / Preguntar                    |
+| hide amounts                     | ocultar importes                                |
+| Balance correction               | Corrección de saldo                             |
+| Reconciliation adjustment        | Ajuste de conciliación                          |
+| tick / ticked                    | marcar / marcado                                |
+| difference                       | diferencia                                      |
+| money in / money out             | entradas / salidas                              |
+| owed                             | adeudado                                        |
+| current account                  | cuenta corriente                                |
+| market rate                      | tipo de mercado                                 |
+| fee                              | comisión                                        |
+| Out / In / Net                   | Salidas / Entradas / Neto                       |
+| bill                             | factura                                         |
+| Make recurring                   | Hacer recurrente                                |
+| Needs attention                  | Requiere atención                               |
+| Coming up                        | Próximamente                                    |
+| Default account                  | Cuenta predeterminada                           |
+| Payee rules                      | Reglas de beneficiarios                         |
+| Theme / Accent colour / Density  | Tema / Color de acento / Densidad               |
+| Keyboard shortcuts               | Atajos de teclado                               |
+| API key                          | clave de API                                    |
+| Connected apps                   | Apps conectadas                                 |
+| Request log                      | Registro de solicitudes                         |
+| Use AI features                  | Usar funciones de IA                            |
+| look-up                          | consulta                                        |
+| endpoint                         | endpoint                                        |
+| Signed-in devices                | Dispositivos con sesión iniciada                |
+| authenticator app                | app de autenticación                            |
+| Delete account                   | Eliminar cuenta de Kosha                        |
+| privacy policy / terms           | política de privacidad / términos               |
+| self-hosted copy                 | instancia propia                                |
+| Install / Reload                 | Instalar / Recargar                             |
+| tagline                          | Anota lo que gastaste. Sabrás dónde lo dejaste. |
 
 ### Français (`fr`)
 
@@ -462,112 +462,112 @@ What each term means in Kosha. Pick one word per concept and use it everywhere.
 | privacy policy / terms           | politique de confidentialité / conditions d'utilisation |
 | self-hosted copy                 | instance auto-hébergée                                  |
 | Install / Reload                 | Installer / Recharger                                   |
-| tagline                          | Vos finances personnelles, quelques secondes à la fois. |
+| tagline                          | Notez ce que vous dépensez. Voyez où c'est passé.       |
 
 ### Português (`pt`)
 
-| English                          | Português                                       |
-| -------------------------------- | ----------------------------------------------- |
-| Kosha                            | Kosha (o Kosha)                                 |
-| account                          | conta (pl. contas)                              |
-| Kosha account / your account     | conta Kosha                                     |
-| sign in / sign out               | entrar / sair (subst.: login)                   |
-| create an account / sign up      | criar conta / cadastrar-se                      |
-| demo account                     | conta demo                                      |
-| transaction / entry              | transação / lançamento                          |
-| payee                            | favorecido                                      |
-| category                         | categoria                                       |
-| tag                              | tag (pl. tags)                                  |
-| event                            | evento                                          |
-| expense / spending               | despesa / gastos                                |
-| income                           | receita (pl. receitas)                          |
-| transfer                         | transferência                                   |
-| transfer fee                     | taxa de transferência                           |
-| correction                       | ajuste                                          |
-| opening balance                  | saldo inicial                                   |
-| balance                          | saldo                                           |
-| statement                        | extrato                                         |
-| statement balance                | saldo do extrato                                |
-| reconcile / reconciliation       | conciliar / conciliação                         |
-| reconciled                       | conciliado                                      |
-| import                           | importar / importação                           |
-| export                           | exportar / exportação                           |
-| net worth                        | patrimônio                                      |
-| credit card                      | cartão de crédito                               |
-| available credit                 | limite disponível                               |
-| credit limit                     | limite de crédito                               |
-| investment                       | investimento                                    |
-| gain                             | rendimento                                      |
-| bank account                     | conta bancária                                  |
-| cash                             | dinheiro                                        |
-| primary currency                 | moeda principal                                 |
-| display currency                 | moeda de exibição                               |
-| exchange rate                    | taxa de câmbio                                  |
-| Overview                         | Visão geral                                     |
-| Activity                         | Atividade                                       |
-| Recurring                        | Recorrentes                                     |
-| recurring payment / subscription | pagamento recorrente / assinatura               |
-| due                              | a vencer / vence                                |
-| auto-pay                         | registrar pagamentos automaticamente            |
-| skip                             | pular                                           |
-| upcoming                         | próximo                                         |
-| Add / quick add                  | Adicionar / adição rápida                       |
-| usual pace                       | ritmo habitual                                  |
-| projection                       | projeção                                        |
-| rule / payee rule                | regra / regra de favorecido                     |
-| attachment / receipt / payslip   | anexo / recibo / holerite                       |
-| archive                          | arquivar                                        |
-| Settings                         | Configurações                                   |
-| General                          | Geral                                           |
-| Appearance                       | Aparência                                       |
-| Profile                          | Perfil                                          |
-| Sign-in & security               | Login e segurança                               |
-| Import & export                  | Importar e exportar                             |
-| Delete & reset                   | Excluir e redefinir                             |
-| API & MCP                        | API e MCP                                       |
-| passkey                          | chave de acesso                                 |
-| two-factor authentication        | autenticação de dois fatores                    |
-| backup codes                     | códigos de backup                               |
-| AI                               | IA                                              |
-| provider                         | provedor                                        |
-| What AI can see                  | O que a IA pode ver                             |
-| Auto-categorise                  | Categorizar automaticamente                     |
-| Natural-language add             | Adicionar com suas palavras                     |
-| Receipt scanning                 | Leitura de recibos                              |
-| Monthly recap                    | Resumo do mês                                   |
-| Ask Kosha / Ask                  | Pergunte ao Kosha / Perguntar                   |
-| hide amounts                     | ocultar valores                                 |
-| Balance correction               | Ajuste de saldo                                 |
-| Reconciliation adjustment        | Ajuste de conciliação                           |
-| tick / ticked                    | marcar / marcado                                |
-| difference                       | diferença                                       |
-| money in / money out             | entradas / saídas                               |
-| owed                             | valor devido / devido                           |
-| current account                  | conta corrente                                  |
-| market rate                      | cotação de mercado                              |
-| fee                              | taxa                                            |
-| Out / In / Net                   | Saídas / Entradas / Líquido                     |
-| bill                             | despesa fixa                                    |
-| Make recurring                   | Tornar recorrente                               |
-| Needs attention                  | Precisa de atenção                              |
-| Coming up                        | Próximos                                        |
-| Default account                  | Conta padrão                                    |
-| Payee rules                      | Regras de favorecidos                           |
-| Theme / Accent colour / Density  | Tema / Cor de destaque / Densidade              |
-| Keyboard shortcuts               | Atalhos de teclado                              |
-| API key                          | chave de API                                    |
-| Connected apps                   | Apps conectados                                 |
-| Request log                      | Registro de solicitações                        |
-| Use AI features                  | Usar recursos de IA                             |
-| look-up                          | consulta                                        |
-| endpoint                         | endpoint                                        |
-| Signed-in devices                | Dispositivos conectados                         |
-| authenticator app                | app autenticador                                |
-| Delete account                   | Excluir conta Kosha                             |
-| privacy policy / terms           | política de privacidade / termos de uso         |
-| self-hosted copy                 | instância própria                               |
-| Install / Reload                 | Instalar / Recarregar                           |
-| tagline                          | Finanças pessoais, poucos segundos de cada vez. |
+| English                          | Português                               |
+| -------------------------------- | --------------------------------------- |
+| Kosha                            | Kosha (o Kosha)                         |
+| account                          | conta (pl. contas)                      |
+| Kosha account / your account     | conta Kosha                             |
+| sign in / sign out               | entrar / sair (subst.: login)           |
+| create an account / sign up      | criar conta / cadastrar-se              |
+| demo account                     | conta demo                              |
+| transaction / entry              | transação / lançamento                  |
+| payee                            | favorecido                              |
+| category                         | categoria                               |
+| tag                              | tag (pl. tags)                          |
+| event                            | evento                                  |
+| expense / spending               | despesa / gastos                        |
+| income                           | receita (pl. receitas)                  |
+| transfer                         | transferência                           |
+| transfer fee                     | taxa de transferência                   |
+| correction                       | ajuste                                  |
+| opening balance                  | saldo inicial                           |
+| balance                          | saldo                                   |
+| statement                        | extrato                                 |
+| statement balance                | saldo do extrato                        |
+| reconcile / reconciliation       | conciliar / conciliação                 |
+| reconciled                       | conciliado                              |
+| import                           | importar / importação                   |
+| export                           | exportar / exportação                   |
+| net worth                        | patrimônio                              |
+| credit card                      | cartão de crédito                       |
+| available credit                 | limite disponível                       |
+| credit limit                     | limite de crédito                       |
+| investment                       | investimento                            |
+| gain                             | rendimento                              |
+| bank account                     | conta bancária                          |
+| cash                             | dinheiro                                |
+| primary currency                 | moeda principal                         |
+| display currency                 | moeda de exibição                       |
+| exchange rate                    | taxa de câmbio                          |
+| Overview                         | Visão geral                             |
+| Activity                         | Atividade                               |
+| Recurring                        | Recorrentes                             |
+| recurring payment / subscription | pagamento recorrente / assinatura       |
+| due                              | a vencer / vence                        |
+| auto-pay                         | registrar pagamentos automaticamente    |
+| skip                             | pular                                   |
+| upcoming                         | próximo                                 |
+| Add / quick add                  | Adicionar / adição rápida               |
+| usual pace                       | ritmo habitual                          |
+| projection                       | projeção                                |
+| rule / payee rule                | regra / regra de favorecido             |
+| attachment / receipt / payslip   | anexo / recibo / holerite               |
+| archive                          | arquivar                                |
+| Settings                         | Configurações                           |
+| General                          | Geral                                   |
+| Appearance                       | Aparência                               |
+| Profile                          | Perfil                                  |
+| Sign-in & security               | Login e segurança                       |
+| Import & export                  | Importar e exportar                     |
+| Delete & reset                   | Excluir e redefinir                     |
+| API & MCP                        | API e MCP                               |
+| passkey                          | chave de acesso                         |
+| two-factor authentication        | autenticação de dois fatores            |
+| backup codes                     | códigos de backup                       |
+| AI                               | IA                                      |
+| provider                         | provedor                                |
+| What AI can see                  | O que a IA pode ver                     |
+| Auto-categorise                  | Categorizar automaticamente             |
+| Natural-language add             | Adicionar com suas palavras             |
+| Receipt scanning                 | Leitura de recibos                      |
+| Monthly recap                    | Resumo do mês                           |
+| Ask Kosha / Ask                  | Pergunte ao Kosha / Perguntar           |
+| hide amounts                     | ocultar valores                         |
+| Balance correction               | Ajuste de saldo                         |
+| Reconciliation adjustment        | Ajuste de conciliação                   |
+| tick / ticked                    | marcar / marcado                        |
+| difference                       | diferença                               |
+| money in / money out             | entradas / saídas                       |
+| owed                             | valor devido / devido                   |
+| current account                  | conta corrente                          |
+| market rate                      | cotação de mercado                      |
+| fee                              | taxa                                    |
+| Out / In / Net                   | Saídas / Entradas / Líquido             |
+| bill                             | despesa fixa                            |
+| Make recurring                   | Tornar recorrente                       |
+| Needs attention                  | Precisa de atenção                      |
+| Coming up                        | Próximos                                |
+| Default account                  | Conta padrão                            |
+| Payee rules                      | Regras de favorecidos                   |
+| Theme / Accent colour / Density  | Tema / Cor de destaque / Densidade      |
+| Keyboard shortcuts               | Atalhos de teclado                      |
+| API key                          | chave de API                            |
+| Connected apps                   | Apps conectados                         |
+| Request log                      | Registro de solicitações                |
+| Use AI features                  | Usar recursos de IA                     |
+| look-up                          | consulta                                |
+| endpoint                         | endpoint                                |
+| Signed-in devices                | Dispositivos conectados                 |
+| authenticator app                | app autenticador                        |
+| Delete account                   | Excluir conta Kosha                     |
+| privacy policy / terms           | política de privacidade / termos de uso |
+| self-hosted copy                 | instância própria                       |
+| Install / Reload                 | Instalar / Recarregar                   |
+| tagline                          | Anote o que gastou. Saiba onde parou.   |
 
 ### Italiano (`it`)
 
@@ -672,112 +672,112 @@ What each term means in Kosha. Pick one word per concept and use it everywhere.
 | privacy policy / terms           | informativa sulla privacy / termini di servizio |
 | self-hosted copy                 | istanza self-hosted (la tua istanza)            |
 | Install / Reload                 | Installa / Ricarica                             |
-| tagline                          | Le tue finanze, pochi secondi alla volta        |
+| tagline                          | Annota ogni spesa. Nessuna sorpresa.            |
 
 ### Nederlands (`nl`)
 
-| English                          | Nederlands                               |
-| -------------------------------- | ---------------------------------------- |
-| Kosha                            | Kosha                                    |
-| account                          | rekening (mv. rekeningen)                |
-| Kosha account / your account     | Kosha-account / je account               |
-| sign in / sign out               | inloggen / uitloggen                     |
-| create an account / sign up      | account aanmaken / registreren           |
-| demo account                     | demo-account                             |
-| transaction / entry              | transactie                               |
-| payee                            | tegenpartij                              |
-| category                         | categorie                                |
-| tag                              | tag (mv. tags)                           |
-| event                            | evenement                                |
-| expense / spending               | uitgave / uitgaven                       |
-| income                           | inkomsten                                |
-| transfer                         | overboeking                              |
-| transfer fee                     | overboekingskosten                       |
-| correction                       | correctie                                |
-| opening balance                  | beginsaldo                               |
-| balance                          | saldo                                    |
-| statement                        | afschrift                                |
-| statement balance                | saldo op afschrift                       |
-| reconcile / reconciliation       | afstemmen / afstemming                   |
-| reconciled                       | afgestemd                                |
-| import                           | importeren / import                      |
-| export                           | exporteren / export                      |
-| net worth                        | vermogen                                 |
-| credit card                      | creditcard                               |
-| available credit                 | beschikbaar krediet                      |
-| credit limit                     | kredietlimiet                            |
-| investment                       | belegging                                |
-| gain                             | rendement                                |
-| bank account                     | bankrekening                             |
-| cash                             | contant geld                             |
-| primary currency                 | hoofdvaluta                              |
-| display currency                 | weergavevaluta                           |
-| exchange rate                    | wisselkoers                              |
-| Overview                         | Overzicht                                |
-| Activity                         | Activiteit                               |
-| Recurring                        | Terugkerend                              |
-| recurring payment / subscription | terugkerende betaling / abonnement       |
-| due                              | te betalen                               |
-| auto-pay                         | automatisch vastleggen                   |
-| skip                             | overslaan                                |
-| upcoming                         | aankomend                                |
-| Add / quick add                  | Toevoegen / snel toevoegen               |
-| usual pace                       | gebruikelijke tempo                      |
-| projection                       | prognose                                 |
-| rule / payee rule                | regel / tegenpartijregel                 |
-| attachment / receipt / payslip   | bijlage / bonnetje / loonstrook          |
-| archive                          | archiveren                               |
-| Settings                         | Instellingen                             |
-| General                          | Algemeen                                 |
-| Appearance                       | Weergave                                 |
-| Profile                          | Profiel                                  |
-| Sign-in & security               | Inloggen & beveiliging                   |
-| Import & export                  | Import & export                          |
-| Delete & reset                   | Verwijderen & resetten                   |
-| API & MCP                        | API & MCP                                |
-| passkey                          | passkey                                  |
-| two-factor authentication        | tweestapsverificatie                     |
-| backup codes                     | back-upcodes                             |
-| AI                               | AI                                       |
-| provider                         | aanbieder                                |
-| What AI can see                  | Wat AI kan zien                          |
-| Auto-categorise                  | Automatisch categoriseren                |
-| Natural-language add             | Invoeren in je eigen woorden             |
-| Receipt scanning                 | Bonnetjes scannen                        |
-| Monthly recap                    | Maandterugblik                           |
-| Ask Kosha / Ask                  | Vraag Kosha / Vragen                     |
-| hide amounts                     | bedragen verbergen                       |
-| Balance correction               | Saldocorrectie                           |
-| Reconciliation adjustment        | Afstemmingscorrectie                     |
-| tick / ticked                    | afvinken / afgevinkt                     |
-| difference                       | verschil                                 |
-| money in / money out             | bij / af                                 |
-| owed                             | openstaand                               |
-| current account                  | betaalrekening                           |
-| market rate                      | marktkoers                               |
-| fee                              | kosten                                   |
-| Out / In / Net                   | Uit / In / Netto                         |
-| bill                             | vaste last (mv. vaste lasten)            |
-| Make recurring                   | Terugkerend maken                        |
-| Needs attention                  | Actie nodig                              |
-| Coming up                        | Binnenkort                               |
-| Default account                  | Standaardrekening                        |
-| Payee rules                      | Tegenpartijregels                        |
-| Theme / Accent colour / Density  | Thema / Accentkleur / Dichtheid          |
-| Keyboard shortcuts               | Sneltoetsen                              |
-| API key                          | API-sleutel                              |
-| Connected apps                   | Gekoppelde apps                          |
-| Request log                      | Verzoeklogboek                           |
-| Use AI features                  | AI-functies gebruiken                    |
-| look-up                          | opzoeking                                |
-| endpoint                         | endpoint                                 |
-| Signed-in devices                | Ingelogde apparaten                      |
-| authenticator app                | authenticator-app                        |
-| Delete account                   | Account verwijderen                      |
-| privacy policy / terms           | privacybeleid / gebruiksvoorwaarden      |
-| self-hosted copy                 | eigen installatie                        |
-| Install / Reload                 | Installeren / Opnieuw laden              |
-| tagline                          | Je financiën, een paar seconden per keer |
+| English                          | Nederlands                              |
+| -------------------------------- | --------------------------------------- |
+| Kosha                            | Kosha                                   |
+| account                          | rekening (mv. rekeningen)               |
+| Kosha account / your account     | Kosha-account / je account              |
+| sign in / sign out               | inloggen / uitloggen                    |
+| create an account / sign up      | account aanmaken / registreren          |
+| demo account                     | demo-account                            |
+| transaction / entry              | transactie                              |
+| payee                            | tegenpartij                             |
+| category                         | categorie                               |
+| tag                              | tag (mv. tags)                          |
+| event                            | evenement                               |
+| expense / spending               | uitgave / uitgaven                      |
+| income                           | inkomsten                               |
+| transfer                         | overboeking                             |
+| transfer fee                     | overboekingskosten                      |
+| correction                       | correctie                               |
+| opening balance                  | beginsaldo                              |
+| balance                          | saldo                                   |
+| statement                        | afschrift                               |
+| statement balance                | saldo op afschrift                      |
+| reconcile / reconciliation       | afstemmen / afstemming                  |
+| reconciled                       | afgestemd                               |
+| import                           | importeren / import                     |
+| export                           | exporteren / export                     |
+| net worth                        | vermogen                                |
+| credit card                      | creditcard                              |
+| available credit                 | beschikbaar krediet                     |
+| credit limit                     | kredietlimiet                           |
+| investment                       | belegging                               |
+| gain                             | rendement                               |
+| bank account                     | bankrekening                            |
+| cash                             | contant geld                            |
+| primary currency                 | hoofdvaluta                             |
+| display currency                 | weergavevaluta                          |
+| exchange rate                    | wisselkoers                             |
+| Overview                         | Overzicht                               |
+| Activity                         | Activiteit                              |
+| Recurring                        | Terugkerend                             |
+| recurring payment / subscription | terugkerende betaling / abonnement      |
+| due                              | te betalen                              |
+| auto-pay                         | automatisch vastleggen                  |
+| skip                             | overslaan                               |
+| upcoming                         | aankomend                               |
+| Add / quick add                  | Toevoegen / snel toevoegen              |
+| usual pace                       | gebruikelijke tempo                     |
+| projection                       | prognose                                |
+| rule / payee rule                | regel / tegenpartijregel                |
+| attachment / receipt / payslip   | bijlage / bonnetje / loonstrook         |
+| archive                          | archiveren                              |
+| Settings                         | Instellingen                            |
+| General                          | Algemeen                                |
+| Appearance                       | Weergave                                |
+| Profile                          | Profiel                                 |
+| Sign-in & security               | Inloggen & beveiliging                  |
+| Import & export                  | Import & export                         |
+| Delete & reset                   | Verwijderen & resetten                  |
+| API & MCP                        | API & MCP                               |
+| passkey                          | passkey                                 |
+| two-factor authentication        | tweestapsverificatie                    |
+| backup codes                     | back-upcodes                            |
+| AI                               | AI                                      |
+| provider                         | aanbieder                               |
+| What AI can see                  | Wat AI kan zien                         |
+| Auto-categorise                  | Automatisch categoriseren               |
+| Natural-language add             | Invoeren in je eigen woorden            |
+| Receipt scanning                 | Bonnetjes scannen                       |
+| Monthly recap                    | Maandterugblik                          |
+| Ask Kosha / Ask                  | Vraag Kosha / Vragen                    |
+| hide amounts                     | bedragen verbergen                      |
+| Balance correction               | Saldocorrectie                          |
+| Reconciliation adjustment        | Afstemmingscorrectie                    |
+| tick / ticked                    | afvinken / afgevinkt                    |
+| difference                       | verschil                                |
+| money in / money out             | bij / af                                |
+| owed                             | openstaand                              |
+| current account                  | betaalrekening                          |
+| market rate                      | marktkoers                              |
+| fee                              | kosten                                  |
+| Out / In / Net                   | Uit / In / Netto                        |
+| bill                             | vaste last (mv. vaste lasten)           |
+| Make recurring                   | Terugkerend maken                       |
+| Needs attention                  | Actie nodig                             |
+| Coming up                        | Binnenkort                              |
+| Default account                  | Standaardrekening                       |
+| Payee rules                      | Tegenpartijregels                       |
+| Theme / Accent colour / Density  | Thema / Accentkleur / Dichtheid         |
+| Keyboard shortcuts               | Sneltoetsen                             |
+| API key                          | API-sleutel                             |
+| Connected apps                   | Gekoppelde apps                         |
+| Request log                      | Verzoeklogboek                          |
+| Use AI features                  | AI-functies gebruiken                   |
+| look-up                          | opzoeking                               |
+| endpoint                         | endpoint                                |
+| Signed-in devices                | Ingelogde apparaten                     |
+| authenticator app                | authenticator-app                       |
+| Delete account                   | Account verwijderen                     |
+| privacy policy / terms           | privacybeleid / gebruiksvoorwaarden     |
+| self-hosted copy                 | eigen installatie                       |
+| Install / Reload                 | Installeren / Opnieuw laden             |
+| tagline                          | Uitgave genoteerd. Maand gecontroleerd. |
 
 ### Русский (`ru`)
 
@@ -882,7 +882,7 @@ What each term means in Kosha. Pick one word per concept and use it everywhere.
 | privacy policy / terms           | политика конфиденциальности / условия использования |
 | self-hosted copy                 | собственный экземпляр                               |
 | Install / Reload                 | Установить / Перезагрузить                          |
-| tagline                          | Личные финансы — по паре секунд за раз.             |
+| tagline                          | Потратили — записали. Куда ушло — узнали.           |
 
 ### 日本語 (`ja`)
 
@@ -987,112 +987,112 @@ What each term means in Kosha. Pick one word per concept and use it everywhere.
 | privacy policy / terms           | プライバシーポリシー / 利用規約      |
 | self-hosted copy                 | 自分専用のKosha（セルフホスト）      |
 | Install / Reload                 | インストール / 再読み込み            |
-| tagline                          | 家計管理を、数秒ずつ。               |
+| tagline                          | サッと記録、ちゃんと把握。           |
 
 ### 中文 (`zh`)
 
-| English                          | 中文                   |
-| -------------------------------- | ---------------------- |
-| Kosha                            | Kosha                  |
-| account                          | 账户                   |
-| Kosha account / your account     | Kosha 账号             |
-| sign in / sign out               | 登录 / 退出登录        |
-| create an account / sign up      | 创建账号 / 注册        |
-| demo account                     | 演示账号               |
-| transaction / entry              | 交易                   |
-| payee                            | 交易对象               |
-| category                         | 分类                   |
-| tag                              | 标签                   |
-| event                            | 事件                   |
-| expense / spending               | 支出                   |
-| income                           | 收入                   |
-| transfer                         | 转账                   |
-| transfer fee                     | 转账手续费             |
-| correction                       | 更正                   |
-| opening balance                  | 期初余额               |
-| balance                          | 余额                   |
-| statement                        | 对账单                 |
-| statement balance                | 对账单余额             |
-| reconcile / reconciliation       | 对账                   |
-| reconciled                       | 已对账                 |
-| import                           | 导入                   |
-| export                           | 导出                   |
-| net worth                        | 净资产                 |
-| credit card                      | 信用卡                 |
-| available credit                 | 可用额度               |
-| credit limit                     | 信用额度               |
-| investment                       | 投资                   |
-| gain                             | 收益                   |
-| bank account                     | 银行账户               |
-| cash                             | 现金                   |
-| primary currency                 | 主货币                 |
-| display currency                 | 显示货币               |
-| exchange rate                    | 汇率                   |
-| Overview                         | 概览                   |
-| Activity                         | 明细                   |
-| Recurring                        | 定期                   |
-| recurring payment / subscription | 定期付款 / 订阅        |
-| due                              | 到期                   |
-| auto-pay                         | 自动记账               |
-| skip                             | 跳过                   |
-| upcoming                         | 即将到期               |
-| Add / quick add                  | 添加 / 快速添加        |
-| usual pace                       | 往常节奏               |
-| projection                       | 预计                   |
-| rule / payee rule                | 规则 / 交易对象规则    |
-| attachment / receipt / payslip   | 附件 / 收据 / 工资单   |
-| archive                          | 归档                   |
-| Settings                         | 设置                   |
-| General                          | 通用                   |
-| Appearance                       | 外观                   |
-| Profile                          | 个人资料               |
-| Sign-in & security               | 登录与安全             |
-| Import & export                  | 导入与导出             |
-| Delete & reset                   | 删除与重置             |
-| API & MCP                        | API 与 MCP             |
-| passkey                          | 通行密钥               |
-| two-factor authentication        | 双重验证               |
-| backup codes                     | 备用码                 |
-| AI                               | AI                     |
-| provider                         | 服务商                 |
-| What AI can see                  | AI 可见内容            |
-| Auto-categorise                  | 自动分类               |
-| Natural-language add             | 自然语言添加           |
-| Receipt scanning                 | 收据识别               |
-| Monthly recap                    | 月度回顾               |
-| Ask Kosha / Ask                  | 问问 Kosha / 提问      |
-| hide amounts                     | 隐藏金额               |
-| Balance correction               | 余额更正               |
-| Reconciliation adjustment        | 对账调整               |
-| tick / ticked                    | 勾选 / 已勾选          |
-| difference                       | 差额                   |
-| money in / money out             | 入账 / 出账            |
-| owed                             | 欠款                   |
-| current account                  | 活期账户               |
-| market rate                      | 市场汇率               |
-| fee                              | 手续费                 |
-| Out / In / Net                   | 支出 / 收入 / 净额     |
-| bill                             | 账单                   |
-| Make recurring                   | 设为定期               |
-| Needs attention                  | 待处理                 |
-| Coming up                        | 即将到来               |
-| Default account                  | 默认账户               |
-| Payee rules                      | 交易对象规则           |
-| Theme / Accent colour / Density  | 主题 / 强调色 / 密度   |
-| Keyboard shortcuts               | 键盘快捷键             |
-| API key                          | API 密钥               |
-| Connected apps                   | 已连接的应用           |
-| Request log                      | 请求日志               |
-| Use AI features                  | 使用 AI 功能           |
-| look-up                          | 查询                   |
-| endpoint                         | 端点                   |
-| Signed-in devices                | 已登录设备             |
-| authenticator app                | 身份验证器应用         |
-| Delete account                   | 删除 Kosha 账号        |
-| privacy policy / terms           | 隐私政策 / 服务条款    |
-| self-hosted copy                 | 自托管实例             |
-| Install / Reload                 | 安装 / 重新加载        |
-| tagline                          | 个人记账，每次只需几秒 |
+| English                          | 中文                 |
+| -------------------------------- | -------------------- |
+| Kosha                            | Kosha                |
+| account                          | 账户                 |
+| Kosha account / your account     | Kosha 账号           |
+| sign in / sign out               | 登录 / 退出登录      |
+| create an account / sign up      | 创建账号 / 注册      |
+| demo account                     | 演示账号             |
+| transaction / entry              | 交易                 |
+| payee                            | 交易对象             |
+| category                         | 分类                 |
+| tag                              | 标签                 |
+| event                            | 事件                 |
+| expense / spending               | 支出                 |
+| income                           | 收入                 |
+| transfer                         | 转账                 |
+| transfer fee                     | 转账手续费           |
+| correction                       | 更正                 |
+| opening balance                  | 期初余额             |
+| balance                          | 余额                 |
+| statement                        | 对账单               |
+| statement balance                | 对账单余额           |
+| reconcile / reconciliation       | 对账                 |
+| reconciled                       | 已对账               |
+| import                           | 导入                 |
+| export                           | 导出                 |
+| net worth                        | 净资产               |
+| credit card                      | 信用卡               |
+| available credit                 | 可用额度             |
+| credit limit                     | 信用额度             |
+| investment                       | 投资                 |
+| gain                             | 收益                 |
+| bank account                     | 银行账户             |
+| cash                             | 现金                 |
+| primary currency                 | 主货币               |
+| display currency                 | 显示货币             |
+| exchange rate                    | 汇率                 |
+| Overview                         | 概览                 |
+| Activity                         | 明细                 |
+| Recurring                        | 定期                 |
+| recurring payment / subscription | 定期付款 / 订阅      |
+| due                              | 到期                 |
+| auto-pay                         | 自动记账             |
+| skip                             | 跳过                 |
+| upcoming                         | 即将到期             |
+| Add / quick add                  | 添加 / 快速添加      |
+| usual pace                       | 往常节奏             |
+| projection                       | 预计                 |
+| rule / payee rule                | 规则 / 交易对象规则  |
+| attachment / receipt / payslip   | 附件 / 收据 / 工资单 |
+| archive                          | 归档                 |
+| Settings                         | 设置                 |
+| General                          | 通用                 |
+| Appearance                       | 外观                 |
+| Profile                          | 个人资料             |
+| Sign-in & security               | 登录与安全           |
+| Import & export                  | 导入与导出           |
+| Delete & reset                   | 删除与重置           |
+| API & MCP                        | API 与 MCP           |
+| passkey                          | 通行密钥             |
+| two-factor authentication        | 双重验证             |
+| backup codes                     | 备用码               |
+| AI                               | AI                   |
+| provider                         | 服务商               |
+| What AI can see                  | AI 可见内容          |
+| Auto-categorise                  | 自动分类             |
+| Natural-language add             | 自然语言添加         |
+| Receipt scanning                 | 收据识别             |
+| Monthly recap                    | 月度回顾             |
+| Ask Kosha / Ask                  | 问问 Kosha / 提问    |
+| hide amounts                     | 隐藏金额             |
+| Balance correction               | 余额更正             |
+| Reconciliation adjustment        | 对账调整             |
+| tick / ticked                    | 勾选 / 已勾选        |
+| difference                       | 差额                 |
+| money in / money out             | 入账 / 出账          |
+| owed                             | 欠款                 |
+| current account                  | 活期账户             |
+| market rate                      | 市场汇率             |
+| fee                              | 手续费               |
+| Out / In / Net                   | 支出 / 收入 / 净额   |
+| bill                             | 账单                 |
+| Make recurring                   | 设为定期             |
+| Needs attention                  | 待处理               |
+| Coming up                        | 即将到来             |
+| Default account                  | 默认账户             |
+| Payee rules                      | 交易对象规则         |
+| Theme / Accent colour / Density  | 主题 / 强调色 / 密度 |
+| Keyboard shortcuts               | 键盘快捷键           |
+| API key                          | API 密钥             |
+| Connected apps                   | 已连接的应用         |
+| Request log                      | 请求日志             |
+| Use AI features                  | 使用 AI 功能         |
+| look-up                          | 查询                 |
+| endpoint                         | 端点                 |
+| Signed-in devices                | 已登录设备           |
+| authenticator app                | 身份验证器应用       |
+| Delete account                   | 删除 Kosha 账号      |
+| privacy policy / terms           | 隐私政策 / 服务条款  |
+| self-hosted copy                 | 自托管实例           |
+| Install / Reload                 | 安装 / 重新加载      |
+| tagline                          | 花了就记，心里有底。 |
 
 ### 한국어 (`ko`)
 
@@ -1197,109 +1197,109 @@ What each term means in Kosha. Pick one word per concept and use it everywhere.
 | privacy policy / terms           | 개인정보 처리방침 / 이용약관    |
 | self-hosted copy                 | 직접 운영하는 Kosha             |
 | Install / Reload                 | 설치 / 새로고침                 |
-| tagline                          | 몇 초면 끝나는 내 돈 관리       |
+| tagline                          | 쓴 만큼 적고, 간 곳은 알고.     |
 
 ### हिन्दी (`hi`)
 
-| English                          | हिन्दी                          |
-| -------------------------------- | ------------------------------ |
-| Kosha                            | Kosha                          |
-| account                          | खाता (बहुवचन खाते)               |
-| Kosha account / your account     | Kosha अकाउंट / आपका अकाउंट       |
-| sign in / sign out               | साइन इन / साइन आउट             |
-| create an account / sign up      | अकाउंट बनाएँ / साइन अप           |
-| demo account                     | डेमो अकाउंट                      |
-| transaction / entry              | लेन-देन / एंट्री                   |
-| payee                            | पार्टी                          |
-| category                         | श्रेणी                           |
-| tag                              | टैग                             |
-| event                            | इवेंट                            |
-| expense / spending               | खर्च                            |
-| income                           | आय                             |
-| transfer                         | ट्रांसफ़र                         |
-| transfer fee                     | ट्रांसफ़र शुल्क                     |
-| correction                       | सुधार                           |
-| opening balance                  | शुरुआती बैलेंस                      |
-| balance                          | बैलेंस                            |
-| statement                        | स्टेटमेंट                          |
-| statement balance                | स्टेटमेंट बैलेंस                      |
-| reconcile / reconciliation       | मिलान करें / मिलान               |
-| reconciled                       | मिलान हो चुका                   |
-| import                           | इम्पोर्ट                         |
-| export                           | एक्सपोर्ट                        |
-| net worth                        | नेट वर्थ                         |
-| credit card                      | क्रेडिट कार्ड                     |
-| available credit                 | उपलब्ध क्रेडिट                    |
-| credit limit                     | क्रेडिट लिमिट                    |
-| investment                       | निवेश                           |
-| gain                             | रिटर्न                          |
-| bank account                     | बैंक खाता                        |
-| cash                             | नकद                            |
-| primary currency                 | मुख्य मुद्रा                       |
-| display currency                 | डिस्प्ले मुद्रा                     |
-| exchange rate                    | एक्सचेंज रेट                       |
-| Overview                         | ओवरव्यू                          |
-| Activity                         | गतिविधि                        |
-| Recurring                        | नियमित                         |
-| recurring payment / subscription | नियमित भुगतान / सब्सक्रिप्शन       |
-| due                              | देय                             |
-| auto-pay                         | भुगतान अपने-आप दर्ज करें            |
-| skip                             | छोड़ें                            |
-| upcoming                         | आने वाले                         |
-| Add / quick add                  | जोड़ें / झटपट जोड़ें                 |
-| usual pace                       | सामान्य रफ़्तार                   |
-| projection                       | अनुमान                          |
-| rule / payee rule                | नियम / पार्टी नियम              |
-| attachment / receipt / payslip   | अटैचमेंट / रसीद / सैलरी स्लिप       |
-| archive                          | आर्काइव करें                      |
-| Settings                         | सेटिंग्स                          |
-| General                          | सामान्य                         |
-| Appearance                       | रूप-रंग                          |
-| Profile                          | प्रोफ़ाइल                        |
-| Sign-in & security               | साइन-इन और सुरक्षा               |
-| Import & export                  | इम्पोर्ट और एक्सपोर्ट              |
-| Delete & reset                   | हटाएँ और रीसेट                   |
-| API & MCP                        | API और MCP                     |
-| passkey                          | पासकी                          |
-| two-factor authentication        | टू-फ़ैक्टर ऑथेंटिकेशन                 |
-| backup codes                     | बैकअप कोड                       |
-| AI                               | AI                             |
-| provider                         | प्रोवाइडर                       |
-| What AI can see                  | AI क्या देख सकता है               |
-| Auto-categorise                  | अपने-आप श्रेणी चुनना               |
-| Natural-language add             | अपने शब्दों में जोड़ना               |
-| Receipt scanning                 | रसीद स्कैन करना                  |
-| Monthly recap                    | मासिक सारांश                    |
-| Ask Kosha / Ask                  | Kosha से पूछें / पूछें                |
-| hide amounts                     | रकम छिपाएँ                      |
-| Balance correction               | बैलेंस सुधार                       |
-| Reconciliation adjustment        | मिलान समायोजन                  |
-| tick / ticked                    | टिक करें / टिक किया              |
-| difference                       | अंतर                            |
-| money in / money out             | जमा / निकासी                   |
-| owed                             | बकाया                          |
-| current account                  | चालू खाता                       |
-| market rate                      | बाज़ार दर                       |
-| fee                              | शुल्क                            |
-| Out / In / Net                   | निकासी / जमा / नेट              |
-| bill                             | बिल                            |
-| Make recurring                   | नियमित बनाएँ                    |
-| Needs attention                  | ध्यान दें                         |
-| Coming up                        | जल्द आने वाले                     |
-| Default account                  | डिफ़ॉल्ट खाता                    |
-| Payee rules                      | पार्टी नियम                     |
-| Theme / Accent colour / Density  | थीम / एक्सेंट रंग / सघनता          |
-| Keyboard shortcuts               | कीबोर्ड शॉर्टकट                  |
-| API key                          | API कुंजी                        |
-| Connected apps                   | जुड़े हुए ऐप                       |
-| Request log                      | रिक्वेस्ट लॉग                     |
-| Use AI features                  | AI फ़ीचर इस्तेमाल करें              |
-| look-up                          | खोज                            |
-| endpoint                         | एंडपॉइंट                         |
-| Signed-in devices                | साइन-इन वाले डिवाइस             |
-| authenticator app                | ऑथेंटिकेटर ऐप                     |
-| Delete account                   | अकाउंट हटाएँ                     |
-| privacy policy / terms           | गोपनीयता नीति / सेवा की शर्तें     |
-| self-hosted copy                 | अपनी कॉपी                      |
-| Install / Reload                 | इंस्टॉल करें / फिर से लोड करें        |
-| tagline                          | आपका हिसाब-किताब, बस कुछ सेकंड में। |
+| English                          | हिन्दी                                           |
+| -------------------------------- | ----------------------------------------------- |
+| Kosha                            | Kosha                                           |
+| account                          | खाता (बहुवचन खाते)                                |
+| Kosha account / your account     | Kosha अकाउंट / आपका अकाउंट                        |
+| sign in / sign out               | साइन इन / साइन आउट                              |
+| create an account / sign up      | अकाउंट बनाएँ / साइन अप                            |
+| demo account                     | डेमो अकाउंट                                       |
+| transaction / entry              | लेन-देन / एंट्री                                    |
+| payee                            | पार्टी                                           |
+| category                         | श्रेणी                                            |
+| tag                              | टैग                                              |
+| event                            | इवेंट                                             |
+| expense / spending               | खर्च                                             |
+| income                           | आय                                              |
+| transfer                         | ट्रांसफ़र                                          |
+| transfer fee                     | ट्रांसफ़र शुल्क                                      |
+| correction                       | सुधार                                            |
+| opening balance                  | शुरुआती बैलेंस                                       |
+| balance                          | बैलेंस                                             |
+| statement                        | स्टेटमेंट                                           |
+| statement balance                | स्टेटमेंट बैलेंस                                       |
+| reconcile / reconciliation       | मिलान करें / मिलान                                |
+| reconciled                       | मिलान हो चुका                                    |
+| import                           | इम्पोर्ट                                          |
+| export                           | एक्सपोर्ट                                         |
+| net worth                        | नेट वर्थ                                          |
+| credit card                      | क्रेडिट कार्ड                                      |
+| available credit                 | उपलब्ध क्रेडिट                                     |
+| credit limit                     | क्रेडिट लिमिट                                     |
+| investment                       | निवेश                                            |
+| gain                             | रिटर्न                                           |
+| bank account                     | बैंक खाता                                         |
+| cash                             | नकद                                             |
+| primary currency                 | मुख्य मुद्रा                                        |
+| display currency                 | डिस्प्ले मुद्रा                                      |
+| exchange rate                    | एक्सचेंज रेट                                        |
+| Overview                         | ओवरव्यू                                           |
+| Activity                         | गतिविधि                                         |
+| Recurring                        | नियमित                                          |
+| recurring payment / subscription | नियमित भुगतान / सब्सक्रिप्शन                        |
+| due                              | देय                                              |
+| auto-pay                         | भुगतान अपने-आप दर्ज करें                             |
+| skip                             | छोड़ें                                             |
+| upcoming                         | आने वाले                                          |
+| Add / quick add                  | जोड़ें / झटपट जोड़ें                                  |
+| usual pace                       | सामान्य रफ़्तार                                    |
+| projection                       | अनुमान                                           |
+| rule / payee rule                | नियम / पार्टी नियम                               |
+| attachment / receipt / payslip   | अटैचमेंट / रसीद / सैलरी स्लिप                        |
+| archive                          | आर्काइव करें                                       |
+| Settings                         | सेटिंग्स                                           |
+| General                          | सामान्य                                          |
+| Appearance                       | रूप-रंग                                           |
+| Profile                          | प्रोफ़ाइल                                         |
+| Sign-in & security               | साइन-इन और सुरक्षा                                |
+| Import & export                  | इम्पोर्ट और एक्सपोर्ट                               |
+| Delete & reset                   | हटाएँ और रीसेट                                    |
+| API & MCP                        | API और MCP                                      |
+| passkey                          | पासकी                                           |
+| two-factor authentication        | टू-फ़ैक्टर ऑथेंटिकेशन                                  |
+| backup codes                     | बैकअप कोड                                        |
+| AI                               | AI                                              |
+| provider                         | प्रोवाइडर                                        |
+| What AI can see                  | AI क्या देख सकता है                                |
+| Auto-categorise                  | अपने-आप श्रेणी चुनना                                |
+| Natural-language add             | अपने शब्दों में जोड़ना                                |
+| Receipt scanning                 | रसीद स्कैन करना                                   |
+| Monthly recap                    | मासिक सारांश                                     |
+| Ask Kosha / Ask                  | Kosha से पूछें / पूछें                                 |
+| hide amounts                     | रकम छिपाएँ                                       |
+| Balance correction               | बैलेंस सुधार                                        |
+| Reconciliation adjustment        | मिलान समायोजन                                   |
+| tick / ticked                    | टिक करें / टिक किया                               |
+| difference                       | अंतर                                             |
+| money in / money out             | जमा / निकासी                                    |
+| owed                             | बकाया                                           |
+| current account                  | चालू खाता                                        |
+| market rate                      | बाज़ार दर                                        |
+| fee                              | शुल्क                                             |
+| Out / In / Net                   | निकासी / जमा / नेट                               |
+| bill                             | बिल                                             |
+| Make recurring                   | नियमित बनाएँ                                     |
+| Needs attention                  | ध्यान दें                                          |
+| Coming up                        | जल्द आने वाले                                      |
+| Default account                  | डिफ़ॉल्ट खाता                                     |
+| Payee rules                      | पार्टी नियम                                      |
+| Theme / Accent colour / Density  | थीम / एक्सेंट रंग / सघनता                           |
+| Keyboard shortcuts               | कीबोर्ड शॉर्टकट                                   |
+| API key                          | API कुंजी                                         |
+| Connected apps                   | जुड़े हुए ऐप                                        |
+| Request log                      | रिक्वेस्ट लॉग                                      |
+| Use AI features                  | AI फ़ीचर इस्तेमाल करें                               |
+| look-up                          | खोज                                             |
+| endpoint                         | एंडपॉइंट                                          |
+| Signed-in devices                | साइन-इन वाले डिवाइस                              |
+| authenticator app                | ऑथेंटिकेटर ऐप                                      |
+| Delete account                   | अकाउंट हटाएँ                                      |
+| privacy policy / terms           | गोपनीयता नीति / सेवा की शर्तें                      |
+| self-hosted copy                 | अपनी कॉपी                                       |
+| Install / Reload                 | इंस्टॉल करें / फिर से लोड करें                         |
+| tagline                          | जो खर्च किया, लिख लीजिए। पैसा कहाँ गया, जान लीजिए। |

@@ -7,7 +7,7 @@
   "landing_view_on_github": "GitHub पर देखें",
   "landing_try_demo": "डेमो अकाउंट आज़माएँ",
   "landing_ai_badge": "AI",
-  "landing_hero_title": "{#first}आपका हिसाब-किताब,{/first} {#second}बस कुछ सेकंड में{/second}",
+  "landing_hero_title": "{#first}जो खर्च किया, लिख लीजिए।{/first} {#second}पैसा कहाँ गया, जान लीजिए।{/second}",
   "landing_hero_lead": "भुगतान करते ही हर भुगतान अपने फ़ोन पर जोड़ें। डेस्क पर बैठकर देखें कि महीना कैसा चल रहा है, और उसे अपने बैंक से मिलाएँ।",
   "landing_hero_licence": "मुफ़्त और ओपन सोर्स, MIT लाइसेंस के तहत।",
   "landing_pocket_title": "पिछले हफ़्ते में {seconds} सेकंड लगे",

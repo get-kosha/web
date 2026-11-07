@@ -1,9 +1,9 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
   "site_description": "Adicione cada pagamento em poucos segundos e veja para onde foi o mês. Um app de finanças pessoais gratuito e de código aberto para todas as suas contas, em qualquer moeda.",
-  "site_tagline": "Finanças pessoais, poucos segundos de cada vez.",
-  "site_landing_title": "Kosha · Finanças pessoais, poucos segundos de cada vez",
-  "site_og_image_alt": "Kosha: finanças pessoais, poucos segundos de cada vez",
+  "site_tagline": "Anote o que gastou. Saiba onde parou.",
+  "site_landing_title": "Kosha · Anote o que gastou. Saiba onde parou.",
+  "site_og_image_alt": "Kosha: Anote o que gastou. Saiba onde parou.",
   "pwa_synced": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],

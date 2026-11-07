@@ -5,7 +5,7 @@
   </picture>
 </p>
 
-<p align="center"><strong>Personal finance, a few seconds at a time.</strong></p>
+<p align="center"><strong>Jot down what you spent. Know where it went.</strong></p>
 
 <p align="center">A personal finance tracker for every account you have, in any currency. Add each payment as you pay, and see where the month went.<br><a href="https://getkosha.app">getkosha.app</a></p>
 

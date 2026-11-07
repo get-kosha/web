@@ -1,9 +1,9 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
   "site_description": "每笔收支几秒钟记完，月底一眼看清钱花在了哪里。一款免费、开源的个人记账工具，支持所有账户和任意货币。",
-  "site_tagline": "个人记账，每次只需几秒。",
-  "site_landing_title": "Kosha · 个人记账，每次只需几秒",
-  "site_og_image_alt": "Kosha：个人记账，每次只需几秒",
+  "site_tagline": "花了就记，心里有底。",
+  "site_landing_title": "Kosha · 花了就记，心里有底。",
+  "site_og_image_alt": "Kosha：花了就记，心里有底。",
   "pwa_synced": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],

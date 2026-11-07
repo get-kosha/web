@@ -1,9 +1,9 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
   "site_description": "Добавляйте каждый платёж за пару секунд и смотрите, куда ушли деньги за месяц. Бесплатный трекер личных финансов с открытым исходным кодом — для любых счетов и в любой валюте.",
-  "site_tagline": "Личные финансы — по паре секунд за раз.",
-  "site_landing_title": "Kosha · Личные финансы — по паре секунд за раз",
-  "site_og_image_alt": "Kosha: личные финансы — по паре секунд за раз",
+  "site_tagline": "Потратили — записали. Куда ушло — узнали.",
+  "site_landing_title": "Kosha · Потратили — записали. Куда ушло — узнали.",
+  "site_og_image_alt": "Kosha: Потратили — записали. Куда ушло — узнали.",
   "pwa_synced": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],

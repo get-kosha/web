@@ -7,7 +7,7 @@
   "landing_view_on_github": "在 GitHub 上查看",
   "landing_try_demo": "试用演示账号",
   "landing_ai_badge": "AI",
-  "landing_hero_title": "{#first}个人记账，{/first}{#second}每次只需几秒{/second}",
+  "landing_hero_title": "{#first}花了就记，{/first}{#second}心里有底。{/second}",
   "landing_hero_lead": "付款时随手在手机上记一笔。坐到桌前，看看这个月过得怎么样，再和银行对一对账。",
   "landing_hero_licence": "免费开源，采用 MIT 许可证。",
   "landing_pocket_title": "上周只花了 {seconds} 秒",

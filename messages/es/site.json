@@ -1,9 +1,9 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
   "site_description": "Anota cada pago en unos segundos y luego mira en qué se fue el mes. Una herramienta de finanzas personales gratuita y de código abierto para todas tus cuentas, en cualquier moneda.",
-  "site_tagline": "Tus finanzas, en unos segundos cada vez.",
-  "site_landing_title": "Kosha · Tus finanzas, en unos segundos cada vez",
-  "site_og_image_alt": "Kosha: tus finanzas, en unos segundos cada vez",
+  "site_tagline": "Anota lo que gastaste. Sabrás dónde lo dejaste.",
+  "site_landing_title": "Kosha · Anota lo que gastaste. Sabrás dónde lo dejaste.",
+  "site_og_image_alt": "Kosha: Anota lo que gastaste. Sabrás dónde lo dejaste.",
   "pwa_synced": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],

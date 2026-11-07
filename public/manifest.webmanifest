@@ -2,7 +2,7 @@
   "id": "/",
   "name": "Kosha",
   "short_name": "Kosha",
-  "description": "Personal finance, a few seconds at a time.",
+  "description": "Jot down what you spent. Know where it went.",
   "start_url": "/add",
   "scope": "/",
   "display": "standalone",
