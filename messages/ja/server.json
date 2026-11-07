@@ -59,5 +59,6 @@
   "server_connect_first": "先に接続してください",
   "server_password_min_length": "10文字以上にしてください",
   "server_avatars_off": "このサーバーではプロフィール画像が設定されていません",
-  "server_avatar_unreadable": "その画像を読み込めませんでした"
+  "server_avatar_unreadable": "その画像を読み込めませんでした",
+  "server_request_too_large": "送信するにはサイズが大きすぎます。小さいファイルにするか、取引の数を減らしてください。"
 }

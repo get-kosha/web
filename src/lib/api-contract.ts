@@ -5,6 +5,7 @@
 
 import { z } from "zod"
 import { MAX_TAGS, PREFS } from "./core.ts"
+import { m } from "../paraglide/messages.js"
 
 export type Scope = "read" | "write"
 type Method = "GET" | "POST" | "PATCH" | "PUT" | "DELETE"
@@ -55,6 +56,8 @@ const Cents = z
   .number()
   .int()
   .describe("Minor units (cents). Negative is money out, positive is money in. €12.50 = 1250.")
+// Messages a person can trigger are localized: Kosha's apps call /api/v1 in their own language.
+const Amount = Cents.refine((n) => n !== 0, { error: () => m.server_amount_required() })
 const Positive = z.number().int().positive()
 const Day = z
   .string()
@@ -471,7 +474,7 @@ export const OPERATIONS = {
             ),
           accountId: Id,
           payee: Payee,
-          amount: Cents.refine((n) => n !== 0, "Amount can't be 0"),
+          amount: Amount,
           categoryId: Id.optional().describe("Left out: your payee rules, then AI when Auto-categorise is on."),
           subcategoryId: Id.optional().describe("A subcategory of categoryId."),
           day: Day.optional(),
@@ -517,7 +520,7 @@ export const OPERATIONS = {
           id: Id,
           accountId: Id.optional(),
           payee: Payee.optional(),
-          amount: Cents.refine((n) => n !== 0, "Amount can't be 0").optional(),
+          amount: Amount.optional(),
           categoryId: Id.optional(),
           subcategoryId: Id.nullable().optional().describe("null clears it."),
           day: Day.optional(),
@@ -609,8 +612,8 @@ export const OPERATIONS = {
             time: Time.optional().describe("Left out: now for today, else noon."),
             note: Note.default(""),
           })
-          .refine((t) => t.fromAccountId !== t.toAccountId, "Pick two different accounts")
-          .refine((t) => t.fee < t.sent, "The fee must be less than the amount sent"),
+          .refine((t) => t.fromAccountId !== t.toAccountId, { error: () => m.server_pick_two_accounts() })
+          .refine((t) => t.fee < t.sent, { error: () => m.server_fee_too_high() }),
         50
       ),
     }),
@@ -707,7 +710,9 @@ export const OPERATIONS = {
         startDay: Day.nullable().default(null),
         endDay: Day.nullable().default(null),
       })
-      .refine((e) => !e.startDay || !e.endDay || e.endDay >= e.startDay, "The end is before the start"),
+      .refine((e) => !e.startDay || !e.endDay || e.endDay >= e.startDay, {
+        error: () => m.server_event_end_before_start(),
+      }),
     output: Event,
     example: {
       input: { name: "Rome trip", startDay: "2026-10-10", endDay: "2026-10-17" },
@@ -1007,7 +1012,7 @@ export const OPERATIONS = {
     input: z.object({
       name: z.string().trim().min(1).max(200),
       accountId: Id,
-      amount: Cents.refine((n) => n !== 0, "Amount can't be 0"),
+      amount: Amount,
       categoryId: Id.optional().describe("Required unless toAccountId is set."),
       every: z.number().int().min(1).max(365).default(1),
       unit: Unit.default("month"),
@@ -1044,7 +1049,7 @@ export const OPERATIONS = {
       id: Id,
       name: z.string().trim().min(1).max(200).optional(),
       accountId: Id.optional(),
-      amount: Cents.refine((n) => n !== 0, "Amount can't be 0").optional(),
+      amount: Amount.optional(),
       categoryId: Id.optional(),
       every: z.number().int().min(1).max(365).optional(),
       unit: Unit.optional(),
@@ -1086,7 +1091,7 @@ export const OPERATIONS = {
       id: Id.describe("The recurring schedule's id."),
       dueDay: Day,
       status: z.enum(["paid", "skipped", "scheduled"]),
-      amount: Cents.refine((n) => n !== 0, "Amount can't be 0").optional(),
+      amount: Amount.optional(),
       received: Positive.optional().describe("Transfers between currencies: what arrived."),
       day: Day.optional().describe("Moves the payment to another day."),
       note: Note.optional(),

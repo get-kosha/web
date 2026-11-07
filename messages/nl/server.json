@@ -59,5 +59,6 @@
   "server_connect_first": "Koppel hem eerst",
   "server_password_min_length": "Gebruik minstens 10 tekens",
   "server_avatars_off": "Profielfoto's zijn niet ingesteld op deze server",
-  "server_avatar_unreadable": "Die afbeelding kon niet worden gelezen"
+  "server_avatar_unreadable": "Die afbeelding kon niet worden gelezen",
+  "server_request_too_large": "Dit is te groot om te versturen. Probeer een kleiner bestand of minder transacties."
 }

@@ -59,5 +59,6 @@
   "server_connect_first": "请先连接",
   "server_password_min_length": "请至少使用 10 个字符",
   "server_avatars_off": "此服务器未设置头像功能",
-  "server_avatar_unreadable": "无法读取该图片"
+  "server_avatar_unreadable": "无法读取该图片",
+  "server_request_too_large": "内容太大，无法发送。请换一个更小的文件，或减少交易数量。"
 }

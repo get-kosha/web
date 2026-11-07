@@ -20,7 +20,9 @@ import {
   json,
   listApiKeys,
   listConnectedApps,
+  MB,
   overLimit,
+  readBody,
   transactionsOut,
   zodIssues,
   type Principal,
@@ -45,12 +47,18 @@ import * as statements from "@/server/statements.server"
 /** Bumped when an endpoint here changes in a way older apps can't read, so an app can tell a server is too old. */
 const APP_API_VERSION = 1
 
-type Ctx = { uid: string; params: Record<string, string>; url: URL; request: Request }
+/** `bytes` is the request body, already read within the route's size limit (LIMITS). */
+type Ctx = { uid: string; params: Record<string, string>; url: URL; request: Request; bytes: Uint8Array<ArrayBuffer> }
 type Handler = (c: Ctx) => Promise<unknown>
 
 /** A JSON body checked against a schema; a failure answers 400 with every invalid field. */
-const body = async <T extends z.ZodType>(c: Ctx, schema: T): Promise<z.infer<T>> =>
-  schema.parse(await c.request.json().catch(() => ({})))
+const body = <T extends z.ZodType>(c: Ctx, schema: T): z.infer<T> => {
+  let raw: unknown = {}
+  try {
+    if (c.bytes.length) raw = JSON.parse(new TextDecoder().decode(c.bytes))
+  } catch {}
+  return schema.parse(raw)
+}
 
 const file = (bytes: BodyInit | null, type: string, name: string, download = true) =>
   new Response(bytes, {
@@ -185,19 +193,16 @@ const ROUTES: Record<string, Handler> = {
     return file(photo.body, "image/jpeg", "avatar.jpg", false)
   },
   // The body is the JPEG itself, already cropped square and shrunk by the app.
-  "PUT /avatar": async ({ uid, request }) => {
-    const photo = await request.blob()
-    if (photo.size > 512 * 1024) throw new HttpError(413, m.server_avatar_too_big())
-    await setAvatar(uid, photo)
-  },
+  "PUT /avatar": ({ uid, bytes }) => setAvatar(uid, new Blob([bytes])),
   "DELETE /avatar": ({ uid }) => setAvatar(uid, null),
 
   // Attachments
   "GET /transactions/{id}/attachments": ({ uid, params }) => files.listAttachments(uid, params.id),
   "GET /recurring/{id}/attachments": ({ uid, params }) => files.scheduleAttachments(uid, params.id),
   // A multipart form with one `file`: a photo or a PDF, up to 10 MB.
-  "POST /transactions/{id}/attachments": async ({ uid, params, request }) => {
-    const upload = (await request.formData().catch(() => null))?.get("file")
+  "POST /transactions/{id}/attachments": async ({ uid, params, request, bytes }) => {
+    const form = new Response(bytes, { headers: { "Content-Type": request.headers.get("content-type") ?? "" } })
+    const upload = (await form.formData().catch(() => null))?.get("file")
     if (!(upload instanceof File)) throw new HttpError(400, m.server_choose_file())
     return files.addAttachment(uid, params.id, upload)
   },
@@ -286,10 +291,20 @@ const ROUTES: Record<string, Handler> = {
   "DELETE /transactions": ({ uid }) => finance.deleteAllTransactions(uid),
 }
 
+/** The largest body a route takes; any other takes JSON up to 5 MB (2,000 statement lines fit). */
+const LIMITS: Record<string, [number, () => string]> = {
+  "PUT /avatar": [512 * 1024, () => m.server_avatar_too_big()],
+  // A 10 MB file and the form around it.
+  "POST /transactions/{id}/attachments": [10 * MB + 64 * 1024, () => m.server_attachment_too_big()],
+  // A PDF as base64, up to 15 million characters.
+  "POST /import/read": [16 * MB, () => m.server_request_too_large()],
+}
+
 const COMPILED = Object.entries(ROUTES).map(([key, handler]) => {
   const [method, path] = key.split(" ")
   const names = [...path.matchAll(/\{(\w+)\}/g)].map((x) => x[1])
-  return { method, names, handler, re: new RegExp(`^${path.replace(/\{\w+\}/g, "([^/]+)")}/?$`) }
+  const [max, tooLarge] = LIMITS[key] ?? [5 * MB, () => m.server_request_too_large()]
+  return { method, names, handler, max, tooLarge, re: new RegExp(`^${path.replace(/\{\w+\}/g, "([^/]+)")}/?$`) }
 })
 
 /** /api/app/*: one handler per route above, for access tokens issued to Kosha's own apps. */
@@ -311,11 +326,11 @@ export async function handleApp(request: Request) {
   if (request.method !== "GET" && who.scope !== "write")
     // Kosha's apps always ask for kosha:write, so in practice this is the demo account.
     return fail(403, "read_only", demoLocked(who.uid) ? DEMO_READ_ONLY() : "This sign-in can only read.")
-  if (await overLimit(who.uid))
-    return fail(429, "rate_limited", m.auth_error_rate_limited(), {}, { "Retry-After": "60" })
+  if (await overLimit(who)) return fail(429, "rate_limited", m.auth_error_rate_limited(), {}, { "Retry-After": "60" })
 
   try {
-    const out = await route.handler({ uid: who.uid, params, url, request })
+    const bytes = request.method === "GET" ? new Uint8Array(0) : await readBody(request, route.max, route.tooLarge)
+    const out = await route.handler({ uid: who.uid, params, url, request, bytes })
     if (out instanceof Response) return out
     return out === undefined ? new Response(null, { status: 204 }) : json(out)
   } catch (e) {

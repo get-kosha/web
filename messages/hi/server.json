@@ -59,5 +59,6 @@
   "server_connect_first": "पहले इसे कनेक्ट करें",
   "server_password_min_length": "कम से कम 10 अक्षर इस्तेमाल करें",
   "server_avatars_off": "इस सर्वर पर प्रोफ़ाइल फ़ोटो सेट अप नहीं हैं",
-  "server_avatar_unreadable": "वह इमेज पढ़ी नहीं जा सकी"
+  "server_avatar_unreadable": "वह इमेज पढ़ी नहीं जा सकी",
+  "server_request_too_large": "यह भेजने के लिए बहुत बड़ा है। कोई छोटी फ़ाइल आज़माएँ या कम एंट्री भेजें।"
 }

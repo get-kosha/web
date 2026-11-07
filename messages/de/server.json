@@ -59,5 +59,6 @@
   "server_connect_first": "Verbinde den Anbieter zuerst",
   "server_password_min_length": "Verwende mindestens 10 Zeichen",
   "server_avatars_off": "Profilbilder sind auf diesem Server nicht eingerichtet",
-  "server_avatar_unreadable": "Dieses Bild konnte nicht gelesen werden"
+  "server_avatar_unreadable": "Dieses Bild konnte nicht gelesen werden",
+  "server_request_too_large": "Das ist zu groß zum Senden. Versuch es mit einer kleineren Datei oder weniger Buchungen."
 }

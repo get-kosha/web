@@ -6,6 +6,7 @@ import { McpServer, createMcpHandler } from "@modelcontextprotocol/server"
 import { verifyOAuthQueryParams } from "@better-auth/oauth-provider"
 import { getRequest } from "@tanstack/react-start/server"
 import { m } from "@/paraglide/messages"
+import { paraglideMiddleware } from "@/paraglide/server"
 import { verifyJwsAccessToken } from "better-auth/oauth2"
 import { z } from "zod"
 import {
@@ -537,8 +538,8 @@ const HANDLERS: Handlers = {
       day: input.day ?? t.day,
       note: input.note ?? t.note,
     }
-    if (next.fromWalletId === next.toWalletId) throw new HttpError(400, "Pick two different accounts")
-    if (next.fee >= next.sent) throw new HttpError(400, "The fee must be less than the amount sent")
+    if (next.fromWalletId === next.toWalletId) throw new HttpError(400, m.server_pick_two_accounts())
+    if (next.fee >= next.sent) throw new HttpError(400, m.server_fee_too_high())
     const issues: Issue[] = []
     const l = await lookups(uid)
     checkRefs("", { accountId: next.fromWalletId }, l, issues, "fromAccountId")
@@ -575,7 +576,7 @@ const HANDLERS: Handlers = {
       endDay: input.endDay !== undefined ? input.endDay : e.end_day,
     }
     if (next.startDay && next.endDay && next.endDay < next.startDay)
-      throw new HttpError(400, "The end is before the start")
+      throw new HttpError(400, m.server_event_end_before_start())
     await finance.saveEvent(uid, next)
     return toEvent(await findEvent(uid, e.id))
   },
@@ -1144,9 +1145,32 @@ export async function fromAccessToken(token: string, audience: string[]): Promis
   return "no-scope"
 }
 
-/** True when the user is over 120 requests a minute, across REST, MCP and the app endpoints. */
-export async function overLimit(uid: string) {
-  return !(await env.API_LIMITER.limit({ key: uid })).success
+/**
+ * True when the user is over 120 requests a minute. Kosha's own apps count in a bucket of their own, so a phone
+ * opening its screens can't use up what an MCP client or API key needs, or the other way round.
+ */
+export async function overLimit(who: Principal) {
+  const key = APP_CLIENTS.has(who.client ?? "") ? `app:${who.uid}` : who.uid
+  return !(await env.API_LIMITER.limit({ key })).success
+}
+
+export const MB = 1024 * 1024
+/**
+ * The request body, refused with 413 once it passes `max` bytes: from Content-Length before anything is read,
+ * and while it streams in when the header is missing or wrong.
+ */
+export async function readBody(request: Request, max: number, tooLarge: () => string = m.server_request_too_large) {
+  if (Number(request.headers.get("content-length")) > max) throw new HttpError(413, tooLarge())
+  const chunks: Uint8Array[] = []
+  let size = 0
+  for await (const chunk of request.body ?? []) {
+    size += chunk.byteLength
+    if (size > max) throw new HttpError(413, tooLarge())
+    chunks.push(chunk)
+  }
+  const bytes = new Uint8Array(size)
+  chunks.reduce((at, c) => (bytes.set(c, at), at + c.byteLength), 0)
+  return bytes
 }
 
 // ---------- errors ----------
@@ -1155,6 +1179,7 @@ const CODES: Record<number, string> = {
   400: "invalid_request",
   404: "not_found",
   409: "conflict",
+  413: "too_large",
   502: "ai_provider_error",
 }
 
@@ -1247,25 +1272,37 @@ export async function handleRest(request: Request) {
       {},
       { "WWW-Authenticate": 'Bearer realm="kosha"' }
     )
+  // Kosha's own apps show these errors to people, so they come in the app's language (Accept-Language).
+  // API keys and MCP clients get English, like the documentation.
+  const op = () => respond(request, url, route, who)
+  return APP_CLIENTS.has(who.client ?? "") ? paraglideMiddleware(request, op) : op()
+}
+
+async function respond(request: Request, url: URL, route: NonNullable<ReturnType<typeof matchRoute>>, who: Principal) {
   if (route.op.scope === "write" && who.scope !== "write")
     return fail(403, "insufficient_scope", `${route.name} changes data, and this key or token is read-only.`)
-  if (await overLimit(who.uid))
-    return fail(429, "rate_limited", "Over 120 requests a minute. Wait a moment.", {}, { "Retry-After": "60" })
-
-  let raw: Record<string, unknown> = {}
-  if (request.method === "GET") raw = parseQuery(route.op, url.searchParams)
-  else if (request.headers.get("content-length") !== "0") {
-    const text = await request.text()
-    try {
-      raw = text ? JSON.parse(text) : {}
-    } catch {
-      return fail(400, "invalid_request", "The body must be JSON.")
-    }
+  if (await overLimit(who)) {
+    const message = APP_CLIENTS.has(who.client ?? "")
+      ? m.auth_error_rate_limited()
+      : "Over 120 requests a minute. Wait a moment."
+    return fail(429, "rate_limited", message, {}, { "Retry-After": "60" })
   }
-  const parsed = route.op.input.safeParse({ ...raw, ...route.params })
-  if (!parsed.success)
-    return fail(400, "invalid_request", z.prettifyError(parsed.error), { issues: zodIssues(parsed.error) })
+
   try {
+    let raw: Record<string, unknown> = {}
+    if (request.method === "GET") raw = parseQuery(route.op, url.searchParams)
+    else {
+      // The largest input, check_statement's file, is 15 million characters.
+      const text = new TextDecoder().decode(await readBody(request, 16 * MB))
+      try {
+        raw = text ? JSON.parse(text) : {}
+      } catch {
+        return fail(400, "invalid_request", "The body must be JSON.")
+      }
+    }
+    const parsed = route.op.input.safeParse({ ...raw, ...route.params })
+    if (!parsed.success)
+      return fail(400, "invalid_request", z.prettifyError(parsed.error), { issues: zodIssues(parsed.error) })
     return json(await run(route.name, who.uid, parsed.data))
   } catch (e) {
     const { status, code, message, ...extra } = describeError(e)
@@ -1366,7 +1403,7 @@ export async function handleMcp(request: Request) {
   const who = token.startsWith(KEY_PREFIX) ? await fromApiKey(token) : await fromAccessToken(token, [MCP_RESOURCE])
   if (who === "no-scope") return challenge(403, "insufficient_scope")
   if (!who) return challenge(401, "invalid_token")
-  if (await overLimit(who.uid))
+  if (await overLimit(who))
     return Response.json(
       { jsonrpc: "2.0", error: { code: -32000, message: "Over 120 requests a minute. Wait a moment." }, id: null },
       { status: 429, headers: { "Retry-After": "60" } }

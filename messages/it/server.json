@@ -59,5 +59,6 @@
   "server_connect_first": "Collegalo prima",
   "server_password_min_length": "Usa almeno 10 caratteri",
   "server_avatars_off": "Le immagini del profilo non sono configurate su questo server",
-  "server_avatar_unreadable": "Impossibile leggere l'immagine"
+  "server_avatar_unreadable": "Impossibile leggere l'immagine",
+  "server_request_too_large": "È troppo grande per essere inviato. Prova con un file più piccolo o meno movimenti."
 }
