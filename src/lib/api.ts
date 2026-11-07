@@ -13,9 +13,11 @@ import {
   demoAvailable,
   getUser,
   googleSignIn,
+  resetEmail,
   setAvatar,
   userId,
 } from "@/server/auth.server"
+import { canEmail } from "@/server/email.server"
 import {
   consentDetails,
   createApiKey,
@@ -71,7 +73,20 @@ export const guestVisit = createIsomorphicFn()
   })
 
 /** The sign-in methods this deployment offers beyond email, password and passkeys. */
-export const signInOptions = createServerFn({ method: "GET" }).handler(() => ({ google: googleSignIn }))
+/** What /login can offer: Google, the demo account, and "Forgot password?" (only where email can go out). */
+export const signInOptions = createServerFn({ method: "GET" }).handler(async () => ({
+  google: googleSignIn,
+  demo: await demoAvailable(),
+  resetByEmail: canEmail,
+}))
+
+/** /reset-password: whether the link still works, and the account's email to show. Reading doesn't use it up. */
+export const getResetLink = createServerFn({ method: "GET" })
+  .validator(z.object({ token: z.string().max(200) }))
+  .handler(async ({ data }) => {
+    const email = await resetEmail(data.token)
+    return { valid: email !== null, email }
+  })
 
 export const getMeta = createServerFn({ method: "GET" }).handler(async () => {
   const user = (await getUser())!
@@ -404,8 +419,9 @@ export const removeConnectedApp = createServerFn({ method: "POST" })
 export const getConsentRequest = createServerFn({ method: "GET" })
   .validator(z.object({ query: z.string().max(8000).optional() }))
   .handler(async ({ data }) => {
-    await userId()
-    return consentDetails(data.query ?? new URL(getRequest().url).search)
+    const user = await getUser()
+    if (!user) throw new Error("Not signed in")
+    return { ...(await consentDetails(data.query ?? new URL(getRequest().url).search)), email: user.email }
   })
 
 // ---------- AI ----------

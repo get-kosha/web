@@ -61,7 +61,7 @@ self.addEventListener("fetch", (event) => {
   const { request } = event
   const url = new URL(request.url)
   if (request.method !== "GET" || url.origin !== self.location.origin) return
-  if (/^\/(api\/|mcp$|\.well-known\/|login$|consent$)/.test(url.pathname)) return
+  if (/^\/(api\/|mcp$|\.well-known\/|login$|consent$|forgot-password$|reset-password$)/.test(url.pathname)) return
 
   if (url.pathname.startsWith("/assets/")) event.respondWith(cacheFirst(request))
   else if (url.pathname.startsWith("/_serverFn/")) event.respondWith(networkFirst(request))

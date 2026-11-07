@@ -28,6 +28,10 @@ const buttonVariants = cva(
           "size-6 rounded-[min(var(--radius-md),10px)] in-data-[slot=button-group]:rounded-lg [&_svg:not([class*='size-'])]:size-3",
         "icon-sm": "size-7 rounded-[min(var(--radius-md),12px)] in-data-[slot=button-group]:rounded-lg",
         "icon-lg": "size-9",
+        // Sign-in pages: larger than the in-app controls on purpose. auth is the primary action, auth-option the rest.
+        auth: "h-[46px] gap-2.5 rounded-xl px-4 text-[15px] max-md:h-[52px] max-md:rounded-[14px] max-md:text-base [&_svg:not([class*='size-'])]:size-[18px]",
+        "auth-option":
+          "h-[46px] gap-2.5 rounded-xl px-4 text-sm max-md:h-12 max-md:rounded-[14px] max-md:text-[15px] [&_svg:not([class*='size-'])]:size-[18px]",
       },
     },
     defaultVariants: {

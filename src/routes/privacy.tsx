@@ -95,6 +95,10 @@ function Privacy() {
           and profile picture, and learns that you signed in to Kosha.
         </li>
         <li>
+          <strong>An email provider</strong>, only when you ask to reset your password. Kosha sends it your email
+          address and the reset email, which holds a link that works once, for one hour. Kosha sends no other email.
+        </li>
+        <li>
           <strong>AI providers</strong> you add yourself, as described above.
         </li>
       </ul>

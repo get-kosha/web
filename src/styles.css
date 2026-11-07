@@ -38,6 +38,8 @@
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --color-auth-panel: var(--auth-panel);
+  --color-auth-mark: var(--auth-mark);
   --color-subtle-foreground: var(--subtle-foreground);
   --color-brand: var(--brand);
   --color-brand-foreground: var(--brand-foreground);
@@ -119,6 +121,9 @@
   --brand: #0f766e;
   --brand-foreground: #ffffff;
   --brand-soft: color-mix(in srgb, var(--brand) 13%, transparent);
+  /* The sign-in pages' brand panel, and the symbol's K: peacock on light grounds, paper on dark. */
+  --auth-panel: #0f524e;
+  --auth-mark: #0f524e;
 }
 
 .dark {
@@ -157,6 +162,8 @@
   --series-6: #199e70;
   --brand: #2dd4bf;
   --brand-foreground: #0b0b0c;
+  --auth-panel: #082f2d;
+  --auth-mark: #f3f5f0;
 }
 
 @layer base {

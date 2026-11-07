@@ -1,4 +1,4 @@
-import { env } from "cloudflare:workers"
+import { env, waitUntil } from "cloudflare:workers"
 import { betterAuth } from "better-auth"
 import { tanstackStartCookies } from "better-auth/tanstack-start"
 import { passkey } from "@better-auth/passkey"
@@ -6,8 +6,9 @@ import { jwt, twoFactor } from "better-auth/plugins"
 import { mcp } from "@better-auth/mcp"
 import { getRequest } from "@tanstack/react-start/server"
 import { DEFAULT_CATEGORIES } from "@/lib/defaults"
-import { DEMO } from "@/lib/core"
+import { DEMO, MIN_PASSWORD } from "@/lib/core"
 import { deleteAllAttachments } from "@/server/attachments.server"
+import { sendEmail } from "@/server/email.server"
 
 const ORIGIN = env.BETTER_AUTH_URL.replace(/\/+$/, "")
 /** The MCP server's URL: what people paste into Claude or ChatGPT, and the audience of its access tokens. */
@@ -25,7 +26,19 @@ export const auth = betterAuth({
   database: env.DB,
   baseURL: env.BETTER_AUTH_URL,
   secret: env.BETTER_AUTH_SECRET,
-  emailAndPassword: { enabled: true, minPasswordLength: 10 },
+  emailAndPassword: {
+    enabled: true,
+    minPasswordLength: MIN_PASSWORD,
+    // /reset-password promises a link that works for one hour and a reset that signs out every other device.
+    resetPasswordTokenExpiresIn: 60 * 60,
+    revokeSessionsOnPasswordReset: true,
+    // The reply never says whether the email has an account, and sending runs in the background (see
+    // backgroundTasks below) so its timing doesn't either. An account without a password (Google or passkey only)
+    // gets a link too: following it adds a password. The shared demo account never gets one.
+    sendResetPassword: async ({ user, token }) => {
+      if (user.id !== DEMO.id) await sendResetEmail(user, token)
+    },
+  },
   // Google's callback is <BETTER_AUTH_URL>/api/auth/callback/google. A Google email that already has a
   // password account isn't linked on sign-in, since that address was never verified here; its owner
   // connects Google from Settings › Sign-in & security instead.
@@ -39,9 +52,14 @@ export const auth = betterAuth({
       }
     : undefined,
   session: { expiresIn: 60 * 60 * 24 * 30, updateAge: 60 * 60 * 24 },
-  rateLimit: { enabled: true, storage: "database" },
-  // Cloudflare sets the visitor's IP here; rate limits are per IP.
-  advanced: { ipAddress: { ipAddressHeaders: ["cf-connecting-ip"] } },
+  // Better Auth's default for reset emails is 3 a minute per IP. Stated here so an upgrade can't loosen it.
+  rateLimit: { enabled: true, storage: "database", customRules: { "/request-password-reset": { window: 60, max: 3 } } },
+  advanced: {
+    // Cloudflare sets the visitor's IP here; rate limits are per IP.
+    ipAddress: { ipAddressHeaders: ["cf-connecting-ip"] },
+    // Work Better Auth doesn't wait on, such as sending a reset email, outlives the response through waitUntil.
+    backgroundTasks: { handler: waitUntil },
+  },
   user: {
     // Deleting an account removes every row of the user's finance data first (Settings › Account › Delete).
     deleteUser: { enabled: true, beforeDelete: (user) => deleteUserData(user.id) },
@@ -88,6 +106,47 @@ export const auth = betterAuth({
     tanstackStartCookies(),
   ],
 })
+
+/** Sends the reset email. It links straight to /reset-password, which checks the token before asking for a password. */
+async function sendResetEmail(user: { id: string; email: string }, token: string) {
+  const tz = await env.DB.prepare("SELECT value FROM settings WHERE user_id = ? AND key = 'timezone'")
+    .bind(user.id)
+    .first<string>("value")
+  const requestedAt = new Intl.DateTimeFormat("en-GB", {
+    timeZone: tz ?? "UTC",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZoneName: "short",
+  }).format(new Date())
+  // Loaded on demand, so the email renderer stays out of the Worker's startup.
+  const [{ render }, { default: ResetPasswordEmail }] = await Promise.all([
+    import("react-email"),
+    import("@/emails/reset-password"),
+  ])
+  const email = ResetPasswordEmail({
+    email: user.email,
+    url: `${ORIGIN}/reset-password?token=${encodeURIComponent(token)}`,
+    requestedAt,
+    origin: ORIGIN,
+  })
+  await sendEmail({
+    to: user.email,
+    subject: "Reset your Kosha password",
+    html: await render(email),
+    text: await render(email, { plainText: true }),
+  })
+}
+
+/** The email a reset link is for, or null when it's used, expired or made up. Reading it doesn't use the link up. */
+export async function resetEmail(token: string) {
+  const ctx = await auth.$context
+  const link = await ctx.internalAdapter.findVerificationValue(`reset-password:${token}`)
+  if (!link || link.expiresAt < new Date()) return null
+  return (await ctx.internalAdapter.findUserById(link.value))?.email ?? null
+}
 
 /** Every table that holds a user's data, children before parents so foreign keys hold. Auth tables follow the user row. */
 export const USER_TABLES = [

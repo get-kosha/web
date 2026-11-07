@@ -2,13 +2,25 @@ import * as React from "react"
 import { Input as InputPrimitive } from "@base-ui/react/input"
 import { cn } from "cn"
 
-function Input({ className, type, ...props }: React.ComponentProps<"input">) {
+const variants = {
+  default: "",
+  // Sign-in pages: 46px fields on the card colour, 16px text on phones so iOS doesn't zoom.
+  auth: "h-[46px] rounded-xl bg-card px-3.5 text-base max-md:h-[46px] md:text-[15px] dark:bg-card aria-invalid:border-[1.5px] aria-invalid:ring-0 dark:aria-invalid:border-destructive",
+}
+
+function Input({
+  className,
+  type,
+  variant = "default",
+  ...props
+}: React.ComponentProps<"input"> & { variant?: keyof typeof variants }) {
   return (
     <InputPrimitive
       type={type}
       data-slot="input"
       className={cn(
         "h-8 w-full min-w-0 rounded-md border border-input bg-transparent px-2.5 py-1 text-base transition-colors outline-none file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 max-md:h-11 md:text-sm dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40",
+        variants[variant],
         className
       )}
       {...props}

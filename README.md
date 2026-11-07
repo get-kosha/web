@@ -92,6 +92,8 @@ Profile pictures and attachments (receipts, payslips) are stored in Cloudflare R
 
 Sign in with Google is optional. To turn it on, create an OAuth client (type **Web application**) in Google Cloud Console under **APIs & Services › Credentials**. Add `<BETTER_AUTH_URL>/api/auth/callback/google` as an authorised redirect URI, such as `http://localhost:3000/api/auth/callback/google` for local use. Then set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in `.dev.vars`, or with `npx wrangler secret put` in production. Without them, the Google buttons don't appear. Someone who already has a password account connects Google from Settings › Sign-in & security, because Kosha never verified that email address.
 
+Password reset emails go out over SMTP. Set `SMTP_HOST`, `SMTP_USER` and `SMTP_PASSWORD` with `npx wrangler secret put`, and optionally `SMTP_PORT` (default `587`, STARTTLS; `465` uses TLS) and `SMTP_FROM` (default `noreply@getkosha.app`; the sender name is always Kosha). Cloudflare blocks port 25. Without `SMTP_HOST`, production hides "Forgot password?", and `npm run dev` prints each email, reset link included, to the terminal instead. Preview the email templates in `src/emails/` with `npm run email`.
+
 Before you deploy, set `BETTER_AUTH_URL` under `vars` in `wrangler.jsonc` to the public URL of the app. Passkeys only work on this domain.
 
 To deploy on every push, connect the repository under the Worker's **Settings → Build**. Use `npm run deploy` as the deploy command and leave the build command empty. The build token needs **D1: Edit** for the migration step, which the token Cloudflare creates by default does not have.

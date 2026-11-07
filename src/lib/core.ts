@@ -40,6 +40,9 @@ export function publicHead(path: string, title: string, description: string) {
  * and look around, and the server refuses every change it tries to make. It is known by its id, which
  * only the seed script can create; Better Auth gives real accounts random ids.
  */
+/** The shortest password Better Auth accepts (auth.server.ts) and the length the sign-up meter counts to. */
+export const MIN_PASSWORD = 10
+
 export const DEMO = { id: "demo", email: "demo@kosha.local", password: "kosha-demo-2026" } as const
 export const DEMO_READ_ONLY =
   "This is the demo account, so changes are turned off. Create your own account to make changes."
