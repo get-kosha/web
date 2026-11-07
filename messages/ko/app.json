@@ -1,0 +1,17 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_key_divide": "나누기",
+  "app_key_multiply": "곱하기",
+  "app_key_subtract": "빼기",
+  "app_key_add": "더하기",
+  "app_key_double_zero": "더블 제로",
+  "app_key_delete": "지우기, 길게 눌러 모두 지우기",
+  "app_time_now": "지금",
+  "app_time_hours": "시",
+  "app_time_minutes": "분",
+  "app_time_period": "오전/오후",
+  "app_stepper_less": "줄이기",
+  "app_stepper_more": "늘리기",
+  "app_most_used": "자주 사용",
+  "app_next": "다음"
+}

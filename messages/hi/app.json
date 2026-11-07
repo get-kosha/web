@@ -1,0 +1,17 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_key_divide": "भाग दें",
+  "app_key_multiply": "गुणा करें",
+  "app_key_subtract": "घटाएँ",
+  "app_key_add": "जोड़ें",
+  "app_key_double_zero": "डबल ज़ीरो",
+  "app_key_delete": "मिटाएँ, सब मिटाने के लिए दबाकर रखें",
+  "app_time_now": "अभी",
+  "app_time_hours": "घंटे",
+  "app_time_minutes": "मिनट",
+  "app_time_period": "AM या PM",
+  "app_stepper_less": "कम करें",
+  "app_stepper_more": "बढ़ाएँ",
+  "app_most_used": "सबसे ज़्यादा इस्तेमाल",
+  "app_next": "आगे"
+}

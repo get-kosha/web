@@ -1,0 +1,17 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_key_divide": "Разделить",
+  "app_key_multiply": "Умножить",
+  "app_key_subtract": "Вычесть",
+  "app_key_add": "Прибавить",
+  "app_key_double_zero": "Двойной ноль",
+  "app_key_delete": "Стереть, удерживайте, чтобы очистить",
+  "app_time_now": "Сейчас",
+  "app_time_hours": "Часы",
+  "app_time_minutes": "Минуты",
+  "app_time_period": "AM или PM",
+  "app_stepper_less": "Меньше",
+  "app_stepper_more": "Больше",
+  "app_most_used": "Частые",
+  "app_next": "Далее"
+}

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_key_divide": "Delen",
+  "app_key_multiply": "Vermenigvuldigen",
+  "app_key_subtract": "Aftrekken",
+  "app_key_add": "Optellen",
+  "app_key_double_zero": "Dubbele nul",
+  "app_key_delete": "Wissen, ingedrukt houden om alles te wissen",
+  "app_time_now": "Nu",
+  "app_time_hours": "Uren",
+  "app_time_minutes": "Minuten",
+  "app_time_period": "AM of PM",
+  "app_stepper_less": "Minder",
+  "app_stepper_more": "Meer",
+  "app_most_used": "Meest gebruikt",
+  "app_next": "Volgende"
+}

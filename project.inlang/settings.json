@@ -21,7 +21,8 @@
       "./messages/{locale}/settings.json",
       "./messages/{locale}/settings-sections.json",
       "./messages/{locale}/server.json",
-      "./messages/{locale}/ai.json"
+      "./messages/{locale}/ai.json",
+      "./messages/{locale}/app.json"
     ]
   }
 }

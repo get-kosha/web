@@ -1,0 +1,17 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_key_divide": "除",
+  "app_key_multiply": "乘",
+  "app_key_subtract": "减",
+  "app_key_add": "加",
+  "app_key_double_zero": "双零",
+  "app_key_delete": "删除，长按清空",
+  "app_time_now": "现在",
+  "app_time_hours": "小时",
+  "app_time_minutes": "分钟",
+  "app_time_period": "上午／下午",
+  "app_stepper_less": "减少",
+  "app_stepper_more": "增加",
+  "app_most_used": "最常用",
+  "app_next": "下一步"
+}

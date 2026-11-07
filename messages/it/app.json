@@ -1,0 +1,17 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_key_divide": "Dividi",
+  "app_key_multiply": "Moltiplica",
+  "app_key_subtract": "Sottrai",
+  "app_key_add": "Somma",
+  "app_key_double_zero": "Doppio zero",
+  "app_key_delete": "Cancella, tieni premuto per svuotare",
+  "app_time_now": "Adesso",
+  "app_time_hours": "Ore",
+  "app_time_minutes": "Minuti",
+  "app_time_period": "AM o PM",
+  "app_stepper_less": "Meno",
+  "app_stepper_more": "Più",
+  "app_most_used": "Più usate",
+  "app_next": "Avanti"
+}

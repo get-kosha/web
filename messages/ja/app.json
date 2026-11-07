@@ -1,0 +1,17 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_key_divide": "割る",
+  "app_key_multiply": "掛ける",
+  "app_key_subtract": "引く",
+  "app_key_add": "足す",
+  "app_key_double_zero": "ダブルゼロ",
+  "app_key_delete": "削除（長押しですべて消去）",
+  "app_time_now": "今",
+  "app_time_hours": "時",
+  "app_time_minutes": "分",
+  "app_time_period": "午前／午後",
+  "app_stepper_less": "減らす",
+  "app_stepper_more": "増やす",
+  "app_most_used": "よく使う",
+  "app_next": "次へ"
+}
