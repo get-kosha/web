@@ -27,9 +27,9 @@ import { bottomSheet, segment, segmentButton, useMeta } from "@/components/shell
 import { readEntry, saveTransfer, suggestPayees, type AiEntry, type PayeeSuggestion, type Wallet } from "@/lib/api"
 import { addTransaction } from "@/lib/offline"
 import { Attachments, uploadFiles } from "@/components/attachments"
-import { WALLET_KEY, startWallet } from "@/lib/add-defaults"
+import { WALLET_KEY, decimalMark, startWallet } from "@/lib/add-defaults"
 import {
-  LOCALE,
+  intlLocale,
   ATTACHMENT_LIMIT,
   addDays,
   dateOfDay,
@@ -45,8 +45,11 @@ import {
   timeOf,
 } from "@/lib/core"
 import { cn } from "@/lib/utils"
+import { m } from "@/paraglide/messages"
 
 type Kind = "expense" | "income" | "transfer"
+const KIND_LABEL = { expense: m.add_kind_expense, income: m.add_kind_income, transfer: m.add_kind_transfer }
+const ADD_KIND = { expense: m.add_add_expense, income: m.add_add_income, transfer: m.add_add_transfer }
 type Sheet = "from" | "to" | "date" | "category" | "details" | "exchange" | "describe" | null
 
 const KEYS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "0", "del"]
@@ -166,8 +169,11 @@ export function PhoneAdd() {
   const display = (() => {
     const [whole, dec] = (amount || "0").split(".")
     const sign = kind === "expense" ? "−" : kind === "income" ? "+" : ""
-    const symbol = fmt(0, currency).replace(/[\d.,\s]/g, "")
-    return `${sign}${symbol}${Number(whole).toLocaleString(LOCALE)}${dec !== undefined ? `.${dec}` : ""}`
+    const zero = fmt(0, currency)
+    const symbol = zero.replace(/[\d.,\s]/g, "")
+    // Kept with "." while typed, shown with the language's mark, and the symbol on the side the language puts it.
+    const number = `${Number(whole).toLocaleString(intlLocale())}${dec !== undefined ? `${decimalMark()}${dec}` : ""}`
+    return /^\d/.test(zero) ? `${sign}${number}\u00a0${symbol}` : `${sign}${symbol}${number}`
   })()
 
   // Back to the page you came from, or Overview when the app opened straight here.
@@ -190,16 +196,16 @@ export function PhoneAdd() {
 
   async function add(again = false) {
     if (saving) return
-    if (!cents) return toast.error("Enter an amount")
-    if (!wallet) return toast.error("Add an account first")
+    if (!cents) return toast.error(m.add_error_amount())
+    if (!wallet) return toast.error(m.add_error_no_account())
     if (transfer) {
       if (!toWallet) {
         setSheet("to")
-        return toast.error("Pick the account the money goes to")
+        return toast.error(m.add_error_to_account())
       }
-      if (x.converted <= 0) return toast.error("The fee must be less than the amount")
-      if (!x.receivedCents) return toast.error("Enter the amount received")
-    } else if (!chosenCat) return toast.error("Pick a category")
+      if (x.converted <= 0) return toast.error(m.add_error_fee())
+      if (!x.receivedCents) return toast.error(m.add_error_received())
+    } else if (!chosenCat) return toast.error(m.add_error_category())
     setSaving(true)
     const sendTime = time ?? (day === today ? undefined : shownTime)
     try {
@@ -218,7 +224,7 @@ export function PhoneAdd() {
           },
         })
         await router.invalidate()
-        toast.success(`Moved ${fmt(cents, currency)} from ${wallet.name} to ${toWallet.name}`)
+        toast.success(m.add_toast_moved({ amount: fmt(cents, currency), from: wallet.name, to: toWallet.name }))
       } else if (chosenCat) {
         const name = payee.trim()
         const { queued, undo, id } = await addTransaction(meta.user.id, {
@@ -234,11 +240,12 @@ export function PhoneAdd() {
           eventId,
         })
         if (id && files.length) await uploadFiles(id, files)
-        if (queued && files.length) toast.error("Saved offline without its files. Attach them once you're online.")
+        if (queued && files.length) toast.error(m.add_toast_offline_files())
         if (!queued) await router.invalidate()
-        toast(`${queued ? "Saved offline" : "Added"} ${fmt(signed, currency)}, ${name || chosenCat.name}`, {
+        const msg = queued ? m.add_toast_saved_offline : m.add_toast_added
+        toast(msg({ amount: fmt(signed, currency), name: name || chosenCat.name }), {
           action: {
-            label: "Undo",
+            label: m.common_undo(),
             onClick: async () => {
               await undo()
               if (!queued) await router.invalidate()
@@ -254,7 +261,7 @@ export function PhoneAdd() {
       if (again) reset()
       else leave()
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Couldn't add")
+      toast.error(e instanceof Error ? e.message : m.add_error_add())
     } finally {
       setSaving(false)
     }
@@ -285,7 +292,7 @@ export function PhoneAdd() {
     try {
       fill(await readEntry({ data: { text } }), "text")
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Couldn't read that")
+      toast.error(e instanceof Error ? e.message : m.add_error_read())
     } finally {
       setReading(null)
     }
@@ -299,7 +306,7 @@ export function PhoneAdd() {
       // Keep the photo with the entry, unless it's too big to store.
       if (meta.attachments && file.size <= ATTACHMENT_LIMIT) setFiles((f) => [...f, file])
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Couldn't read that receipt")
+      toast.error(e instanceof Error ? e.message : m.add_error_receipt())
     } finally {
       setReading(null)
     }
@@ -326,16 +333,20 @@ export function PhoneAdd() {
 
   const dayLabel =
     day === today
-      ? "Today"
+      ? m.add_today()
       : day === addDays(today, -1)
-        ? "Yesterday"
-        : new Date(`${day}T12:00:00Z`).toLocaleDateString(LOCALE, { day: "numeric", month: "short", timeZone: "UTC" })
+        ? m.add_yesterday()
+        : new Date(`${day}T12:00:00Z`).toLocaleDateString(intlLocale(), {
+            day: "numeric",
+            month: "short",
+            timeZone: "UTC",
+          })
   const month = today.slice(0, 7)
   const presets = [
-    ["Today", today],
-    ["Yesterday", addDays(today, -1)],
-    ["Start of month", `${month}-01`],
-    ["End of month", addDays(`${shiftMonth(month, 1)}-01`, -1)],
+    [m.add_today(), today],
+    [m.add_yesterday(), addDays(today, -1)],
+    [m.add_start_of_month(), `${month}-01`],
+    [m.add_end_of_month(), addDays(`${shiftMonth(month, 1)}-01`, -1)],
   ] as const
 
   // The note chip names what is set: the note, else the event (picked by date too), else the first tag.
@@ -344,32 +355,32 @@ export function PhoneAdd() {
     note.trim(),
     event?.name,
     ...(transfer ? [] : tags.map((t) => `#${t}`)),
-    !transfer && files.length > 0 && (files.length === 1 ? "1 file" : `${files.length} files`),
+    !transfer && files.length > 0 && m.add_files({ count: files.length }),
   ].filter((d): d is string => !!d)
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-col px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] max-md:flex-1 md:pt-8">
-      <h1 className="sr-only">Add a transaction</h1>
+      <h1 className="sr-only">{m.add_heading()}</h1>
       <div className="grid grid-cols-[44px_minmax(0,1fr)_44px] items-center">
         <Button
           variant="ghost"
           size="icon-lg"
           className="size-11 text-subtle-foreground"
           onClick={leave}
-          aria-label="Close"
+          aria-label={m.common_close()}
         >
           <XIcon className="size-5" />
         </Button>
-        <div role="group" aria-label="Type" className={cn(segment, "justify-self-center")}>
+        <div role="group" aria-label={m.add_type()} className={cn(segment, "justify-self-center")}>
           {(["expense", "income", "transfer"] as const).map((k) => (
             <button
               key={k}
               type="button"
               aria-pressed={kind === k}
               onClick={() => setKind(k)}
-              className={cn(segmentButton, "px-3 text-[13px] capitalize")}
+              className={cn(segmentButton, "px-3 text-[13px]")}
             >
-              {k}
+              {KIND_LABEL[k]()}
             </button>
           ))}
         </div>
@@ -381,7 +392,7 @@ export function PhoneAdd() {
             disabled={!!reading}
             // With only receipts on, the button goes straight to the camera.
             onClick={() => (meta.ai.quick_add ? setSheet("describe") : camera.current?.click())}
-            aria-label={meta.ai.quick_add ? "Describe it or scan a receipt" : "Scan a receipt"}
+            aria-label={meta.ai.quick_add ? m.add_describe_or_scan() : m.add_scan_receipt()}
           >
             {meta.ai.quick_add ? <SparkleIcon className="size-5" /> : <CameraIcon className="size-5" />}
           </Button>
@@ -409,12 +420,12 @@ export function PhoneAdd() {
             className="flex h-[50px] items-center justify-center gap-2 text-[15px] text-muted-foreground"
           >
             <SpinnerGapIcon aria-hidden="true" className="size-5 animate-spin text-brand" />
-            {reading === "receipt" ? "Reading the receipt…" : "Reading what you wrote…"}
+            {reading === "receipt" ? m.add_hint_reading_receipt() : m.add_reading_text()}
           </p>
         ) : (
           <output
             aria-live="polite"
-            aria-label="Amount"
+            aria-label={m.add_amount()}
             className={cn(
               "num block text-[48px] leading-[1.05] font-medium tracking-[-0.03em]",
               !cents && "text-muted-foreground",
@@ -427,9 +438,7 @@ export function PhoneAdd() {
         {filled && !reading && (
           <p className="mt-1 flex items-center justify-center gap-1 text-xs text-muted-foreground">
             <AiMark className="size-3" />
-            {filled === "receipt"
-              ? "Read from your receipt. Check it before adding."
-              : "Filled in by AI. Check it before adding."}
+            {filled === "receipt" ? m.add_filled_receipt() : m.add_filled_ai()}
           </p>
         )}
         <div className="mt-3 flex justify-center gap-2">
@@ -437,24 +446,24 @@ export function PhoneAdd() {
             <Chip
               onClick={() => setSheet("from")}
               icon={<CreditCardIcon />}
-              label={wallet?.name ?? "No account"}
-              aria-label={`Account, ${wallet?.name ?? "none"}`}
+              label={wallet?.name ?? m.add_no_account()}
+              aria-label={wallet ? m.add_chip_account({ name: wallet.name }) : m.add_chip_account_none()}
             />
           )}
           <Chip
             onClick={() => setSheet("date")}
             icon={<CalendarBlankIcon />}
             label={time ? `${dayLabel}, ${time}` : dayLabel}
-            aria-label={`Date and time, ${dayLabel} ${shownTime}`}
+            aria-label={m.add_chip_date({ day: dayLabel, time: shownTime })}
             fixed
           />
           <Chip
             onClick={() => setSheet("details")}
             icon={<NotePencilIcon />}
-            label={details.length ? details[0] + (details.length > 1 ? ` +${details.length - 1}` : "") : "Note"}
+            label={details.length ? details[0] + (details.length > 1 ? ` +${details.length - 1}` : "") : m.add_note()}
             set={details.length > 0}
             fixed={!details.length}
-            aria-label={transfer ? "Note" : "Note, tags and event"}
+            aria-label={transfer ? m.add_note() : m.add_note_tags_event()}
           />
         </div>
       </div>
@@ -462,34 +471,37 @@ export function PhoneAdd() {
       {transfer ? (
         <div className="mt-4 grid gap-2">
           <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-1.5">
-            <AccountButton label="From" wallet={wallet} onClick={() => setSheet("from")} />
+            <AccountButton label={m.add_from()} wallet={wallet} onClick={() => setSheet("from")} />
             <ArrowRightIcon aria-hidden="true" className="size-4 text-muted-foreground" />
-            <AccountButton label="To" wallet={toWallet} onClick={() => setSheet("to")} />
+            <AccountButton label={m.add_to()} wallet={toWallet} onClick={() => setSheet("to")} />
           </div>
           <button
             type="button"
             onClick={() => setSheet("exchange")}
             className={cn(field, "justify-between gap-3 transition-colors hover:bg-muted")}
           >
-            <span className="text-muted-foreground">{x.crossCurrency ? "Fee and rate" : "Fee"}</span>
+            <span className="text-muted-foreground">{x.crossCurrency ? m.add_fee_and_rate() : m.add_fee()}</span>
             <span className="num truncate">
               {x.crossCurrency && x.to
-                ? `${fmt(x.receivedCents, x.to.currency)} arrives`
+                ? m.add_arrives({ amount: fmt(x.receivedCents, x.to.currency) })
                 : x.feeCents
                   ? fmt(x.feeCents, currency)
-                  : "None"}
+                  : m.add_fee_none()}
             </span>
           </button>
           {x.fx.totalCost > 0.5 && x.converted > 0 && (
             <p className="num px-1 text-xs text-muted-foreground">
-              It costs {fmt(x.fx.totalCost, currency)} ({x.fx.costPct.toFixed(2)}%) against the market rate.
+              {m.add_fx_cost({
+                cost: fmt(x.fx.totalCost, currency),
+                pct: x.fx.costPct.toLocaleString(intlLocale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+              })}
             </p>
           )}
         </div>
       ) : (
         <>
           <label className={cn(field, "mt-4 focus-within:border-ring")}>
-            <span className="sr-only">Payee</span>
+            <span className="sr-only">{m.add_payee()}</span>
             <Suggest
               value={payee}
               onChange={(v) => {
@@ -498,16 +510,16 @@ export function PhoneAdd() {
                 setAiCategoryId(null)
               }}
               options={meta.titles}
-              placeholder="Payee"
+              placeholder={m.add_payee()}
               className="min-w-0 flex-1 bg-transparent outline-none placeholder:text-muted-foreground"
             />
             {match && match.avg !== 0 && (
               <span className="num shrink-0 text-xs text-muted-foreground">
-                usually {fmt(Math.abs(match.avg), match.currency)}
+                {m.add_usually({ amount: fmt(Math.abs(match.avg), match.currency) })}
               </span>
             )}
           </label>
-          <div role="group" aria-label="Category" className="mt-3 grid grid-cols-5 gap-1">
+          <div role="group" aria-label={m.add_category()} className="mt-3 grid grid-cols-5 gap-1">
             {shown.slice(0, ordered.length > 15 ? 14 : 15).map((c, i) => (
               <Tile
                 key={c.id}
@@ -524,8 +536,8 @@ export function PhoneAdd() {
               <Tile
                 onClick={() => setSheet("category")}
                 icon={<DotsNineIcon className="size-5" />}
-                label="All"
-                aria-label="All categories"
+                label={m.add_all()}
+                aria-label={m.add_all_categories()}
                 className={cn(ROWS.map((r, row) => ordered.length <= row * 5 + 5 && r.hideAt))}
               />
             )}
@@ -535,16 +547,16 @@ export function PhoneAdd() {
 
       <div className="min-h-3 flex-1" />
 
-      <div role="group" aria-label="Keypad" className="grid grid-cols-3 gap-1">
+      <div role="group" aria-label={m.add_keypad()} className="grid grid-cols-3 gap-1">
         {KEYS.map((k) => (
           <button
             key={k}
             type="button"
-            aria-label={k === "del" ? "Delete digit" : k === "." ? "Decimal point" : k}
+            aria-label={k === "del" ? m.add_key_delete() : k === "." ? m.add_key_decimal() : k}
             onClick={() => setAmount((a) => pressKey(a, k))}
             className="num flex h-[clamp(2.875rem,6.5svh,3.5rem)] items-center justify-center rounded-xl text-[22px] transition-[background-color,scale] duration-100 ease-out outline-none focus-visible:ring-3 focus-visible:ring-ring/50 active:bg-muted motion-safe:active:scale-[0.96] md:h-12 md:hover:bg-muted"
           >
-            {k === "del" ? <BackspaceIcon className="size-6" /> : k}
+            {k === "del" ? <BackspaceIcon className="size-6" /> : k === "." ? decimalMark() : k}
           </button>
         ))}
       </div>
@@ -557,7 +569,7 @@ export function PhoneAdd() {
           disabled={saving || !cents}
           onClick={() => add(true)}
         >
-          Add another
+          {m.add_another()}
         </Button>
         <Button
           size="lg"
@@ -565,14 +577,14 @@ export function PhoneAdd() {
           disabled={saving || !cents}
           onClick={() => add()}
         >
-          {cents ? `Add ${kind}` : "Enter an amount"}
+          {cents ? ADD_KIND[kind]() : m.add_enter_amount()}
         </Button>
       </div>
 
       <Sheet
         open={sheet === "from" || sheet === "to"}
         onClose={() => setSheet(null)}
-        title={transfer ? (sheet === "to" ? "To" : "From") : "Account"}
+        title={transfer ? (sheet === "to" ? m.add_to() : m.add_from()) : m.add_account()}
       >
         <AccountList
           wallets={sheet === "to" ? wallets.filter((w) => w.id !== wallet?.id) : wallets}
@@ -585,7 +597,7 @@ export function PhoneAdd() {
         />
       </Sheet>
 
-      <Sheet open={sheet === "describe"} onClose={() => setSheet(null)} title="Describe it">
+      <Sheet open={sheet === "describe"} onClose={() => setSheet(null)} title={m.add_describe()}>
         <form
           className="grid gap-3"
           onSubmit={(e) => {
@@ -605,13 +617,11 @@ export function PhoneAdd() {
             }}
             rows={2}
             maxLength={500}
-            aria-label="What did you spend or receive?"
-            placeholder="Lunch with Sam at Nando's, 18.50 yesterday"
+            aria-label={m.add_describe_label()}
+            placeholder={m.add_describe_placeholder()}
             className="field-sizing-content min-h-20 w-full resize-none rounded-xl border bg-card px-3.5 py-3 text-base outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
           />
-          <p className="text-xs text-muted-foreground">
-            Kosha fills in the amount, payee, category, account and date. You check it before adding.
-          </p>
+          <p className="text-xs text-muted-foreground">{m.add_describe_help()}</p>
           <div className="flex gap-2">
             {meta.ai.receipts && (
               <Button
@@ -621,17 +631,17 @@ export function PhoneAdd() {
                 className="h-12 rounded-[14px] px-4"
                 onClick={() => camera.current?.click()}
               >
-                <CameraIcon className="size-5" /> Scan a receipt
+                <CameraIcon className="size-5" /> {m.add_scan_receipt()}
               </Button>
             )}
             <Button type="submit" size="lg" className="h-12 flex-1 rounded-[14px]" disabled={!described.trim()}>
-              Fill in
+              {m.add_fill_in()}
             </Button>
           </div>
         </form>
       </Sheet>
 
-      <Sheet open={sheet === "category"} onClose={() => setSheet(null)} title="Category">
+      <Sheet open={sheet === "category"} onClose={() => setSheet(null)} title={m.add_category()}>
         <div className="-mx-1 grid max-h-[60svh] grid-cols-4 gap-1 overflow-y-auto overscroll-contain px-1">
           {ordered.map((c) => (
             <Tile
@@ -652,11 +662,11 @@ export function PhoneAdd() {
       <Sheet
         open={sheet === "details"}
         onClose={() => setSheet(null)}
-        title={transfer ? "Note" : "Note, tags and event"}
+        title={transfer ? m.add_note() : m.add_note_tags_event()}
       >
         <div className="grid gap-4">
           <label className="grid gap-1.5">
-            <span className="text-xs text-muted-foreground">Note</span>
+            <span className="text-xs text-muted-foreground">{m.add_note()}</span>
             <textarea
               value={note}
               onChange={(e) => setNote(e.target.value)}
@@ -668,12 +678,12 @@ export function PhoneAdd() {
           {!transfer && (
             <>
               <div className="grid gap-1.5">
-                <span className="text-xs text-muted-foreground">Tags</span>
+                <span className="text-xs text-muted-foreground">{m.add_tags()}</span>
                 <TagInput value={tags} onChange={setTags} />
               </div>
               <div className="grid gap-1.5">
                 <span id="add-event" className="text-xs text-muted-foreground">
-                  {pickedEvent === undefined && eventId ? "Event, picked by date" : "Event"}
+                  {pickedEvent === undefined && eventId ? m.add_event_by_date() : m.add_event()}
                 </span>
                 <EventPicker value={eventId ?? null} onChange={setPickedEvent} day={day} aria-labelledby="add-event" />
               </div>
@@ -681,7 +691,7 @@ export function PhoneAdd() {
             </>
           )}
           <Button size="lg" className="h-11" onClick={() => setSheet(null)}>
-            Done
+            {m.common_done()}
           </Button>
         </div>
       </Sheet>
@@ -689,17 +699,17 @@ export function PhoneAdd() {
       <Sheet
         open={sheet === "exchange"}
         onClose={() => setSheet(null)}
-        title={x.crossCurrency ? "Fee and rate" : "Fee"}
+        title={x.crossCurrency ? m.add_fee_and_rate() : m.add_fee()}
       >
         <div className="grid gap-4">
           <ExchangeFields x={x} />
           <Button size="lg" className="h-11" onClick={() => setSheet(null)}>
-            Done
+            {m.common_done()}
           </Button>
         </div>
       </Sheet>
 
-      <Sheet open={sheet === "date"} onClose={() => setSheet(null)} title="Date and time">
+      <Sheet open={sheet === "date"} onClose={() => setSheet(null)} title={m.add_date_and_time()}>
         <div className="flex flex-wrap gap-2">
           {presets.map(([label, d]) => (
             <Pill
@@ -726,9 +736,9 @@ export function PhoneAdd() {
           className="mx-auto rounded-xl border bg-card [--cell-size:--spacing(11)]"
         />
         <div className="flex items-center gap-3">
-          <span className="text-sm text-muted-foreground">Time</span>
+          <span className="text-sm text-muted-foreground">{m.add_time()}</span>
           <TimePicker
-            aria-label="Time"
+            aria-label={m.add_time()}
             value={shownTime}
             onChange={setTime}
             className={cn(pill, "outline-none focus-visible:ring-3 focus-visible:ring-ring/50", time && pillOn)}
@@ -793,12 +803,12 @@ function AccountButton({ label, wallet, onClick }: { label: string; wallet?: Wal
     <button
       type="button"
       onClick={onClick}
-      aria-label={`${label}, ${wallet?.name ?? "pick an account"}`}
+      aria-label={wallet ? m.add_side_account({ side: label, name: wallet.name }) : m.add_side_pick({ side: label })}
       className="flex h-16 min-w-0 flex-col justify-center gap-0.5 rounded-xl border bg-card px-3.5 text-left transition-colors outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50"
     >
       <span className="text-xs text-muted-foreground">{label}</span>
       <span className={cn("flex min-w-0 items-baseline gap-1.5 text-[15px]", !wallet && "text-muted-foreground")}>
-        <span className="truncate">{wallet?.name ?? "Pick one"}</span>
+        <span className="truncate">{wallet?.name ?? m.add_pick_one()}</span>
         {wallet && <span className="shrink-0 text-xs text-muted-foreground uppercase">{wallet.currency}</span>}
       </span>
     </button>
@@ -831,7 +841,7 @@ function Tile({
       type="button"
       onClick={onClick}
       aria-pressed={pressed}
-      aria-label={ariaLabel ?? (suggested ? `${label}, suggested` : undefined)}
+      aria-label={ariaLabel ?? (suggested ? m.add_suggested({ name: label }) : undefined)}
       className={cn(
         "relative flex min-h-16 min-w-0 flex-col items-center justify-center gap-1.5 rounded-lg border border-transparent px-1 py-2 text-xs leading-tight text-muted-foreground transition-colors outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 aria-pressed:border-foreground aria-pressed:bg-muted aria-pressed:text-foreground",
         className

@@ -1279,6 +1279,7 @@ export const OPERATIONS = {
         timeZone: "Europe/Paris",
         currencyOrder: ["eur", "usd"],
         preferences: {
+          language: null,
           theme: "system",
           layout: "boxed",
           motion: "on",
@@ -1322,6 +1323,7 @@ export const OPERATIONS = {
         timeZone: "America/New_York",
         currencyOrder: ["eur", "usd"],
         preferences: {
+          language: null,
           theme: "dark",
           layout: "boxed",
           motion: "on",

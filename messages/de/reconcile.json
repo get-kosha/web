@@ -1,0 +1,175 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "reconcile_hint_an_entry": "eine Buchung",
+  "reconcile_hint_exact_unticked": "{name} ({amount}) ist genau die Differenz. Steht die Buchung auf dem Kontoauszug?",
+  "reconcile_hint_exact_ticked": "{name} ({amount}) ist genau die Differenz. Steht die Buchung wirklich auf dem Kontoauszug?",
+  "reconcile_hint_wrong_way_in": "{name} ist genau die halbe Differenz. Ist die Richtung vertauscht, also eigentlich ein Geldeingang statt eines Geldausgangs?",
+  "reconcile_hint_wrong_way_out": "{name} ist genau die halbe Differenz. Ist die Richtung vertauscht, also eigentlich ein Geldausgang statt eines Geldeingangs?",
+  "reconcile_hint_swapped": "War {name} eigentlich {meant} statt {amount}? Vertauschte Ziffern passieren schnell.",
+  "reconcile_hint_decimal": "War {name} eigentlich {meant} statt {amount}? Vielleicht steht das Komma an der falschen Stelle.",
+  "reconcile_hint_pair": "{first} und {second} ergeben zusammen genau die Differenz.",
+  "reconcile_hint_duplicate": "{name} steht zweimal da. Ist eine davon doppelt erfasst?",
+  "reconcile_hint_late": "Buchungen aus den letzten Tagen des Zeitraums stehen oft erst auf dem nächsten Kontoauszug.",
+  "reconcile_hint_look_out": "Such auf dem Kontoauszug nach einer Gebühr, einer Belastung oder Zinsen über {amount}, die noch nicht in Kosha sind.",
+  "reconcile_hint_look_in": "Such auf dem Kontoauszug nach Zinsen, einer Erstattung oder einem Geldeingang über {amount}, die noch nicht in Kosha sind.",
+  "reconcile_gap_uncovered": "Kein Kontoauszug deckt {from} bis {to} ab.",
+  "reconcile_gap_opening": "{next} beginnt bei {opening}, aber {previous} endet bei {closing}. Vielleicht fehlt ein Kontoauszug.",
+  "reconcile_head_title": "Abgleich · Kosha",
+  "reconcile_title": "Abgleichen",
+  "reconcile_picker_sub": "Gleiche ein Konto mit dem Kontoauszug deiner Bank ab oder importiere den Kontoauszug.",
+  "reconcile_picker_empty": "Füge zuerst ein Bankkonto oder eine Kreditkarte hinzu.",
+  "reconcile_reconciled_to": "Abgeglichen bis {day}",
+  "reconcile_never_reconciled": "Noch nie abgeglichen",
+  "reconcile_transfer_to_name": "An {account}",
+  "reconcile_transfer_from_name": "Von {account}",
+  "reconcile_transfer_to_other": "An ein anderes Konto",
+  "reconcile_transfer_from_other": "Von einem anderen Konto",
+  "reconcile_no_payee": "Kein Zahlungspartner",
+  "reconcile_pdf_unsupported": "Kosha liest CSV-, OFX- und QFX-Dateien. Exportiere eine davon bei deiner Bank.",
+  "reconcile_currency_mismatch": "Dieser Kontoauszug ist in {statementCurrency}, {account} aber in {currency}.",
+  "reconcile_ofx_empty": "Diese OFX-Datei enthält keine Buchungen",
+  "reconcile_csv_empty": "Diese Datei hat keine Zeilen, die Kosha lesen kann",
+  "reconcile_read_failed": "Die Datei konnte nicht gelesen werden",
+  "reconcile_pick_category_first": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Wähle zuerst eine Kategorie für 1 Zeile",
+        "countPlural=other": "Wähle zuerst Kategorien für {count} Zeilen"
+      }
+    }
+  ],
+  "reconcile_added": [
+    {
+      "declarations": ["input count", "input account", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "1 Buchung zu {account} hinzugefügt",
+        "countPlural=other": "{count} Buchungen zu {account} hinzugefügt"
+      }
+    }
+  ],
+  "reconcile_add_failed": "Hinzufügen fehlgeschlagen",
+  "reconcile_change_failed": "Ändern fehlgeschlagen",
+  "reconcile_finish_failed": "Abschließen fehlgeschlagen",
+  "reconcile_undone": "Abgleich rückgängig gemacht",
+  "reconcile_undo_failed": "Rückgängigmachen fehlgeschlagen",
+  "reconcile_ask_failed": "Anfrage fehlgeschlagen",
+  "reconcile_hint_opening_gap": "Dieser Kontoauszug beginnt bei {opening}, aber der zuletzt abgeglichene endete bei {closing}. Vielleicht fehlt ein Kontoauszug dazwischen.",
+  "reconcile_hint_single_missing": "{payee} ({amount}) auf dem Kontoauszug ist genau die Differenz. Füge die Buchung zu Kosha hinzu.",
+  "reconcile_hint_missing_closes": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Wenn du die fehlende Zeile zu Kosha hinzufügst, ist die Differenz genau ausgeglichen.",
+        "countPlural=other": "Wenn du die {count} fehlenden Zeilen zu Kosha hinzufügst, ist die Differenz genau ausgeglichen."
+      }
+    }
+  ],
+  "reconcile_hint_missing_count": [
+    {
+      "declarations": ["input count", "input amount", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "1 Zeile auf dem Kontoauszug ist noch nicht in Kosha ({amount}).",
+        "countPlural=other": "{count} Zeilen auf dem Kontoauszug sind noch nicht in Kosha ({amount})."
+      }
+    }
+  ],
+  "reconcile_hint_close": "{name}: In Kosha {kosha}, auf dem Kontoauszug {statement}.",
+  "reconcile_balance_label": "Saldo laut Kontoauszug ({currency})",
+  "reconcile_owed_label": "Offen laut Kontoauszug ({currency})",
+  "reconcile_account_title": "{account} abgleichen",
+  "reconcile_done_title": "{account} stimmt mit deinem Kontoauszug überein",
+  "reconcile_done_checked": [
+    {
+      "declarations": ["input count", "input n", "input day", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "1 Buchung bis {day} geprüft.",
+        "countPlural=other": "{n} Buchungen bis {day} geprüft."
+      }
+    }
+  ],
+  "reconcile_done_correction": "Eine Korrektur über {amount} hat die Differenz ausgeglichen.",
+  "reconcile_done_marked": "Kosha markiert sie als abgeglichen und sagt dir Bescheid, bevor du eine davon änderst.",
+  "reconcile_back_to_accounts": "Zurück zu den Konten",
+  "reconcile_last_reconciled": "Zuletzt abgeglichen bis {day}",
+  "reconcile_check_each": "Prüfe jede Buchung anhand des Kontoauszugs deiner Bank.",
+  "reconcile_other_account": "Anderes Konto",
+  "reconcile_drift": "Die zum {day} abgeglichenen Buchungen haben sich seitdem um {amount} geändert und passen nicht mehr zu diesem Kontoauszug. Eine wurde bearbeitet oder gelöscht. Mach diesen Abgleich rückgängig, um sie noch einmal zu prüfen.",
+  "reconcile_pdf_off": "Die aus diesem PDF gelesenen Zeilen weichen um {amount} vom Saldo laut Kontoauszug ab. Vielleicht wurde eine Zeile falsch gelesen. Prüfe sie anhand des PDFs, bevor du etwas hinzufügst.",
+  "reconcile_reading": "{file} wird gelesen …",
+  "reconcile_file_lines": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "1 Zeile",
+        "countPlural=other": "{count} Zeilen"
+      }
+    }
+  ],
+  "reconcile_read_by_ai": "von KI gelesen",
+  "reconcile_another_file": "Andere Datei",
+  "reconcile_drop": "Zieh deinen Kontoauszug hierher oder {#choose}wähle eine Datei{/choose}",
+  "reconcile_drop_formats": "CSV, OFX oder QFX von deiner Bank. Kosha hakt ab, was übereinstimmt, und listet auf, was fehlt.",
+  "reconcile_drop_formats_pdf": "CSV, OFX oder QFX von deiner Bank oder ein Kontoauszug als PDF. Kosha hakt ab, was übereinstimmt, und listet auf, was fehlt.",
+  "reconcile_statement_date": "Datum des Kontoauszugs",
+  "reconcile_quick_balance": "Kosha zeigt heute {#amount}{amount}{/amount}. Vergleiche das mit dem aktuellen Kontostand deiner Bank, nicht mit dem verfügbaren Betrag.",
+  "reconcile_quick_owed": "Laut Kosha schuldest du heute {#amount}{amount}{/amount}. Vergleiche das mit dem aktuellen Kontostand deiner Bank, nicht mit dem verfügbaren Betrag.",
+  "reconcile_same_as_bank": "Meine Bank zeigt dasselbe",
+  "reconcile_missing_title": "Auf dem Kontoauszug, nicht in Kosha ({count})",
+  "reconcile_naming_payees": "Zahlungspartner werden benannt …",
+  "reconcile_payee": "Zahlungspartner",
+  "reconcile_category_for": "Kategorie für {name}",
+  "reconcile_pick_category": "Kategorie wählen",
+  "reconcile_transfer_to": "Umbuchung an {account}",
+  "reconcile_transfer_from": "Umbuchung von {account}",
+  "reconcile_include_line": "Diese Zeile hinzufügen",
+  "reconcile_leave_out_line": "Diese Zeile weglassen",
+  "reconcile_saving_teaches": "Beim Speichern merkt sich Kosha diese Zahlungspartner für deinen nächsten Kontoauszug.",
+  "reconcile_add_to_kosha": "{count} zu Kosha hinzufügen",
+  "reconcile_close_title": "Ähnlich, aber anderer Betrag ({count})",
+  "reconcile_close_detail": "Kosha {kosha} am {koshaDay} · Kontoauszug {statement} am {statementDay}",
+  "reconcile_use_amount": "{amount} übernehmen",
+  "reconcile_not_same": "Nicht dieselbe",
+  "reconcile_in_kosha": "In Kosha",
+  "reconcile_tick_title": "Hake ab, was auf dem Kontoauszug steht",
+  "reconcile_ticked_count": "{count} abgehakt",
+  "reconcile_before_group": "Vor diesem Kontoauszug ({count})",
+  "reconcile_before_hint": "Abgehakt, weil sie auf früheren Kontoauszügen standen",
+  "reconcile_nothing": "Bis {day} gibt es nichts abzugleichen.",
+  "reconcile_note_amount_differs": "Betrag weicht ab",
+  "reconcile_note_next_statement": "Wohl auf dem nächsten Auszug",
+  "reconcile_note_not_on_statement": "Nicht auf dem Kontoauszug",
+  "reconcile_note_still_due": "Noch fällig",
+  "reconcile_after_group": "Nach dem {day} ({count})",
+  "reconcile_after_hint": "Für den nächsten Kontoauszug",
+  "reconcile_finding_title": "Differenz finden",
+  "reconcile_ask_ai": "KI fragen",
+  "reconcile_past": "Frühere Abgleiche",
+  "reconcile_history_entries": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "1 Buchung",
+        "countPlural=other": "{count} Buchungen"
+      }
+    }
+  ],
+  "reconcile_corrected_by": "korrigiert um {amount}",
+  "reconcile_figure_statement": "Kontoauszug",
+  "reconcile_figure_statement_owed": "Offen laut Auszug",
+  "reconcile_figure_ticked": "Abgehakt in Kosha",
+  "reconcile_figure_ticked_owed": "Offen laut Häkchen",
+  "reconcile_figure_difference": "Differenz",
+  "reconcile_figure_none": "Keine",
+  "reconcile_finish_with_correction": "Mit Korrektur über {amount} abschließen",
+  "reconcile_enter_balance": "Saldo laut Kontoauszug eingeben",
+  "reconcile_finish": "Abgleich abschließen",
+  "reconcile_show": "Anzeigen"
+}

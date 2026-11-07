@@ -17,8 +17,7 @@ import { useMeta } from "@/components/shell"
 import { EventEditor, eventDates } from "@/components/tags-events"
 import { deleteEvent, type Event } from "@/lib/api"
 import { cn } from "@/lib/utils"
-
-const plural = (n: number) => `${n} ${n === 1 ? "transaction" : "transactions"}`
+import { m } from "@/paraglide/messages"
 
 export function Events() {
   const meta = useMeta()
@@ -33,7 +32,7 @@ export function Events() {
     try {
       await deleteEvent({ data: { id: deleting.id } })
       await router.invalidate()
-      toast.success(`${deleting.name} deleted`)
+      toast.success(m.settings_events_deleted({ name: deleting.name }))
       setOpen(null)
     } catch (e) {
       toast.error(errorOf(e))
@@ -43,8 +42,8 @@ export function Events() {
 
   return (
     <SettingGroup
-      label="Events"
-      note="A trip or an occasion. Add entries to it from the add form. New entries dated inside it join it automatically."
+      label={m.settings_row_events()}
+      note={m.settings_events_note()}
       actions={
         <Button
           variant="outline"
@@ -53,7 +52,7 @@ export function Events() {
           onClick={() => toggle("new")}
           aria-expanded={open === "new"}
         >
-          <PlusIcon /> New event
+          <PlusIcon /> {m.settings_events_new()}
         </Button>
       }
     >
@@ -64,7 +63,7 @@ export function Events() {
           </div>
         </Expand>
         {meta.events.length === 0 && open !== "new" && (
-          <p className="px-5 py-4 text-sm text-muted-foreground">No events yet.</p>
+          <p className="px-5 py-4 text-sm text-muted-foreground">{m.settings_events_empty()}</p>
         )}
         {meta.events.map((e) => {
           const isOpen = open === e.id
@@ -79,7 +78,10 @@ export function Events() {
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm">{e.name}</span>
                   <span className="block truncate text-xs text-muted-foreground">
-                    {[eventDates(e) || "No dates", plural(e.tx_count)].join(" · ")}
+                    {[
+                      eventDates(e) || m.settings_events_no_dates(),
+                      m.settings_events_transactions({ count: e.tx_count }),
+                    ].join(" · ")}
                   </span>
                 </span>
                 <CaretRightIcon
@@ -98,14 +100,14 @@ export function Events() {
                       className="text-destructive hover:text-destructive"
                       onClick={() => setDeleting(e)}
                     >
-                      <TrashIcon /> Delete
+                      <TrashIcon /> {m.common_delete()}
                     </Button>
                     <Button
                       variant="outline"
                       nativeButton={false}
                       render={<Link to="/transactions" search={(p) => ({ ...p, event: e.id })} />}
                     >
-                      See its transactions <ArrowRightIcon />
+                      {m.settings_events_see_transactions()} <ArrowRightIcon />
                     </Button>
                   </div>
                 </div>
@@ -118,17 +120,15 @@ export function Events() {
       <Dialog open={!!deleting} onOpenChange={(o) => !o && setDeleting(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete {deleting?.name}?</DialogTitle>
-            <DialogDescription>
-              Its {plural(deleting?.tx_count ?? 0)} stay; they won't belong to an event any more.
-            </DialogDescription>
+            <DialogTitle>{m.settings_events_delete_title({ name: deleting?.name ?? "" })}</DialogTitle>
+            <DialogDescription>{m.settings_events_delete_body({ count: deleting?.tx_count ?? 0 })}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleting(null)}>
-              Cancel
+              {m.common_cancel()}
             </Button>
             <Button variant="destructive" onClick={remove}>
-              Delete
+              {m.common_delete()}
             </Button>
           </DialogFooter>
         </DialogContent>

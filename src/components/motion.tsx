@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ComponentProps } from "react"
 import NumberFlow from "@number-flow/react"
 import { getRouteApi } from "@tanstack/react-router"
-import { LOCALE } from "@/lib/core"
+import { intlLocale } from "@/lib/core"
 import { cn } from "@/lib/utils"
 
 // Set once the first (hydration) render has committed. On a hard load, numbers render at their final
@@ -59,7 +59,7 @@ export function RollingMoney({
     <span ref={ref} className={cn("inline-block", className)}>
       <NumberFlow
         value={(seen ? value : 0) / 100}
-        locales={LOCALE}
+        locales={intlLocale()}
         format={{ style: "currency", currency: currency.toUpperCase(), maximumFractionDigits: round ? 0 : 2 }}
         transformTiming={spin}
         spinTiming={spin}

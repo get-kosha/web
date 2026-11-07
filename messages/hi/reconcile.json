@@ -1,0 +1,175 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "reconcile_hint_an_entry": "एक एंट्री",
+  "reconcile_hint_exact_unticked": "{name} ({amount}) ठीक उतना ही है जितना अंतर है। क्या यह स्टेटमेंट में है?",
+  "reconcile_hint_exact_ticked": "{name} ({amount}) ठीक उतना ही है जितना अंतर है। क्या यह सच में स्टेटमेंट में है?",
+  "reconcile_hint_wrong_way_in": "{name} अंतर का आधा है। कहीं यह उल्टा तो नहीं, निकासी की जगह जमा?",
+  "reconcile_hint_wrong_way_out": "{name} अंतर का आधा है। कहीं यह उल्टा तो नहीं, जमा की जगह निकासी?",
+  "reconcile_hint_swapped": "क्या {name} {amount} की जगह {meant} था? अंकों का आगे-पीछे हो जाना आम गलती है।",
+  "reconcile_hint_decimal": "क्या {name} {amount} की जगह {meant} था? हो सकता है दशमलव गलत जगह लगा हो।",
+  "reconcile_hint_pair": "{first} और {second} मिलकर अंतर के बराबर हैं।",
+  "reconcile_hint_duplicate": "{name} दो बार है। क्या एक डुप्लिकेट है?",
+  "reconcile_hint_late": "अवधि के आखिरी दिनों की एंट्रियाँ अगले स्टेटमेंट में भी आ सकती हैं।",
+  "reconcile_hint_look_out": "स्टेटमेंट में {amount} का कोई शुल्क, चार्ज या ब्याज देखें जो अभी Kosha में नहीं है।",
+  "reconcile_hint_look_in": "स्टेटमेंट में {amount} का कोई ब्याज, रिफ़ंड या जमा देखें जो अभी Kosha में नहीं है।",
+  "reconcile_gap_uncovered": "{from} से {to} तक का कोई स्टेटमेंट नहीं है।",
+  "reconcile_gap_opening": "{next} {opening} से शुरू होता है, लेकिन {previous} {closing} पर खत्म होता है। शायद कोई स्टेटमेंट छूट गया है।",
+  "reconcile_head_title": "मिलान · Kosha",
+  "reconcile_title": "मिलान",
+  "reconcile_picker_sub": "किसी खाते को अपने बैंक के स्टेटमेंट से मिलाएँ, या स्टेटमेंट इम्पोर्ट करें।",
+  "reconcile_picker_empty": "पहले कोई बैंक खाता या कार्ड जोड़ें।",
+  "reconcile_reconciled_to": "{day} तक मिलान हुआ",
+  "reconcile_never_reconciled": "कभी मिलान नहीं हुआ",
+  "reconcile_transfer_to_name": "{account} को",
+  "reconcile_transfer_from_name": "{account} से",
+  "reconcile_transfer_to_other": "दूसरे खाते को",
+  "reconcile_transfer_from_other": "दूसरे खाते से",
+  "reconcile_no_payee": "कोई पार्टी नहीं",
+  "reconcile_pdf_unsupported": "Kosha CSV, OFX और QFX फ़ाइलें पढ़ता है। अपने बैंक से इनमें से कोई एक एक्सपोर्ट करें।",
+  "reconcile_currency_mismatch": "यह स्टेटमेंट {statementCurrency} में है, और {account} {currency} में है।",
+  "reconcile_ofx_empty": "उस OFX फ़ाइल में कोई लेन-देन नहीं है",
+  "reconcile_csv_empty": "उस फ़ाइल में ऐसी कोई लाइन नहीं है जिसे Kosha पढ़ सके",
+  "reconcile_read_failed": "वह फ़ाइल पढ़ी नहीं जा सकी",
+  "reconcile_pick_category_first": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "पहले {count} लाइन के लिए श्रेणी चुनें",
+        "countPlural=other": "पहले {count} लाइनों के लिए श्रेणी चुनें"
+      }
+    }
+  ],
+  "reconcile_added": [
+    {
+      "declarations": ["input count", "input account", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{account} में {count} एंट्री जोड़ी गई",
+        "countPlural=other": "{account} में {count} एंट्रियाँ जोड़ी गईं"
+      }
+    }
+  ],
+  "reconcile_add_failed": "उन्हें जोड़ा नहीं जा सका",
+  "reconcile_change_failed": "उसे बदला नहीं जा सका",
+  "reconcile_finish_failed": "पूरा नहीं हो सका",
+  "reconcile_undone": "मिलान वापस लिया गया",
+  "reconcile_undo_failed": "उसे वापस नहीं लिया जा सका",
+  "reconcile_ask_failed": "पूछा नहीं जा सका",
+  "reconcile_hint_opening_gap": "यह स्टेटमेंट {opening} से शुरू होता है, लेकिन जिस पिछले स्टेटमेंट का आपने मिलान किया था वह {closing} पर खत्म हुआ था। शायद बीच का कोई स्टेटमेंट छूट गया है।",
+  "reconcile_hint_single_missing": "स्टेटमेंट में {payee} ({amount}) ठीक उतना ही है जितना अंतर है। इसे Kosha में जोड़ें।",
+  "reconcile_hint_missing_closes": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Kosha में जो लाइन नहीं है, उसे जोड़ने से अंतर ठीक-ठीक खत्म हो जाता है।",
+        "countPlural=other": "Kosha में जो {count} लाइनें नहीं हैं, उन्हें जोड़ने से अंतर ठीक-ठीक खत्म हो जाता है।"
+      }
+    }
+  ],
+  "reconcile_hint_missing_count": [
+    {
+      "declarations": ["input count", "input amount", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "स्टेटमेंट की {count} लाइन अभी Kosha में नहीं है ({amount})।",
+        "countPlural=other": "स्टेटमेंट की {count} लाइनें अभी Kosha में नहीं हैं ({amount})।"
+      }
+    }
+  ],
+  "reconcile_hint_close": "{name}: Kosha में {kosha} है, स्टेटमेंट में {statement}।",
+  "reconcile_balance_label": "क्लोज़िंग बैलेंस ({currency})",
+  "reconcile_owed_label": "स्टेटमेंट के अनुसार बकाया ({currency})",
+  "reconcile_account_title": "{account} का मिलान करें",
+  "reconcile_done_title": "{account} आपके स्टेटमेंट से मेल खाता है",
+  "reconcile_done_checked": [
+    {
+      "declarations": ["input count", "input n", "input day", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{day} तक {n} एंट्री जाँची गई।",
+        "countPlural=other": "{day} तक {n} एंट्रियाँ जाँची गईं।"
+      }
+    }
+  ],
+  "reconcile_done_correction": "{amount} के सुधार से अंतर खत्म हुआ।",
+  "reconcile_done_marked": "Kosha इन्हें मिलान हुआ मार्क करता है, और इनमें से किसी को बदलने से पहले आपको बताता है।",
+  "reconcile_back_to_accounts": "खातों पर वापस जाएँ",
+  "reconcile_last_reconciled": "आखिरी मिलान {day} तक",
+  "reconcile_check_each": "हर एंट्री को अपने बैंक के स्टेटमेंट से जाँचें।",
+  "reconcile_other_account": "दूसरा खाता",
+  "reconcile_drift": "{day} को मिलान की गई एंट्रियाँ तब से {amount} बदल गई हैं, इसलिए अब वे उस स्टेटमेंट से मेल नहीं खातीं। किसी एंट्री को बदला या हटाया गया है; उन्हें फिर से जाँचने के लिए वह मिलान वापस लें।",
+  "reconcile_pdf_off": "इस PDF से पढ़ी गई लाइनें उसके क्लोज़िंग बैलेंस से {amount} अलग हैं। हो सकता है कोई लाइन गलत पढ़ी गई हो; कुछ भी जोड़ने से पहले उन्हें PDF से मिलाकर देखें।",
+  "reconcile_reading": "{file} पढ़ रहे हैं…",
+  "reconcile_file_lines": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} लाइन",
+        "countPlural=other": "{count} लाइनें"
+      }
+    }
+  ],
+  "reconcile_read_by_ai": "AI ने पढ़ा",
+  "reconcile_another_file": "दूसरी फ़ाइल",
+  "reconcile_drop": "अपना स्टेटमेंट यहाँ छोड़ें, या {#choose}फ़ाइल चुनें{/choose}",
+  "reconcile_drop_formats": "आपके बैंक से CSV, OFX या QFX। Kosha मेल खाने वाली एंट्रियाँ टिक करता है और जो छूटा है उसकी सूची बनाता है।",
+  "reconcile_drop_formats_pdf": "आपके बैंक से CSV, OFX या QFX, या PDF स्टेटमेंट। Kosha मेल खाने वाली एंट्रियाँ टिक करता है और जो छूटा है उसकी सूची बनाता है।",
+  "reconcile_statement_date": "स्टेटमेंट की तारीख",
+  "reconcile_quick_balance": "Kosha आज {#amount}{amount}{/amount} दिखा रहा है। इसे अपने बैंक के मौजूदा बैलेंस से मिलाएँ, उपलब्ध बैलेंस से नहीं।",
+  "reconcile_quick_owed": "Kosha के अनुसार आज आप पर {#amount}{amount}{/amount} बकाया है। इसे अपने बैंक के मौजूदा बैलेंस से मिलाएँ, उपलब्ध बैलेंस से नहीं।",
+  "reconcile_same_as_bank": "मेरा बैंक भी यही दिखा रहा है",
+  "reconcile_missing_title": "स्टेटमेंट में है, Kosha में नहीं ({count})",
+  "reconcile_naming_payees": "पार्टियों के नाम तय कर रहे हैं…",
+  "reconcile_payee": "पार्टी",
+  "reconcile_category_for": "{name} के लिए श्रेणी",
+  "reconcile_pick_category": "श्रेणी चुनें",
+  "reconcile_transfer_to": "{account} को ट्रांसफ़र",
+  "reconcile_transfer_from": "{account} से ट्रांसफ़र",
+  "reconcile_include_line": "यह लाइन जोड़ें",
+  "reconcile_leave_out_line": "यह लाइन छोड़ दें",
+  "reconcile_saving_teaches": "सेव करने से Kosha आपके अगले स्टेटमेंट के लिए ये पार्टी नाम सीख लेता है।",
+  "reconcile_add_to_kosha": "Kosha में {count} जोड़ें",
+  "reconcile_close_title": "मिलती-जुलती, पर रकम अलग ({count})",
+  "reconcile_close_detail": "Kosha: {koshaDay} को {kosha} · स्टेटमेंट: {statementDay} को {statement}",
+  "reconcile_use_amount": "{amount} इस्तेमाल करें",
+  "reconcile_not_same": "ये अलग हैं",
+  "reconcile_in_kosha": "Kosha में",
+  "reconcile_tick_title": "जो स्टेटमेंट में है, उसे टिक करें",
+  "reconcile_ticked_count": "{count} टिक किए",
+  "reconcile_before_group": "इस स्टेटमेंट से पहले ({count})",
+  "reconcile_before_hint": "टिक किए हुए, क्योंकि ये पिछले स्टेटमेंट में थे",
+  "reconcile_nothing": "{day} तक मिलान के लिए कुछ नहीं है।",
+  "reconcile_note_amount_differs": "रकम अलग है",
+  "reconcile_note_next_statement": "शायद अगले स्टेटमेंट में होगा",
+  "reconcile_note_not_on_statement": "स्टेटमेंट में नहीं है",
+  "reconcile_note_still_due": "अभी देय है",
+  "reconcile_after_group": "{day} के बाद ({count})",
+  "reconcile_after_hint": "अगले स्टेटमेंट के लिए",
+  "reconcile_finding_title": "अंतर ढूँढ रहे हैं",
+  "reconcile_ask_ai": "AI से पूछें",
+  "reconcile_past": "पिछले मिलान",
+  "reconcile_history_entries": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} एंट्री",
+        "countPlural=other": "{count} एंट्रियाँ"
+      }
+    }
+  ],
+  "reconcile_corrected_by": "{amount} का सुधार",
+  "reconcile_figure_statement": "स्टेटमेंट",
+  "reconcile_figure_statement_owed": "स्टेटमेंट के अनुसार बकाया",
+  "reconcile_figure_ticked": "Kosha में टिक किए",
+  "reconcile_figure_ticked_owed": "टिक किए के अनुसार बकाया",
+  "reconcile_figure_difference": "अंतर",
+  "reconcile_figure_none": "कोई नहीं",
+  "reconcile_finish_with_correction": "{amount} के सुधार के साथ पूरा करें",
+  "reconcile_enter_balance": "स्टेटमेंट बैलेंस लिखें",
+  "reconcile_finish": "मिलान पूरा करें",
+  "reconcile_show": "दिखाएँ"
+}

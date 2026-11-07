@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from "react"
 import { createFileRoute } from "@tanstack/react-router"
 import { ArrowsLeftRightIcon, EyeIcon, PencilSimpleIcon, UserCircleIcon, WarningIcon } from "@phosphor-icons/react/ssr"
+import { ParaglideMessage } from "@inlang/paraglide-js-react"
 import { z } from "zod"
 import { cn } from "cn"
 import { AuthError, AuthFooter, optionClass } from "@/components/auth"
@@ -8,18 +9,20 @@ import { KoshaMark } from "@/components/kosha-mark"
 import { Button } from "@/components/ui/button"
 import { getConsentRequest } from "@/lib/api"
 import { authClient } from "@/lib/auth-client"
+import { m } from "@/paraglide/messages"
 
 // Where an MCP app (Claude, ChatGPT, Cursor…) lands after sign-in, to be allowed in or turned away.
 // Better Auth redirects here with a signed copy of the app's request; the auth client sends it back.
 export const Route = createFileRoute("/consent")({
   validateSearch: z.looseObject({}),
-  head: () => ({ meta: [{ title: "Connect an app · Kosha" }] }),
+  head: () => ({ meta: [{ title: m.auth_consent_page_title() }] }),
+  // Any failure here means the signed request can't be used, so the page says that rather than the server's words.
   loader: async () => {
     try {
       const query = typeof window === "undefined" ? undefined : window.location.search
-      return { request: await getConsentRequest({ data: { query } }), error: null }
-    } catch (e) {
-      return { request: null, error: e instanceof Error ? e.message : String(e) }
+      return { request: await getConsentRequest({ data: { query } }) }
+    } catch {
+      return { request: null }
     }
   },
   component: Consent,
@@ -29,7 +32,7 @@ const READ = "kosha:read"
 const WRITE = "kosha:write"
 
 function Consent() {
-  const { request, error } = Route.useLoaderData()
+  const { request } = Route.useLoaderData()
   const [write, setWrite] = useState(true)
   const [busy, setBusy] = useState(false)
   const [failed, setFailed] = useState("")
@@ -38,8 +41,8 @@ function Consent() {
     return (
       <Shell>
         <section className="flex flex-col gap-2.5 rounded-2xl border bg-card p-7 text-center max-sm:p-5">
-          <h1 className="text-2xl leading-[30px] font-semibold tracking-[-0.02em]">This link didn’t work</h1>
-          <p className="text-sm text-muted-foreground">{error}</p>
+          <h1 className="text-2xl leading-[30px] font-semibold tracking-[-0.02em]">{m.auth_consent_failed_title()}</h1>
+          <p className="text-sm text-muted-foreground">{m.auth_consent_failed_body()}</p>
         </section>
       </Shell>
     )
@@ -55,7 +58,11 @@ function Consent() {
     })
     if (res.error || !res.data?.url) {
       setBusy(false)
-      setFailed(res.error?.message || "Something went wrong. Try again from the app.")
+      setFailed(
+        (res.error as { code?: string } | null)?.code === "DEMO_READ_ONLY"
+          ? m.common_demo_read_only()
+          : m.auth_consent_error()
+      )
     } else window.location.assign(res.data.url)
   }
 
@@ -83,13 +90,20 @@ function Consent() {
       <section className="flex flex-col gap-[22px] rounded-2xl border bg-card p-7 max-sm:p-5">
         <div className="flex min-w-0 flex-col items-center gap-2.5 text-center">
           <h1 className="text-2xl leading-[30px] font-semibold tracking-[-0.02em] text-balance">
-            Connect {request.name} to Kosha?
+            {m.auth_consent_title({ app: request.name })}
           </h1>
           <p className="flex max-w-full items-center gap-2 text-[13px] leading-[18px] text-muted-foreground">
-            Returns to
-            <span className="truncate rounded-full bg-muted px-2 py-[3px] font-mono text-xs text-foreground">
-              {request.host || "an unknown address"}
-            </span>
+            <ParaglideMessage
+              message={request.host ? m.auth_consent_returns_to : m.auth_consent_returns_unknown}
+              inputs={{ host: request.host }}
+              markup={{
+                host: ({ children }) => (
+                  <span className="truncate rounded-full bg-muted px-2 py-[3px] font-mono text-xs text-foreground">
+                    {children}
+                  </span>
+                ),
+              }}
+            />
           </p>
         </div>
 
@@ -97,21 +111,17 @@ function Consent() {
           <div role="note" className="flex gap-3 rounded-[14px] border bg-muted px-4 py-3.5 text-sm">
             <WarningIcon aria-hidden="true" className="mt-0.5 size-[18px] shrink-0 text-warning" />
             <p>
-              <span className="font-medium">This app runs on this computer.</span>{" "}
-              <span className="text-subtle-foreground">
-                Allow it only if you just started it, for example in a terminal.
-              </span>
+              <span className="font-medium">{m.auth_consent_local_title()}</span>{" "}
+              <span className="text-subtle-foreground">{m.auth_consent_local_body()}</span>
             </p>
           </div>
         )}
 
         <div className="flex flex-col gap-2.5">
-          <span className="text-xs text-muted-foreground">{request.name} will be able to</span>
+          <span className="text-xs text-muted-foreground">{m.auth_consent_will_be_able({ app: request.name })}</span>
           <ul className="overflow-hidden rounded-[14px] border">
             {(request.scopes.includes(READ) || asksWrite) && (
-              <Scope icon={<EyeIcon />}>
-                See your accounts, transactions, categories, recurring payments and reports
-              </Scope>
+              <Scope icon={<EyeIcon />}>{m.auth_consent_scope_read()}</Scope>
             )}
             {asksWrite && (
               <li className="border-t first:border-t-0">
@@ -121,10 +131,10 @@ function Consent() {
                   </ScopeIcon>
                   <span className="flex flex-col gap-0.5">
                     <span className={cn("text-sm", !write && "text-muted-foreground line-through")}>
-                      Add, change and delete them
+                      {m.auth_consent_scope_write()}
                     </span>
                     <span className="text-xs text-muted-foreground">
-                      {write ? "Untick to connect read-only." : "Off. This app will connect read-only."}
+                      {write ? m.auth_consent_write_on() : m.auth_consent_write_off()}
                     </span>
                   </span>
                   <input
@@ -137,11 +147,11 @@ function Consent() {
               </li>
             )}
             {(request.scopes.includes("profile") || request.scopes.includes("email")) && (
-              <Scope icon={<UserCircleIcon />}>See your name and email</Scope>
+              <Scope icon={<UserCircleIcon />}>{m.auth_consent_scope_profile()}</Scope>
             )}
           </ul>
           <p className="mt-0.5 text-xs leading-[18px] text-muted-foreground">
-            You can disconnect it any time in Settings › API &amp; MCP.
+            {m.auth_consent_disconnect()}
             {request.site && (
               <>
                 {" "}
@@ -151,7 +161,7 @@ function Consent() {
                   rel="noreferrer"
                   className="text-subtle-foreground underline underline-offset-[3px] hover:text-foreground"
                 >
-                  About this app
+                  {m.auth_consent_about_app()}
                 </a>
               </>
             )}
@@ -167,10 +177,10 @@ function Consent() {
             disabled={busy}
             onClick={() => void answer(false)}
           >
-            Deny
+            {m.auth_consent_deny()}
           </Button>
           <Button size="auth" className="max-md:h-12" disabled={busy} onClick={() => void answer(true)}>
-            {asksWrite && !write ? "Allow read-only" : "Allow"}
+            {asksWrite && !write ? m.auth_consent_allow_read() : m.auth_consent_allow()}
           </Button>
         </div>
       </section>
@@ -202,7 +212,11 @@ function Shell({ email, children }: { email?: string; children: ReactNode }) {
         {children}
         {email && (
           <p className="text-center text-[13px] leading-[18px] text-muted-foreground">
-            Signed in to Kosha as <span className="text-foreground">{email}</span>
+            <ParaglideMessage
+              message={m.auth_consent_signed_in_as}
+              inputs={{ email }}
+              markup={{ email: ({ children }) => <span className="text-foreground">{children}</span> }}
+            />
           </p>
         )}
       </main>

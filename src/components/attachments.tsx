@@ -20,15 +20,18 @@ import {
   uploadAttachment,
   type Attachment,
 } from "@/lib/api"
-import { ATTACHMENT_ACCEPT, ATTACHMENT_LIMIT, LOCALE, archiveNames } from "@/lib/core"
+import { ATTACHMENT_ACCEPT, ATTACHMENT_LIMIT, intlLocale, archiveNames } from "@/lib/core"
 import { cn } from "@/lib/utils"
+import { m } from "@/paraglide/messages"
 
 const fileUrl = (id: string, download = false) => `/api/attachments/${id}${download ? "?download=1" : ""}`
 /** "Nov 2026" for a YYYY-MM-DD day. */
 const monthLabel = (day: string) =>
-  new Date(`${day}T12:00:00Z`).toLocaleDateString(LOCALE, { month: "short", year: "numeric", timeZone: "UTC" })
+  new Date(`${day}T12:00:00Z`).toLocaleDateString(intlLocale(), { month: "short", year: "numeric", timeZone: "UTC" })
 const sizeLabel = (n: number) =>
-  n < 1024 * 1024 ? `${Math.max(1, Math.round(n / 1024))} KB` : `${(n / 1048576).toFixed(1)} MB`
+  n < 1024 * 1024
+    ? `${Math.max(1, Math.round(n / 1024))} KB`
+    : `${(n / 1048576).toLocaleString(intlLocale(), { minimumFractionDigits: 1, maximumFractionDigits: 1 })} MB`
 
 /** Uploads files to a transaction one by one. Returns how many failed, after saying why. */
 export async function uploadFiles(transactionId: string, files: File[]) {
@@ -41,7 +44,7 @@ export async function uploadFiles(transactionId: string, files: File[]) {
       await uploadAttachment({ data })
     } catch (err) {
       failed++
-      toast.error(`${file.name}: ${err instanceof Error ? err.message : "couldn't attach it"}`)
+      toast.error(`${file.name}: ${err instanceof Error ? err.message : m.tx_attach_failed()}`)
     }
   }
   return failed
@@ -50,7 +53,7 @@ export async function uploadFiles(transactionId: string, files: File[]) {
 /** Keeps only files under the size limit, saying which were too big. */
 function underLimit(files: File[]) {
   const big = files.filter((f) => f.size > ATTACHMENT_LIMIT)
-  if (big.length) toast.error(`${big.map((f) => f.name).join(", ")}: choose a file under 10 MB`)
+  if (big.length) toast.error(m.tx_file_too_big({ files: big.map((f) => f.name).join(", ") }))
   return files.filter((f) => f.size <= ATTACHMENT_LIMIT)
 }
 
@@ -100,8 +103,7 @@ export function Attachments({
     if (!transactionId) return onStage?.([...(staged ?? []), ...ok])
     setBusy(true)
     const failed = await uploadFiles(transactionId, ok)
-    if (failed < ok.length)
-      toast.success(ok.length - failed === 1 ? "Attached" : `Attached ${ok.length - failed} files`)
+    if (failed < ok.length) toast.success(m.tx_attached({ count: ok.length - failed }))
     await load().catch(() => {})
     setBusy(false)
     // Activity's paperclip counts files, so refresh it.
@@ -113,10 +115,10 @@ export function Attachments({
     try {
       await deleteAttachment({ data: { id: a.id } })
       setList((l) => l.filter((x) => x.id !== a.id))
-      toast.success("Removed")
+      toast.success(m.tx_removed())
       void router.invalidate()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Couldn't remove it")
+      toast.error(err instanceof Error ? err.message : m.tx_remove_failed())
     }
   }
 
@@ -133,7 +135,7 @@ export function Attachments({
 
   return (
     <div className={cn("grid gap-1.5", className)}>
-      {rows.length > 0 && <span className="text-xs text-muted-foreground">Attachments</span>}
+      {rows.length > 0 && <span className="text-xs text-muted-foreground">{m.tx_attachments()}</span>}
       {rows.map((r, i) => (
         <div key={r.key} className="flex min-h-11 items-center gap-2.5 rounded-md border bg-card px-2 text-sm">
           <span className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded bg-muted">
@@ -160,7 +162,7 @@ export function Attachments({
           <span className="num shrink-0 text-xs text-muted-foreground">{sizeLabel(r.size)}</span>
           <button
             type="button"
-            aria-label={`Remove ${r.name}`}
+            aria-label={m.tx_remove_file({ name: r.name })}
             onClick={() => (r.a ? setRemoving(r.a) : onStage?.((staged ?? []).filter((_, j) => j !== i)))}
             className="-mr-1 inline-flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground max-md:size-11"
           >
@@ -176,7 +178,7 @@ export function Attachments({
           className="-ml-2 inline-flex min-h-9 items-center gap-1.5 rounded-md px-2 text-[13px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-60 max-md:min-h-11 [&_svg]:size-4"
         >
           <PaperclipIcon />
-          {busy ? "Attaching…" : rows.length ? "Attach another" : "Attach receipt or document"}
+          {busy ? m.tx_attaching() : rows.length ? m.tx_attach_another() : m.tx_attach_receipt()}
         </button>
         <input
           ref={input}
@@ -195,13 +197,13 @@ export function Attachments({
       <Dialog open={!!removing} onOpenChange={(o) => !o && setRemoving(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Remove {removing?.name}?</DialogTitle>
-            <DialogDescription>The file is deleted. The transaction stays.</DialogDescription>
+            <DialogTitle>{m.tx_remove_file_title({ name: removing?.name ?? "" })}</DialogTitle>
+            <DialogDescription>{m.tx_remove_file_body()}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
+            <DialogClose render={<Button variant="outline" />}>{m.common_cancel()}</DialogClose>
             <Button variant="destructive" onClick={() => removing && remove(removing)}>
-              Remove
+              {m.common_remove()}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -268,7 +270,7 @@ export function ScheduleDocuments({
       const entries: Record<string, Uint8Array> = {}
       for (const [i, f] of chosen.entries()) {
         const res = await fetch(fileUrl(f.id))
-        if (!res.ok) throw new Error(`Couldn't fetch ${f.name}`)
+        if (!res.ok) throw new Error(m.tx_fetch_failed({ name: f.name }))
         entries[names[i]] = new Uint8Array(await res.arrayBuffer())
       }
       // Photos and PDFs are compressed already, so the zip only stores them.
@@ -276,11 +278,11 @@ export function ScheduleDocuments({
       const url = URL.createObjectURL(new Blob([zip as BlobPart], { type: "application/zip" }))
       const a = document.createElement("a")
       a.href = url
-      a.download = `${name} documents.zip`
+      a.download = `${m.tx_docs_zip_name({ name })}.zip`
       a.click()
       setTimeout(() => URL.revokeObjectURL(url), 10_000)
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Couldn't make the zip")
+      toast.error(err instanceof Error ? err.message : m.tx_zip_failed())
     } finally {
       setBusy(false)
     }
@@ -290,14 +292,14 @@ export function ScheduleDocuments({
     <section aria-labelledby="docs-h">
       <div className="mb-1.5 flex items-baseline justify-between gap-3">
         <h3 id="docs-h" className="text-[13px] font-medium">
-          Documents <span className="num font-normal text-muted-foreground">{files.length}</span>
+          {m.tx_documents()} <span className="num font-normal text-muted-foreground">{files.length}</span>
         </h3>
         <button
           type="button"
           onClick={() => setPicked(all ? new Set() : new Set(files.map((f) => f.id)))}
           className="-my-2 inline-flex min-h-9 items-center text-xs text-muted-foreground hover:text-foreground max-md:min-h-11"
         >
-          {all ? "Clear" : "Select all"}
+          {all ? m.tx_select_none() : m.tx_select_all()}
         </button>
       </div>
       <div className="max-h-72 overflow-y-auto border-b">
@@ -321,12 +323,12 @@ export function ScheduleDocuments({
       >
         <DownloadSimpleIcon />
         {busy
-          ? "Preparing…"
+          ? m.tx_preparing()
           : chosen.length > 1
-            ? `Download ${chosen.length} as zip`
+            ? m.tx_download_zip({ count: chosen.length })
             : chosen.length
-              ? "Download"
-              : "Tick documents to download"}
+              ? m.tx_download()
+              : m.tx_tick_to_download()}
       </Button>
     </section>
   )

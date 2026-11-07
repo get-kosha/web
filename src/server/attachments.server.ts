@@ -4,6 +4,7 @@
 import { env, waitUntil } from "cloudflare:workers"
 import { ATTACHMENT_LIMIT, dayOf, fileKind } from "@/lib/core"
 import { HttpError, db, getSettings } from "@/server/db.server"
+import { m } from "@/paraglide/messages"
 
 /** The R2 bucket for attachments. It's an optional binding, so a deployment without R2 has none. */
 export const attachmentBucket = () => (env as { ATTACHMENTS?: R2Bucket }).ATTACHMENTS
@@ -45,16 +46,16 @@ export async function scheduleAttachments(uid: string, subscriptionId: string) {
 /** Stores a file against one of the user's transactions. */
 export async function addAttachment(uid: string, transactionId: string, file: File) {
   const bucket = attachmentBucket()
-  if (!bucket) throw new HttpError(409, "Attachments aren't set up on this server")
-  if (file.size > ATTACHMENT_LIMIT) throw new HttpError(413, "Choose a file under 10 MB")
+  if (!bucket) throw new HttpError(409, m.server_attachments_unavailable())
+  if (file.size > ATTACHMENT_LIMIT) throw new HttpError(413, m.server_attachment_too_big())
   const DB = db()
   const tx = await DB.prepare("SELECT 1 FROM transactions WHERE user_id = ? AND id = ?")
     .bind(uid, transactionId)
     .first()
-  if (!tx) throw new HttpError(404, "Transaction not found")
+  if (!tx) throw new HttpError(404, m.server_transaction_not_found())
   const bytes = new Uint8Array(await file.arrayBuffer())
   const type = fileKind(bytes)
-  if (!type) throw new HttpError(415, "Attach a photo (JPEG, PNG or WebP) or a PDF")
+  if (!type) throw new HttpError(415, m.server_attachment_type())
   const id = crypto.randomUUID()
   const name = (file.name || "file").slice(0, 200)
   await bucket.put(keyOf(uid, id), bytes, { httpMetadata: { contentType: type } })
@@ -74,7 +75,7 @@ export async function addAttachment(uid: string, transactionId: string, file: Fi
 /** Deletes one attachment. Its R2 object goes straight away rather than waiting for the next purge. */
 export async function deleteAttachment(uid: string, id: string) {
   const res = await db().prepare("DELETE FROM attachments WHERE user_id = ? AND id = ?").bind(uid, id).run()
-  if (!res.meta.changes) throw new HttpError(404, "Attachment not found")
+  if (!res.meta.changes) throw new HttpError(404, m.server_attachment_not_found())
   await purgeAttachments(uid)
 }
 

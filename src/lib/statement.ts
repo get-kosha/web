@@ -1,6 +1,7 @@
 // Bank statements: reading CSV and OFX files, turning bank text into payees, matching statement lines to
 // Kosha's entries, and hints for a reconciliation difference. Pure, so core.test.ts can check it.
 import { addDays, parseAmount } from "./core.ts"
+import { m } from "../paraglide/messages.js"
 
 /** One line of a statement, in the account's currency. Negative is money out of the account. */
 export type Line = { day: string; amount: number; description: string; balance: number | null; ref: string | null }
@@ -111,12 +112,12 @@ export function guessDateFormat(values: string[]): DateFormat | null {
 }
 
 const HEAD = {
-  date: /(^|\s)(date|datum|fecha|data|posted|booking|buchungstag|dated)(\s|$)|date$/i,
+  date: /(^|\s)(date|datum|fecha|data|posted|booking|buchungstag|dated)(\s|$)|date$|datum$/i,
   valueDate: /value|valuta|wertstellung/i,
-  payee: /payee|merchant|counterparty|name|empf|beg(ue|ü)nstigter|recipient|beneficiary/i,
+  payee: /payee|merchant|counterparty|name|empf|beg(ue|ü)nstigter|auftraggeber|recipient|beneficiary/i,
   description:
     /description|details|narrative|particulars|transaction|text|concepto|libell|verwendungszweck|memo|reference|beschreibung/i,
-  amount: /amount|betrag|importe|montant|value|sum|bedrag|kwota/i,
+  amount: /amount|betrag|umsatz|importe|montant|value|sum|bedrag|kwota/i,
   debit: /debit|money out|paid out|withdrawal|outflow|out$|soll|ausgang|cargo|spent/i,
   credit: /credit|money in|paid in|deposit|inflow|in$|haben|eingang|abono|received/i,
   balance: /balance|saldo|solde|kontostand/i,
@@ -458,23 +459,23 @@ export function differenceHints(
 ): Hint[] {
   if (!diff) return []
   const out: Hint[] = []
-  const name = (e: Item) => e.name || "an entry"
+  const name = (e: Item) => e.name || m.reconcile_hint_an_entry()
   // Ticking one more entry, or unticking one, closes it.
   for (const e of unticked.filter((e) => e.amount === diff))
     out.push({
-      text: `${name(e)} (${money(e.amount)}) is exactly the difference. Is it on the statement?`,
+      text: m.reconcile_hint_exact_unticked({ name: name(e), amount: money(e.amount) }),
       ids: [e.id],
     })
   for (const e of ticked.filter((e) => e.amount === -diff))
     out.push({
-      text: `${name(e)} (${money(e.amount)}) is exactly the difference. Is it really on the statement?`,
+      text: m.reconcile_hint_exact_ticked({ name: name(e), amount: money(e.amount) }),
       ids: [e.id],
     })
   // An entry with the wrong sign is off by twice its amount.
   if (diff % 2 === 0)
     for (const e of ticked.filter((e) => e.amount === -diff / 2))
       out.push({
-        text: `${name(e)} is half the difference. Is it the wrong way round, money ${e.amount < 0 ? "in" : "out"} rather than ${e.amount < 0 ? "out" : "in"}?`,
+        text: (e.amount < 0 ? m.reconcile_hint_wrong_way_in : m.reconcile_hint_wrong_way_out)({ name: name(e) }),
         ids: [e.id],
       })
   // Two digits swapped while typing always leave a difference divisible by 9.
@@ -483,7 +484,7 @@ export function differenceHints(
       const meant = swaps(e.amount).find((v) => v - e.amount === diff)
       if (meant !== undefined)
         out.push({
-          text: `Was ${name(e)} ${money(meant)} rather than ${money(e.amount)}? Swapped digits are a common slip.`,
+          text: m.reconcile_hint_swapped({ name: name(e), meant: money(meant), amount: money(e.amount) }),
           ids: [e.id],
         })
     }
@@ -492,12 +493,12 @@ export function differenceHints(
     for (const k of [10, 100, 1000]) {
       if (diff === e.amount * (k - 1))
         out.push({
-          text: `Was ${name(e)} ${money(e.amount * k)} rather than ${money(e.amount)}? The decimal point may be in the wrong place.`,
+          text: m.reconcile_hint_decimal({ name: name(e), meant: money(e.amount * k), amount: money(e.amount) }),
           ids: [e.id],
         })
       else if (diff * k === -e.amount * (k - 1) && e.amount % k === 0)
         out.push({
-          text: `Was ${name(e)} ${money(e.amount / k)} rather than ${money(e.amount)}? The decimal point may be in the wrong place.`,
+          text: m.reconcile_hint_decimal({ name: name(e), meant: money(e.amount / k), amount: money(e.amount) }),
           ids: [e.id],
         })
     }
@@ -507,7 +508,7 @@ export function differenceHints(
     for (let j = i + 1; j < small.length; j++)
       if (small[i].amount + small[j].amount === diff) {
         out.push({
-          text: `${name(small[i])} and ${name(small[j])} together make the difference.`,
+          text: m.reconcile_hint_pair({ first: name(small[i]), second: name(small[j]) }),
           ids: [small[i].id, small[j].id],
         })
         break
@@ -522,17 +523,17 @@ export function differenceHints(
         Math.abs(dayDiff(e.day, f.day)) <= 3 &&
         similarity(e.name, f.name) >= 0.5
       )
-        out.push({ text: `${name(e)} appears twice. Is one a duplicate?`, ids: [e.id, f.id] })
+        out.push({ text: m.reconcile_hint_duplicate({ name: name(e) }), ids: [e.id, f.id] })
   // Entries at the very end of the period often reach the bank on the next statement.
   const late = ticked.filter((e) => e.day > addDays(statementDay, -3) && e.day <= statementDay)
   if (late.length && !out.length)
     out.push({
-      text: "Entries from the last days of the period can show on the next statement instead.",
+      text: m.reconcile_hint_late(),
       ids: late.map((e) => e.id),
     })
   if (!out.length)
     out.push({
-      text: `Look on the statement for ${diff < 0 ? "a fee, a charge or interest" : "interest, a refund or a payment in"} of ${money(Math.abs(diff))} that isn't in Kosha yet.`,
+      text: (diff < 0 ? m.reconcile_hint_look_out : m.reconcile_hint_look_in)({ amount: money(Math.abs(diff)) }),
       ids: [],
     })
   return out.slice(0, 6)
@@ -674,10 +675,15 @@ export function statementGaps(
   for (let i = 1; i < sorted.length; i++) {
     const [a, b] = [sorted[i - 1], sorted[i]]
     if (dayDiff(a.to, b.from) > 5)
-      out.push(`No statement covers ${label(addDays(a.to, 1))} to ${label(addDays(b.from, -1))}.`)
+      out.push(m.reconcile_gap_uncovered({ from: label(addDays(a.to, 1)), to: label(addDays(b.from, -1)) }))
     else if (a.closing !== null && b.opening !== null && a.closing !== b.opening)
       out.push(
-        `${b.name} opens at ${money(b.opening)}, but ${a.name} closes at ${money(a.closing)}. A statement may be missing.`
+        m.reconcile_gap_opening({
+          next: b.name,
+          opening: money(b.opening),
+          previous: a.name,
+          closing: money(a.closing),
+        })
       )
   }
   return out

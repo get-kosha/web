@@ -14,8 +14,10 @@ import { CategoryPicker, categoryPath } from "@/components/category-picker"
 import { PageHeader, PageSkeleton, bottomSheet, isTyping, monthLabel, useGlobals, useMeta } from "@/components/shell"
 import { TransactionForm, TransactionSheet } from "@/components/transaction-form"
 import { listTransactions, type Tx } from "@/lib/api"
-import { LOCALE, convert, dayOf, fmt, isNeutral, parseAmount, tagList } from "@/lib/core"
+import { intlLocale, convert, dayOf, fmt, isNeutral, parseAmount, tagList } from "@/lib/core"
 import { cn } from "@/lib/utils"
+import { ParaglideMessage } from "@inlang/paraglide-js-react"
+import { m } from "@/paraglide/messages"
 
 const PAGE = 100
 
@@ -51,13 +53,13 @@ export const Route = createFileRoute("/_app/transactions")({
     limit,
   }),
   loader: ({ deps }) => listTransactions({ data: { ...deps, limit: deps.limit ?? PAGE } }),
-  head: () => ({ meta: [{ title: "Activity · Kosha" }] }),
+  head: () => ({ meta: [{ title: `${m.tx_activity()} · Kosha` }] }),
   pendingComponent: PageSkeleton,
   component: Activity,
 })
 
 const dayTitle = (day: string) =>
-  new Date(`${day}T12:00:00Z`).toLocaleDateString(LOCALE, {
+  new Date(`${day}T12:00:00Z`).toLocaleDateString(intlLocale(), {
     weekday: "short",
     day: "numeric",
     month: "short",
@@ -138,17 +140,18 @@ function Activity() {
     s.min !== undefined && s.max !== undefined
       ? `${fmt(s.min, cur)}–${fmt(s.max, cur)}`
       : s.min !== undefined
-        ? `Over ${fmt(s.min, cur)}`
+        ? m.tx_amount_over({ amount: fmt(s.min, cur) })
         : s.max !== undefined
-          ? `Under ${fmt(s.max, cur)}`
+          ? m.tx_amount_under({ amount: fmt(s.max, cur) })
           : null
 
   const event = s.event ? meta.events.find((e) => e.id === s.event) : undefined
-  // Every active filter as a removable chip under the search.
+  // Every active filter as a removable chip under the search. `text` names it for screen readers.
   const chips = [
-    wallet && { key: "wallet", label: wallet.name, clear: { wallet: undefined } },
+    wallet && { key: "wallet", label: wallet.name, text: wallet.name, clear: { wallet: undefined } },
     category && {
       key: "category",
+      text: categoryPath(category, meta.categories),
       label: (
         <>
           <CategoryIcon
@@ -160,25 +163,35 @@ function Activity() {
       ),
       clear: { category: undefined },
     },
-    amountLabel && { key: "amount", label: amountLabel, clear: { min: undefined, max: undefined } },
-    s.tag && { key: "tag", label: `#${s.tag}`, clear: { tag: undefined } },
-    event && { key: "event", label: event.name, clear: { event: undefined } },
-    s.corrections && { key: "corrections", label: "Corrections shown", clear: { corrections: undefined } },
+    amountLabel && { key: "amount", label: amountLabel, text: amountLabel, clear: { min: undefined, max: undefined } },
+    s.tag && { key: "tag", label: `#${s.tag}`, text: `#${s.tag}`, clear: { tag: undefined } },
+    event && { key: "event", label: event.name, text: event.name, clear: { event: undefined } },
+    s.corrections && {
+      key: "corrections",
+      label: m.tx_corrections_shown(),
+      text: m.tx_corrections_shown(),
+      clear: { corrections: undefined },
+    },
   ].filter((c) => !!c)
   const [filtering, setFiltering] = useState(false)
 
   return (
     <div className="pb-8">
       <PageHeader
-        title="Activity"
+        title={m.tx_activity()}
         sub={
           <>
             {event
               ? [event.name, eventDates(event)].filter(Boolean).join(" · ")
               : s.tag
-                ? `#${s.tag} · all dates`
+                ? m.tx_tag_all_dates({ tag: s.tag })
                 : monthLabel(month)}{" "}
-            · <span className="num">{data.total}</span> {data.total === 1 ? "transaction" : "transactions"}
+            ·{" "}
+            <ParaglideMessage
+              message={m.tx_count}
+              inputs={{ count: data.total, n: data.total.toLocaleString(intlLocale()) }}
+              markup={{ num: ({ children }) => <span className="num">{children}</span> }}
+            />
           </>
         }
       />
@@ -195,8 +208,8 @@ function Activity() {
               type="search"
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              aria-label="Search activity"
-              placeholder="Search payee, note or amount"
+              aria-label={m.tx_search_label()}
+              placeholder={m.tx_search_placeholder()}
               className="h-9 bg-card pl-9 text-[13px] md:text-[13px]"
             />
           </label>
@@ -204,11 +217,11 @@ function Activity() {
             variant="outline"
             size="lg"
             onClick={() => setFiltering(true)}
-            aria-label={chips.length ? `Filters, ${chips.length} on` : "Filters"}
+            aria-label={chips.length ? m.tx_filters_on({ count: chips.length }) : m.tx_filters()}
             className="relative gap-2 bg-card px-3 text-[13px] font-normal max-md:size-11 max-md:px-0"
           >
             <SlidersHorizontalIcon className="size-4" />
-            <span className="max-md:hidden">Filters</span>
+            <span className="max-md:hidden">{m.tx_filters()}</span>
             {chips.length > 0 && (
               <span className="num inline-flex size-5 items-center justify-center rounded-full bg-foreground text-[11px] text-background max-md:absolute max-md:-top-1 max-md:-right-1">
                 {chips.length}
@@ -217,14 +230,14 @@ function Activity() {
           </Button>
           <div className="hidden flex-1 md:block" />
           <Segmented
-            label="Show"
+            label={m.tx_show()}
             value={s.type ?? "all"}
             onChange={(v) => set({ type: v === "all" ? undefined : v })}
             options={[
-              ["all", "All"],
-              ["out", "Out"],
-              ["in", "In"],
-              ["transfers", "Transfers"],
+              ["all", m.tx_type_all()],
+              ["out", m.tx_out()],
+              ["in", m.tx_in()],
+              ["transfers", m.tx_type_transfers()],
             ]}
           />
         </div>
@@ -240,7 +253,7 @@ function Activity() {
                 <button
                   type="button"
                   onClick={() => set(c.clear)}
-                  aria-label={`Remove ${c.label} filter`}
+                  aria-label={m.tx_remove_filter({ label: c.text })}
                   className="inline-flex size-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground max-md:size-8"
                 >
                   <XIcon className="size-3.5" />
@@ -253,19 +266,23 @@ function Activity() {
                 onClick={() => set(NO_FILTERS)}
                 className="inline-flex min-h-8 items-center rounded-md px-2 text-[13px] text-muted-foreground hover:text-foreground max-md:min-h-10"
               >
-                Clear all
+                {m.tx_clear_all()}
               </button>
             )}
           </div>
         )}
 
         <dl className="grid grid-cols-3 gap-3 px-0.5 sm:flex sm:gap-10">
-          <Total label="Out" value={fmt(out, cur)} />
-          <Total label="In" value={signed(inn, cur)} className="text-positive" />
-          <Total label="Net" value={signed(out + inn, cur)} />
+          <Total label={m.tx_out()} value={fmt(out, cur)} />
+          <Total label={m.tx_in()} value={signed(inn, cur)} className="text-positive" />
+          <Total label={m.tx_net()} value={signed(out + inn, cur)} />
           {moved > 0 && (
             <p className="col-span-3 -mt-1 text-xs text-muted-foreground sm:mt-0 sm:self-end sm:pb-0.5">
-              <span className="num">{fmt(moved, cur)}</span> moved between accounts, not counted
+              <ParaglideMessage
+                message={m.tx_moved_not_counted}
+                inputs={{ amount: fmt(moved, cur) }}
+                markup={{ num: ({ children }) => <span className="num">{children}</span> }}
+              />
             </p>
           )}
         </dl>
@@ -273,13 +290,13 @@ function Activity() {
         <div className="flex flex-wrap items-start gap-5">
           <section
             ref={listRef}
-            aria-label="Transactions"
+            aria-label={m.tx_transactions()}
             className="min-w-0 flex-[999_1_560px] overflow-hidden rounded-xl border bg-card"
           >
             {groups.length === 0 &&
               (chips.length || s.q || s.type ? (
                 <div className="px-4 py-12 text-center text-sm text-muted-foreground">
-                  <p>No transactions match these filters.</p>
+                  <p>{m.tx_no_match()}</p>
                   <Button
                     variant="outline"
                     className="mt-3"
@@ -288,13 +305,11 @@ function Activity() {
                       set({ ...NO_FILTERS, q: undefined, type: undefined })
                     }}
                   >
-                    Clear filters
+                    {m.tx_clear_filters()}
                   </Button>
                 </div>
               ) : (
-                <p className="px-4 py-12 text-center text-sm text-muted-foreground">
-                  No transactions this month. Entries you add show up here.
-                </p>
+                <p className="px-4 py-12 text-center text-sm text-muted-foreground">{m.tx_empty_month()}</p>
               ))}
             {groups.map((g, gi) => {
               const dayTotal = g.rows.reduce(
@@ -328,7 +343,14 @@ function Activity() {
             {data.rows.length > 0 && (
               <div className="flex items-center justify-between gap-3 border-t px-4 py-2.5">
                 <span className="text-xs text-muted-foreground">
-                  Showing <span className="num">{data.rows.length}</span> of <span className="num">{data.total}</span>
+                  <ParaglideMessage
+                    message={m.tx_showing}
+                    inputs={{
+                      shown: data.rows.length.toLocaleString(intlLocale()),
+                      total: data.total.toLocaleString(intlLocale()),
+                    }}
+                    markup={{ num: ({ children }) => <span className="num">{children}</span> }}
+                  />
                 </span>
                 {data.rows.length < data.total && (
                   <Button
@@ -341,7 +363,7 @@ function Activity() {
                       })
                     }
                   >
-                    Load earlier days
+                    {m.tx_load_earlier()}
                   </Button>
                 )}
               </div>
@@ -350,7 +372,7 @@ function Activity() {
 
           {selected && (
             <aside
-              aria-label="Transaction details"
+              aria-label={m.tx_details()}
               className="sticky top-4 hidden max-w-[400px] min-w-0 flex-[1_1_320px] rounded-xl border bg-card p-5 duration-150 ease-out motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-right-2 lg:block"
             >
               <ActivityPanel
@@ -375,7 +397,7 @@ function Activity() {
 
       <TransactionSheet
         open={!!editing}
-        title={editing?.transfer_id ? "Edit transfer" : "Edit transaction"}
+        title={editing?.transfer_id ? m.tx_edit_transfer() : m.tx_edit_transaction()}
         onClose={() => setEditing(null)}
       >
         {editing && (
@@ -415,19 +437,19 @@ function Row({
     ? t.amount < 0
       ? `${w?.name} → ${other?.name}`
       : `${other?.name} → ${w?.name}`
-    : t.name || c?.name || "Untitled"
+    : t.name || c?.name || m.tx_untitled()
   const amount = isTransfer && !singleWallet ? Math.abs(t.amount) + (t.amount < 0 ? (t.fee ?? 0) : 0) : t.amount
   const foreign = currency !== cur
   const event = t.event_id ? meta.events.find((e) => e.id === t.event_id) : undefined
   const sub: ReactNode[] = [
-    !t.paid && (t.kind ?? "upcoming"),
+    !t.paid && kindLabel(t.kind),
     event?.name,
     ...tagList(t.tags).map((x) => (
       <Link
         key={x}
         to="/transactions"
         search={{ tag: x }}
-        aria-label={`All transactions tagged #${x}`}
+        aria-label={m.tx_tag_link({ tag: x })}
         className="relative z-10 rounded-sm after:absolute after:-inset-x-1.5 after:-inset-y-1 after:content-[''] hover:text-foreground hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none max-md:after:-inset-y-3.5"
       >
         #{x}
@@ -455,7 +477,9 @@ function Row({
             type="button"
             data-tx={t.id}
             aria-pressed={selected}
-            aria-label={[title, shown, c?.name, t.files && `${t.files} attached`].filter(Boolean).join(", ")}
+            aria-label={[title, shown, c?.name, t.files && m.tx_files_attached({ count: t.files })]
+              .filter(Boolean)
+              .join(", ")}
             onClick={onClick}
             className="truncate text-left outline-none after:absolute after:inset-0 after:content-['']"
           >
@@ -464,7 +488,7 @@ function Row({
           {!!t.files && <PaperclipIcon aria-hidden="true" className="ml-1.5 size-3.5 shrink-0 text-muted-foreground" />}
           {isTransfer && (
             <span className="ml-1.5 shrink-0 rounded-sm bg-muted px-1.5 text-[11px] text-muted-foreground">
-              transfer
+              {m.tx_transfer_badge()}
             </span>
           )}
         </span>
@@ -495,6 +519,17 @@ function Row({
       </span>
     </div>
   )
+}
+
+/** An unpaid row's schedule kind, as the sub line shows it. */
+function kindLabel(kind: string | null | undefined) {
+  const labels: Record<string, () => string> = {
+    subscription: m.tx_kind_subscription,
+    repetitive: m.tx_kind_repetitive,
+    credit: m.tx_kind_credit,
+    debt: m.tx_kind_debt,
+  }
+  return kind ? (labels[kind]?.() ?? kind) : m.tx_kind_upcoming()
 }
 
 const NO_FILTERS = {
@@ -540,10 +575,10 @@ function FiltersSheet({
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className={cn(bottomSheet, "max-h-[88svh] gap-5 md:max-w-lg")}>
         <DialogHeader>
-          <DialogTitle>Filters</DialogTitle>
+          <DialogTitle>{m.tx_filters()}</DialogTitle>
         </DialogHeader>
 
-        <FilterSection label="Account">
+        <FilterSection label={m.tx_account()}>
           {meta.wallets
             .filter((w) => !w.archived || w.id === s.wallet)
             .map((w) => (
@@ -553,19 +588,19 @@ function FiltersSheet({
             ))}
         </FilterSection>
 
-        <FilterSection label="Category">
-          <Chip on={!!category} onClick={() => setPickingCategory((v) => !v)} label="Pick a category">
+        <FilterSection label={m.tx_category()}>
+          <Chip on={!!category} onClick={() => setPickingCategory((v) => !v)} label={m.tx_pick_category()}>
             {category ? (
               <>
                 <CategoryIcon icon={category.icon} className="size-4" /> {categoryPath(category, meta.categories)}
               </>
             ) : (
-              "Any category"
+              m.tx_any_category()
             )}
           </Chip>
           {category && (
             <Chip onClick={() => set({ category: undefined })} className="text-muted-foreground">
-              Clear
+              {m.tx_clear()}
             </Chip>
           )}
           {pickingCategory && (
@@ -581,7 +616,7 @@ function FiltersSheet({
           )}
         </FilterSection>
 
-        <FilterSection label="Amount">
+        <FilterSection label={m.tx_amount()}>
           <AmountRange
             key={`${s.min}-${s.max}`}
             min={s.min}
@@ -592,7 +627,7 @@ function FiltersSheet({
         </FilterSection>
 
         {meta.tags.length > 0 && (
-          <FilterSection label="Tag" note="A tag shows all of its transactions, whatever the month.">
+          <FilterSection label={m.tx_tag()} note={m.tx_tag_note()}>
             {meta.tags.map((t) => (
               <Chip key={t} on={t === s.tag} onClick={() => toggle("tag", t)}>
                 #{t}
@@ -602,7 +637,7 @@ function FiltersSheet({
         )}
 
         {meta.events.length > 0 && (
-          <FilterSection label="Event" note="An event shows all of its transactions, whatever the month.">
+          <FilterSection label={m.tx_event()} note={m.tx_event_note()}>
             {meta.events.map((e) => (
               <Chip key={e.id} on={e.id === s.event} onClick={() => toggle("event", e.id)}>
                 {e.name}
@@ -614,7 +649,11 @@ function FiltersSheet({
         {(corrections > 0 || s.corrections) && (
           <label className="flex min-h-11 items-center justify-between gap-3 text-sm">
             <span>
-              Show balance corrections <span className="num text-muted-foreground">({corrections})</span>
+              <ParaglideMessage
+                message={m.tx_show_corrections}
+                inputs={{ count: corrections.toLocaleString(intlLocale()) }}
+                markup={{ num: ({ children }) => <span className="num text-muted-foreground">{children}</span> }}
+              />
             </span>
             <Switch checked={!!s.corrections} onCheckedChange={(on) => set({ corrections: on || undefined })} />
           </label>
@@ -622,10 +661,14 @@ function FiltersSheet({
 
         <div className="sticky -bottom-5 -mx-5 -mb-5 flex gap-2 border-t bg-popover px-5 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
           <Button variant="ghost" size="lg" onClick={() => set(NO_FILTERS)}>
-            Clear all
+            {m.tx_clear_all()}
           </Button>
           <Button size="lg" className="flex-1" onClick={onClose}>
-            Show <span className="num">{total}</span> {total === 1 ? "transaction" : "transactions"}
+            <ParaglideMessage
+              message={m.tx_show_count}
+              inputs={{ count: total, n: total.toLocaleString(intlLocale()) }}
+              markup={{ num: ({ children }) => <span className="num">{children}</span> }}
+            />
           </Button>
         </div>
       </DialogContent>
@@ -681,10 +724,10 @@ function AmountRange({
   return (
     <div className="grid basis-full gap-2">
       <div className="grid grid-cols-2 gap-2">
-        {field(`At least (${currency.toUpperCase()})`, lo, setLo)}
-        {field("At most", hi, setHi)}
+        {field(m.tx_at_least({ currency: currency.toUpperCase() }), lo, setLo)}
+        {field(m.tx_at_most(), hi, setHi)}
       </div>
-      <p className="text-xs text-muted-foreground">Compares each amount in its own currency, ignoring the sign.</p>
+      <p className="text-xs text-muted-foreground">{m.tx_amount_note()}</p>
     </div>
   )
 }

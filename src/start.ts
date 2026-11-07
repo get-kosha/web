@@ -1,6 +1,7 @@
 import { createCsrfMiddleware, createMiddleware, createStart } from "@tanstack/react-start"
 import { demoLocked, getUser } from "@/server/auth.server"
 import { DEMO_READ_ONLY, safeReturn } from "@/lib/core"
+import { paraglideMiddleware } from "@/paraglide/server"
 
 const redirect = (to: string) => new Response(null, { status: 302, headers: { Location: to } }) as never
 
@@ -26,6 +27,13 @@ const requireUser = createMiddleware().server(async ({ next, request }) => {
   return new Response("Unauthorized", { status: 401 }) as never
 })
 
+// Every message and email rendered for this request speaks its locale (cookie, then Accept-Language, then English).
+// The public API and MCP skip it, so they answer in English like their documentation.
+const API = /^\/(api\/v1(\/|$)|mcp$)/
+const locale = createMiddleware().server(({ next, request }) =>
+  API.test(new URL(request.url).pathname) ? next() : paraglideMiddleware(request, () => next())
+)
+
 // Server functions are same-origin RPC, so reject cross-site calls to them and to POST server routes (/api/auth).
 // The bearer-token endpoints are left out, because they ignore cookies, so a cross-site request can't act as the user.
 const csrf = createCsrfMiddleware({
@@ -37,11 +45,11 @@ const csrf = createCsrfMiddleware({
 // The demo account is read-only. Every server function that changes data is a POST, so refuse them all
 // here rather than in each one. GET functions still run, so due subscriptions keep settling on load.
 const demoReadOnly = createMiddleware({ type: "function" }).server(async ({ next, method }) => {
-  if (method === "POST" && demoLocked((await getUser())?.id)) throw new Error(DEMO_READ_ONLY)
+  if (method === "POST" && demoLocked((await getUser())?.id)) throw new Error(DEMO_READ_ONLY())
   return next()
 })
 
 export const startInstance = createStart(() => ({
-  requestMiddleware: [csrf, requireUser],
+  requestMiddleware: [locale, csrf, requireUser],
   functionMiddleware: [demoReadOnly],
 }))

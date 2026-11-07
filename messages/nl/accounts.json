@@ -1,0 +1,367 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "accounts_head_title": "Rekeningen · Kosha",
+  "accounts_title": "Rekeningen",
+  "accounts_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{#num}{count}{/num} rekening",
+        "countPlural=other": "{#num}{count}{/num} rekeningen"
+      }
+    }
+  ],
+  "accounts_new": "Nieuwe rekening",
+  "accounts_group_bank_cash": "Bank & contant",
+  "accounts_group_credit": "Creditcards",
+  "accounts_group_investment": "Beleggingen",
+  "accounts_type_bank_account": "Bankrekening",
+  "accounts_type_bank": "Bank",
+  "accounts_type_cash": "Contant",
+  "accounts_type_credit": "Creditcard",
+  "accounts_type_investment": "Belegging",
+  "accounts_archived": "Gearchiveerd",
+  "accounts_archived_count": "Gearchiveerd ({count})",
+  "accounts_archived_label": "Gearchiveerde rekeningen",
+  "accounts_archived_hint": "Gearchiveerde rekeningen tellen nog mee in je vermogen",
+  "accounts_details_label": "Details van {name}",
+  "accounts_edit_title": "{name} bewerken",
+  "accounts_rates_updated_today": "vandaag bijgewerkt",
+  "accounts_rates_updated_yesterday": "gisteren bijgewerkt",
+  "accounts_rates_updated_on": "bijgewerkt op {date}",
+  "accounts_rate_shown": "{currency} weergegeven tegen {rate} = {base}",
+  "accounts_net_worth": "Vermogen",
+  "accounts_change_period": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "in {count} maand",
+        "countPlural=other": "in {count} maanden"
+      }
+    }
+  ],
+  "accounts_range_label": "Periode",
+  "accounts_range_1y": "1J",
+  "accounts_range_2y": "2J",
+  "accounts_range_all": "Alles",
+  "accounts_worth_empty": "Je vermogenslijn begint na je eerste maand met activiteit.",
+  "accounts_chart_other": "Andere rekeningen",
+  "accounts_chart_gains": "Ongerealiseerd rendement",
+  "accounts_chart_key": "Legenda",
+  "accounts_no_value": "Nog geen waarde vastgelegd",
+  "accounts_value_age": "Waarde is {days} dagen oud",
+  "accounts_value_as_of": "Waarde per {date}",
+  "accounts_available": "{amount} beschikbaar",
+  "accounts_last_entry": "laatste transactie {date}",
+  "accounts_credit_used": "{percent} van {limit}",
+  "accounts_balance": "Saldo",
+  "accounts_another_account": "een andere rekening",
+  "accounts_restored_toast": "{name} teruggezet",
+  "accounts_archived_toast": "{name} gearchiveerd",
+  "accounts_save_failed": "Opslaan mislukt",
+  "accounts_delete_failed": "Verwijderen mislukt",
+  "accounts_in_month": "In · {month}",
+  "accounts_out_month": "Uit · {month}",
+  "accounts_moved": "Overgeboekt",
+  "accounts_recent": "Recent",
+  "accounts_all_count": "Alle {n} →",
+  "accounts_no_transactions": "Nog geen transacties.",
+  "accounts_untitled": "Naamloos",
+  "accounts_update_value_hint": "Vul de waarde van vandaag van je broker in om je vermogen actueel te houden.",
+  "accounts_update_gains": "Rendement bijwerken",
+  "accounts_reconciled_to": "Afgestemd tot {date}",
+  "accounts_match_bank": "Klopt dit met je bank?",
+  "accounts_reconcile_hint": "Vink transacties af op je afschrift, of importeer het, en Kosha vindt wat er ontbreekt.",
+  "accounts_reconcile": "Afstemmen",
+  "accounts_fix_balance": "Saldo corrigeren",
+  "accounts_edit_account": "Rekening bewerken",
+  "accounts_unarchive": "Dearchiveren",
+  "accounts_archive": "Archiveren",
+  "accounts_enter_balance": "Vul het saldo in",
+  "accounts_corrected_by": "Gecorrigeerd met {amount}",
+  "accounts_balance_matches": "Saldo klopt al",
+  "accounts_fix_title": "{name} corrigeren",
+  "accounts_fix_credit_description": "Vul in wat je volgens je creditcardafschrift verschuldigd bent.",
+  "accounts_fix_description": "Vul het saldo in dat je bank laat zien.",
+  "accounts_currently_owed": "Nu openstaand",
+  "accounts_fix_adds_correction": "Voegt een saldocorrectie van {amount} toe.",
+  "accounts_no_correction": "Geen correctie nodig.",
+  "accounts_enter_credit_limit": "Vul de kredietlimiet in",
+  "accounts_updated": "Rekening bijgewerkt",
+  "accounts_added": "Rekening toegevoegd",
+  "accounts_name": "Naam",
+  "accounts_type": "Type",
+  "accounts_currency": "Valuta",
+  "accounts_credit_limit": "Kredietlimiet",
+  "accounts_credit_hint": "Het saldo van deze rekening is wat je nog kunt besteden. Je vermogen telt het verschil als schuld.",
+  "accounts_investment_hint": "Het saldo is het geld dat je erin hebt gestopt. Gebruik af en toe \"Rendement bijwerken\" om marktrendement aan je vermogen toe te voegen.",
+  "accounts_invested_so_far": "Tot nu toe ingelegd",
+  "accounts_current_balance": "Huidig saldo",
+  "accounts_optional": "(optioneel)",
+  "accounts_save_adds_correction": "Opslaan voegt een saldocorrectie van {amount} toe.",
+  "accounts_correct_hint": "Vul het saldo in dat je bank laat zien om het te corrigeren.",
+  "accounts_archived_checkbox": "Gearchiveerd {#muted}(verborgen bij snel toevoegen, telt nog mee in je vermogen){/muted}",
+  "accounts_gains_history": "Rendementsgeschiedenis",
+  "accounts_delete_valuation": "Waarde van {date} verwijderen",
+  "accounts_add_account": "Rekening toevoegen",
+  "accounts_delete_title": "{name} verwijderen?",
+  "accounts_delete_description": "Deze rekening heeft geen transacties. Als je hem verwijdert, verdwijnt ook de rendementsgeschiedenis.",
+  "accounts_delete_account": "Rekening verwijderen",
+  "accounts_fx_title": "Valutawissel",
+  "accounts_fx_sent": [
+    {
+      "declarations": ["input count", "input sent", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{#num}{sent}{/num} verstuurd in {count} overboeking",
+        "countPlural=other": "{#num}{sent}{/num} verstuurd in {count} overboekingen"
+      }
+    }
+  ],
+  "accounts_fx_cost": "kosten t.o.v. markt {#num}{cost}{/num}",
+  "accounts_fx_year": "Jaar",
+  "accounts_fx_date": "Datum",
+  "accounts_fx_route": "Route",
+  "accounts_fx_sent_column": "Verstuurd",
+  "accounts_fx_rate": "Koers",
+  "accounts_fx_market": "Markt",
+  "accounts_fx_received": "Ontvangen",
+  "accounts_fx_cost_column": "Kosten",
+  "accounts_fx_footer": "Kosten zijn de transactiekosten plus wat de koers van de aanbieder die dag verloor ten opzichte van de marktkoers. Negatief betekent dat je de markt versloeg. Bewerk een overboeking via Activiteit om de kosten of aanbieder toe te voegen.",
+
+  "subs_head_title": "Terugkerend · Kosha",
+  "subs_title": "Terugkerend",
+  "subs_count_active": "{#num}{count}{/num} actief",
+  "subs_count_transfers": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{#num}{count}{/num} overboeking",
+        "countPlural=other": "{#num}{count}{/num} overboekingen"
+      }
+    }
+  ],
+  "subs_count_ended": "{#num}{count}{/num} beëindigd",
+  "subs_new_button": "Nieuw terugkerend",
+  "subs_new_title": "Nieuwe terugkerende betaling",
+  "subs_every_day": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": { "countPlural=one": "elke dag", "countPlural=other": "elke {count} dagen" }
+    }
+  ],
+  "subs_every_week": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": { "countPlural=one": "elke week", "countPlural=other": "elke {count} weken" }
+    }
+  ],
+  "subs_every_month": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": { "countPlural=one": "elke maand", "countPlural=other": "elke {count} maanden" }
+    }
+  ],
+  "subs_every_year": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": { "countPlural=one": "elk jaar", "countPlural=other": "elke {count} jaar" }
+    }
+  ],
+  "subs_interval_day": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": { "countPlural=one": "dag", "countPlural=other": "{count} dagen" }
+    }
+  ],
+  "subs_interval_week": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": { "countPlural=one": "week", "countPlural=other": "{count} weken" }
+    }
+  ],
+  "subs_interval_month": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": { "countPlural=one": "maand", "countPlural=other": "{count} maanden" }
+    }
+  ],
+  "subs_interval_year": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": { "countPlural=one": "jaar", "countPlural=other": "{count} jaar" }
+    }
+  ],
+  "subs_group_bills": "Vaste lasten",
+  "subs_group_subscriptions": "Abonnementen",
+  "subs_group_income": "Inkomsten",
+  "subs_group_transfers": "Overboekingen",
+  "subs_kind_bill": "Vaste last",
+  "subs_kind_subscription": "Abonnement",
+  "subs_kind_income": "Inkomsten",
+  "subs_kind_transfer": "Overboeking",
+  "subs_end_this_bill": "Deze vaste last beëindigen",
+  "subs_end_this_subscription": "Dit abonnement beëindigen",
+  "subs_end_this_income": "Deze inkomsten beëindigen",
+  "subs_end_this_transfer": "Deze overboeking beëindigen",
+  "subs_end_bill": "Vaste last beëindigen",
+  "subs_end_subscription": "Abonnement beëindigen",
+  "subs_end_income": "Inkomsten beëindigen",
+  "subs_end_transfer": "Overboeking beëindigen",
+  "subs_committed": "Vaste uitgaven per maand",
+  "subs_committed_hint": "Vaste lasten {bills} · abonnementen {subscriptions}",
+  "subs_per_year": "Per jaar",
+  "subs_share_of_income": "{percent} van je inkomsten",
+  "subs_no_income": "Geen inkomsten in het afgelopen jaar",
+  "subs_due_soon": "Te betalen in de komende 7 dagen",
+  "subs_nothing_due": "Niets te betalen",
+  "subs_moved_to_savings": "Naar sparen overgeboekt",
+  "subs_moved_hint": "per maand · telt niet mee",
+  "subs_list_label": "Terugkerende betalingen",
+  "subs_empty": "Nog niets terugkerends. Voeg één keer je huur, een abonnement of een vaste overboeking toe en Kosha houdt het bij.",
+  "subs_column_every": "Elke",
+  "subs_column_next": "Volgende",
+  "subs_column_amount": "Bedrag",
+  "subs_column_per_month": "Per maand",
+  "subs_not_counted": "telt niet mee",
+  "subs_ended_count": "Beëindigd ({count})",
+  "subs_sorted_hint": "Gesorteerd op kosten per maand",
+  "subs_details_label": "Details van {name}",
+  "subs_adopt_title": "{name} terugkerend maken",
+  "subs_adopt_description": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "De {count} eerdere betaling wordt eronder geplaatst, zodat hij in de geschiedenis staat.",
+        "countPlural=other": "De {count} eerdere betalingen worden eronder geplaatst, zodat ze in de geschiedenis staan."
+      }
+    }
+  ],
+  "subs_hide_failed": "Verbergen mislukt",
+  "subs_spotted_title": "Lijkt terugkerend",
+  "subs_spotted_hint": "Herkend aan betalingen met een vast ritme",
+  "subs_about_amount": "ongeveer {amount}",
+  "subs_spotted_paid": [
+    {
+      "declarations": ["input count", "input day", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} keer betaald, laatst op {day}",
+        "countPlural=other": "{count} keer betaald, laatst op {day}"
+      }
+    }
+  ],
+  "subs_spotted_next": "volgende rond {day}",
+  "subs_make_recurring": "Terugkerend maken",
+  "subs_dismiss_label": "{name} is niet terugkerend",
+  "subs_not_recurring": "Niet terugkerend",
+  "subs_varies_asks": "wisselt, vraagt elke keer",
+  "subs_ended_on_short": "beëindigd {date}",
+  "subs_strip_label": "Betalingen in de komende 30 dagen: {list}",
+  "subs_strip_empty": "Geen betalingen in de komende 30 dagen",
+  "subs_strip_title": "Komende 30 dagen",
+  "subs_strip_bills": "Vaste lasten & abonnementen",
+  "subs_update_payment_failed": "Betaling bijwerken mislukt",
+  "subs_ended_toast": "{name} beëindigd",
+  "subs_resumed_toast": "{name} hervat",
+  "subs_update_schedule_failed": "Schema bijwerken mislukt",
+  "subs_deleted": "Verwijderd",
+  "subs_delete_failed": "Verwijderen mislukt",
+  "subs_detail_meta": "{kind} · {every} · sinds {date}",
+  "subs_varies": "wisselt",
+  "subs_ended_on": "Beëindigd op {date}",
+  "subs_ended_hint": "Geen betalingen meer. Eerdere betalingen blijven in Activiteit staan.",
+  "subs_next_on": "Volgende: {date}",
+  "subs_will_ask": "Kosha vraagt om het bedrag",
+  "subs_auto_recorded": "Wordt op de dag zelf automatisch vastgelegd",
+  "subs_mark_when_out": "Markeer hem als betaald zodra hij is afgeschreven",
+  "subs_changed_once": "alleen voor deze betaling gewijzigd",
+  "subs_ends_on": "eindigt {date}",
+  "subs_enter_amount_button": "Bedrag invullen",
+  "subs_marked_paid": "Gemarkeerd als betaald",
+  "subs_mark_done_now": "Nu als gedaan markeren",
+  "subs_mark_paid_now": "Nu als betaald markeren",
+  "subs_change_amount": "Bedrag wijzigen",
+  "subs_skipped": "Overgeslagen",
+  "subs_skip_this": "Deze overslaan",
+  "subs_no_more_scheduled": "Geen betalingen meer gepland.",
+  "subs_moved_so_far": "Tot nu toe overgeboekt",
+  "subs_paid_so_far": "Tot nu toe betaald",
+  "subs_payments": "Betalingen",
+  "subs_history": "Geschiedenis",
+  "subs_no_payments": "Nog geen betalingen.",
+  "subs_moved": "Overgeboekt",
+  "subs_paid": "Betaald",
+  "subs_all_payments": "Alle {count} betalingen →",
+  "subs_resume": "Hervatten",
+  "subs_delete_title": "{name} verwijderen?",
+  "subs_end_title": "{name} beëindigen?",
+  "subs_delete_description": "Hiermee verwijder je het schema. Eerdere betalingen blijven in Activiteit staan als gewone transacties.",
+  "subs_end_description": "Geen betalingen meer na vandaag. Eerdere betalingen blijven in Activiteit staan en je kunt hem later hervatten.",
+  "subs_edit_title": "{name} bewerken",
+  "subs_edit_transfer": "Overboeking bewerken",
+  "subs_edit_payment": "Betaling bewerken",
+  "subs_enter_amount": "Vul een bedrag in",
+  "subs_recorded": "Vastgelegd",
+  "subs_payment_updated": "Betaling bijgewerkt",
+  "subs_save_payment_failed": "Betaling opslaan mislukt",
+  "subs_pay_transfer_description": "Vul in wat er deze keer is overgeboekt.",
+  "subs_pay_description": "Vul in wat er deze keer is betaald.",
+  "subs_edit_once_description": "Alleen deze betaling verandert. Andere betalingen houden het gewone bedrag en de gewone datum.",
+  "subs_amount": "Bedrag",
+  "subs_date": "Datum",
+  "subs_received_in": "Ontvangen op {name}",
+  "subs_leave_empty_rate": "Laat leeg om de wisselkoers te gebruiken.",
+  "subs_note": "Notitie",
+  "subs_reset_regular": "Terug naar normaal",
+  "subs_record": "Vastleggen",
+  "subs_save_this_payment": "Deze betaling opslaan",
+
+  "subs_unit_days": "dagen",
+  "subs_unit_weeks": "weken",
+  "subs_unit_months": "maanden",
+  "subs_unit_years": "jaar",
+  "subs_enter_usual_amount": "Vul het gebruikelijke bedrag in",
+  "subs_pick_to_account": "Kies de rekening waar het geld naartoe gaat",
+  "subs_pick_category": "Kies een categorie",
+  "subs_transfer_added": "Terugkerende overboeking toegevoegd",
+  "subs_income_added": "Terugkerende inkomsten toegevoegd",
+  "subs_bill_added": "Vaste last toegevoegd",
+  "subs_subscription_added": "Abonnement toegevoegd",
+  "subs_type": "Type",
+  "subs_name": "Naam",
+  "subs_from": "Van",
+  "subs_to": "Naar",
+  "subs_account": "Rekening",
+  "subs_category": "Categorie",
+  "subs_usual_amount": "Gebruikelijk bedrag",
+  "subs_repeats_every": "Herhaalt elke",
+  "subs_interval": "Interval",
+  "subs_variable": "Bedrag verschilt elke keer",
+  "subs_variable_hint": "Kosha herinnert je eraan wanneer hij betaald moet worden en vraagt om het bedrag, in plaats van hem automatisch vast te leggen.",
+  "subs_amount_received": "Ontvangen bedrag",
+  "subs_next_payment": "Volgende betaling",
+  "subs_first_payment": "Eerste betaling",
+  "subs_ends": "Eindigt",
+  "subs_never": "Nooit",
+  "subs_backfill_hint": "Kosha legt de betalingen van {date} tot vandaag vast.",
+  "subs_auto_pay": "Betalingen automatisch vastleggen",
+  "subs_changes_hint": "Wijzigingen gelden voor aankomende betalingen. Eerdere betalingen blijven zoals ze zijn.",
+  "subs_save_changes": "Wijzigingen opslaan",
+  "subs_add_transfer": "Overboeking toevoegen",
+  "subs_add_income": "Inkomsten toevoegen",
+  "subs_add_bill": "Vaste last toevoegen",
+  "subs_add_subscription": "Abonnement toevoegen"
+}

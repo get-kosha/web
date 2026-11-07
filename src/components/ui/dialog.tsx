@@ -6,6 +6,7 @@ import { cn } from "cn"
 
 import { Button } from "@/components/ui/button"
 import { XIcon } from "@phosphor-icons/react/ssr"
+import { m } from "@/paraglide/messages"
 
 function Dialog({ ...props }: DialogPrimitive.Root.Props) {
   return <DialogPrimitive.Root data-slot="dialog" {...props} />
@@ -64,7 +65,7 @@ function DialogContent({
             render={<Button variant="ghost" className="absolute top-2 right-2" size="icon-sm" />}
           >
             <XIcon />
-            <span className="sr-only">Close</span>
+            <span className="sr-only">{m.common_close()}</span>
           </DialogPrimitive.Close>
         )}
       </DialogPrimitive.Popup>
@@ -94,7 +95,9 @@ function DialogFooter({
       {...props}
     >
       {children}
-      {showCloseButton && <DialogPrimitive.Close render={<Button variant="outline" />}>Close</DialogPrimitive.Close>}
+      {showCloseButton && (
+        <DialogPrimitive.Close render={<Button variant="outline" />}>{m.common_close()}</DialogPrimitive.Close>
+      )}
     </div>
   )
 }

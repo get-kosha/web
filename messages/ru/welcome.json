@@ -1,0 +1,139 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "welcome_page_title": "Добро пожаловать · Kosha",
+  "welcome_type_bank": "Банк",
+  "welcome_type_cash": "Наличные",
+  "welcome_type_card": "Карта",
+  "welcome_type_investment": "Инвестиции",
+  "welcome_type_bank_account": "Банковский счёт",
+  "welcome_type_credit_card": "Кредитная карта",
+  "welcome_type_investment_long": "Инвестиции",
+  "welcome_suggest_current": "Текущий счёт",
+  "welcome_suggest_savings": "Сбережения",
+  "welcome_suggest_investments": "Инвестиции",
+  "welcome_suggest_pension": "Пенсия",
+  "welcome_field_balance": "Баланс",
+  "welcome_field_owed": "Задолженность",
+  "welcome_field_credit_limit": "Кредитный лимит",
+  "welcome_field_put_in": "Вложено",
+  "welcome_field_value_today": "Стоимость сегодня",
+  "welcome_name_save_failed": "Не удалось сохранить имя",
+  "welcome_title": "Добро пожаловать в Kosha",
+  "welcome_sub": "Проверьте эти три параметра, затем добавьте счета. Это займёт минуту-другую.",
+  "welcome_name_title": "Ваше имя",
+  "welcome_name_description": "Отображается в меню.",
+  "welcome_name_error": "Введите имя, которое будет отображаться в Kosha.",
+  "welcome_currency_title": "Основная валюта",
+  "welcome_currency_description": "В ней считаются капитал и итоги.",
+  "welcome_tz_title": "Часовой пояс",
+  "welcome_tz_description": "Дни и месяцы считаются по нему.",
+  "welcome_change_later": "Все три параметра можно позже изменить в Настройках.",
+  "welcome_saving": "Сохраняем…",
+  "welcome_accounts_title": "Добавьте счета",
+  "welcome_accounts_sub": "Укажите, сколько на каждом сегодня. Уберите те, которых у вас нет, и добавьте остальные.",
+  "welcome_net_worth": "Капитал",
+  "welcome_adding": "Добавляем…",
+  "welcome_add_accounts": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Добавить {count} счёт",
+        "countPlural=few": "Добавить {count} счёта",
+        "countPlural=many": "Добавить {count} счетов",
+        "countPlural=other": "Добавить {count} счёта"
+      }
+    }
+  ],
+  "welcome_add_an_account": "Добавить счёт",
+  "welcome_progress_label": "Настройка",
+  "welcome_progress_step": "Шаг {at} из 2",
+  "welcome_skip": "Пропустить",
+  "welcome_rows_label": "Новые счета",
+  "welcome_rows_empty": "Счетов пока нет. Добавьте первый ниже.",
+  "welcome_another_account": "Ещё один счёт",
+  "welcome_credit_left_hint": "Укажите лимит, чтобы увидеть доступный кредит.",
+  "welcome_credit_left": "Доступно {#num}{amount}{/num} кредита",
+  "welcome_gain_hint": "Укажите сегодняшнюю стоимость, чтобы учесть прирост.",
+  "welcome_gain": "Прирост {#num}{amount}{/num}",
+  "welcome_loss": "Убыток {#num}{amount}{/num}",
+  "welcome_account_name_label": "Название счёта",
+  "welcome_account_name_placeholder": "Monzo, HDFC, Wise…",
+  "welcome_type_of": "Тип счёта {name}",
+  "welcome_type_of_account": "Тип счёта",
+  "welcome_remove": "Убрать {name}",
+  "welcome_remove_this_account": "Убрать этот счёт",
+  "welcome_currency_label": "Валюта",
+  "welcome_currency_of": "Валюта счёта {name}",
+  "welcome_currency_of_this_account": "Валюта этого счёта",
+  "welcome_error_name": "Дайте счёту название.",
+  "welcome_error_amount": "Вводите суммы числами, например 1 250,00.",
+  "welcome_amount_placeholder": "0,00",
+  "welcome_currency_search_placeholder": "Найдите валюту",
+  "welcome_currency_search_label": "Поиск валют",
+  "welcome_currency_empty": "Подходящих валют нет.",
+  "welcome_done_title": "Всё готово",
+  "welcome_done_added": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Добавлен {count} счёт.",
+        "countPlural=few": "Добавлено {count} счёта.",
+        "countPlural=many": "Добавлено {count} счетов.",
+        "countPlural=other": "Добавлено {count} счёта."
+      }
+    }
+  ],
+  "welcome_done_added_currencies": [
+    {
+      "declarations": ["input count", "input currencies", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Добавлен {count} счёт. Валют: {currencies}.",
+        "countPlural=few": "Добавлено {count} счёта. Валют: {currencies}.",
+        "countPlural=many": "Добавлено {count} счетов. Валют: {currencies}.",
+        "countPlural=other": "Добавлено {count} счёта. Валют: {currencies}."
+      }
+    }
+  ],
+  "welcome_accounts_added": "Счета добавлены",
+  "welcome_owed": "задолженность",
+  "welcome_history_title": "Заполните историю",
+  "welcome_history_body": "Импортируйте выписки из банка, и Kosha добавит прошлые операции на эти счета.",
+  "welcome_import": "Импортировать выписки",
+  "welcome_add_transaction": "Добавить операцию",
+  "ask_page_title": "Спросить Kosha · Kosha",
+  "ask_title": "Спросить Kosha",
+  "ask_subtitle": "Вопросы о ваших деньгах с ответами по вашим данным.",
+  "ask_new_chat": "Новый чат",
+  "ask_input_label": "Задайте вопрос о своих деньгах",
+  "ask_placeholder": "Спросите о своих деньгах",
+  "ask_placeholder_follow_up": "Задайте уточняющий вопрос",
+  "ask_submit": "Спросить",
+  "ask_your_endpoint": "ваш эндпоинт",
+  "ask_answered_by": "Ответ от {provider} ({model}).",
+  "ask_privacy": "Kosha отправляет только то, что разрешено в разделе {#link}Что видит ИИ{/link}. Важные цифры проверяйте в «Операциях».",
+  "ask_error": "Не удалось спросить",
+  "ask_suggest_category": "Сколько ушло на категорию «{category}» в этом месяце?",
+  "ask_suggest_spent": "Сколько денег ушло в этом месяце?",
+  "ask_suggest_biggest": "Какие были самые крупные расходы в прошлом месяце?",
+  "ask_suggest_compare": "Как этот месяц выглядит по сравнению с обычным?",
+  "ask_suggest_event": "Во сколько всего обошлось событие «{event}»?",
+  "ask_suggest_subscriptions": "Сколько стоят мои подписки в месяц?",
+  "ask_empty_title": "Спросите что угодно о своих деньгах",
+  "ask_empty_body": "Kosha ищет ответ в ваших счетах, операциях и регулярных платежах и показывает, откуда взят каждый ответ.",
+  "ask_thinking": "Думаю",
+  "ask_how_found": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Как Kosha нашла ответ ({count} запрос к данным)",
+        "countPlural=few": "Как Kosha нашла ответ ({count} запроса к данным)",
+        "countPlural=many": "Как Kosha нашла ответ ({count} запросов к данным)",
+        "countPlural=other": "Как Kosha нашла ответ ({count} запроса к данным)"
+      }
+    }
+  ]
+}

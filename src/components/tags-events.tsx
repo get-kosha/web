@@ -21,11 +21,12 @@ import {
 import { Input } from "@/components/ui/input"
 import { useMeta } from "@/components/shell"
 import { saveEvent, type Event } from "@/lib/api"
-import { LOCALE, parseTags } from "@/lib/core"
+import { intlLocale, parseTags } from "@/lib/core"
 import { cn } from "@/lib/utils"
+import { m } from "@/paraglide/messages"
 
 const short = (day: string, year = false) =>
-  new Date(`${day}T12:00:00Z`).toLocaleDateString(LOCALE, {
+  new Date(`${day}T12:00:00Z`).toLocaleDateString(intlLocale(), {
     day: "numeric",
     month: "short",
     year: year ? "numeric" : undefined,
@@ -35,10 +36,15 @@ const short = (day: string, year = false) =>
 /** "3–10 Nov", "28 Dec – 4 Jan 2027", "From 20 Dec", or "" for an undated event. */
 export function eventDates(e: Pick<Event, "start_day" | "end_day">) {
   const { start_day: s, end_day: end } = e
-  if (!s) return end ? `Until ${short(end)}` : ""
-  if (!end) return `From ${short(s)}`
+  if (!s) return end ? m.tx_event_until({ day: short(end) }) : ""
+  if (!end) return m.tx_event_from({ day: short(s) })
   if (s === end) return short(s)
-  if (s.slice(0, 7) === end.slice(0, 7)) return `${Number(s.slice(8))}–${short(end)}`
+  // formatRange writes a same-month range the local way: "3–10 Nov", "3.–10. Nov."
+  if (s.slice(0, 7) === end.slice(0, 7))
+    return new Intl.DateTimeFormat(intlLocale(), { day: "numeric", month: "short", timeZone: "UTC" }).formatRange(
+      new Date(`${s}T12:00:00Z`),
+      new Date(`${end}T12:00:00Z`)
+    )
   return `${short(s)} – ${short(end, s.slice(0, 4) !== end.slice(0, 4))}`
 }
 
@@ -122,14 +128,14 @@ export function TagInput({
               {tags.map((t) => (
                 <ComboboxChip
                   key={t}
-                  aria-description="Press Backspace or Delete to remove"
+                  aria-description={m.tx_tag_remove_hint()}
                   className="h-7 rounded-full pl-2.5 text-[13px] font-normal max-md:h-8 [&_[data-slot=combobox-chip-remove]]:rounded-full max-md:[&_[data-slot=combobox-chip-remove]]:size-7"
                 >
                   {linked ? (
                     <Link
                       to="/transactions"
                       search={{ tag: t }}
-                      aria-label={`All transactions tagged #${t}`}
+                      aria-label={m.tx_tag_link({ tag: t })}
                       className="rounded-sm hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                     >
                       #{t}
@@ -141,8 +147,8 @@ export function TagInput({
               ))}
               <ComboboxChipsInput
                 autoFocus={autoFocus}
-                aria-label="Add tags"
-                placeholder={tags.length ? "" : "#trip #work"}
+                aria-label={m.tx_add_tags()}
+                placeholder={tags.length ? "" : m.tx_tags_placeholder()}
                 onBlur={() => text.trim() && add(text)}
                 autoCapitalize="none"
                 autoComplete="off"
@@ -153,11 +159,11 @@ export function TagInput({
         </ComboboxValue>
       </ComboboxChips>
       <ComboboxContent anchor={anchor}>
-        <ComboboxEmpty>{meta.tags.length ? "No more tags" : "Type a tag, then press space"}</ComboboxEmpty>
+        <ComboboxEmpty>{meta.tags.length ? m.tx_no_more_tags() : m.tx_type_a_tag()}</ComboboxEmpty>
         <ComboboxList>
           {(t: string) => (
             <ComboboxItem key={t} value={t} className="max-md:min-h-11">
-              {meta.tags.includes(t) ? `#${t}` : `Add #${t}`}
+              {meta.tags.includes(t) ? `#${t}` : m.tx_add_tag({ tag: t })}
             </ComboboxItem>
           )}
         </ComboboxList>
@@ -198,7 +204,7 @@ export function EventPicker({
         onCancel={() => setCreating(false)}
       />
     )
-  const footer = (label: string, act: () => void) => (
+  const footer = (label: string, act: () => void, icon?: ReactNode) => (
     <button
       type="button"
       onClick={() => {
@@ -207,7 +213,7 @@ export function EventPicker({
       }}
       className="flex min-h-8 w-full items-center gap-2 rounded-md px-1.5 text-left text-sm text-muted-foreground hover:bg-muted hover:text-foreground max-md:min-h-11 [&_svg]:size-4"
     >
-      {label === "New event" && <PlusIcon />}
+      {icon}
       {label}
     </button>
   )
@@ -229,11 +235,11 @@ export function EventPicker({
           "flex h-10 w-full items-center justify-between gap-2 rounded-md border bg-card px-2.5 text-left text-sm transition-colors outline-none hover:bg-muted/50 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 max-md:h-11"
         }
       >
-        <span className={cn("truncate", !current && "text-muted-foreground")}>{current?.name ?? "No event"}</span>
+        <span className={cn("truncate", !current && "text-muted-foreground")}>{current?.name ?? m.tx_no_event()}</span>
       </ComboboxTrigger>
       <ComboboxContent align="start" className="w-72">
-        <ComboboxInput showTrigger={false} placeholder="Search events" aria-label="Search events" />
-        <ComboboxEmpty>{meta.events.length ? "No event matches." : "No events yet."}</ComboboxEmpty>
+        <ComboboxInput showTrigger={false} placeholder={m.tx_search_events()} aria-label={m.tx_search_events()} />
+        <ComboboxEmpty>{meta.events.length ? m.tx_no_event_matches() : m.tx_no_events()}</ComboboxEmpty>
         <ComboboxList>
           {(e: Event) => (
             <ComboboxItem key={e.id} value={e} className="max-md:min-h-11">
@@ -243,8 +249,8 @@ export function EventPicker({
           )}
         </ComboboxList>
         <div className="border-t p-1">
-          {current && footer("No event", () => onChange(null))}
-          {footer("New event", () => setCreating(true))}
+          {current && footer(m.tx_no_event(), () => onChange(null))}
+          {footer(m.tx_new_event(), () => setCreating(true), <PlusIcon />)}
         </div>
       </ComboboxContent>
     </Combobox>
@@ -270,7 +276,7 @@ export function EventEditor({
   const [busy, setBusy] = useState(false)
 
   async function save() {
-    if (!name.trim()) return toast.error("Give the event a name")
+    if (!name.trim()) return toast.error(m.tx_event_name_required())
     setBusy(true)
     try {
       const { id } = await saveEvent({
@@ -279,7 +285,7 @@ export function EventEditor({
       await router.invalidate()
       onSaved(id)
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Couldn't save the event")
+      toast.error(e instanceof Error ? e.message : m.tx_event_save_failed())
     } finally {
       setBusy(false)
     }
@@ -289,7 +295,7 @@ export function EventEditor({
     // Not a <form>, because it sits inside the transaction form.
     <div className="grid gap-3 rounded-lg border bg-card p-3">
       <label className="grid gap-1">
-        <span className="text-xs text-muted-foreground">Name</span>
+        <span className="text-xs text-muted-foreground">{m.tx_name()}</span>
         <Input
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -299,7 +305,7 @@ export function EventEditor({
               void save()
             }
           }}
-          placeholder="Rome trip"
+          placeholder={m.tx_event_placeholder()}
           autoFocus
           className="h-9"
         />
@@ -307,13 +313,19 @@ export function EventEditor({
       <div className="grid grid-cols-[repeat(auto-fit,minmax(8.5rem,1fr))] gap-3">
         <div className="grid gap-1">
           <span id="ev-from" className="text-xs text-muted-foreground">
-            From
+            {m.tx_from()}
           </span>
-          <DatePicker aria-labelledby="ev-from" value={start} onChange={setStart} clearable placeholder="Any time" />
+          <DatePicker
+            aria-labelledby="ev-from"
+            value={start}
+            onChange={setStart}
+            clearable
+            placeholder={m.tx_any_time()}
+          />
         </div>
         <div className="grid gap-1">
           <span id="ev-until" className="text-xs text-muted-foreground">
-            Until
+            {m.tx_until()}
           </span>
           <DatePicker
             aria-labelledby="ev-until"
@@ -321,19 +333,17 @@ export function EventEditor({
             min={start || undefined}
             onChange={setEnd}
             clearable
-            placeholder="Any time"
+            placeholder={m.tx_any_time()}
           />
         </div>
       </div>
-      <p className="text-xs text-muted-foreground">
-        New entries between these dates go to this event on their own. Recurring payments don't.
-      </p>
+      <p className="text-xs text-muted-foreground">{m.tx_event_help()}</p>
       <div className="flex justify-end gap-2">
         <Button type="button" variant="ghost" onClick={onCancel}>
-          Cancel
+          {m.common_cancel()}
         </Button>
         <Button type="button" onClick={save} disabled={busy}>
-          {event ? "Save" : "Create event"}
+          {event ? m.common_save() : m.tx_create_event()}
         </Button>
       </div>
     </div>

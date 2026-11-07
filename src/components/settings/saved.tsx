@@ -3,8 +3,9 @@ import { getRouteApi, useRouter } from "@tanstack/react-router"
 import { toast } from "sonner"
 import { savePreferences } from "@/lib/api"
 import type { Prefs } from "@/lib/core"
+import { m } from "@/paraglide/messages"
 
-export const errorOf = (e: unknown) => (e instanceof Error ? e.message : "Something went wrong")
+export const errorOf = (e: unknown) => (e instanceof Error ? e.message : m.common_something_went_wrong())
 
 /**
  * Saves one setting in the background. The caller has already updated its own state (optimistic).
@@ -17,7 +18,7 @@ export function useSave() {
       const res = (await fn()) as { error?: { message?: string } | null } | undefined
       // Better Auth client calls resolve to { error } instead of throwing.
       if (res && typeof res === "object" && "error" in res && res.error)
-        throw new Error(res.error.message || "Something went wrong")
+        throw new Error(res.error.message || m.common_something_went_wrong())
       await router.invalidate()
       return true
     } catch (e) {

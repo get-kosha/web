@@ -1,9 +1,27 @@
 import * as React from "react"
 import { cn } from "cn"
 import { DayPicker, getDefaultClassNames, type DayButton, type Locale } from "react-day-picker"
+import { de, enGB, es, fr, hi, it, ja, ko, nl, ptBR, ru, zhCN } from "react-day-picker/locale"
+import { getLocale, type Locale as Language } from "@/paraglide/runtime"
 
 import { Button, buttonVariants } from "@/components/ui/button"
 import { CaretLeftIcon, CaretRightIcon, CaretDownIcon } from "@phosphor-icons/react"
+
+// Month and weekday names and the first day of the week, per app language. A new language needs its entry here.
+const DAY_PICKER_LOCALES: Record<Language, Locale> = {
+  en: enGB,
+  de,
+  es,
+  fr,
+  pt: ptBR,
+  it,
+  nl,
+  ru,
+  ja,
+  zh: zhCN,
+  ko,
+  hi,
+}
 
 function Calendar({
   className,
@@ -11,7 +29,7 @@ function Calendar({
   showOutsideDays = true,
   captionLayout = "label",
   buttonVariant = "ghost",
-  locale,
+  locale = DAY_PICKER_LOCALES[getLocale()],
   formatters,
   components,
   ...props

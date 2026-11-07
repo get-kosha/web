@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { useRouter } from "@tanstack/react-router"
 import { toast } from "sonner"
+import { m } from "@/paraglide/messages"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -13,11 +14,11 @@ import { saveSubscription, type SubscriptionView } from "@/lib/api"
 import { TRANSFER_CATEGORY, dayOf, isNeutral, parseAmount, type Unit } from "@/lib/core"
 import { cn } from "@/lib/utils"
 
-const UNITS: { value: Unit; label: string }[] = [
-  { value: "day", label: "days" },
-  { value: "week", label: "weeks" },
-  { value: "month", label: "months" },
-  { value: "year", label: "years" },
+const units = (): { value: Unit; label: string }[] => [
+  { value: "day", label: m.subs_unit_days() },
+  { value: "week", label: m.subs_unit_weeks() },
+  { value: "month", label: m.subs_unit_months() },
+  { value: "year", label: m.subs_unit_years() },
 ]
 // Income is stored as a "repetitive" schedule with a positive amount.
 type Kind = "subscription" | "repetitive" | "income" | "transfer"
@@ -92,9 +93,9 @@ export function SubscriptionForm({
   async function submit(e: React.FormEvent) {
     e.preventDefault()
     const cents = parseAmount(amount)
-    if (!cents) return toast.error(variable ? "Enter the usual amount" : "Enter an amount")
-    if (transfer && (!toWalletId || toWalletId === walletId)) return toast.error("Pick the account the money goes to")
-    if (!transfer && !categoryId) return toast.error("Pick a category")
+    if (!cents) return toast.error(variable ? m.subs_enter_usual_amount() : m.subs_enter_amount())
+    if (transfer && (!toWalletId || toWalletId === walletId)) return toast.error(m.subs_pick_to_account())
+    if (!transfer && !categoryId) return toast.error(m.subs_pick_category())
     setBusy(true)
     try {
       const { id } = await saveSubscription({
@@ -119,18 +120,18 @@ export function SubscriptionForm({
       await router.invalidate()
       toast.success(
         initial
-          ? "Saved"
+          ? m.common_saved()
           : transfer
-            ? "Recurring transfer added"
+            ? m.subs_transfer_added()
             : income
-              ? "Recurring income added"
+              ? m.subs_income_added()
               : kind === "repetitive"
-                ? "Bill added"
-                : "Subscription added"
+                ? m.subs_bill_added()
+                : m.subs_subscription_added()
       )
       onDone(id)
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Couldn't save")
+      toast.error(err instanceof Error ? err.message : m.accounts_save_failed())
     } finally {
       setBusy(false)
     }
@@ -138,44 +139,46 @@ export function SubscriptionForm({
 
   return (
     <form onSubmit={submit} className="grid gap-4">
-      <div role="group" aria-label="Type" className={cn(segment, "w-fit")}>
+      <div role="group" aria-label={m.subs_type()} className={cn(segment, "w-fit")}>
         {(
           [
-            ["repetitive", "Bill"],
-            ["subscription", "Subscription"],
-            ["income", "Income"],
-            ["transfer", "Transfer"],
+            ["repetitive", m.subs_kind_bill],
+            ["subscription", m.subs_kind_subscription],
+            ["income", m.subs_kind_income],
+            ["transfer", m.subs_kind_transfer],
           ] as const
         ).map(([k, label]) => (
           <button key={k} type="button" aria-pressed={kind === k} onClick={() => setKind(k)} className={segmentButton}>
-            {label}
+            {label()}
           </button>
         ))}
       </div>
 
       <div className="grid gap-1.5">
-        <Label htmlFor="sub-name">Name {transfer && <span className="text-muted-foreground">(optional)</span>}</Label>
+        <Label htmlFor="sub-name">
+          {m.subs_name()} {transfer && <span className="text-muted-foreground">{m.accounts_optional()}</span>}
+        </Label>
         <Input id="sub-name" value={name} onChange={(e) => setName(e.target.value)} autoComplete="off" />
       </div>
 
       {transfer ? (
         <div className="grid grid-cols-2 gap-3">
           <div className="grid gap-1.5">
-            <Label>From</Label>
+            <Label>{m.subs_from()}</Label>
             <Pick
               value={walletId}
               onChange={setWalletId}
-              placeholder="Account"
+              placeholder={m.subs_account()}
               options={walletOptions}
               className="w-full"
             />
           </div>
           <div className="grid gap-1.5">
-            <Label>To</Label>
+            <Label>{m.subs_to()}</Label>
             <Pick
               value={toWalletId}
               onChange={setToWalletId}
-              placeholder="Account"
+              placeholder={m.subs_account()}
               options={walletOptions.filter((o) => o.value !== walletId)}
               className="w-full"
             />
@@ -184,20 +187,20 @@ export function SubscriptionForm({
       ) : (
         <div className="grid grid-cols-2 gap-3">
           <div className="grid gap-1.5">
-            <Label>Account</Label>
+            <Label>{m.subs_account()}</Label>
             <Pick
               value={walletId}
               onChange={setWalletId}
-              placeholder="Account"
+              placeholder={m.subs_account()}
               options={walletOptions}
               className="w-full"
             />
           </div>
           <div className="grid gap-1.5">
-            <Label>Category</Label>
+            <Label>{m.subs_category()}</Label>
             <Select value={categoryId} onValueChange={(v) => setCategoryId((v as string | null) ?? "")}>
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Category">
+                <SelectValue placeholder={m.subs_category()}>
                   {(v: string) => {
                     const c = categories.find((x) => x.id === v)
                     return c ? (
@@ -206,7 +209,7 @@ export function SubscriptionForm({
                         {c.name}
                       </>
                     ) : (
-                      "Category"
+                      m.subs_category()
                     )
                   }}
                 </SelectValue>
@@ -226,7 +229,7 @@ export function SubscriptionForm({
       <div className="grid grid-cols-2 gap-3">
         <div className="grid gap-1.5">
           <Label htmlFor="sub-amount">
-            {variable ? "Usual amount" : "Amount"}{" "}
+            {variable ? m.subs_usual_amount() : m.subs_amount()}{" "}
             {wallet && <span className="text-muted-foreground uppercase">({wallet.currency})</span>}
           </Label>
           <Input
@@ -238,20 +241,20 @@ export function SubscriptionForm({
           />
         </div>
         <div className="grid gap-1.5">
-          <Label>Repeats every</Label>
+          <Label>{m.subs_repeats_every()}</Label>
           <div className="flex gap-2">
             <Input
               value={every}
               onChange={(e) => setEvery(e.target.value)}
               inputMode="numeric"
               className="num w-14"
-              aria-label="Interval"
+              aria-label={m.subs_interval()}
             />
             <Pick
               value={unit}
               onChange={(v) => v && setUnit(v as Unit)}
-              placeholder="months"
-              options={UNITS}
+              placeholder={m.subs_unit_months()}
+              options={units()}
               className="flex-1"
             />
           </div>
@@ -262,17 +265,15 @@ export function SubscriptionForm({
         <label className="flex items-start gap-2 text-sm">
           <input type="checkbox" className="mt-1" checked={variable} onChange={(e) => setVariable(e.target.checked)} />
           <span>
-            Amount changes every time
-            <span className="block text-xs text-muted-foreground">
-              Kosha reminds you when it's due and asks for the amount, instead of recording it automatically.
-            </span>
+            {m.subs_variable()}
+            <span className="block text-xs text-muted-foreground">{m.subs_variable_hint()}</span>
           </span>
         </label>
       )}
       {crossCurrency && !variable && (
         <div className="grid gap-1.5">
           <Label htmlFor="sub-to-amount">
-            Amount received <span className="text-muted-foreground uppercase">({toWallet?.currency})</span>
+            {m.subs_amount_received()} <span className="text-muted-foreground uppercase">({toWallet?.currency})</span>
           </Label>
           <Input
             id="sub-to-amount"
@@ -281,29 +282,36 @@ export function SubscriptionForm({
             inputMode="decimal"
             className="num"
           />
-          <p className="text-xs text-muted-foreground">Leave empty to use the exchange rate.</p>
+          <p className="text-xs text-muted-foreground">{m.subs_leave_empty_rate()}</p>
         </div>
       )}
 
       <div className="grid grid-cols-2 gap-3">
         <div className="grid gap-1.5">
-          <Label htmlFor="sub-next">{initial ? "Next payment" : "First payment"}</Label>
+          <Label htmlFor="sub-next">{initial ? m.subs_next_payment() : m.subs_first_payment()}</Label>
           <DatePicker id="sub-next" value={nextDay} onChange={setNextDay} />
         </div>
         <div className="grid gap-1.5">
           <Label htmlFor="sub-end">
-            Ends <span className="text-muted-foreground">(optional)</span>
+            {m.subs_ends()} <span className="text-muted-foreground">{m.accounts_optional()}</span>
           </Label>
-          <DatePicker id="sub-end" value={endDay} min={nextDay} onChange={setEndDay} clearable placeholder="Never" />
+          <DatePicker
+            id="sub-end"
+            value={endDay}
+            min={nextDay}
+            onChange={setEndDay}
+            clearable
+            placeholder={m.subs_never()}
+          />
         </div>
       </div>
       {autoPay && !variable && nextDay < today && (
-        <p className="-mt-2 text-xs text-muted-foreground">Kosha will record payments from {nextDay} until today.</p>
+        <p className="-mt-2 text-xs text-muted-foreground">{m.subs_backfill_hint({ date: nextDay })}</p>
       )}
 
       <div className="grid gap-1.5">
         <Label htmlFor="sub-note">
-          Note <span className="text-muted-foreground">(optional)</span>
+          {m.subs_note()} <span className="text-muted-foreground">{m.accounts_optional()}</span>
         </Label>
         <Input id="sub-note" value={note} onChange={(e) => setNote(e.target.value)} />
       </div>
@@ -311,19 +319,21 @@ export function SubscriptionForm({
       {!(transfer && variable) && (
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" checked={autoPay} onChange={(e) => setAutoPay(e.target.checked)} />
-          Record payments automatically
+          {m.subs_auto_pay()}
         </label>
       )}
 
-      {initial && (
-        <p className="text-xs text-muted-foreground">
-          Changes apply to upcoming payments. Past payments stay as they are.
-        </p>
-      )}
+      {initial && <p className="text-xs text-muted-foreground">{m.subs_changes_hint()}</p>}
       <Button type="submit" disabled={busy}>
         {initial
-          ? "Save changes"
-          : `Add ${transfer ? "transfer" : income ? "income" : kind === "repetitive" ? "bill" : "subscription"}`}
+          ? m.subs_save_changes()
+          : transfer
+            ? m.subs_add_transfer()
+            : income
+              ? m.subs_add_income()
+              : kind === "repetitive"
+                ? m.subs_add_bill()
+                : m.subs_add_subscription()}
       </Button>
     </form>
   )

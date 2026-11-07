@@ -8,11 +8,19 @@ import { DatePicker } from "@/components/date-time"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useMeta } from "@/components/shell"
 import { recordGain, type Wallet } from "@/lib/api"
-import { dayOf, fmt, parseAmount } from "@/lib/core"
+import { dayOf, fmt, intlLocale, parseAmount } from "@/lib/core"
 import { cn } from "@/lib/utils"
+import { m } from "@/paraglide/messages"
 
 const pct = (part: number, whole: number) =>
-  whole ? `${part >= 0 ? "+" : ""}${((part / whole) * 100).toFixed(1)}%` : ""
+  whole
+    ? new Intl.NumberFormat(intlLocale(), {
+        style: "percent",
+        signDisplay: "always",
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 1,
+      }).format(part / whole)
+    : ""
 
 /** Record an investment's value. The dialog is open while `wallet` is set. */
 export function GainDialog({ wallet, onClose }: { wallet: Wallet | null; onClose: () => void }) {
@@ -38,28 +46,26 @@ function GainForm({ w, onDone }: { w: Wallet; onDone: () => void }) {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
-    if (parseAmount(gain) === null) return toast.error("Enter the gain or current value")
+    if (parseAmount(gain) === null) return toast.error(m.overview_gain_missing())
     try {
       await recordGain({ data: { walletId: w.id, day, gain: cents, note } })
       await router.invalidate()
-      toast.success("Gains updated")
+      toast.success(m.overview_gain_updated())
       onDone()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Couldn't save")
+      toast.error(err instanceof Error ? err.message : m.overview_gain_save_failed())
     }
   }
 
   return (
     <form onSubmit={submit} className="grid gap-4">
       <DialogHeader>
-        <DialogTitle>Update {w.name}</DialogTitle>
-        <DialogDescription>
-          {fmt(w.balance, w.currency)} invested. Enter today's value from your broker, or the gain directly.
-        </DialogDescription>
+        <DialogTitle>{m.overview_gain_title({ name: w.name })}</DialogTitle>
+        <DialogDescription>{m.overview_gain_description({ amount: fmt(w.balance, w.currency) })}</DialogDescription>
       </DialogHeader>
       <div className="grid grid-cols-2 gap-3">
         <div className="grid gap-1.5">
-          <Label htmlFor="g-value">Current value</Label>
+          <Label htmlFor="g-value">{m.overview_gain_value()}</Label>
           <Input
             id="g-value"
             value={value}
@@ -74,7 +80,7 @@ function GainForm({ w, onDone }: { w: Wallet; onDone: () => void }) {
           />
         </div>
         <div className="grid gap-1.5">
-          <Label htmlFor="g-gain">Gain</Label>
+          <Label htmlFor="g-gain">{m.overview_gain_gain()}</Label>
           <Input
             id="g-gain"
             value={gain}
@@ -88,20 +94,22 @@ function GainForm({ w, onDone }: { w: Wallet; onDone: () => void }) {
           />
         </div>
       </div>
-      <p className="num -mt-2 text-xs text-muted-foreground">Return {pct(cents, w.balance) || "—"}</p>
+      <p className="num -mt-2 text-xs text-muted-foreground">
+        {m.overview_gain_return({ pct: pct(cents, w.balance) || "—" })}
+      </p>
       <div className="grid grid-cols-2 gap-3">
         <div className="grid gap-1.5">
-          <Label htmlFor="g-day">As of</Label>
+          <Label htmlFor="g-day">{m.overview_gain_as_of()}</Label>
           <DatePicker id="g-day" value={day} onChange={setDay} />
         </div>
         <div className="grid gap-1.5">
           <Label htmlFor="g-note">
-            Note <span className="text-muted-foreground">(optional)</span>
+            {m.overview_gain_note()} <span className="text-muted-foreground">{m.overview_optional()}</span>
           </Label>
           <Input id="g-note" value={note} onChange={(e) => setNote(e.target.value)} />
         </div>
       </div>
-      <Button type="submit">Save</Button>
+      <Button type="submit">{m.common_save()}</Button>
     </form>
   )
 }

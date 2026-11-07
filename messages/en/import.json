@@ -1,0 +1,316 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "import_columns": "Columns",
+  "import_columns_remembered": "as last time from this bank",
+  "import_columns_by_ai": "worked out by AI",
+  "import_columns_confident": "worked out from the header",
+  "import_columns_check": "check these",
+  "import_columns_column": "Column {n}",
+  "import_role_ignore": "Ignore",
+  "import_role_date": "Date",
+  "import_role_description": "Description",
+  "import_role_amount": "Amount",
+  "import_role_debit": "Money out",
+  "import_role_credit": "Money in",
+  "import_role_balance": "Balance",
+  "import_columns_dates": "Dates",
+  "import_columns_format": "Format",
+  "import_date_dmy": "Day first (31/01/2026)",
+  "import_date_mdy": "Month first (01/31/2026)",
+  "import_date_ymd": "Year first (2026-01-31)",
+  "import_date_text": "Month names (31 Jan 2026)",
+  "import_columns_invert": "Spending is shown as a positive amount",
+  "import_columns_lines_read": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{n} line read",
+        "countPlural=*": "{n} lines read"
+      }
+    }
+  ],
+  "import_head_title": "Import statements · Kosha",
+  "import_title": "Import statements",
+  "import_sub": "Kosha sorts your statements into accounts. Check each one, then the payees.",
+  "import_new_account": "New account",
+  "import_type_bank": "Bank account",
+  "import_type_card": "Credit card",
+  "import_error_pdf": "Kosha reads CSV, OFX and QFX files. Export one of those from your bank.",
+  "import_error_no_transactions": "That file has no transactions",
+  "import_error_no_rows": "That file has no rows Kosha can read",
+  "import_error_unreadable": "Couldn't read it",
+  "import_error_check": "Couldn't check your accounts",
+  "import_drop": "Drop your statements here, or {#choose}choose files{/choose}",
+  "import_drop_more": "Drop more statements here, or {#choose}choose files{/choose}",
+  "import_drop_hint": "CSV, OFX or QFX from your online banking. Add every month you have, from every bank and card, all at once.",
+  "import_drop_hint_pdf": "CSV, OFX or QFX from your online banking, or PDF statements. Add every month you have, from every bank and card, all at once.",
+  "import_reading": "Reading {name}",
+  "import_dismiss": "Dismiss {name}",
+  "import_reading_files": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Reading {n} file…",
+        "countPlural=*": "Reading {n} files…"
+      }
+    }
+  ],
+  "import_summary": [
+    {
+      "declarations": [
+        "input count",
+        "input n",
+        "input accounts",
+        "input a",
+        "local countPlural = count: plural",
+        "local accountsPlural = accounts: plural"
+      ],
+      "selectors": ["countPlural", "accountsPlural"],
+      "match": {
+        "countPlural=one, accountsPlural=one": "{n} transaction in {a} account",
+        "countPlural=one, accountsPlural=*": "{n} transaction in {a} accounts",
+        "countPlural=*, accountsPlural=one": "{n} transactions in {a} account",
+        "countPlural=*, accountsPlural=*": "{n} transactions in {a} accounts"
+      }
+    }
+  ],
+  "import_check_payees": "Check payees",
+  "import_into": "Import into",
+  "import_new_account_option": "A new account",
+  "import_into_wallet": "Into {name}",
+  "import_field_name": "Name",
+  "import_field_type": "Type",
+  "import_field_currency": "Currency",
+  "import_owed_on": "Owed on {day} ({currency})",
+  "import_balance_on": "Balance on {day} ({currency})",
+  "import_closing_placeholder": "From your latest statement",
+  "import_closing_from_file": "From the statement.",
+  "import_closing_hint": "Kosha works out the opening balance from it. Leave it empty if you don't know it.",
+  "import_credit_limit": "Credit limit ({currency})",
+  "import_optional": "Optional",
+  "import_foreign": "{file} is in {from}, and this account is in {to}.",
+  "import_off": "The lines read from {file} miss its closing balance by {amount}. Check them against the PDF.",
+  "import_stmt_lines": [
+    {
+      "declarations": ["input count", "input n", "input from", "input to", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{n} line, {from} to {to}",
+        "countPlural=*": "{n} lines, {from} to {to}"
+      }
+    }
+  ],
+  "import_stmt_no_lines": "No lines read",
+  "import_move_label": "Move {file} to another account",
+  "import_move_placeholder": "Move to…",
+  "import_remove": "Remove {file}",
+  "import_account_range": [
+    {
+      "declarations": ["input count", "input n", "input from", "input to", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{n} transaction from {from} to {to}.",
+        "countPlural=*": "{n} transactions from {from} to {to}."
+      }
+    }
+  ],
+  "import_account_dupes": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{n} line in more than one statement counted once.",
+        "countPlural=*": "{n} lines in more than one statement counted once."
+      }
+    }
+  ],
+  "import_review_title": "Check payees and categories",
+  "import_review_sub": [
+    {
+      "declarations": [
+        "input count",
+        "input n",
+        "input payees",
+        "input p",
+        "local countPlural = count: plural",
+        "local payeesPlural = payees: plural"
+      ],
+      "selectors": ["countPlural", "payeesPlural"],
+      "match": {
+        "countPlural=one, payeesPlural=one": "{n} transaction: {p} payee. A change to a payee applies to all of its transactions.",
+        "countPlural=one, payeesPlural=*": "{n} transaction: {p} payees. A change to a payee applies to all of its transactions.",
+        "countPlural=*, payeesPlural=one": "{n} transactions: {p} payee. A change to a payee applies to all of its transactions.",
+        "countPlural=*, payeesPlural=*": "{n} transactions: {p} payees. A change to a payee applies to all of its transactions."
+      }
+    }
+  ],
+  "import_review_sub_transfers": [
+    {
+      "declarations": [
+        "input count",
+        "input n",
+        "input payees",
+        "input p",
+        "input transfers",
+        "input t",
+        "local countPlural = count: plural",
+        "local payeesPlural = payees: plural",
+        "local transfersPlural = transfers: plural"
+      ],
+      "selectors": ["countPlural", "payeesPlural", "transfersPlural"],
+      "match": {
+        "countPlural=one, payeesPlural=one, transfersPlural=one": "{n} transaction: {p} payee and {t} transfer between your accounts. A change to a payee applies to all of its transactions.",
+        "countPlural=one, payeesPlural=one, transfersPlural=*": "{n} transaction: {p} payee and {t} transfers between your accounts. A change to a payee applies to all of its transactions.",
+        "countPlural=one, payeesPlural=*, transfersPlural=one": "{n} transaction: {p} payees and {t} transfer between your accounts. A change to a payee applies to all of its transactions.",
+        "countPlural=one, payeesPlural=*, transfersPlural=*": "{n} transaction: {p} payees and {t} transfers between your accounts. A change to a payee applies to all of its transactions.",
+        "countPlural=*, payeesPlural=one, transfersPlural=one": "{n} transactions: {p} payee and {t} transfer between your accounts. A change to a payee applies to all of its transactions.",
+        "countPlural=*, payeesPlural=one, transfersPlural=*": "{n} transactions: {p} payee and {t} transfers between your accounts. A change to a payee applies to all of its transactions.",
+        "countPlural=*, payeesPlural=*, transfersPlural=one": "{n} transactions: {p} payees and {t} transfer between your accounts. A change to a payee applies to all of its transactions.",
+        "countPlural=*, payeesPlural=*, transfersPlural=*": "{n} transactions: {p} payees and {t} transfers between your accounts. A change to a payee applies to all of its transactions."
+      }
+    }
+  ],
+  "import_review_nothing": "Everything in these statements is already in Kosha, so there's nothing to add.",
+  "import_review_back": "Accounts",
+  "import_review_show": "Show",
+  "import_tab_check": "To check ({n})",
+  "import_tab_all": "All payees ({n})",
+  "import_tab_transfers": "Transfers ({n})",
+  "import_naming": "Naming payees…",
+  "import_rest": "Put the rest in",
+  "import_rest_label": "Category for the rest",
+  "import_rest_placeholder": "a category",
+  "import_leave_them_out": "Leave them out",
+  "import_apply": "Apply",
+  "import_transfer_pair": "{from} to {to}",
+  "import_not_transfer": "Not a transfer",
+  "import_transfer_from": "Transfer from {name}",
+  "import_transfer_to": "Transfer to {name}",
+  "import_leave_out": "Leave out",
+  "import_show_more": "Show {n} more",
+  "import_all_sorted": "Every payee has a category.",
+  "import_nothing_new": "Nothing new to import",
+  "import_without_category": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{n} payee without a category",
+        "countPlural=*": "{n} payees without a category"
+      }
+    }
+  ],
+  "import_ready": "Ready when you are",
+  "import_button": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Import {n} transaction",
+        "countPlural=*": "Import {n} transactions"
+      }
+    }
+  ],
+  "import_payee_for": "Payee for {text}",
+  "import_payments_range": [
+    {
+      "declarations": ["input count", "input n", "input from", "input to", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{n} payment, {from} to {to}",
+        "countPlural=*": "{n} payments, {from} to {to}"
+      }
+    }
+  ],
+  "import_category_for": "Category for {payee}",
+  "import_pick_category": "Pick a category",
+  "import_hide_lines": "Hide the transactions",
+  "import_show_lines": "Show the transactions",
+  "import_progress_setup": "Setting up {name}",
+  "import_progress_adding": [
+    {
+      "declarations": ["input count", "input n", "input name", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Adding {n} transaction to {name}",
+        "countPlural=*": "Adding {n} transactions to {name}"
+      }
+    }
+  ],
+  "import_progress_transfers": "Linking transfers between your accounts",
+  "import_progress_checking": "Checking {name} against its statement",
+  "import_importing": "Importing",
+  "import_failed": "{error}. What was saved stays saved; trying again carries on from there.",
+  "import_back_to_review": "Back to the review",
+  "import_done_title": "Your statements are in",
+  "import_done_summary": [
+    {
+      "declarations": [
+        "input count",
+        "input n",
+        "input accounts",
+        "input a",
+        "local countPlural = count: plural",
+        "local accountsPlural = accounts: plural"
+      ],
+      "selectors": ["countPlural", "accountsPlural"],
+      "match": {
+        "countPlural=one, accountsPlural=one": "{n} transaction in {a} account.",
+        "countPlural=one, accountsPlural=*": "{n} transaction in {a} accounts.",
+        "countPlural=*, accountsPlural=one": "{n} transactions in {a} account.",
+        "countPlural=*, accountsPlural=*": "{n} transactions in {a} accounts."
+      }
+    }
+  ],
+  "import_done_summary_transfers": [
+    {
+      "declarations": [
+        "input count",
+        "input n",
+        "input accounts",
+        "input a",
+        "input transfers",
+        "input t",
+        "local countPlural = count: plural",
+        "local accountsPlural = accounts: plural",
+        "local transfersPlural = transfers: plural"
+      ],
+      "selectors": ["countPlural", "accountsPlural", "transfersPlural"],
+      "match": {
+        "countPlural=one, accountsPlural=one, transfersPlural=one": "{n} transaction in {a} account, with {t} transfer between them linked.",
+        "countPlural=one, accountsPlural=one, transfersPlural=*": "{n} transaction in {a} account, with {t} transfers between them linked.",
+        "countPlural=one, accountsPlural=*, transfersPlural=one": "{n} transaction in {a} accounts, with {t} transfer between them linked.",
+        "countPlural=one, accountsPlural=*, transfersPlural=*": "{n} transaction in {a} accounts, with {t} transfers between them linked.",
+        "countPlural=*, accountsPlural=one, transfersPlural=one": "{n} transactions in {a} account, with {t} transfer between them linked.",
+        "countPlural=*, accountsPlural=one, transfersPlural=*": "{n} transactions in {a} account, with {t} transfers between them linked.",
+        "countPlural=*, accountsPlural=*, transfersPlural=one": "{n} transactions in {a} accounts, with {t} transfer between them linked.",
+        "countPlural=*, accountsPlural=*, transfersPlural=*": "{n} transactions in {a} accounts, with {t} transfers between them linked."
+      }
+    }
+  ],
+  "import_done_matches": "Matches the statement to {day}",
+  "import_transactions": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{n} transaction",
+        "countPlural=*": "{n} transactions"
+      }
+    }
+  ],
+  "import_done_recurring": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Kosha spotted {n} payment that repeats. Set it up as recurring.",
+        "countPlural=*": "Kosha spotted {n} payments that repeat. Set them up as recurring."
+      }
+    }
+  ],
+  "import_done_overview": "See your overview",
+  "import_done_transactions": "See the transactions"
+}

@@ -2,8 +2,10 @@ import { useState } from "react"
 import { CaretRightIcon } from "@phosphor-icons/react/ssr"
 import { AiMark } from "@/components/ai"
 import { Pick } from "@/components/pick"
+import { intlLocale } from "@/lib/core"
 import { guessDateFormat, type Layout } from "@/lib/statement"
 import { cn } from "@/lib/utils"
+import { m } from "@/paraglide/messages"
 
 /** Reads a file as text, falling back to Windows-1252 when it isn't UTF-8 (older bank exports). */
 export async function fileText(file: File) {
@@ -21,25 +23,25 @@ export async function fileBase64(file: File) {
 }
 
 const ROLES = [
-  ["", "Ignore"],
-  ["date", "Date"],
-  ["description", "Description"],
-  ["amount", "Amount"],
-  ["debit", "Money out"],
-  ["credit", "Money in"],
-  ["balance", "Balance"],
+  ["", m.import_role_ignore],
+  ["date", m.import_role_date],
+  ["description", m.import_role_description],
+  ["amount", m.import_role_amount],
+  ["debit", m.import_role_debit],
+  ["credit", m.import_role_credit],
+  ["balance", m.import_role_balance],
 ] as const
 type Role = (typeof ROLES)[number][0]
 
 /** Where a CSV's columns came from, for the Columns header. */
 export const columnsStatus = (f: { remembered?: boolean; byAi?: boolean; confident?: boolean }) =>
   f.remembered
-    ? "as last time from this bank"
+    ? m.import_columns_remembered()
     : f.byAi
-      ? "worked out by AI"
+      ? m.import_columns_by_ai()
       : f.confident
-        ? "worked out from the header"
-        : "check these"
+        ? m.import_columns_confident()
+        : m.import_columns_check()
 
 /**
  * A CSV's columns, each with what it holds, to fix what Kosha guessed. Open when Kosha wasn't sure; the
@@ -63,7 +65,7 @@ export function Columns({
   onChange: (l: Layout) => void
 }) {
   const [open, setOpen] = useState(startOpen)
-  const head = layout.header >= 0 ? rows[layout.header] : rows[0].map((_, i) => `Column ${i + 1}`)
+  const head = layout.header >= 0 ? rows[layout.header] : rows[0].map((_, i) => m.import_columns_column({ n: i + 1 }))
   const sample = rows.slice(layout.header + 1, layout.header + 4)
   const roleOf = (i: number): Role =>
     i === layout.date
@@ -110,7 +112,7 @@ export function Columns({
         <CaretRightIcon
           className={cn("size-4 text-muted-foreground transition-transform duration-150", open && "rotate-90")}
         />
-        <span className="font-medium">Columns</span>
+        <span className="font-medium">{m.import_columns()}</span>
         <span className="flex items-center gap-1 text-xs text-muted-foreground">
           {byAi && <AiMark className="size-3" />}
           {status}
@@ -127,8 +129,8 @@ export function Columns({
                       <Pick
                         value={roleOf(i)}
                         onChange={(v) => set(i, v as Role)}
-                        placeholder="Ignore"
-                        options={ROLES.slice(1).map(([value, label]) => ({ value, label }))}
+                        placeholder={m.import_role_ignore()}
+                        options={ROLES.slice(1).map(([value, label]) => ({ value, label: label() }))}
                         className={cn("h-8 w-full bg-background text-xs", !roleOf(i) && "text-muted-foreground")}
                       />
                       <div className="mt-1 truncate px-1 text-muted-foreground">{h}</div>
@@ -151,16 +153,16 @@ export function Columns({
           </div>
           <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs">
             <label className="flex items-center gap-2">
-              Dates
+              {m.import_columns_dates()}
               <Pick
                 value={layout.dateFormat}
                 onChange={(v) => v && onChange({ ...layout, dateFormat: v as Layout["dateFormat"] })}
-                placeholder="Format"
+                placeholder={m.import_columns_format()}
                 options={[
-                  { value: "dmy", label: "Day first (31/01/2026)" },
-                  { value: "mdy", label: "Month first (01/31/2026)" },
-                  { value: "ymd", label: "Year first (2026-01-31)" },
-                  { value: "text", label: "Month names (31 Jan 2026)" },
+                  { value: "dmy", label: m.import_date_dmy() },
+                  { value: "mdy", label: m.import_date_mdy() },
+                  { value: "ymd", label: m.import_date_ymd() },
+                  { value: "text", label: m.import_date_text() },
                 ]}
                 className="h-8 bg-background text-xs"
               />
@@ -173,10 +175,12 @@ export function Columns({
                   onChange={(e) => onChange({ ...layout, invert: e.target.checked })}
                   className="size-4 accent-[var(--brand)]"
                 />
-                Spending is shown as a positive amount
+                {m.import_columns_invert()}
               </label>
             )}
-            <span className="text-muted-foreground">{count} lines read</span>
+            <span className="text-muted-foreground">
+              {m.import_columns_lines_read({ count, n: count.toLocaleString(intlLocale()) })}
+            </span>
           </div>
         </div>
       )}

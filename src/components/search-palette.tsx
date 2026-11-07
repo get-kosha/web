@@ -22,29 +22,26 @@ import { useMeta } from "@/components/shell"
 import { suggestPayees, type PayeeSuggestion } from "@/lib/api"
 import { fmt, isNeutral } from "@/lib/core"
 import { cn } from "@/lib/utils"
+import { m } from "@/paraglide/messages"
 
 type Item = { id: string; group: string; icon: ReactNode; label: ReactNode; end?: ReactNode; run: () => void }
 
+// Labels and keywords are message functions, called when rendering, so they follow the visitor's language.
 const PAGES = [
-  { to: "/", label: "Overview", icon: ChartBarIcon },
-  { to: "/transactions", label: "Activity", icon: ListIcon },
-  { to: "/subscriptions", label: "Recurring", icon: RepeatIcon },
-  { to: "/accounts", label: "Accounts", icon: CreditCardIcon },
-  { to: "/categories", label: "Categories", icon: TagIcon },
-  {
-    to: "/import",
-    label: "Import statements",
-    icon: FileArrowUpIcon,
-    keywords: "statement import upload csv ofx qfx pdf bank card",
-  },
+  { to: "/", label: m.shell_nav_overview, icon: ChartBarIcon },
+  { to: "/transactions", label: m.shell_nav_activity, icon: ListIcon },
+  { to: "/subscriptions", label: m.shell_nav_recurring, icon: RepeatIcon },
+  { to: "/accounts", label: m.shell_nav_accounts, icon: CreditCardIcon },
+  { to: "/categories", label: m.shell_categories, icon: TagIcon },
+  { to: "/import", label: m.shell_page_import, icon: FileArrowUpIcon, keywords: m.shell_page_import_keywords },
   {
     to: "/reconcile",
-    label: "Reconcile an account",
+    label: m.shell_page_reconcile,
     icon: CheckSquareOffsetIcon,
-    keywords: "statement check balance csv ofx qfx pdf bank",
+    keywords: m.shell_page_reconcile_keywords,
   },
-  { to: "/settings", label: "Settings", icon: GearSixIcon },
-  { to: "/account", label: "Sign-in & security", icon: ShieldCheckIcon, keywords: "account password passkey" },
+  { to: "/settings", label: m.shell_settings, icon: GearSixIcon },
+  { to: "/account", label: m.shell_security, icon: ShieldCheckIcon, keywords: m.shell_page_security_keywords },
 ] as const
 
 /**
@@ -67,7 +64,7 @@ export function SearchPalette({
         overlayClassName="data-open:animate-none data-closed:animate-none"
         className="top-[12vh] max-h-[calc(100svh-14vh)] translate-y-0 gap-0 overflow-y-auto rounded-2xl border p-0 ring-0 sm:max-w-[560px] data-open:animate-none data-closed:animate-none"
       >
-        <DialogTitle className="sr-only">Search</DialogTitle>
+        <DialogTitle className="sr-only">{m.common_search()}</DialogTitle>
         <Body close={() => onOpenChange(false)} onAdd={onAdd} />
       </DialogContent>
     </Dialog>
@@ -117,10 +114,10 @@ function Body({ close, onAdd }: { close: () => void; onAdd: (text: string) => vo
     text && meta.ai.ask
       ? {
           id: "ask",
-          group: "Ask Kosha",
+          group: m.shell_ask_kosha(),
           icon: <SparkleIcon />,
-          label: <>Ask "{text}"</>,
-          end: <Hint>Answered from your data</Hint>,
+          label: m.shell_search_ask({ text }),
+          end: <Hint>{m.shell_search_ask_hint()}</Hint>,
           run: go(() => void navigate({ to: "/ask", search: { q: text } })),
         }
       : null
@@ -129,21 +126,21 @@ function Body({ close, onAdd }: { close: () => void; onAdd: (text: string) => vo
   if (text) {
     items.push({
       id: "search",
-      group: "Activity",
+      group: m.shell_nav_activity(),
       icon: <MagnifyingGlassIcon />,
-      label: <>Search activity for "{text}"</>,
+      label: m.shell_search_activity({ text }),
       run: activity({ q: text }),
     })
     for (const p of payees.slice(0, 5)) {
       const c = meta.categories.find((x) => x.id === p.category_id)
       items.push({
         id: `payee:${p.name}`,
-        group: "Payees",
+        group: m.shell_search_payees(),
         icon: <CategoryIcon icon={c?.icon} className="size-4" />,
         label: p.name,
         end: (
           <span className="num text-xs text-muted-foreground">
-            {p.count}× · usually {fmt(Math.abs(p.avg), p.currency)}
+            {m.shell_search_payee_usually({ count: p.count, amount: fmt(Math.abs(p.avg), p.currency) })}
           </span>
         ),
         run: activity({ q: p.name }),
@@ -154,40 +151,40 @@ function Body({ close, onAdd }: { close: () => void; onAdd: (text: string) => vo
       .slice(0, 4))
       items.push({
         id: `cat:${c.id}`,
-        group: "Categories",
+        group: m.shell_categories(),
         icon: <CategoryIcon icon={c.icon} className="size-4" />,
         label: c.name,
-        end: <Hint>Activity</Hint>,
+        end: <Hint>{m.shell_nav_activity()}</Hint>,
         run: activity({ category: c.id }),
       })
     for (const w of meta.wallets.filter((x) => !x.archived && x.name.toLowerCase().includes(low)).slice(0, 3))
       items.push({
         id: `wallet:${w.id}`,
-        group: "Accounts",
+        group: m.shell_nav_accounts(),
         icon: <WalletIcon />,
         label: w.name,
-        end: <Hint>Activity</Hint>,
+        end: <Hint>{m.shell_nav_activity()}</Hint>,
         run: activity({ wallet: w.id }),
       })
   }
   for (const p of PAGES.filter(
-    (x) => !low || `${x.label} ${"keywords" in x ? x.keywords : ""}`.toLowerCase().includes(low)
+    (x) => !low || `${x.label()} ${"keywords" in x ? x.keywords() : ""}`.toLowerCase().includes(low)
   ))
     items.push({
       id: `page:${p.to}`,
-      group: "Go to",
+      group: m.shell_search_go_to(),
       icon: <p.icon />,
-      label: p.label,
+      label: p.label(),
       end: <ArrowRightIcon className="size-3.5 text-muted-foreground" />,
       run: go(() => void navigate({ to: p.to })),
     })
   if (ask && !QUESTION.test(text)) items.push(ask)
   items.push({
     id: "add",
-    group: "Add",
+    group: m.common_add(),
     icon: <PlusIcon />,
-    label: text ? <>Add "{text}" as a transaction</> : "Add a transaction",
-    end: <Hint>Quick add</Hint>,
+    label: text ? m.shell_search_add_text({ text }) : m.shell_search_add(),
+    end: <Hint>{m.shell_search_quick_add()}</Hint>,
     run: go(() => onAdd(text)),
   })
 
@@ -199,7 +196,7 @@ function Body({ close, onAdd }: { close: () => void; onAdd: (text: string) => vo
     <div>
       <label className="flex items-center gap-3 border-b px-[18px] py-4 text-muted-foreground">
         <MagnifyingGlassIcon className="size-[18px] shrink-0" aria-hidden="true" />
-        <span className="sr-only">Search payees, categories, accounts and pages</span>
+        <span className="sr-only">{m.shell_shortcut_search()}</span>
         <input
           autoFocus
           value={q}
@@ -217,13 +214,13 @@ function Body({ close, onAdd }: { close: () => void; onAdd: (text: string) => vo
           aria-expanded="true"
           aria-controls="search-results"
           aria-activedescendant={items[index] ? `search-${index}` : undefined}
-          placeholder="Search payees, categories, accounts…"
+          placeholder={m.shell_search_placeholder()}
           autoComplete="off"
           className="min-w-0 flex-1 bg-transparent text-base text-foreground outline-none placeholder:text-muted-foreground"
         />
         <kbd className="rounded-sm border bg-card px-1.5 font-mono text-[11px] text-muted-foreground">esc</kbd>
       </label>
-      <div id="search-results" role="listbox" aria-label="Results" className="p-1.5">
+      <div id="search-results" role="listbox" aria-label={m.shell_search_results()} className="p-1.5">
         {items.map((it, i) => {
           const head = it.group !== lastGroup
           lastGroup = it.group
@@ -253,8 +250,10 @@ function Body({ close, onAdd }: { close: () => void; onAdd: (text: string) => vo
   )
 }
 
+// English and German question words, so a question without a "?" still leads with Ask.
+// ponytail: other languages need the "?" to lead with Ask.
 const QUESTION =
-  /\?\s*$|^(how|what|when|where|why|which|who|did|do|does|am|is|are|was|were|can|could|should|will|show|list|compare|tell)\b/i
+  /\?\s*$|^(how|what|when|where|why|which|who|did|do|does|am|is|are|was|were|can|could|should|will|show|list|compare|tell|wie|wann|wo|warum|wieso|welche[rsnm]?|wer|wieviel|habe?|bin|ist|sind|kann|soll|zeige?|liste|vergleiche?)\b/i
 
 const Hint = ({ children }: { children: ReactNode }) => (
   <span className="text-xs text-muted-foreground">{children}</span>

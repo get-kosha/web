@@ -9,6 +9,7 @@ import {
   listTitleRules,
   type ManagedCategory,
 } from "@/lib/api"
+import { m } from "@/paraglide/messages"
 
 export const Route = createFileRoute("/_app/settings/$section")({
   beforeLoad: ({ params }) => {
@@ -21,7 +22,9 @@ export const Route = createFileRoute("/_app/settings/$section")({
     ai: params.section === "ai" ? { providers: await listAiProviders(), usage: await getAiUsage() } : null,
     api: params.section === "api" ? await getApiAccess() : null,
   }),
-  head: ({ params }) => ({ meta: [{ title: `${findSection(params.section)?.title ?? "Settings"} · Kosha` }] }),
+  head: ({ params }) => ({
+    meta: [{ title: `${(findSection(params.section)?.title ?? m.settings_title)()} · Kosha` }],
+  }),
   component: Section,
 })
 

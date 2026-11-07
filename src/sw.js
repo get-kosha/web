@@ -11,7 +11,15 @@ const DATA = `data-${VERSION}`
 
 const OFFLINE_PAGE = `<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Kosha</title><body style="font:15px system-ui;display:grid;place-items:center;min-height:90vh;margin:0;text-align:center;color:#555">
-<p>You're offline, and this page wasn't saved on this device.<br>Open it again once you're back online.</p>`
+<p id="m">You're offline, and this page wasn't saved on this device.<br>Open it again once you're back online.</p>
+<script>
+// No messages here, so German is inline. The language cookie wins, then the browser's language, as in the app.
+var l = (document.cookie.match(/(?:^|; )kosha-locale=([\\w-]+)/) || [])[1] || navigator.language
+if (/^de\\b/.test(l)) {
+  document.documentElement.lang = "de"
+  document.getElementById("m").innerHTML = "Du bist offline, und diese Seite ist auf diesem Gerät nicht gespeichert.<br>Öffne sie wieder, sobald du online bist."
+}
+</script>`
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(STATIC).then((cache) => cache.addAll(ASSETS)))

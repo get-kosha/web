@@ -1,0 +1,131 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "welcome_page_title": "Welkom · Kosha",
+  "welcome_type_bank": "Bank",
+  "welcome_type_cash": "Contant",
+  "welcome_type_card": "Kaart",
+  "welcome_type_investment": "Belegging",
+  "welcome_type_bank_account": "Bankrekening",
+  "welcome_type_credit_card": "Creditcard",
+  "welcome_type_investment_long": "Belegging",
+  "welcome_suggest_current": "Betaalrekening",
+  "welcome_suggest_savings": "Spaarrekening",
+  "welcome_suggest_investments": "Beleggingen",
+  "welcome_suggest_pension": "Pensioen",
+  "welcome_field_balance": "Saldo",
+  "welcome_field_owed": "Openstaand",
+  "welcome_field_credit_limit": "Kredietlimiet",
+  "welcome_field_put_in": "Ingelegd",
+  "welcome_field_value_today": "Waarde vandaag",
+  "welcome_name_save_failed": "Je naam opslaan is mislukt",
+  "welcome_title": "Welkom bij Kosha",
+  "welcome_sub": "Controleer deze drie gegevens en voeg dan je rekeningen toe. Het kost een minuutje of twee.",
+  "welcome_name_title": "Je naam",
+  "welcome_name_description": "Getoond in het menu.",
+  "welcome_name_error": "Vul de naam in die Kosha moet tonen.",
+  "welcome_currency_title": "Hoofdvaluta",
+  "welcome_currency_description": "Je vermogen en totalen worden hierin opgeteld.",
+  "welcome_tz_title": "Tijdzone",
+  "welcome_tz_description": "Dagen en maanden volgen deze zone.",
+  "welcome_change_later": "Je kunt ze alle drie later wijzigen in Instellingen.",
+  "welcome_saving": "Opslaan…",
+  "welcome_accounts_title": "Voeg je rekeningen toe",
+  "welcome_accounts_sub": "Vul in wat er vandaag op elke rekening staat. Verwijder wat je niet hebt en voeg de rest toe.",
+  "welcome_net_worth": "Vermogen",
+  "welcome_adding": "Toevoegen…",
+  "welcome_add_accounts": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} rekening toevoegen",
+        "countPlural=other": "{count} rekeningen toevoegen"
+      }
+    }
+  ],
+  "welcome_add_an_account": "Rekening toevoegen",
+  "welcome_progress_label": "Instellen",
+  "welcome_progress_step": "Stap {at} van 2",
+  "welcome_skip": "Nu overslaan",
+  "welcome_rows_label": "Nieuwe rekeningen",
+  "welcome_rows_empty": "Nog geen rekeningen. Voeg hieronder de eerste toe.",
+  "welcome_another_account": "Nog een rekening",
+  "welcome_credit_left_hint": "Vul de limiet in om het resterende krediet te zien.",
+  "welcome_credit_left": "{#num}{amount}{/num} krediet over",
+  "welcome_gain_hint": "Vul de waarde van vandaag in om het rendement mee te tellen.",
+  "welcome_gain": "Winst van {#num}{amount}{/num}",
+  "welcome_loss": "Verlies van {#num}{amount}{/num}",
+  "welcome_account_name_label": "Naam van rekening",
+  "welcome_account_name_placeholder": "ING, Rabobank, Wise…",
+  "welcome_type_of": "Type van {name}",
+  "welcome_type_of_account": "Type rekening",
+  "welcome_remove": "{name} verwijderen",
+  "welcome_remove_this_account": "Deze rekening verwijderen",
+  "welcome_currency_label": "Valuta",
+  "welcome_currency_of": "Valuta van {name}",
+  "welcome_currency_of_this_account": "Valuta van deze rekening",
+  "welcome_error_name": "Geef deze rekening een naam.",
+  "welcome_error_amount": "Vul bedragen in als getallen, zoals 1.250,00.",
+  "welcome_amount_placeholder": "0,00",
+  "welcome_currency_search_placeholder": "Zoek een valuta",
+  "welcome_currency_search_label": "Valuta's zoeken",
+  "welcome_currency_empty": "Geen valuta gevonden.",
+  "welcome_done_title": "Je bent er klaar voor",
+  "welcome_done_added": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} rekening toegevoegd.",
+        "countPlural=other": "{count} rekeningen toegevoegd."
+      }
+    }
+  ],
+  "welcome_done_added_currencies": [
+    {
+      "declarations": ["input count", "input currencies", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} rekening toegevoegd, in {currencies} valuta's.",
+        "countPlural=other": "{count} rekeningen toegevoegd, in {currencies} valuta's."
+      }
+    }
+  ],
+  "welcome_accounts_added": "Rekeningen toegevoegd",
+  "welcome_owed": "openstaand",
+  "welcome_history_title": "Vul je geschiedenis aan",
+  "welcome_history_body": "Importeer afschriften van je bank, en Kosha voegt de eerdere transacties toe aan deze rekeningen.",
+  "welcome_import": "Afschriften importeren",
+  "welcome_add_transaction": "Transactie toevoegen",
+  "ask_page_title": "Vraag Kosha · Kosha",
+  "ask_title": "Vraag Kosha",
+  "ask_subtitle": "Vragen over je geld, beantwoord op basis van je gegevens.",
+  "ask_new_chat": "Nieuwe chat",
+  "ask_input_label": "Stel een vraag over je geld",
+  "ask_placeholder": "Vraag iets over je geld",
+  "ask_placeholder_follow_up": "Stel een vervolgvraag",
+  "ask_submit": "Vragen",
+  "ask_your_endpoint": "je endpoint",
+  "ask_answered_by": "Beantwoord door {provider} ({model}).",
+  "ask_privacy": "Kosha verstuurt alleen wat {#link}Wat AI kan zien{/link} toestaat. Controleer belangrijke bedragen in Activiteit.",
+  "ask_error": "Vragen mislukt",
+  "ask_suggest_category": "Hoeveel heb ik deze maand uitgegeven aan {category}?",
+  "ask_suggest_spent": "Hoeveel heb ik deze maand uitgegeven?",
+  "ask_suggest_biggest": "Wat waren vorige maand mijn grootste uitgaven?",
+  "ask_suggest_compare": "Hoe verhoudt deze maand zich tot een gebruikelijke maand?",
+  "ask_suggest_event": "Wat heeft {event} in totaal gekost?",
+  "ask_suggest_subscriptions": "Wat kosten mijn abonnementen per maand?",
+  "ask_empty_title": "Vraag alles over je geld",
+  "ask_empty_body": "Kosha zoekt het op in je rekeningen, transacties en terugkerende betalingen, en laat zien waar elk antwoord vandaan komt.",
+  "ask_thinking": "Denken",
+  "ask_how_found": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Hoe Kosha dit vond ({count} opzoeking)",
+        "countPlural=other": "Hoe Kosha dit vond ({count} opzoekingen)"
+      }
+    }
+  ]
+}

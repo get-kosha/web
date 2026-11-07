@@ -1,0 +1,175 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "reconcile_hint_an_entry": "une opération",
+  "reconcile_hint_exact_unticked": "{name} ({amount}) correspond exactement à l'écart. Figure-t-elle sur le relevé ?",
+  "reconcile_hint_exact_ticked": "{name} ({amount}) correspond exactement à l'écart. Figure-t-elle vraiment sur le relevé ?",
+  "reconcile_hint_wrong_way_in": "{name} vaut la moitié de l'écart. Est-elle dans le mauvais sens, une entrée plutôt qu'une sortie ?",
+  "reconcile_hint_wrong_way_out": "{name} vaut la moitié de l'écart. Est-elle dans le mauvais sens, une sortie plutôt qu'une entrée ?",
+  "reconcile_hint_swapped": "{name} était-elle de {meant} plutôt que {amount} ? Les chiffres inversés sont une erreur courante.",
+  "reconcile_hint_decimal": "{name} était-elle de {meant} plutôt que {amount} ? La virgule est peut-être mal placée.",
+  "reconcile_hint_pair": "{first} et {second} forment ensemble l'écart.",
+  "reconcile_hint_duplicate": "{name} apparaît deux fois. L'une est-elle un doublon ?",
+  "reconcile_hint_late": "Les opérations des derniers jours de la période peuvent figurer sur le relevé suivant.",
+  "reconcile_hint_look_out": "Cherchez sur le relevé des frais, une commission ou des intérêts de {amount} qui ne sont pas encore dans Kosha.",
+  "reconcile_hint_look_in": "Cherchez sur le relevé des intérêts, un remboursement ou un versement de {amount} qui ne sont pas encore dans Kosha.",
+  "reconcile_gap_uncovered": "Aucun relevé ne couvre la période du {from} au {to}.",
+  "reconcile_gap_opening": "{next} s'ouvre à {opening}, mais {previous} se termine à {closing}. Il manque peut-être un relevé.",
+  "reconcile_head_title": "Rapprochement · Kosha",
+  "reconcile_title": "Rapprochement",
+  "reconcile_picker_sub": "Comparez un compte avec le relevé de votre banque, ou importez le relevé.",
+  "reconcile_picker_empty": "Ajoutez d'abord un compte bancaire ou une carte.",
+  "reconcile_reconciled_to": "Rapproché au {day}",
+  "reconcile_never_reconciled": "Jamais rapproché",
+  "reconcile_transfer_to_name": "Vers {account}",
+  "reconcile_transfer_from_name": "Depuis {account}",
+  "reconcile_transfer_to_other": "Vers un autre compte",
+  "reconcile_transfer_from_other": "Depuis un autre compte",
+  "reconcile_no_payee": "Aucun tiers",
+  "reconcile_pdf_unsupported": "Kosha lit les fichiers CSV, OFX et QFX. Exportez l'un de ces formats depuis votre banque.",
+  "reconcile_currency_mismatch": "Ce relevé est en {statementCurrency}, et {account} est en {currency}.",
+  "reconcile_ofx_empty": "Ce fichier OFX ne contient aucune opération",
+  "reconcile_csv_empty": "Ce fichier ne contient aucune ligne lisible par Kosha",
+  "reconcile_read_failed": "Impossible de lire ce fichier",
+  "reconcile_pick_category_first": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Choisissez d'abord une catégorie pour {count} ligne",
+        "countPlural=*": "Choisissez d'abord une catégorie pour {count} lignes"
+      }
+    }
+  ],
+  "reconcile_added": [
+    {
+      "declarations": ["input count", "input account", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} opération ajoutée à {account}",
+        "countPlural=*": "{count} opérations ajoutées à {account}"
+      }
+    }
+  ],
+  "reconcile_add_failed": "Ajout impossible",
+  "reconcile_change_failed": "Modification impossible",
+  "reconcile_finish_failed": "Impossible de terminer",
+  "reconcile_undone": "Rapprochement annulé",
+  "reconcile_undo_failed": "Annulation impossible",
+  "reconcile_ask_failed": "Impossible de demander",
+  "reconcile_hint_opening_gap": "Ce relevé s'ouvre à {opening}, mais le dernier que vous avez rapproché se terminait à {closing}. Il manque peut-être un relevé entre les deux.",
+  "reconcile_hint_single_missing": "{payee} ({amount}) sur le relevé correspond exactement à l'écart. Ajoutez-la à Kosha.",
+  "reconcile_hint_missing_closes": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Ajouter la ligne absente de Kosha comble exactement l'écart.",
+        "countPlural=*": "Ajouter les {count} lignes absentes de Kosha comble exactement l'écart."
+      }
+    }
+  ],
+  "reconcile_hint_missing_count": [
+    {
+      "declarations": ["input count", "input amount", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} ligne du relevé n'est pas encore dans Kosha ({amount}).",
+        "countPlural=*": "{count} lignes du relevé ne sont pas encore dans Kosha ({amount})."
+      }
+    }
+  ],
+  "reconcile_hint_close": "{name} : Kosha indique {kosha}, le relevé {statement}.",
+  "reconcile_balance_label": "Solde final ({currency})",
+  "reconcile_owed_label": "Montant dû selon le relevé ({currency})",
+  "reconcile_account_title": "Rapprocher {account}",
+  "reconcile_done_title": "{account} correspond à votre relevé",
+  "reconcile_done_checked": [
+    {
+      "declarations": ["input count", "input n", "input day", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{n} opération vérifiée jusqu'au {day}.",
+        "countPlural=*": "{n} opérations vérifiées jusqu'au {day}."
+      }
+    }
+  ],
+  "reconcile_done_correction": "Une correction de {amount} a comblé l'écart.",
+  "reconcile_done_marked": "Kosha les marque comme rapprochées et vous prévient avant que vous en modifiiez une.",
+  "reconcile_back_to_accounts": "Retour aux comptes",
+  "reconcile_last_reconciled": "Dernier rapprochement au {day}",
+  "reconcile_check_each": "Vérifiez chaque opération par rapport au relevé de votre banque.",
+  "reconcile_other_account": "Autre compte",
+  "reconcile_drift": "Les opérations rapprochées le {day} ont varié de {amount} depuis, elles ne correspondent donc plus à ce relevé. L'une a été modifiée ou supprimée ; annulez ce rapprochement pour les vérifier à nouveau.",
+  "reconcile_pdf_off": "Les lignes lues dans ce PDF s'écartent de {amount} de son solde final. Une ligne a peut-être été mal lue ; comparez-les avec le PDF avant d'en ajouter.",
+  "reconcile_reading": "Lecture de {file}…",
+  "reconcile_file_lines": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} ligne",
+        "countPlural=*": "{count} lignes"
+      }
+    }
+  ],
+  "reconcile_read_by_ai": "lu par l'IA",
+  "reconcile_another_file": "Autre fichier",
+  "reconcile_drop": "Déposez votre relevé ici, ou {#choose}choisissez un fichier{/choose}",
+  "reconcile_drop_formats": "CSV, OFX ou QFX de votre banque. Kosha coche ce qui correspond et liste ce qui manque.",
+  "reconcile_drop_formats_pdf": "CSV, OFX ou QFX de votre banque, ou un relevé PDF. Kosha coche ce qui correspond et liste ce qui manque.",
+  "reconcile_statement_date": "Date du relevé",
+  "reconcile_quick_balance": "Kosha affiche {#amount}{amount}{/amount} aujourd'hui. Comparez avec le solde comptable de votre banque, pas le solde disponible.",
+  "reconcile_quick_owed": "Selon Kosha, vous devez {#amount}{amount}{/amount} aujourd'hui. Comparez avec le solde comptable de votre banque, pas le solde disponible.",
+  "reconcile_same_as_bank": "Ma banque affiche la même chose",
+  "reconcile_missing_title": "Sur le relevé, absent de Kosha ({count})",
+  "reconcile_naming_payees": "Identification des tiers…",
+  "reconcile_payee": "Tiers",
+  "reconcile_category_for": "Catégorie pour {name}",
+  "reconcile_pick_category": "Choisissez une catégorie",
+  "reconcile_transfer_to": "Virement vers {account}",
+  "reconcile_transfer_from": "Virement depuis {account}",
+  "reconcile_include_line": "Ajouter cette ligne",
+  "reconcile_leave_out_line": "Exclure cette ligne",
+  "reconcile_saving_teaches": "L'enregistrement apprend ces noms de tiers à Kosha pour votre prochain relevé.",
+  "reconcile_add_to_kosha": "Ajouter {count} à Kosha",
+  "reconcile_close_title": "Proches, mais pas le même montant ({count})",
+  "reconcile_close_detail": "Kosha {kosha} le {koshaDay} · relevé {statement} le {statementDay}",
+  "reconcile_use_amount": "Utiliser {amount}",
+  "reconcile_not_same": "Pas la même",
+  "reconcile_in_kosha": "Dans Kosha",
+  "reconcile_tick_title": "Cochez ce qui figure sur le relevé",
+  "reconcile_ticked_count": "{count} cochées",
+  "reconcile_before_group": "Avant ce relevé ({count})",
+  "reconcile_before_hint": "Cochées, car elles figuraient sur des relevés précédents",
+  "reconcile_nothing": "Rien à rapprocher jusqu'au {day}.",
+  "reconcile_note_amount_differs": "Montant différent",
+  "reconcile_note_next_statement": "Probablement sur le prochain relevé",
+  "reconcile_note_not_on_statement": "Absente du relevé",
+  "reconcile_note_still_due": "Encore à payer",
+  "reconcile_after_group": "Après le {day} ({count})",
+  "reconcile_after_hint": "Pour le prochain relevé",
+  "reconcile_finding_title": "Trouver l'écart",
+  "reconcile_ask_ai": "Demander à l'IA",
+  "reconcile_past": "Rapprochements passés",
+  "reconcile_history_entries": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} opération",
+        "countPlural=*": "{count} opérations"
+      }
+    }
+  ],
+  "reconcile_corrected_by": "corrigé de {amount}",
+  "reconcile_figure_statement": "Relevé",
+  "reconcile_figure_statement_owed": "Dû selon le relevé",
+  "reconcile_figure_ticked": "Coché dans Kosha",
+  "reconcile_figure_ticked_owed": "Dû selon les cochées",
+  "reconcile_figure_difference": "Écart",
+  "reconcile_figure_none": "Aucun",
+  "reconcile_finish_with_correction": "Terminer avec une correction de {amount}",
+  "reconcile_enter_balance": "Saisissez le solde du relevé",
+  "reconcile_finish": "Terminer le rapprochement",
+  "reconcile_show": "Afficher"
+}

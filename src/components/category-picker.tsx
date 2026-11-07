@@ -4,6 +4,7 @@ import { CategoryIcon } from "@/components/category-icon"
 import { useMeta } from "@/components/shell"
 import type { Category } from "@/lib/api"
 import { cn } from "@/lib/utils"
+import { m } from "@/paraglide/messages"
 
 /** "Dining › Delivery" for a subcategory, the name otherwise. */
 export function categoryPath(c: Category | undefined, all: Category[]) {
@@ -57,8 +58,8 @@ export function CategoryPicker({
             else return
             e.preventDefault()
           }}
-          placeholder="Search categories"
-          aria-label="Search categories"
+          placeholder={m.tx_search_categories()}
+          aria-label={m.tx_search_categories()}
           role="combobox"
           aria-expanded="true"
           aria-controls="category-options"
@@ -66,8 +67,10 @@ export function CategoryPicker({
           className="h-10 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
         />
       </label>
-      <div id="category-options" role="listbox" aria-label="Categories" className="max-h-72 overflow-y-auto p-1">
-        {options.length === 0 && <p className="px-2 py-3 text-sm text-muted-foreground">No category matches.</p>}
+      <div id="category-options" role="listbox" aria-label={m.tx_categories()} className="max-h-72 overflow-y-auto p-1">
+        {options.length === 0 && (
+          <p className="px-2 py-3 text-sm text-muted-foreground">{m.tx_no_category_matches()}</p>
+        )}
         {options.map((c, i) => {
           const sub = !!c.parent_id && !q
           return (

@@ -26,6 +26,7 @@ import { signOut } from "@/lib/auth-client"
 import { setDevicePref, setTheme } from "@/lib/theme"
 import { Switch } from "@/components/ui/switch"
 import { cn } from "@/lib/utils"
+import { m } from "@/paraglide/messages"
 
 type Person = { name: string; email: string; image: string | null }
 
@@ -66,9 +67,9 @@ export function Avatar({ user, className }: { user: Person; className?: string }
 }
 
 const THEMES = [
-  ["light", "Light", SunIcon],
-  ["dark", "Dark", MoonIcon],
-  ["system", "System", DesktopIcon],
+  ["light", m.shell_theme_light, SunIcon],
+  ["dark", m.shell_theme_dark, MoonIcon],
+  ["system", m.shell_theme_system, DesktopIcon],
 ] as const
 
 const item =
@@ -87,7 +88,7 @@ export function AccountMenu({ user, onShortcuts }: { user: Person; onShortcuts: 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        aria-label="Account and settings"
+        aria-label={m.shell_account_menu()}
         className="inline-flex size-9 rounded-full transition-shadow duration-200 hover:shadow-[0_0_0_3px_var(--brand-soft)] aria-expanded:shadow-[0_0_0_3px_var(--brand-soft)] max-md:size-11"
       >
         <Avatar user={user} className="size-full text-xs" />
@@ -105,13 +106,13 @@ export function AccountMenu({ user, onShortcuts }: { user: Person; onShortcuts: 
           </div>
         </div>
         <div className="flex min-h-10 items-center justify-between gap-2.5 px-2.5 py-1.5 text-[13.5px]">
-          Theme
-          <div role="group" aria-label="Theme" className="inline-flex gap-0.5 rounded-[9px] bg-muted p-[3px]">
+          {m.shell_theme()}
+          <div role="group" aria-label={m.shell_theme()} className="inline-flex gap-0.5 rounded-[9px] bg-muted p-[3px]">
             {THEMES.map(([v, label, Icon]) => (
               <button
                 key={v}
                 type="button"
-                aria-label={label}
+                aria-label={label()}
                 aria-pressed={theme === v}
                 onClick={() => saveTheme(v)}
                 className="inline-flex h-[26px] w-8 items-center justify-center rounded-[7px] text-muted-foreground transition-[background-color,color] duration-200 hover:text-foreground aria-pressed:bg-card aria-pressed:text-foreground aria-pressed:shadow-[0_1px_2px_rgba(0,0,0,0.1)] max-md:h-9 max-md:w-11 dark:aria-pressed:bg-[#2a2a2f]"
@@ -123,75 +124,75 @@ export function AccountMenu({ user, onShortcuts }: { user: Person; onShortcuts: 
         </div>
         <label className="flex min-h-10 items-center justify-between gap-2.5 px-2.5 py-1.5 text-[13.5px]">
           <span className="flex items-center gap-2.5">
-            <EyeSlashIcon className="size-[18px] text-subtle-foreground" /> Hide amounts
+            <EyeSlashIcon className="size-[18px] text-subtle-foreground" /> {m.shell_hide_amounts()}
           </span>
           <Switch checked={hidden === "1"} onCheckedChange={(on) => saveHidden(on ? "1" : "0")} />
         </label>
         <DropdownMenuSeparator className="-mx-1.5 my-1.5" />
         <DropdownMenuItem className={item} render={<Link to="/settings" />}>
-          <GearSixIcon /> Settings
+          <GearSixIcon /> {m.shell_settings()}
           <span className="ml-auto">
             <Kbd>⌘,</Kbd>
           </span>
         </DropdownMenuItem>
         <DropdownMenuItem className={item} render={<Link to="/settings/$section" params={{ section: "security" }} />}>
-          <ShieldCheckIcon /> Sign-in &amp; security
+          <ShieldCheckIcon /> {m.shell_security()}
         </DropdownMenuItem>
         <DropdownMenuItem className={item} render={<Link to="/settings/$section" params={{ section: "categories" }} />}>
-          <TagIcon /> Categories
+          <TagIcon /> {m.shell_categories()}
         </DropdownMenuItem>
         <DropdownMenuItem className={item} render={<Link to="/settings/$section" params={{ section: "ai" }} />}>
-          <SparkleIcon /> AI
+          <SparkleIcon /> {m.shell_ai()}
           <span className="ml-auto">
-            <Pill>Beta</Pill>
+            <Pill>{m.shell_beta()}</Pill>
           </span>
         </DropdownMenuItem>
         <DropdownMenuSeparator className="-mx-1.5 my-1.5" />
         <DropdownMenuItem className={item} onClick={onShortcuts}>
-          <KeyboardIcon /> Keyboard shortcuts
+          <KeyboardIcon /> {m.shell_shortcuts_title()}
           <span className="ml-auto">
             <Kbd>?</Kbd>
           </span>
         </DropdownMenuItem>
         <DropdownMenuSeparator className="-mx-1.5 my-1.5" />
         <DropdownMenuItem className={item} onClick={signOut}>
-          <SignOutIcon /> Sign out
+          <SignOutIcon /> {m.shell_sign_out()}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )
 }
 
-const SHORTCUTS: [area: string, rows: [keys: string[], what: string][]][] = [
+const shortcuts = (): [area: string, rows: [keys: string[], what: string][]][] => [
   [
-    "Anywhere",
+    m.shell_shortcuts_anywhere(),
     [
-      [["⌘", "K"], "Search payees, categories, accounts and pages"],
-      [["⌘", ","], "Open Settings"],
-      [["?"], "Show these shortcuts"],
-      [["Esc"], "Close a dialog, menu or panel"],
+      [["⌘", "K"], m.shell_shortcut_search()],
+      [["⌘", ","], m.shell_shortcut_settings()],
+      [["?"], m.shell_shortcut_help()],
+      [["Esc"], m.shell_shortcut_close()],
     ],
   ],
   [
-    "Search and quick add",
+    m.shell_shortcuts_search_add(),
     [
-      [["↑", "↓"], "Move through the list"],
-      [["↵"], "Open, or add the transaction"],
-      [["⌘", "↵"], "Search activity for what you typed"],
+      [["↑", "↓"], m.shell_shortcut_move_list()],
+      [["↵"], m.shell_shortcut_open()],
+      [["⌘", "↵"], m.shell_shortcut_search_activity()],
     ],
   ],
   [
-    "Activity",
+    m.shell_nav_activity(),
     [
-      [["↑", "↓"], "Move between transactions"],
-      [["Esc"], "Close the side panel"],
+      [["↑", "↓"], m.shell_shortcut_move_transactions()],
+      [["Esc"], m.shell_shortcut_close_panel()],
     ],
   ],
   [
-    "Settings",
+    m.shell_settings(),
     [
-      [["/"], "Search settings"],
-      [["↑", "↓", "↵"], "Pick a search result"],
+      [["/"], m.shell_shortcut_search_settings()],
+      [["↑", "↓", "↵"], m.shell_shortcut_pick_result()],
     ],
   ],
 ]
@@ -202,10 +203,10 @@ export function ShortcutsDialog({ open, onOpenChange }: { open: boolean; onOpenC
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="gap-5 sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Keyboard shortcuts</DialogTitle>
-          <DialogDescription>On Windows and Linux, use Ctrl for ⌘.</DialogDescription>
+          <DialogTitle>{m.shell_shortcuts_title()}</DialogTitle>
+          <DialogDescription>{m.shell_shortcuts_windows()}</DialogDescription>
         </DialogHeader>
-        {SHORTCUTS.map(([area, rows]) => (
+        {shortcuts().map(([area, rows]) => (
           <section key={area}>
             <h3 className="mb-1.5 text-xs font-medium text-muted-foreground">{area}</h3>
             <ul>

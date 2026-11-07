@@ -19,8 +19,10 @@ import { Field, attempt, useAccount } from "@/components/settings/sections/secur
 import { authClient } from "@/lib/auth-client"
 import { deleteAllTransactions } from "@/lib/api"
 import { errorOf } from "@/components/settings/saved"
-import { LOCALE } from "@/lib/core"
+import { intlLocale } from "@/lib/core"
 import { cn } from "@/lib/utils"
+import { m } from "@/paraglide/messages"
+import { ParaglideMessage } from "@inlang/paraglide-js-react"
 
 const dangerButton =
   "h-9 border-destructive/35 bg-card px-3 text-[13px] font-normal text-destructive hover:bg-destructive/10 hover:text-destructive"
@@ -33,11 +35,11 @@ export function DeleteReset() {
     <SettingGroup danger>
       <SettingRow
         id="delete-transactions"
-        title="Delete all transactions"
-        description="Deletes transactions, transfers, investment values and recurring payments. Keeps your accounts, categories, rules and settings."
+        title={m.settings_row_delete_transactions()}
+        description={m.settings_danger_transactions_desc()}
         control={
           <Button variant="outline" className={dangerButton} disabled={!transactions} onClick={() => setReset(true)}>
-            Delete transactions…
+            {m.settings_danger_transactions_button()}
           </Button>
         }
       >
@@ -46,11 +48,11 @@ export function DeleteReset() {
       <SettingRow
         id="delete-account"
         danger
-        title="Delete account"
-        description="Removes your account and every transaction, account, category and recurring payment in it."
+        title={m.settings_row_delete_account()}
+        description={m.settings_danger_account_desc()}
         control={
           <Button variant="outline" className={dangerButton} onClick={() => setOpen(true)}>
-            Delete account…
+            {m.settings_danger_account_button()}
           </Button>
         }
       >
@@ -65,18 +67,15 @@ function ResetDialog({ count, onClose }: { count: number; onClose: () => void })
   const router = useRouter()
   const [typed, setTyped] = useState("")
   const [busy, setBusy] = useState(false)
-  const n = `${count.toLocaleString(LOCALE)} ${count === 1 ? "transaction" : "transactions"}`
+  const n = { count, n: count.toLocaleString(intlLocale()) }
   return (
     <Dialog open onOpenChange={(o) => !o && !busy && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <WarningIcon className="size-5 text-destructive" /> Delete all transactions?
+            <WarningIcon className="size-5 text-destructive" /> {m.settings_danger_reset_title()}
           </DialogTitle>
-          <DialogDescription>
-            {n}, their transfers and investment values, and every recurring payment go. Accounts, categories, rules and
-            settings stay. This can't be undone, so export first if you might want them.
-          </DialogDescription>
+          <DialogDescription>{m.settings_danger_reset_body(n)}</DialogDescription>
         </DialogHeader>
         <form
           className="grid gap-4"
@@ -87,7 +86,7 @@ function ResetDialog({ count, onClose }: { count: number; onClose: () => void })
             try {
               await deleteAllTransactions()
               await router.invalidate()
-              toast.success(`Deleted ${n}`)
+              toast.success(m.settings_danger_reset_done(n))
               onClose()
             } catch (err) {
               toast.error(errorOf(err))
@@ -97,7 +96,12 @@ function ResetDialog({ count, onClose }: { count: number; onClose: () => void })
         >
           <div className="grid gap-1.5">
             <Label htmlFor="reset-confirm">
-              Type <span className="font-mono font-semibold">DELETE</span> to confirm
+              {/* The word stays DELETE in every language, since that's what the check below compares. */}
+              <ParaglideMessage
+                message={m.settings_danger_type_to_confirm}
+                inputs={{ word: "DELETE" }}
+                markup={{ code: ({ children }) => <span className="font-mono font-semibold">{children}</span> }}
+              />
             </Label>
             <Input
               id="reset-confirm"
@@ -111,10 +115,10 @@ function ResetDialog({ count, onClose }: { count: number; onClose: () => void })
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" disabled={busy} onClick={onClose}>
-              Cancel
+              {m.common_cancel()}
             </Button>
             <Button type="submit" variant="destructive" disabled={typed !== "DELETE" || busy}>
-              {busy ? "Deleting…" : `Delete ${n}`}
+              {busy ? m.settings_danger_deleting() : m.settings_danger_reset_button(n)}
             </Button>
           </DialogFooter>
         </form>
@@ -133,37 +137,35 @@ function DeleteFlow({ onClose }: { onClose: () => void }) {
   const [busy, setBusy] = useState(false)
   const emailOk = email.trim().toLowerCase() === meta.user.email.toLowerCase()
   const items = [
-    [summary.transactions, "transaction"],
-    [summary.accounts, "account"],
-    [summary.recurring, "recurring payment"],
-    [summary.categories, "category", "categories"],
+    [summary.transactions, m.settings_danger_count_transactions],
+    [summary.accounts, m.settings_danger_count_accounts],
+    [summary.recurring, m.settings_danger_count_recurring],
+    [summary.categories, m.settings_danger_count_categories],
   ] as const
 
   return (
     <Dialog open onOpenChange={(o) => !o && !busy && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <p className="num text-xs text-muted-foreground">Step {step} of 3</p>
+          <p className="num text-xs text-muted-foreground">{m.settings_danger_step({ step })}</p>
           <DialogTitle className="flex items-center gap-2">
-            <WarningIcon className="size-5 text-destructive" /> Delete your account
+            <WarningIcon className="size-5 text-destructive" /> {m.settings_danger_delete_title()}
           </DialogTitle>
         </DialogHeader>
 
         {step === 1 && (
           <>
-            <DialogDescription>
-              This deletes everything in Kosha for {meta.user.email}. There is no backup and it can't be undone.
-            </DialogDescription>
+            <DialogDescription>{m.settings_danger_delete_intro({ email: meta.user.email })}</DialogDescription>
             <ul className="grid gap-1.5 rounded-lg bg-muted px-4 py-3 text-sm">
-              {items.map(([n, one, many]) => (
-                <li key={one} className="flex justify-between">
-                  <span>{n === 1 ? one : (many ?? `${one}s`)}</span>
-                  <span className="num">{n.toLocaleString(LOCALE)}</span>
+              {items.map(([n, label], i) => (
+                <li key={i} className="flex justify-between">
+                  <span>{label({ count: n })}</span>
+                  <span className="num">{n.toLocaleString(intlLocale())}</span>
                 </li>
               ))}
               <li className="flex justify-between text-muted-foreground">
-                <span>passkeys, two-factor and sessions</span>
-                <span>all</span>
+                <span>{m.settings_danger_sign_in_items()}</span>
+                <span>{m.settings_danger_all()}</span>
               </li>
             </ul>
             <label className="flex items-start gap-2 text-sm">
@@ -173,14 +175,14 @@ function DeleteFlow({ onClose }: { onClose: () => void }) {
                 onChange={(e) => setUnderstood(e.target.checked)}
                 className="mt-0.5 size-4 accent-destructive"
               />
-              I understand my data will be permanently deleted.
+              {m.settings_danger_understand()}
             </label>
             <DialogFooter>
               <Button variant="outline" onClick={onClose}>
-                Keep my account
+                {m.settings_danger_keep()}
               </Button>
               <Button variant="destructive" disabled={!understood} onClick={() => setStep(2)}>
-                Continue
+                {m.common_continue()}
               </Button>
             </DialogFooter>
           </>
@@ -194,9 +196,9 @@ function DeleteFlow({ onClose }: { onClose: () => void }) {
               if (emailOk) setStep(3)
             }}
           >
-            <DialogDescription>Type your email address to confirm this is the account you mean.</DialogDescription>
+            <DialogDescription>{m.settings_danger_type_email()}</DialogDescription>
             <div className="grid gap-1.5">
-              <Label htmlFor="del-email">Email</Label>
+              <Label htmlFor="del-email">{m.settings_row_email()}</Label>
               <Input
                 id="del-email"
                 value={email}
@@ -210,10 +212,10 @@ function DeleteFlow({ onClose }: { onClose: () => void }) {
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setStep(1)}>
-                Back
+                {m.common_back()}
               </Button>
               <Button type="submit" variant="destructive" disabled={!emailOk}>
-                Continue
+                {m.common_continue()}
               </Button>
             </DialogFooter>
           </form>
@@ -232,19 +234,17 @@ function DeleteFlow({ onClose }: { onClose: () => void }) {
             }}
           >
             <DialogDescription>
-              {summary.hasPassword
-                ? "Enter your password to confirm. Kosha deletes your account as soon as you press the button."
-                : "Kosha deletes your account as soon as you press the button."}
+              {summary.hasPassword ? m.settings_danger_enter_password() : m.settings_danger_no_password()}
             </DialogDescription>
             {summary.hasPassword && (
-              <Field name="password" label="Password" autoComplete="current-password" autoFocus />
+              <Field name="password" label={m.settings_row_password()} autoComplete="current-password" autoFocus />
             )}
             <DialogFooter>
               <Button type="button" variant="outline" disabled={busy} onClick={() => setStep(2)}>
-                Back
+                {m.common_back()}
               </Button>
               <Button type="submit" variant="destructive" disabled={busy} className={cn(busy && "opacity-70")}>
-                {busy ? "Deleting…" : "Delete my account permanently"}
+                {busy ? m.settings_danger_deleting() : m.settings_danger_delete_forever()}
               </Button>
             </DialogFooter>
           </form>

@@ -1,0 +1,127 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "welcome_page_title": "환영해요 · Kosha",
+  "welcome_type_bank": "은행",
+  "welcome_type_cash": "현금",
+  "welcome_type_card": "카드",
+  "welcome_type_investment": "투자",
+  "welcome_type_bank_account": "은행 계좌",
+  "welcome_type_credit_card": "신용카드",
+  "welcome_type_investment_long": "투자",
+  "welcome_suggest_current": "입출금 계좌",
+  "welcome_suggest_savings": "저축",
+  "welcome_suggest_investments": "투자",
+  "welcome_suggest_pension": "연금",
+  "welcome_field_balance": "잔액",
+  "welcome_field_owed": "미결제 금액",
+  "welcome_field_credit_limit": "신용 한도",
+  "welcome_field_put_in": "투자 원금",
+  "welcome_field_value_today": "오늘 평가액",
+  "welcome_name_save_failed": "이름을 저장하지 못했어요",
+  "welcome_title": "Kosha에 오신 걸 환영해요",
+  "welcome_sub": "아래 세 가지를 확인한 다음 계좌를 추가하세요. 1~2분이면 끝나요.",
+  "welcome_name_title": "이름",
+  "welcome_name_description": "메뉴에 표시돼요.",
+  "welcome_name_error": "Kosha에 표시할 이름을 입력해 주세요.",
+  "welcome_currency_title": "기본 통화",
+  "welcome_currency_description": "순자산과 합계를 이 통화로 계산해요.",
+  "welcome_tz_title": "시간대",
+  "welcome_tz_description": "날짜와 월은 이 시간대를 따라요.",
+  "welcome_change_later": "세 가지 모두 나중에 설정에서 바꿀 수 있어요.",
+  "welcome_saving": "저장 중…",
+  "welcome_accounts_title": "계좌 추가",
+  "welcome_accounts_sub": "각 계좌에 지금 있는 금액을 입력하세요. 없는 계좌는 지우고, 나머지는 추가하세요.",
+  "welcome_net_worth": "순자산",
+  "welcome_adding": "추가 중…",
+  "welcome_add_accounts": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "계좌 {count}개 추가"
+      }
+    }
+  ],
+  "welcome_add_an_account": "계좌 추가",
+  "welcome_progress_label": "설정",
+  "welcome_progress_step": "2단계 중 {at}단계",
+  "welcome_skip": "나중에 하기",
+  "welcome_rows_label": "새 계좌",
+  "welcome_rows_empty": "아직 계좌가 없어요. 아래에서 첫 계좌를 추가하세요.",
+  "welcome_another_account": "계좌 하나 더",
+  "welcome_credit_left_hint": "한도를 입력하면 남은 한도를 볼 수 있어요.",
+  "welcome_credit_left": "남은 한도 {#num}{amount}{/num}",
+  "welcome_gain_hint": "오늘 평가액을 입력하면 손익을 계산해요.",
+  "welcome_gain": "수익 {#num}{amount}{/num}",
+  "welcome_loss": "손실 {#num}{amount}{/num}",
+  "welcome_account_name_label": "계좌 이름",
+  "welcome_account_name_placeholder": "국민은행, 토스뱅크, Wise…",
+  "welcome_type_of": "{name} 유형",
+  "welcome_type_of_account": "계좌 유형",
+  "welcome_remove": "{name} 제거",
+  "welcome_remove_this_account": "이 계좌 제거",
+  "welcome_currency_label": "통화",
+  "welcome_currency_of": "{name} 통화",
+  "welcome_currency_of_this_account": "이 계좌의 통화",
+  "welcome_error_name": "계좌 이름을 입력해 주세요.",
+  "welcome_error_amount": "1,250.00처럼 숫자로 입력해 주세요.",
+  "welcome_amount_placeholder": "0.00",
+  "welcome_currency_search_placeholder": "통화 검색",
+  "welcome_currency_search_label": "통화 검색",
+  "welcome_currency_empty": "일치하는 통화가 없어요.",
+  "welcome_done_title": "준비가 끝났어요",
+  "welcome_done_added": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "계좌 {count}개를 추가했어요."
+      }
+    }
+  ],
+  "welcome_done_added_currencies": [
+    {
+      "declarations": ["input count", "input currencies", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "통화 {currencies}개로 계좌 {count}개를 추가했어요."
+      }
+    }
+  ],
+  "welcome_accounts_added": "계좌 추가 완료",
+  "welcome_owed": "미결제",
+  "welcome_history_title": "지난 기록 채우기",
+  "welcome_history_body": "은행 명세서를 가져오면 Kosha가 지난 거래를 이 계좌들에 추가해요.",
+  "welcome_import": "명세서 가져오기",
+  "welcome_add_transaction": "거래 추가",
+  "ask_page_title": "Kosha에게 물어보기 · Kosha",
+  "ask_title": "Kosha에게 물어보기",
+  "ask_subtitle": "내 돈에 관한 질문에 내 데이터로 답해 드려요.",
+  "ask_new_chat": "새 대화",
+  "ask_input_label": "내 돈에 관해 질문하기",
+  "ask_placeholder": "내 돈에 관해 물어보세요",
+  "ask_placeholder_follow_up": "이어서 질문하기",
+  "ask_submit": "질문",
+  "ask_your_endpoint": "내 엔드포인트",
+  "ask_answered_by": "{provider}({model})의 답변이에요.",
+  "ask_privacy": "Kosha는 {#link}AI가 볼 수 있는 정보{/link}에서 허용한 내용만 보내요. 중요한 수치는 내역에서 확인하세요.",
+  "ask_error": "질문하지 못했어요",
+  "ask_suggest_category": "이번 달 {category}에 얼마나 썼나요?",
+  "ask_suggest_spent": "이번 달에 얼마나 썼나요?",
+  "ask_suggest_biggest": "지난달 가장 큰 지출은 뭐였나요?",
+  "ask_suggest_compare": "이번 달은 평소 한 달과 비교하면 어떤가요?",
+  "ask_suggest_event": "{event}에 모두 얼마가 들었나요?",
+  "ask_suggest_subscriptions": "구독료가 매달 얼마나 나가나요?",
+  "ask_empty_title": "내 돈에 관해 무엇이든 물어보세요",
+  "ask_empty_body": "Kosha가 계좌, 거래, 정기 거래에서 찾아보고, 각 답변의 출처를 보여 줘요.",
+  "ask_thinking": "생각 중",
+  "ask_how_found": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "Kosha가 찾은 방법 (조회 {count}회)"
+      }
+    }
+  ]
+}

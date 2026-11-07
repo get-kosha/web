@@ -38,12 +38,14 @@ import {
   fmt,
   fmtRate,
   guessCategory,
+  intlLocale,
   isNeutral,
   parseAmount,
   tagList,
   timeOf,
 } from "@/lib/core"
 import { cn } from "@/lib/utils"
+import { m } from "@/paraglide/messages"
 
 type Mode = "expense" | "income" | "transfer"
 
@@ -71,6 +73,9 @@ function transferSides(t: Tx) {
 }
 
 const PROVIDERS = ["Wise", "Xe", "Revolut", "Remitly", "Bank"]
+
+const MODE_LABEL = { expense: m.tx_kind_expense, income: m.tx_kind_income, transfer: m.tx_kind_transfer }
+const ADD_LABEL = { expense: m.tx_add_expense, income: m.tx_add_income, transfer: m.tx_add_transfer }
 
 const cents2 = (v: number) => (Math.abs(v) / 100).toFixed(2)
 
@@ -141,32 +146,30 @@ export function ExchangeFields({ x }: { x: Exchange }) {
     <div className="grid gap-3 rounded-lg border p-3 text-sm">
       <div className="grid grid-cols-2 gap-3">
         <label className="grid gap-1">
-          <span className="text-xs text-muted-foreground">
-            Fee <span className="uppercase">({from})</span>
-          </span>
+          <span className="text-xs text-muted-foreground">{m.tx_fee_currency({ currency: from.toUpperCase() })}</span>
           <Input
             value={x.fee}
             onChange={(e) => x.setFee(e.target.value)}
             inputMode="decimal"
             className="num h-9"
-            aria-label="Fee"
+            aria-label={m.tx_fee()}
           />
         </label>
         <label className="grid gap-1">
-          <span className="text-xs text-muted-foreground">Via</span>
+          <span className="text-xs text-muted-foreground">{m.tx_via()}</span>
           <Suggest
             value={x.provider}
             onChange={x.setProvider}
             options={PROVIDERS}
             render={<Input className="h-9" />}
-            aria-label="Provider"
+            aria-label={m.tx_provider()}
           />
         </label>
       </div>
       {x.crossCurrency && x.to && (
         <div className="grid grid-cols-2 gap-3">
           <label className="grid gap-1">
-            <span className="text-xs text-muted-foreground">Rate, 1 {from.toUpperCase()} =</span>
+            <span className="text-xs text-muted-foreground">{m.tx_rate_label({ currency: from.toUpperCase() })}</span>
             <Input
               value={x.fxInput === "rate" ? x.rateText : fmtRate(x.rate)}
               onChange={(e) => {
@@ -175,12 +178,12 @@ export function ExchangeFields({ x }: { x: Exchange }) {
               }}
               inputMode="decimal"
               className="num h-9"
-              aria-label="Exchange rate"
+              aria-label={m.tx_exchange_rate()}
             />
           </label>
           <label className="grid gap-1">
             <span className="text-xs text-muted-foreground">
-              Received <span className="uppercase">({x.to.currency})</span>
+              {m.tx_received_currency({ currency: x.to.currency.toUpperCase() })}
             </span>
             <Input
               value={x.fxInput === "received" ? x.received : x.receivedCents ? cents2(x.receivedCents) : ""}
@@ -190,7 +193,7 @@ export function ExchangeFields({ x }: { x: Exchange }) {
               }}
               inputMode="decimal"
               className="num h-9"
-              aria-label="Amount received"
+              aria-label={m.tx_amount_received()}
             />
           </label>
         </div>
@@ -198,9 +201,17 @@ export function ExchangeFields({ x }: { x: Exchange }) {
       {(x.feeCents > 0 || x.crossCurrency) && x.converted > 0 && (
         <p className="num text-xs text-muted-foreground">
           {x.crossCurrency && x.to
-            ? `${fmt(x.converted, from)} becomes ${fmt(x.receivedCents, x.to.currency)}, market rate ${fmtRate(x.market)}.`
-            : `${fmt(x.converted, from)} arrives.`}
-          {x.fx.totalCost > 0.5 && ` It costs ${fmt(x.fx.totalCost, from)} (${x.fx.costPct.toFixed(2)}%).`}
+            ? m.tx_fx_becomes({
+                sent: fmt(x.converted, from),
+                received: fmt(x.receivedCents, x.to.currency),
+                rate: fmtRate(x.market),
+              })
+            : m.tx_fx_arrives({ amount: fmt(x.converted, from) })}
+          {x.fx.totalCost > 0.5 &&
+            ` ${m.tx_fx_cost({
+              cost: fmt(x.fx.totalCost, from),
+              pct: x.fx.costPct.toLocaleString(intlLocale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+            })}`}
         </p>
       )}
     </div>
@@ -320,13 +331,13 @@ export function TransactionForm({
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
-    if (!cents) return toast.error("Enter an amount")
+    if (!cents) return toast.error(m.tx_enter_amount())
     if (transfer) {
-      if (!toWalletId || toWalletId === walletId) return toast.error("Pick the account the money goes to")
-      if (x.converted <= 0) return toast.error("The fee must be less than the amount")
-      if (!x.receivedCents) return toast.error("Enter the amount received")
+      if (!toWalletId || toWalletId === walletId) return toast.error(m.tx_pick_to_account())
+      if (x.converted <= 0) return toast.error(m.tx_fee_too_big())
+      if (!x.receivedCents) return toast.error(m.tx_enter_received())
     } else if (!pickedCategory || !categories.some((c) => c.id === pickedCategory))
-      return toast.error("Pick a category")
+      return toast.error(m.tx_pick_category_error())
     setBusy(true)
     try {
       if (transfer) {
@@ -345,7 +356,11 @@ export function TransactionForm({
           },
         })
         toast.success(
-          `Moved ${fmt(Math.abs(cents), wallet?.currency ?? meta.primary)} from ${wallet?.name} to ${toWallet?.name}`
+          m.tx_moved({
+            amount: fmt(Math.abs(cents), wallet?.currency ?? meta.primary),
+            from: wallet?.name ?? "",
+            to: toWallet?.name ?? "",
+          })
         )
       } else {
         const signed = Math.abs(cents) * (income ? 1 : -1)
@@ -368,9 +383,8 @@ export function TransactionForm({
           },
         })
         const cat = meta.categories.find((c) => c.id === pickedCategory)
-        toast.success(
-          `${initial ? "Saved" : "Added"} ${fmt(signed, wallet?.currency ?? meta.primary)}, ${name || cat?.name}`
-        )
+        const done = { amount: fmt(signed, wallet?.currency ?? meta.primary), name: name || cat?.name || "" }
+        toast.success(initial ? m.tx_saved_toast(done) : m.tx_added_toast(done))
       }
       try {
         localStorage.setItem(WALLET_KEY, walletId)
@@ -390,7 +404,7 @@ export function TransactionForm({
         onDone?.()
       }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Couldn't save")
+      toast.error(err instanceof Error ? err.message : m.tx_save_failed())
     } finally {
       setBusy(false)
     }
@@ -401,45 +415,45 @@ export function TransactionForm({
     setConfirming(false)
     try {
       await deleteTransaction({ data: { id: initial.id } })
-      toast.success("Deleted")
+      toast.success(m.tx_deleted())
       await router.invalidate()
       onDone?.()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Couldn't delete")
+      toast.error(err instanceof Error ? err.message : m.tx_delete_failed())
     }
   }
 
   return (
     <form onSubmit={submit} className="flex flex-1 flex-col gap-5">
       <div className="flex items-center justify-between gap-3">
-        <div role="group" aria-label="Type" className={segment}>
-          {(["expense", "income", "transfer"] as const).map((m) => (
+        <div role="group" aria-label={m.tx_type()} className={segment}>
+          {(["expense", "income", "transfer"] as const).map((k) => (
             <button
-              key={m}
+              key={k}
               type="button"
-              aria-pressed={mode === m}
+              aria-pressed={mode === k}
               onClick={() => {
-                setMode(m)
+                setMode(k)
                 setCategoryId("")
                 setCategoryTouched(false)
               }}
-              className={cn(segmentButton, "px-3 text-[13px] capitalize")}
+              className={cn(segmentButton, "px-3 text-[13px]")}
             >
-              {m}
+              {MODE_LABEL[k]()}
             </button>
           ))}
         </div>
         <div className="flex items-center gap-1">
           <DatePicker
-            aria-label="Date"
+            aria-label={m.tx_date()}
             value={day}
             onChange={setDay}
             className="rounded-md px-1.5 py-1 text-sm text-muted-foreground transition-colors outline-none hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring aria-expanded:bg-muted max-md:min-h-11"
           >
-            {day === today ? "Today" : dayLabel(day)}
+            {day === today ? m.tx_today() : dayLabel(day)}
           </DatePicker>
           <TimePicker
-            aria-label="Time"
+            aria-label={m.tx_time()}
             value={shownTime}
             onChange={setTime}
             className="num rounded-md px-1.5 py-1 text-sm text-muted-foreground transition-colors outline-none hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring aria-expanded:bg-muted max-md:min-h-11"
@@ -458,7 +472,7 @@ export function TransactionForm({
           inputMode="decimal"
           autoComplete="off"
           autoFocus={!initial}
-          aria-label="Amount"
+          aria-label={m.tx_amount()}
           className={cn(
             "num w-full min-w-0 bg-transparent text-center text-5xl font-semibold tracking-tight outline-none",
             income && "text-positive"
@@ -466,13 +480,13 @@ export function TransactionForm({
         />
       </label>
 
-      {transfer && <div className="-mb-3 text-xs text-muted-foreground">From</div>}
+      {transfer && <div className="-mb-3 text-xs text-muted-foreground">{m.tx_from()}</div>}
       <WalletChips wallets={activeWallets} value={walletId} onChange={setWalletId} />
 
       {transfer ? (
         <>
           <div className="-mb-3 flex items-center gap-1 text-xs text-muted-foreground">
-            <ArrowDownIcon className="size-3" /> To
+            <ArrowDownIcon className="size-3" /> {m.tx_to()}
           </div>
           <WalletChips
             wallets={activeWallets.filter((w) => w.id !== walletId)}
@@ -480,14 +494,12 @@ export function TransactionForm({
             onChange={setToWalletId}
           />
           <ExchangeFields x={x} />
-          <p className="text-xs text-muted-foreground">
-            Moves money between your accounts. It doesn't count as spending or income, but the fee does.
-          </p>
+          <p className="text-xs text-muted-foreground">{m.tx_transfer_note()}</p>
         </>
       ) : (
         <>
           <label className="grid gap-1">
-            <span className="text-xs text-muted-foreground">Payee</span>
+            <span className="text-xs text-muted-foreground">{m.tx_payee()}</span>
             <Suggest value={name} onChange={onName} options={meta.titles} render={<Input className="h-10" />} />
           </label>
 
@@ -526,14 +538,13 @@ export function TransactionForm({
       {initial?.reconciled_id && (
         <p className="flex items-start gap-2 rounded-lg bg-muted px-3 py-2.5 text-xs text-muted-foreground">
           <CheckCircleIcon weight="fill" className="mt-px size-4 shrink-0 text-positive" />
-          Reconciled with a bank statement. Changing its amount or account means checking it again next time you
-          reconcile.
+          {m.tx_reconciled_note()}
         </p>
       )}
 
       {initial && !initial.paid && !transfer && (
         <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={paid} onChange={(e) => setPaid(e.target.checked)} /> Paid
+          <input type="checkbox" checked={paid} onChange={(e) => setPaid(e.target.checked)} /> {m.tx_paid()}
         </label>
       )}
 
@@ -551,7 +562,7 @@ export function TransactionForm({
             size="icon-lg"
             className="text-destructive hover:text-destructive"
             onClick={() => setConfirming(true)}
-            aria-label={initial.transfer_id ? "Delete transfer" : "Delete transaction"}
+            aria-label={initial.transfer_id ? m.tx_delete_transfer() : m.tx_delete_transaction()}
           >
             <TrashIcon className="size-5" />
           </Button>
@@ -559,30 +570,33 @@ export function TransactionForm({
         <div className="flex-1" />
         {onCancel && (
           <Button type="button" variant="outline" size="lg" className="min-w-24" onClick={onCancel}>
-            Cancel
+            {m.common_cancel()}
           </Button>
         )}
         <Button type="submit" size="lg" disabled={busy || !cents} className="min-w-28">
-          {initial ? "Save" : `Add ${mode}`}
+          {initial ? m.common_save() : ADD_LABEL[mode]()}
         </Button>
       </div>
       <Dialog open={confirming} onOpenChange={setConfirming}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{initial?.transfer_id ? "Delete this transfer?" : "Delete this transaction?"}</DialogTitle>
+            <DialogTitle>
+              {initial?.transfer_id ? m.tx_delete_transfer_title() : m.tx_delete_transaction_title()}
+            </DialogTitle>
             {(initial?.transfer_id || initial?.reconciled_id) && (
               <DialogDescription>
-                {initial.transfer_id && "This removes it from both accounts. "}
-                {initial.reconciled_id && "It's reconciled, so the account will no longer match that statement."}
+                {[initial.transfer_id && m.tx_delete_transfer_both(), initial.reconciled_id && m.tx_delete_reconciled()]
+                  .filter(Boolean)
+                  .join(" ")}
               </DialogDescription>
             )}
           </DialogHeader>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setConfirming(false)}>
-              Cancel
+              {m.common_cancel()}
             </Button>
             <Button type="button" variant="destructive" onClick={remove}>
-              Delete
+              {m.common_delete()}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -640,7 +654,7 @@ export function TransactionSheet({
       <DialogContent showCloseButton={false} className={pageSheet}>
         <div className="sticky top-0 z-10 -mx-4 flex min-h-14 items-center justify-between gap-3 border-b bg-popover px-4 pt-[env(safe-area-inset-top)] md:static md:min-h-12 md:border-0 md:pt-2">
           <DialogTitle className="text-[17px] font-semibold md:text-base md:font-medium">{title}</DialogTitle>
-          <Button variant="ghost" size="icon-lg" onClick={onClose} aria-label="Close" className="-mr-2">
+          <Button variant="ghost" size="icon-lg" onClick={onClose} aria-label={m.common_close()} className="-mr-2">
             <XIcon className="size-5" />
           </Button>
         </div>
@@ -673,7 +687,7 @@ function CategoryStrip({
     <div
       ref={ref}
       role="group"
-      aria-label="Category"
+      aria-label={m.tx_category()}
       className="-mx-4 grid snap-x scroll-px-4 [scrollbar-width:none] auto-cols-[76px] grid-flow-col grid-rows-2 gap-1.5 overflow-x-auto overscroll-x-contain px-4 pb-1 md:[scrollbar-width:thin]"
     >
       {categories.map((c) => (
@@ -682,7 +696,7 @@ function CategoryStrip({
           type="button"
           onClick={() => onPick(c.id)}
           aria-pressed={c.id === value}
-          aria-label={c.id === suggested ? `${c.name}, suggested` : undefined}
+          aria-label={c.id === suggested ? m.tx_suggested({ name: c.name }) : undefined}
           className="relative flex h-[68px] snap-start flex-col items-center justify-center gap-1.5 rounded-lg border border-transparent px-1 text-[11px] leading-tight text-muted-foreground transition-colors hover:bg-muted aria-pressed:border-foreground aria-pressed:bg-muted aria-pressed:text-foreground"
         >
           {c.id === suggested && <AiMark className="absolute top-1.5 right-1.5 size-3" />}
@@ -724,16 +738,17 @@ function Extras({
     event: !!onEvent && (!!eventId || opened === "event"),
   }
   const links = [
-    !show.note && { key: "note" as const, icon: <NotePencilIcon />, label: "Add note" },
-    onTags && !show.tags && { key: "tags" as const, icon: <HashIcon />, label: "Add tags" },
-    onEvent && !show.event && { key: "event" as const, icon: <CalendarStarIcon />, label: "Add to event" },
+    !show.note && { key: "note" as const, icon: <NotePencilIcon />, label: m.tx_add_note() },
+    onTags && !show.tags && { key: "tags" as const, icon: <HashIcon />, label: m.tx_add_tags() },
+    onEvent && !show.event && { key: "event" as const, icon: <CalendarStarIcon />, label: m.tx_add_to_event() },
   ].filter((l) => !!l)
 
   return (
     <div className="grid gap-4">
       {show.note && (
         <Extra
-          label="Note"
+          label={m.tx_note()}
+          removeLabel={m.tx_remove_note()}
           onClose={() => {
             onNote("")
             setOpened(null)
@@ -745,14 +760,15 @@ function Extras({
             autoFocus={opened === "note"}
             rows={2}
             maxLength={2000}
-            aria-label="Note"
+            aria-label={m.tx_note()}
             className="field-sizing-content min-h-16 w-full resize-none rounded-md border bg-card px-2.5 py-2 text-sm outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
           />
         </Extra>
       )}
       {show.tags && onTags && (
         <Extra
-          label="Tags"
+          label={m.tx_tags()}
+          removeLabel={m.tx_remove_tags()}
           onClose={() => {
             onTags([])
             setOpened(null)
@@ -763,7 +779,8 @@ function Extras({
       )}
       {show.event && onEvent && (
         <Extra
-          label={auto && eventId ? "Event · picked by date" : "Event"}
+          label={auto && eventId ? m.tx_event_by_date() : m.tx_event()}
+          removeLabel={m.tx_remove_event()}
           onClose={() => {
             onEvent(null)
             setOpened(null)
@@ -791,7 +808,17 @@ function Extras({
   )
 }
 
-function Extra({ label, onClose, children }: { label: string; onClose: () => void; children: ReactNode }) {
+function Extra({
+  label,
+  removeLabel,
+  onClose,
+  children,
+}: {
+  label: string
+  removeLabel: string
+  onClose: () => void
+  children: ReactNode
+}) {
   return (
     <div className="grid gap-1.5">
       <div className="flex items-center justify-between">
@@ -799,7 +826,7 @@ function Extra({ label, onClose, children }: { label: string; onClose: () => voi
         <button
           type="button"
           onClick={onClose}
-          aria-label={`Remove ${label.split(" ")[0].toLowerCase()}`}
+          aria-label={removeLabel}
           className="-my-2 -mr-2 inline-flex size-8 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground max-md:size-11"
         >
           <XIcon className="size-3.5" />

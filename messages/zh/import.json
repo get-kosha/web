@@ -1,0 +1,282 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "import_columns": "列",
+  "import_columns_remembered": "与上次该银行的设置相同",
+  "import_columns_by_ai": "由 AI 识别",
+  "import_columns_confident": "根据表头识别",
+  "import_columns_check": "请检查",
+  "import_columns_column": "第 {n} 列",
+  "import_role_ignore": "忽略",
+  "import_role_date": "日期",
+  "import_role_description": "描述",
+  "import_role_amount": "金额",
+  "import_role_debit": "出账",
+  "import_role_credit": "入账",
+  "import_role_balance": "余额",
+  "import_columns_dates": "日期",
+  "import_columns_format": "格式",
+  "import_date_dmy": "日在前（31/01/2026）",
+  "import_date_mdy": "月在前（01/31/2026）",
+  "import_date_ymd": "年在前（2026-01-31）",
+  "import_date_text": "英文月份名（31 Jan 2026）",
+  "import_columns_invert": "支出显示为正数",
+  "import_columns_lines_read": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "已读取 {n} 行"
+      }
+    }
+  ],
+  "import_head_title": "导入对账单 · Kosha",
+  "import_title": "导入对账单",
+  "import_sub": "Kosha 会把你的对账单归入各个账户。逐个检查账户，再检查交易对象。",
+  "import_new_account": "新账户",
+  "import_type_bank": "银行账户",
+  "import_type_card": "信用卡",
+  "import_error_pdf": "Kosha 可读取 CSV、OFX 和 QFX 文件。请从银行导出其中一种格式。",
+  "import_error_no_transactions": "该文件中没有交易",
+  "import_error_no_rows": "该文件中没有 Kosha 能读取的行",
+  "import_error_unreadable": "无法读取",
+  "import_error_check": "无法检查你的账户",
+  "import_drop": "将对账单拖到这里，或{#choose}选择文件{/choose}",
+  "import_drop_more": "将更多对账单拖到这里，或{#choose}选择文件{/choose}",
+  "import_drop_hint": "从网上银行导出的 CSV、OFX 或 QFX 文件。可以一次性添加所有银行和信用卡的每个月份。",
+  "import_drop_hint_pdf": "从网上银行导出的 CSV、OFX 或 QFX 文件，或 PDF 对账单。可以一次性添加所有银行和信用卡的每个月份。",
+  "import_reading": "正在读取 {name}",
+  "import_dismiss": "移除 {name}",
+  "import_reading_files": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "正在读取 {n} 个文件…"
+      }
+    }
+  ],
+  "import_summary": [
+    {
+      "declarations": [
+        "input count",
+        "input n",
+        "input accounts",
+        "input a",
+        "local countPlural = count: plural",
+        "local accountsPlural = accounts: plural"
+      ],
+      "selectors": ["countPlural", "accountsPlural"],
+      "match": {
+        "countPlural=*, accountsPlural=*": "{a} 个账户中的 {n} 笔交易"
+      }
+    }
+  ],
+  "import_check_payees": "检查交易对象",
+  "import_into": "导入到",
+  "import_new_account_option": "新账户",
+  "import_into_wallet": "导入到 {name}",
+  "import_field_name": "名称",
+  "import_field_type": "类型",
+  "import_field_currency": "货币",
+  "import_owed_on": "{day} 的欠款（{currency}）",
+  "import_balance_on": "{day} 的余额（{currency}）",
+  "import_closing_placeholder": "来自你最新的对账单",
+  "import_closing_from_file": "取自对账单。",
+  "import_closing_hint": "Kosha 会据此算出期初余额。不清楚的话可以留空。",
+  "import_credit_limit": "信用额度（{currency}）",
+  "import_optional": "可选",
+  "import_foreign": "{file} 的货币是 {from}，而此账户的货币是 {to}。",
+  "import_off": "从 {file} 读取的各行与其期末余额相差 {amount}。请对照 PDF 检查。",
+  "import_stmt_lines": [
+    {
+      "declarations": ["input count", "input n", "input from", "input to", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{n} 行，{from} 至 {to}"
+      }
+    }
+  ],
+  "import_stmt_no_lines": "未读取到任何行",
+  "import_move_label": "将 {file} 移到另一个账户",
+  "import_move_placeholder": "移到…",
+  "import_remove": "移除 {file}",
+  "import_account_range": [
+    {
+      "declarations": ["input count", "input n", "input from", "input to", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{from} 至 {to} 的 {n} 笔交易。"
+      }
+    }
+  ],
+  "import_account_dupes": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "有 {n} 行出现在多份对账单中，只计算一次。"
+      }
+    }
+  ],
+  "import_review_title": "检查交易对象和分类",
+  "import_review_sub": [
+    {
+      "declarations": [
+        "input count",
+        "input n",
+        "input payees",
+        "input p",
+        "local countPlural = count: plural",
+        "local payeesPlural = payees: plural"
+      ],
+      "selectors": ["countPlural", "payeesPlural"],
+      "match": {
+        "countPlural=*, payeesPlural=*": "{n} 笔交易，涉及 {p} 个交易对象。修改某个交易对象会应用到它的所有交易。"
+      }
+    }
+  ],
+  "import_review_sub_transfers": [
+    {
+      "declarations": [
+        "input count",
+        "input n",
+        "input payees",
+        "input p",
+        "input transfers",
+        "input t",
+        "local countPlural = count: plural",
+        "local payeesPlural = payees: plural",
+        "local transfersPlural = transfers: plural"
+      ],
+      "selectors": ["countPlural", "payeesPlural", "transfersPlural"],
+      "match": {
+        "countPlural=*, payeesPlural=*, transfersPlural=*": "{n} 笔交易，涉及 {p} 个交易对象，以及 {t} 笔你的账户之间的转账。修改某个交易对象会应用到它的所有交易。"
+      }
+    }
+  ],
+  "import_review_nothing": "这些对账单中的内容都已在 Kosha 中，没有需要添加的。",
+  "import_review_back": "账户",
+  "import_review_show": "显示",
+  "import_tab_check": "待检查（{n}）",
+  "import_tab_all": "所有交易对象（{n}）",
+  "import_tab_transfers": "转账（{n}）",
+  "import_naming": "正在命名交易对象…",
+  "import_rest": "其余归入",
+  "import_rest_label": "其余交易的分类",
+  "import_rest_placeholder": "选择分类",
+  "import_leave_them_out": "不导入",
+  "import_apply": "应用",
+  "import_transfer_pair": "{from} 至 {to}",
+  "import_not_transfer": "不是转账",
+  "import_transfer_from": "从 {name} 转入",
+  "import_transfer_to": "转到 {name}",
+  "import_leave_out": "不导入",
+  "import_show_more": "再显示 {n} 个",
+  "import_all_sorted": "每个交易对象都有分类了。",
+  "import_nothing_new": "没有可导入的新内容",
+  "import_without_category": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{n} 个交易对象尚未分类"
+      }
+    }
+  ],
+  "import_ready": "准备就绪",
+  "import_button": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "导入 {n} 笔交易"
+      }
+    }
+  ],
+  "import_payee_for": "{text} 的交易对象",
+  "import_payments_range": [
+    {
+      "declarations": ["input count", "input n", "input from", "input to", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{n} 笔付款，{from} 至 {to}"
+      }
+    }
+  ],
+  "import_category_for": "{payee} 的分类",
+  "import_pick_category": "请选择分类",
+  "import_hide_lines": "隐藏交易",
+  "import_show_lines": "显示交易",
+  "import_progress_setup": "正在设置 {name}",
+  "import_progress_adding": [
+    {
+      "declarations": ["input count", "input n", "input name", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "正在向 {name} 添加 {n} 笔交易"
+      }
+    }
+  ],
+  "import_progress_transfers": "正在关联你的账户之间的转账",
+  "import_progress_checking": "正在将 {name} 与其对账单核对",
+  "import_importing": "正在导入",
+  "import_failed": "{error}。已保存的内容会保留；重试将从中断处继续。",
+  "import_back_to_review": "返回检查",
+  "import_done_title": "对账单已导入",
+  "import_done_summary": [
+    {
+      "declarations": [
+        "input count",
+        "input n",
+        "input accounts",
+        "input a",
+        "local countPlural = count: plural",
+        "local accountsPlural = accounts: plural"
+      ],
+      "selectors": ["countPlural", "accountsPlural"],
+      "match": {
+        "countPlural=*, accountsPlural=*": "{a} 个账户中的 {n} 笔交易。"
+      }
+    }
+  ],
+  "import_done_summary_transfers": [
+    {
+      "declarations": [
+        "input count",
+        "input n",
+        "input accounts",
+        "input a",
+        "input transfers",
+        "input t",
+        "local countPlural = count: plural",
+        "local accountsPlural = accounts: plural",
+        "local transfersPlural = transfers: plural"
+      ],
+      "selectors": ["countPlural", "accountsPlural", "transfersPlural"],
+      "match": {
+        "countPlural=*, accountsPlural=*, transfersPlural=*": "{a} 个账户中的 {n} 笔交易，其间的 {t} 笔转账已关联。"
+      }
+    }
+  ],
+  "import_done_matches": "与对账单一致，截至 {day}",
+  "import_transactions": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{n} 笔交易"
+      }
+    }
+  ],
+  "import_done_recurring": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "Kosha 发现了 {n} 笔重复出现的付款。把它们设为定期付款吧。"
+      }
+    }
+  ],
+  "import_done_overview": "查看概览",
+  "import_done_transactions": "查看交易"
+}

@@ -1,0 +1,127 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "welcome_page_title": "欢迎 · Kosha",
+  "welcome_type_bank": "银行",
+  "welcome_type_cash": "现金",
+  "welcome_type_card": "信用卡",
+  "welcome_type_investment": "投资",
+  "welcome_type_bank_account": "银行账户",
+  "welcome_type_credit_card": "信用卡",
+  "welcome_type_investment_long": "投资",
+  "welcome_suggest_current": "活期账户",
+  "welcome_suggest_savings": "储蓄",
+  "welcome_suggest_investments": "投资",
+  "welcome_suggest_pension": "养老金",
+  "welcome_field_balance": "余额",
+  "welcome_field_owed": "欠款",
+  "welcome_field_credit_limit": "信用额度",
+  "welcome_field_put_in": "投入本金",
+  "welcome_field_value_today": "今日市值",
+  "welcome_name_save_failed": "无法保存你的名字",
+  "welcome_title": "欢迎使用 Kosha",
+  "welcome_sub": "确认这三项信息，然后添加你的账户。只需一两分钟。",
+  "welcome_name_title": "你的名字",
+  "welcome_name_description": "显示在菜单中。",
+  "welcome_name_error": "请输入要在 Kosha 中显示的名字。",
+  "welcome_currency_title": "主货币",
+  "welcome_currency_description": "净资产和总额都以它计算。",
+  "welcome_tz_title": "时区",
+  "welcome_tz_description": "日期和月份以它为准。",
+  "welcome_change_later": "这三项之后都可以在“设置”中修改。",
+  "welcome_saving": "正在保存…",
+  "welcome_accounts_title": "添加你的账户",
+  "welcome_accounts_sub": "输入每个账户今天的金额。移除你没有的，再添加其余的。",
+  "welcome_net_worth": "净资产",
+  "welcome_adding": "正在添加…",
+  "welcome_add_accounts": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "添加 {count} 个账户"
+      }
+    }
+  ],
+  "welcome_add_an_account": "添加账户",
+  "welcome_progress_label": "设置",
+  "welcome_progress_step": "第 {at} 步，共 2 步",
+  "welcome_skip": "暂时跳过",
+  "welcome_rows_label": "新账户",
+  "welcome_rows_empty": "还没有账户。在下方添加第一个。",
+  "welcome_another_account": "再添加一个账户",
+  "welcome_credit_left_hint": "填写额度即可查看剩余可用额度。",
+  "welcome_credit_left": "剩余可用额度 {#num}{amount}{/num}",
+  "welcome_gain_hint": "填写今日市值即可计算收益。",
+  "welcome_gain": "收益 {#num}{amount}{/num}",
+  "welcome_loss": "亏损 {#num}{amount}{/num}",
+  "welcome_account_name_label": "账户名称",
+  "welcome_account_name_placeholder": "招商银行、支付宝、Wise…",
+  "welcome_type_of": "{name} 的类型",
+  "welcome_type_of_account": "账户类型",
+  "welcome_remove": "移除 {name}",
+  "welcome_remove_this_account": "移除此账户",
+  "welcome_currency_label": "货币",
+  "welcome_currency_of": "{name} 的货币",
+  "welcome_currency_of_this_account": "此账户的货币",
+  "welcome_error_name": "请为此账户命名。",
+  "welcome_error_amount": "请以数字输入金额，例如 1,250.00。",
+  "welcome_amount_placeholder": "0.00",
+  "welcome_currency_search_placeholder": "搜索货币",
+  "welcome_currency_search_label": "搜索货币",
+  "welcome_currency_empty": "没有匹配的货币。",
+  "welcome_done_title": "一切就绪",
+  "welcome_done_added": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "已添加 {count} 个账户。"
+      }
+    }
+  ],
+  "welcome_done_added_currencies": [
+    {
+      "declarations": ["input count", "input currencies", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "已添加 {count} 个账户，涉及 {currencies} 种货币。"
+      }
+    }
+  ],
+  "welcome_accounts_added": "账户已添加",
+  "welcome_owed": "欠款",
+  "welcome_history_title": "补全你的历史记录",
+  "welcome_history_body": "导入银行对账单，Kosha 会把其中过去的交易添加到这些账户。",
+  "welcome_import": "导入对账单",
+  "welcome_add_transaction": "添加交易",
+  "ask_page_title": "问问 Kosha · Kosha",
+  "ask_title": "问问 Kosha",
+  "ask_subtitle": "关于你的钱的问题，根据你的数据回答。",
+  "ask_new_chat": "新对话",
+  "ask_input_label": "问一个关于你的钱的问题",
+  "ask_placeholder": "问问你的钱",
+  "ask_placeholder_follow_up": "继续追问",
+  "ask_submit": "提问",
+  "ask_your_endpoint": "你的端点",
+  "ask_answered_by": "由 {provider}（{model}）回答。",
+  "ask_privacy": "Kosha 只发送“{#link}AI 可见内容{/link}”允许的内容。重要数字请在明细中核实。",
+  "ask_error": "提问失败",
+  "ask_suggest_category": "这个月我在{category}上花了多少？",
+  "ask_suggest_spent": "这个月我花了多少？",
+  "ask_suggest_biggest": "上个月我最大的几笔支出是什么？",
+  "ask_suggest_compare": "这个月和往常月份相比怎么样？",
+  "ask_suggest_event": "{event}一共花了多少？",
+  "ask_suggest_subscriptions": "我的订阅每月要花多少？",
+  "ask_empty_title": "关于你的钱，尽管问",
+  "ask_empty_body": "Kosha 会在你的账户、交易和定期付款中查找，并显示每个答案的来源。",
+  "ask_thinking": "思考中",
+  "ask_how_found": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "Kosha 是如何找到的（{count} 次查询）"
+      }
+    }
+  ]
+}

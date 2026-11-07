@@ -1,20 +1,32 @@
-// Starting categories for a new account. Sign-up and scripts/seed-demo.ts both use this file, so it has no imports.
-// The app itself uses '0', 'transfer' and 'transfer_fee', so they must exist for every user.
+// Starting categories for a new account. Sign-up and scripts/seed-demo.ts both use this file, so it imports
+// only by relative path. The app itself uses '0', 'transfer' and 'transfer_fee', so they must exist for every user.
 
-export const DEFAULT_CATEGORIES: { id: string; name: string; icon: string; income: 0 | 1 }[] = [
-  { id: "groceries", name: "Groceries", icon: "🛒", income: 0 },
-  { id: "dining", name: "Dining", icon: "🍽️", income: 0 },
-  { id: "shopping", name: "Shopping", icon: "🛍️", income: 0 },
-  { id: "transit", name: "Transit", icon: "🚋", income: 0 },
-  { id: "home", name: "Home", icon: "🏠", income: 0 },
-  { id: "bills", name: "Bills & Fees", icon: "🧾", income: 0 },
-  { id: "entertainment", name: "Entertainment", icon: "🍿", income: 0 },
-  { id: "health", name: "Health", icon: "💊", income: 0 },
-  { id: "travel", name: "Travel", icon: "✈️", income: 0 },
-  { id: "gifts", name: "Gifts", icon: "🎁", income: 0 },
-  { id: "salary", name: "Salary", icon: "💼", income: 1 },
-  { id: "other_income", name: "Other income", icon: "💵", income: 1 },
-  { id: "0", name: "Balance correction", icon: "⚖️", income: 0 },
-  { id: "transfer_fee", name: "Transfer fees", icon: "💱", income: 0 },
-  { id: "transfer", name: "Transfer", icon: "↔️", income: 0 },
+import { m } from "../paraglide/messages.js"
+
+// `name` is a getter, so it reads the language of the sign-up that writes it, not the language at import.
+const cat = (id: string, name: () => string, icon: string, income: 0 | 1 = 0) => ({
+  id,
+  get name() {
+    return name()
+  },
+  icon,
+  income,
+})
+
+export const DEFAULT_CATEGORIES: { id: string; readonly name: string; icon: string; income: 0 | 1 }[] = [
+  cat("groceries", m.defaults_groceries, "🛒"),
+  cat("dining", m.defaults_dining, "🍽️"),
+  cat("shopping", m.defaults_shopping, "🛍️"),
+  cat("transit", m.defaults_transit, "🚋"),
+  cat("home", m.defaults_home, "🏠"),
+  cat("bills", m.defaults_bills, "🧾"),
+  cat("entertainment", m.defaults_entertainment, "🍿"),
+  cat("health", m.defaults_health, "💊"),
+  cat("travel", m.defaults_travel, "✈️"),
+  cat("gifts", m.defaults_gifts, "🎁"),
+  cat("salary", m.defaults_salary, "💼", 1),
+  cat("other_income", m.defaults_other_income, "💵", 1),
+  cat("0", m.defaults_correction, "⚖️"),
+  cat("transfer_fee", m.defaults_transfer_fees, "💱"),
+  cat("transfer", m.defaults_transfer, "↔️"),
 ]

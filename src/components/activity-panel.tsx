@@ -20,8 +20,20 @@ import { Attachments } from "@/components/attachments"
 import { DatePicker, TimePicker } from "@/components/date-time"
 import { EventPicker, TagInput } from "@/components/tags-events"
 import { deleteTransaction, getPayeeHistory, saveTransaction, type Tx } from "@/lib/api"
-import { CORRECTION_CATEGORY, LOCALE, convert, dayOf, fmt, isNeutral, parseAmount, tagList, timeOf } from "@/lib/core"
+import {
+  CORRECTION_CATEGORY,
+  intlLocale,
+  convert,
+  dayOf,
+  fmt,
+  isNeutral,
+  parseAmount,
+  tagList,
+  timeOf,
+} from "@/lib/core"
 import { cn } from "@/lib/utils"
+import { ParaglideMessage } from "@inlang/paraglide-js-react"
+import { m } from "@/paraglide/messages"
 
 type Draft = {
   name: string
@@ -39,7 +51,7 @@ type Draft = {
 type History = Awaited<ReturnType<typeof getPayeeHistory>>
 
 const longDay = (day: string) =>
-  new Date(`${day}T12:00:00Z`).toLocaleDateString(LOCALE, {
+  new Date(`${day}T12:00:00Z`).toLocaleDateString(intlLocale(), {
     weekday: "short",
     day: "numeric",
     month: "short",
@@ -47,7 +59,7 @@ const longDay = (day: string) =>
     timeZone: "UTC",
   })
 const shortDay = (day: string) =>
-  new Date(`${day}T12:00:00Z`).toLocaleDateString(LOCALE, { day: "numeric", month: "short", timeZone: "UTC" })
+  new Date(`${day}T12:00:00Z`).toLocaleDateString(intlLocale(), { day: "numeric", month: "short", timeZone: "UTC" })
 
 const field = "grid min-h-11 grid-cols-[84px_minmax(0,1fr)] items-center gap-3 border-t"
 const fieldLabel = "text-xs text-muted-foreground"
@@ -71,12 +83,12 @@ export function ActivityPanel({
   const currency = wallet?.currency ?? meta.primary
   const isTransfer = !!tx.transfer_id
   const kind = isTransfer
-    ? "Transfer"
+    ? m.tx_kind_transfer()
     : tx.category_id === CORRECTION_CATEGORY
-      ? "Balance correction"
+      ? m.tx_kind_correction()
       : tx.amount > 0
-        ? "Income"
-        : "Expense"
+        ? m.tx_kind_income()
+        : m.tx_kind_expense()
 
   const initial: Draft = {
     name: tx.name,
@@ -107,7 +119,7 @@ export function ActivityPanel({
       setStatus("saved")
       await router.invalidate()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Couldn't save")
+      toast.error(err instanceof Error ? err.message : m.tx_save_failed())
       setDraft(saved.current)
       setStatus("error")
     }
@@ -147,11 +159,11 @@ export function ActivityPanel({
     setConfirmDelete(false)
     try {
       await deleteTransaction({ data: { id: tx.id } })
-      toast.success("Deleted")
+      toast.success(m.tx_deleted())
       onClose()
       await router.invalidate()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Couldn't delete")
+      toast.error(err instanceof Error ? err.message : m.tx_delete_failed())
     }
   }
 
@@ -159,21 +171,20 @@ export function ActivityPanel({
     const today = dayOf(Date.now() / 1000, meta.tz)
     try {
       const { id } = await saveTransaction({ data: { ...draft, day: today, time: undefined, paid: true } })
-      toast.success(`Duplicated · ${fmt(draft.amount, currency)} today`)
+      toast.success(m.tx_duplicated({ amount: fmt(draft.amount, currency) }))
       await router.invalidate()
       onSelect(id)
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Couldn't duplicate")
+      toast.error(err instanceof Error ? err.message : m.tx_duplicate_failed())
     }
   }
 
   const header = (
     <div className="mb-4 flex items-center justify-between gap-3">
       <h2 className="text-xs text-muted-foreground" aria-live="polite">
-        {kind}
-        {status === "saving" ? " · saving…" : status === "saved" ? " · edited just now" : ""}
+        {status === "saving" ? m.tx_header_saving({ kind }) : status === "saved" ? m.tx_header_saved({ kind }) : kind}
       </h2>
-      <Button variant="ghost" size="icon-sm" onClick={onClose} aria-label="Close panel">
+      <Button variant="ghost" size="icon-sm" onClick={onClose} aria-label={m.tx_close_panel()}>
         <XIcon />
       </Button>
     </div>
@@ -205,8 +216,8 @@ export function ActivityPanel({
       <input
         value={draft.name}
         onChange={(e) => change({ name: e.target.value }, 700)}
-        placeholder="Payee"
-        aria-label="Payee"
+        placeholder={m.tx_payee()}
+        aria-label={m.tx_payee()}
         className="-mx-2 w-[calc(100%+1rem)] rounded-md bg-transparent px-2 py-1 text-[17px] font-medium tracking-[-0.01em] outline-none hover:bg-muted focus-visible:bg-muted"
       />
       <input
@@ -220,7 +231,7 @@ export function ActivityPanel({
         }}
         onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
         inputMode="decimal"
-        aria-label="Amount"
+        aria-label={m.tx_amount()}
         className={cn(
           "num -mx-2 mt-2 mb-5 w-[calc(100%+1rem)] rounded-md bg-transparent px-2 text-[34px] font-medium tracking-[-0.04em] outline-none hover:bg-muted focus-visible:bg-muted",
           draft.amount > 0 && "text-positive"
@@ -229,7 +240,7 @@ export function ActivityPanel({
 
       <div className={field}>
         <span className={fieldLabel} id="f-cat">
-          Category
+          {m.tx_category()}
         </span>
         <Popover>
           <PopoverTrigger aria-labelledby="f-cat" className={fieldValue}>
@@ -261,7 +272,7 @@ export function ActivityPanel({
 
       <div className={field}>
         <span className={fieldLabel} id="f-acc">
-          Account
+          {m.tx_account()}
         </span>
         <Popover>
           <PopoverTrigger aria-labelledby="f-acc" className={fieldValue}>
@@ -287,7 +298,7 @@ export function ActivityPanel({
 
       <div className={field}>
         <span className={fieldLabel} id="f-date">
-          Date
+          {m.tx_date()}
         </span>
         <DatePicker
           aria-labelledby="f-date"
@@ -303,7 +314,7 @@ export function ActivityPanel({
 
       <div className={field}>
         <span className={fieldLabel} id="f-time">
-          Time
+          {m.tx_time()}
         </span>
         <TimePicker
           aria-labelledby="f-time"
@@ -317,13 +328,13 @@ export function ActivityPanel({
       </div>
 
       <div className={cn(field, "py-1.5")}>
-        <span className={fieldLabel}>Tags</span>
+        <span className={fieldLabel}>{m.tx_tags()}</span>
         <TagInput value={draft.tags} onChange={(tags) => change({ tags }, 0)} linked />
       </div>
 
       <div className={field}>
         <span className={fieldLabel} id="f-event">
-          Event
+          {m.tx_event()}
         </span>
         <EventPicker
           aria-labelledby="f-event"
@@ -336,13 +347,13 @@ export function ActivityPanel({
 
       <div className={cn(field, "border-b")}>
         <label className={fieldLabel} htmlFor="f-note">
-          Note
+          {m.tx_note()}
         </label>
         <input
           id="f-note"
           value={draft.note}
           onChange={(e) => change({ note: e.target.value }, 700)}
-          placeholder="Add a note"
+          placeholder={m.tx_note_placeholder()}
           className={cn(fieldValue, "placeholder:text-muted-foreground")}
         />
       </div>
@@ -352,19 +363,23 @@ export function ActivityPanel({
       {recent.length > 1 && (
         <div className="mt-5">
           <div className="mb-2.5 flex items-baseline justify-between">
-            <span className="text-[13px] font-medium">At this payee</span>
+            <span className="text-[13px] font-medium">{m.tx_at_payee()}</span>
             <Link
               to="/transactions"
               search={(p) => ({ ...p, q: tx.name })}
               className="text-xs text-muted-foreground hover:text-foreground"
             >
-              See all <span className="num">{history!.count}</span> →
+              <ParaglideMessage
+                message={m.tx_see_all}
+                inputs={{ count: history!.count.toLocaleString(intlLocale()) }}
+                markup={{ num: ({ children }) => <span className="num">{children}</span> }}
+              />
             </Link>
           </div>
           <div
             className="flex h-10 items-end gap-1"
             role="img"
-            aria-label={`${recent.length} recent payments at ${tx.name}`}
+            aria-label={m.tx_recent_payments({ count: recent.length, name: tx.name })}
           >
             {recent.map((r) => (
               <span
@@ -377,27 +392,27 @@ export function ActivityPanel({
             ))}
           </div>
           <div className="mt-3 grid grid-cols-3 gap-2">
-            <Stat label="This year" value={fmt(Math.abs(yearTotal), cur)} />
-            <Stat label="Average" value={yearCount ? fmt(Math.abs(yearTotal) / yearCount, cur) : "—"} />
-            <Stat label="Last" value={last ? shortDay(last.day) : "—"} />
+            <Stat label={m.tx_this_year()} value={fmt(Math.abs(yearTotal), cur)} />
+            <Stat label={m.tx_average()} value={yearCount ? fmt(Math.abs(yearTotal) / yearCount, cur) : "—"} />
+            <Stat label={m.tx_last()} value={last ? shortDay(last.day) : "—"} />
           </div>
         </div>
       )}
 
       <div className="mt-6 flex items-center justify-between border-t pt-4">
         <span className="text-xs text-muted-foreground">
-          {status === "error" ? "Not saved" : status === "saving" ? "Saving…" : "Autosaved"}
+          {status === "error" ? m.tx_not_saved() : status === "saving" ? m.tx_saving() : m.tx_autosaved()}
         </span>
         <div className="flex gap-1">
           <Button variant="ghost" onClick={duplicate}>
-            Duplicate
+            {m.tx_duplicate()}
           </Button>
           <Button
             variant="ghost"
             className="text-destructive hover:text-destructive"
             onClick={() => setConfirmDelete(true)}
           >
-            Delete
+            {m.common_delete()}
           </Button>
         </div>
       </div>
@@ -405,18 +420,25 @@ export function ActivityPanel({
       <Dialog open={confirmDelete} onOpenChange={setConfirmDelete}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete this transaction?</DialogTitle>
+            <DialogTitle>{m.tx_delete_transaction_title()}</DialogTitle>
             <DialogDescription>
-              {draft.name || categoryPath(cat, meta.categories)} ·{" "}
-              <span className="num">{fmt(draft.amount, currency)}</span> on {longDay(draft.day)}
+              <ParaglideMessage
+                message={m.tx_delete_summary}
+                inputs={{
+                  name: draft.name || categoryPath(cat, meta.categories),
+                  amount: fmt(draft.amount, currency),
+                  day: longDay(draft.day),
+                }}
+                markup={{ num: ({ children }) => <span className="num">{children}</span> }}
+              />
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setConfirmDelete(false)}>
-              Cancel
+              {m.common_cancel()}
             </Button>
             <Button variant="destructive" onClick={remove}>
-              Delete
+              {m.common_delete()}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -5,6 +5,7 @@ import { env, waitUntil } from "cloudflare:workers"
 import { McpServer, createMcpHandler } from "@modelcontextprotocol/server"
 import { verifyOAuthQueryParams } from "@better-auth/oauth-provider"
 import { getRequest } from "@tanstack/react-start/server"
+import { m } from "@/paraglide/messages"
 import { verifyJwsAccessToken } from "better-auth/oauth2"
 import { z } from "zod"
 import {
@@ -1432,7 +1433,7 @@ export async function consentDetails(search: string) {
   const https = (u: string | null | undefined) => (u?.startsWith("https:") ? u : null)
   const redirect = URL.parse(query.get("redirect_uri") ?? "")
   return {
-    name: client.client_name || "An app",
+    name: client.client_name || m.auth_consent_unnamed_app(),
     logo: https(client.logo_uri),
     site: https(client.client_uri),
     host: redirect?.host ?? "",

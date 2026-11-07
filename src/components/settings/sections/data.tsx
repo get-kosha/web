@@ -13,21 +13,23 @@ import { SettingGroup, SettingRow } from "@/components/settings/row"
 import { useMeta } from "@/components/shell"
 import { errorOf } from "@/components/settings/saved"
 import { cn } from "@/lib/utils"
+import { m } from "@/paraglide/messages"
 
-const EXPORTS: [href: string, file: string, icon: Icon, title: string, sub: string][] = [
+// Titles are message functions, called while rendering so they follow the visitor's language.
+const EXPORTS: [href: string, file: string, icon: Icon, title: () => string, sub: () => string][] = [
   [
     "/api/export/transactions.csv",
     "kosha-transactions.csv",
     FileCsvIcon,
-    "Transactions",
-    "CSV · opens in any spreadsheet",
+    m.settings_data_transactions,
+    m.settings_data_transactions_sub,
   ],
   [
     "/api/export/kosha.json",
     "kosha.json",
     BracketsCurlyIcon,
-    "Everything",
-    "JSON · accounts, categories, rules, recurring, settings",
+    m.settings_data_everything,
+    m.settings_data_everything_sub,
   ],
 ]
 
@@ -35,17 +37,17 @@ export function ImportExport() {
   const meta = useMeta()
   return (
     <>
-      <SettingGroup label="Import">
+      <SettingGroup label={m.settings_data_import()}>
         <SettingRow
           id="statements"
-          title="Bank statements"
-          description={`Import CSV, OFX or QFX files${meta.ai.statements ? " or PDF statements" : ""} from all your banks and cards at once. Kosha sets up the accounts, sorts the payees and checks each account against its statement.`}
+          title={m.settings_row_statements()}
+          description={meta.ai.statements ? m.settings_data_statements_desc_pdf() : m.settings_data_statements_desc()}
           control={
             <Link
               to="/import"
               className="inline-flex h-8 items-center rounded-md border bg-card px-3 text-[13px] transition-colors hover:bg-muted max-md:h-11"
             >
-              Import statements
+              {m.settings_data_import_statements()}
             </Link>
           }
         />
@@ -57,10 +59,10 @@ export function ImportExport() {
 
 function Exports() {
   return (
-    <SettingGroup label="Export" plain>
+    <SettingGroup label={m.settings_row_export()} plain>
       <div id="export" className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-3">
         {EXPORTS.map(([href, file, icon, title, sub]) => (
-          <ExportTile key={href} href={href} file={file} icon={icon} title={title} sub={sub} />
+          <ExportTile key={href} href={href} file={file} icon={icon} title={title()} sub={sub()} />
         ))}
       </div>
     </SettingGroup>
@@ -90,7 +92,7 @@ function ExportTile({
         setState("busy")
         try {
           const res = await fetch(href)
-          if (!res.ok) throw new Error(`Export failed (${res.status})`)
+          if (!res.ok) throw new Error(m.settings_data_export_failed({ status: res.status }))
           const a = document.createElement("a")
           a.href = URL.createObjectURL(await res.blob())
           a.download = file
@@ -120,7 +122,11 @@ function ExportTile({
         ) : (
           <DownloadSimpleIcon className="size-3.5" />
         )}
-        {state === "busy" ? "Preparing…" : state === "done" ? "Downloaded" : "Download"}
+        {state === "busy"
+          ? m.settings_data_preparing()
+          : state === "done"
+            ? m.settings_data_downloaded()
+            : m.settings_data_download()}
       </span>
     </button>
   )

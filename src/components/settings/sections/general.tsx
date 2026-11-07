@@ -14,7 +14,10 @@ import { Pick } from "@/components/pick"
 import { Segmented, SettingGroup, SettingRow } from "@/components/settings/row"
 import { usePref, useSave } from "@/components/settings/saved"
 import { fmt } from "@/lib/core"
-import { saveSettings, type Meta } from "@/lib/api"
+import { savePreferences, saveSettings, type Meta } from "@/lib/api"
+import { LanguageSwitch } from "@/components/language-switch"
+import { m } from "@/paraglide/messages"
+import { setLocale } from "@/paraglide/runtime"
 
 /** saveSettings writes default currency, zone and order together; this fills in whatever isn't changing. */
 export function saveCore(meta: Meta, patch: { tz?: string; order?: string[] }) {
@@ -34,11 +37,27 @@ export function General() {
   const example = fmt(143600, meta.primary)
   return (
     <>
-      <SettingGroup label="Region">
+      <SettingGroup label={m.settings_general_region()}>
+        <SettingRow
+          id="language"
+          title={m.settings_row_language()}
+          description={m.settings_general_language_desc()}
+          control={
+            <LanguageSwitch
+              // The cookie switches this browser even when the account can't save (the demo is read-only).
+              onChange={(l) =>
+                void savePreferences({ data: { language: l } })
+                  .catch(() => {})
+                  .finally(() => setLocale(l))
+              }
+              className="border bg-card pr-2.5 pl-3 text-foreground hover:border-muted-foreground/50 max-md:border-0 max-md:bg-transparent max-md:pr-0 max-md:text-[15px] max-md:text-subtle-foreground"
+            />
+          }
+        />
         <SettingRow
           id="time-zone"
-          title="Time zone"
-          description="Months and days follow this zone, wherever you are."
+          title={m.settings_row_time_zone()}
+          description={m.settings_general_time_zone_desc()}
           control={
             <TimeZonePicker
               value={tz}
@@ -53,30 +72,33 @@ export function General() {
           }
         />
       </SettingGroup>
-      <SettingGroup label="Your month">
+      <SettingGroup label={m.settings_general_month()}>
         <SettingRow
           id="round-amounts"
-          title="Round amounts on Overview"
-          description={`Show ${example.replace(/[.,]\d{2}(?=\D*$)/, "")} instead of ${example} on the big numbers. Lists keep cents.`}
+          title={m.settings_row_round_amounts()}
+          description={m.settings_general_round_desc({
+            rounded: example.replace(/[.,]\d{2}(?=\D*$)/, ""),
+            full: example,
+          })}
           control={
             <Switch
-              aria-label="Round amounts on Overview"
+              aria-label={m.settings_row_round_amounts()}
               checked={round === "1"}
               onCheckedChange={(on) => saveRound(on ? "1" : "0")}
             />
           }
         />
       </SettingGroup>
-      <SettingGroup label="Adding transactions">
+      <SettingGroup label={m.settings_general_adding()}>
         <SettingRow
           id="default-account"
-          title="Default account"
-          description="Pre-selected when you add something. Last used picks the last account you used on this device."
+          title={m.settings_row_default_account()}
+          description={m.settings_general_default_account_desc()}
           control={
             <Pick
               value={wallet === "last" ? "" : wallet}
               onChange={(v) => saveWallet(v || "last")}
-              placeholder="Last used"
+              placeholder={m.settings_general_last_used()}
               options={wallets.map((w) => ({ value: w.id, label: w.name }))}
               className="h-9 min-w-40 bg-card text-[13px] max-md:h-11"
             />
@@ -84,27 +106,27 @@ export function General() {
         />
         <SettingRow
           id="add-kind"
-          title="Add opens as"
-          description="What Add starts with on your phone and in quick add."
+          title={m.settings_row_add_kind()}
+          description={m.settings_general_add_kind_desc()}
           control={
             <Segmented
-              label="Add opens as"
+              label={m.settings_row_add_kind()}
               value={kind}
               onChange={saveKind}
               options={[
-                ["expense", "Expense"],
-                ["income", "Income"],
+                ["expense", m.settings_general_expense()],
+                ["income", m.settings_general_income()],
               ]}
             />
           }
         />
         <SettingRow
           id="suggest-category"
-          title="Suggest a category"
-          description="From your payee rules and the payee's past transactions."
+          title={m.settings_row_suggest_category()}
+          description={m.settings_general_suggest_desc()}
           control={
             <Switch
-              aria-label="Suggest a category"
+              aria-label={m.settings_row_suggest_category()}
               checked={suggest === "1"}
               onCheckedChange={(on) => saveSuggest(on ? "1" : "0")}
             />
@@ -154,8 +176,12 @@ export function TimeZonePicker({ value, onChange }: { value: string; onChange: (
         <span className="font-mono text-muted-foreground tabular-nums">{offsetOf(value, new Date())}</span>
       </ComboboxTrigger>
       <ComboboxContent align="end" className="w-80">
-        <ComboboxInput showTrigger={false} placeholder="Search a city or region" aria-label="Search time zones" />
-        <ComboboxEmpty>No zone matches.</ComboboxEmpty>
+        <ComboboxInput
+          showTrigger={false}
+          placeholder={m.settings_general_zone_search()}
+          aria-label={m.settings_general_zone_search_label()}
+        />
+        <ComboboxEmpty>{m.settings_general_zone_empty()}</ComboboxEmpty>
         <ComboboxList>
           {(z: string) => (
             <ComboboxItem key={z} value={z} className="min-h-9 text-[13px]">

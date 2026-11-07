@@ -19,11 +19,12 @@ import { useMarkHydrated } from "@/components/motion"
 import { SearchPalette } from "@/components/search-palette"
 import { QuickAdd } from "@/components/quick-add"
 import { PwaPrompts } from "@/components/pwa-prompts"
-import { DEMO, LOCALE, monthOf, shiftMonth } from "@/lib/core"
+import { DEMO, intlLocale, monthOf, shiftMonth } from "@/lib/core"
 import { signOutTo } from "@/lib/auth-client"
 import { syncPreferences } from "@/lib/theme"
 import { cn } from "@/lib/utils"
 import type { Meta } from "@/lib/api"
+import { m } from "@/paraglide/messages"
 
 const app = getRouteApi("/_app")
 
@@ -52,11 +53,12 @@ export function useGlobals() {
   }
 }
 
+// Labels are message functions, called when rendering, so each request gets its own language.
 const nav = [
-  { to: "/", label: "Overview", icon: ChartBarIcon },
-  { to: "/transactions", label: "Activity", icon: ListIcon },
-  { to: "/subscriptions", label: "Recurring", icon: RepeatIcon },
-  { to: "/accounts", label: "Accounts", icon: CreditCardIcon },
+  { to: "/", label: m.shell_nav_overview, icon: ChartBarIcon },
+  { to: "/transactions", label: m.shell_nav_activity, icon: ListIcon },
+  { to: "/subscriptions", label: m.shell_nav_recurring, icon: RepeatIcon },
+  { to: "/accounts", label: m.shell_nav_accounts, icon: CreditCardIcon },
 ] as const
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -122,8 +124,8 @@ export function AppShell({ children }: { children: ReactNode }) {
           <Link to="/">
             <KoshaLogo className="text-xl" />
           </Link>
-          <nav aria-label="Main" className="flex flex-wrap gap-0.5">
-            {[...nav, ...(ai.ask ? [{ to: "/ask", label: "Ask" } as const] : [])].map(({ to, label }) => (
+          <nav aria-label={m.shell_nav_main()} className="flex flex-wrap gap-0.5">
+            {[...nav, ...(ai.ask ? [{ to: "/ask", label: m.shell_nav_ask } as const] : [])].map(({ to, label }) => (
               <Link
                 key={to}
                 to={to}
@@ -131,7 +133,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 activeOptions={{ exact: to === "/" }}
                 className="inline-flex h-9 items-center rounded-md px-3 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground data-[status=active]:bg-muted data-[status=active]:font-medium data-[status=active]:text-foreground"
               >
-                {label}
+                {label()}
               </Link>
             ))}
           </nav>
@@ -148,13 +150,13 @@ export function AppShell({ children }: { children: ReactNode }) {
               size="lg"
               className="gap-2 bg-card px-3 text-[13px] font-normal"
               onClick={() => setSearching(true)}
-              aria-label="Search (⌘K)"
+              aria-label={m.shell_search_label()}
             >
-              <MagnifyingGlassIcon /> Search
+              <MagnifyingGlassIcon /> {m.common_search()}
               <kbd className="rounded-sm border px-1.5 font-mono text-[11px] text-muted-foreground">⌘K</kbd>
             </Button>
             <Button size="lg" className="gap-2 px-3 text-[13px] font-normal" onClick={() => add()}>
-              <PlusIcon /> Add
+              <PlusIcon /> {m.common_add()}
             </Button>
             <AccountMenu user={prefsUser} onShortcuts={() => setShortcuts(true)} />
           </div>
@@ -172,7 +174,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           {ai.ask && (
             <Link
               to="/ask"
-              aria-label="Ask Kosha"
+              aria-label={m.shell_ask_kosha()}
               className="inline-flex size-11 items-center justify-center rounded-md text-subtle-foreground transition-colors active:bg-muted"
             >
               <SparkleIcon className="size-5" />
@@ -195,7 +197,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </main>
 
         <nav
-          aria-label="Main"
+          aria-label={m.shell_nav_main()}
           data-tabbar
           className={cn(
             "fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 items-center border-t bg-card/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden",
@@ -207,7 +209,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           ))}
           <Link
             to="/add"
-            aria-label="Add transaction"
+            aria-label={m.shell_add_transaction()}
             className="mx-auto flex size-13 items-center justify-center rounded-2xl bg-primary text-primary-foreground transition-[scale,opacity] duration-150 ease-out motion-safe:active:scale-[0.94]"
           >
             <PlusIcon className="size-6" />
@@ -243,9 +245,9 @@ function DemoBanner() {
     >
       <EyeIcon className="size-4 shrink-0 opacity-80" aria-hidden="true" />
       <p className="min-w-0 flex-1">
-        <span className="font-medium">Demo account.</span>{" "}
-        <span className="opacity-80 max-sm:hidden">It holds sample data, and changes are turned off.</span>
-        <span className="opacity-80 sm:hidden">Changes are turned off.</span>
+        <span className="font-medium">{m.shell_demo_title()}</span>{" "}
+        <span className="opacity-80 max-sm:hidden">{m.shell_demo_body()}</span>
+        <span className="opacity-80 sm:hidden">{m.shell_demo_body_short()}</span>
       </p>
       <button
         type="button"
@@ -253,8 +255,8 @@ function DemoBanner() {
         disabled={leaving}
         className="inline-flex h-8 shrink-0 items-center rounded-md bg-background px-3 text-xs font-medium text-foreground transition-[opacity,scale] duration-150 ease-out hover:opacity-90 disabled:opacity-60 motion-safe:active:scale-[0.97] max-md:h-11"
       >
-        <span className="max-sm:hidden">Create your own account</span>
-        <span className="sm:hidden">Sign up</span>
+        <span className="max-sm:hidden">{m.shell_demo_create()}</span>
+        <span className="sm:hidden">{m.shell_demo_sign_up()}</span>
       </button>
     </div>
   )
@@ -268,13 +270,13 @@ function Tab({ to, label, icon: Icon }: (typeof nav)[number]) {
       activeOptions={{ exact: to === "/" }}
       className="flex min-h-14 flex-col items-center justify-center gap-1 text-[11px] text-muted-foreground data-[status=active]:font-medium data-[status=active]:text-foreground"
     >
-      <Icon className="size-5" /> {label}
+      <Icon className="size-5" /> {label()}
     </Link>
   )
 }
 
 export const monthLabel = (m: string, year = true) =>
-  new Date(`${m}-01T12:00:00Z`).toLocaleDateString(LOCALE, {
+  new Date(`${m}-01T12:00:00Z`).toLocaleDateString(intlLocale(), {
     month: "long",
     year: year ? "numeric" : undefined,
     timeZone: "UTC",
@@ -298,7 +300,12 @@ function MonthStepper() {
   }
   return (
     <div className={cn(segment, "max-md:-ml-3 max-md:border-0 max-md:bg-transparent max-md:p-0")}>
-      <Link to="." search={(p) => ({ ...p, month: to(-1) })} aria-label="Previous month" className={segmentButton}>
+      <Link
+        to="."
+        search={(p) => ({ ...p, month: to(-1) })}
+        aria-label={m.shell_previous_month()}
+        className={segmentButton}
+      >
         <CaretLeftIcon className="size-4" />
       </Link>
       <span
@@ -308,7 +315,7 @@ function MonthStepper() {
         <span className="md:hidden">{monthLabel(month, month.slice(0, 4) !== current.slice(0, 4))}</span>
         <span className="max-md:hidden">{monthLabel(month, true)}</span>
       </span>
-      <Link to="." search={(p) => ({ ...p, month: to(1) })} aria-label="Next month" className={segmentButton}>
+      <Link to="." search={(p) => ({ ...p, month: to(1) })} aria-label={m.shell_next_month()} className={segmentButton}>
         <CaretRightIcon className="size-4" />
       </Link>
     </div>
@@ -332,8 +339,8 @@ function CurrencySwitch() {
     <Link
       to="."
       search={(p) => ({ ...p, currency: next === meta.primary ? undefined : next })}
-      aria-label={`Display currency ${currency.toUpperCase()}, switch to ${next.toUpperCase()}`}
-      title={`Switch to ${next.toUpperCase()}`}
+      aria-label={m.shell_currency_label({ currency: currency.toUpperCase(), next: next.toUpperCase() })}
+      title={m.shell_currency_switch_to({ next: next.toUpperCase() })}
       className={cn(
         segment,
         "min-w-[52px] justify-center px-2.5 text-xs font-medium uppercase transition-colors hover:bg-muted max-md:min-h-11"
@@ -348,7 +355,7 @@ function CurrencySwitch() {
 export function PageSkeleton() {
   return (
     <div role="status" className="animate-pulse motion-reduce:animate-none">
-      <span className="sr-only">Loading</span>
+      <span className="sr-only">{m.common_loading()}</span>
       <div className="px-4 pt-5 pb-5 md:px-8 md:pt-7">
         <div className="h-7 w-36 rounded-md bg-muted" />
         <div className="mt-2 h-4 w-56 max-w-full rounded bg-muted" />

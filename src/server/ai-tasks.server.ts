@@ -5,7 +5,7 @@
 import { waitUntil } from "cloudflare:workers"
 import { z } from "zod"
 import {
-  LOCALE,
+  intlLocale,
   NEUTRAL_SQL,
   addDays,
   aiBlocker,
@@ -33,10 +33,21 @@ import { HttpError, db, getRates, getSettings, loadSubscriptions } from "@/serve
 import { withRefs } from "@/lib/statement"
 import * as finance from "@/server/finance.server"
 import { chat, defaultProvider, logCall, type ChatRequest, type Tool, type Turn } from "@/server/ai.server"
+import { m } from "@/paraglide/messages"
+import { getLocale } from "@/paraglide/runtime"
 
 const month = z.string().regex(/^\d{4}-\d{2}$/)
 const monthName = (m: string) =>
-  new Date(`${m}-01T12:00:00Z`).toLocaleDateString(LOCALE, { month: "long", year: "numeric", timeZone: "UTC" })
+  new Date(`${m}-01T12:00:00Z`).toLocaleDateString(intlLocale(), { month: "long", year: "numeric", timeZone: "UTC" })
+const dayName = (d: string) =>
+  new Date(`${d}T12:00:00Z`).toLocaleDateString(intlLocale(), {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  })
+/** The person's language, in English, for the model to write its replies in. Prompts stay English, which models follow best. */
+const language = () => new Intl.DisplayNames(["en"], { type: "language" }).of(getLocale()) ?? "English"
 
 /** A signed-in user's AI context for one feature. Refuses when the feature is off. */
 /** The error for an AI feature that can't run, saying what to set up. The public API answers it as ai_unavailable. */
@@ -45,7 +56,7 @@ const unavailable = (message: string) => new HttpError(409, message, "ai_unavail
 async function session(uid: string, feature: AiFeature) {
   const [settings, provider] = await Promise.all([getSettings(uid), defaultProvider(uid)])
   const blocked = aiBlocker(settings.prefs, !!provider, feature)
-  if (blocked || !provider) throw unavailable(blocked ?? "No AI provider is connected.")
+  if (blocked || !provider) throw unavailable(blocked ?? m.core_ai_no_provider())
   const keep = settings.prefs.ai_log_enabled === "1"
   return {
     uid,
@@ -206,7 +217,7 @@ export const receiptInput = z.object({
     .string()
     .min(100)
     .max(8_000_000)
-    .regex(/^[A-Za-z0-9+/]+=*$/, "That isn't an image"),
+    .regex(/^[A-Za-z0-9+/]+=*$/, { error: () => m.ai_invalid_image() }),
   mime: z.enum(["image/jpeg", "image/png", "image/webp"]),
 })
 
@@ -250,7 +261,7 @@ export async function readEntry(uid: string, input: { text: string } | z.infer<t
     `Categories: ${json(cats.filter((c) => !c.parent_id).map((c) => ({ id: c.id, name: c.name, type: c.income ? "income" : "expense" })))}`,
   ].join("\n")
   const reply = await s.send({
-    system: ENTRY_SYSTEM,
+    system: `${ENTRY_SYSTEM}\nWrite the note in ${language()}. Keep the payee as typed or printed.`,
     turns: [
       {
         role: "user",
@@ -266,7 +277,7 @@ export async function readEntry(uid: string, input: { text: string } | z.infer<t
     timeoutMs: receipt ? 45_000 : 20_000,
   })
   const raw = readJson(reply.text)
-  if (!raw) throw new HttpError(502, receipt ? "Couldn't read that receipt" : "Couldn't read that")
+  if (!raw) throw new HttpError(502, receipt ? m.ai_receipt_unreadable() : m.ai_text_unreadable())
   const cents = typeof raw.amount === "number" ? Math.round(raw.amount * 100) : parseAmount(str(raw.amount, 40))
   const day = str(raw.date, 10)
   const time = str(raw.time, 5)
@@ -343,12 +354,12 @@ const RECAP_SYSTEM = `You write a short monthly money recap for one person, from
 Use only the facts given, and write amounts exactly as given. Don't give advice, don't guess at reasons the facts don't show, and don't use exclamation marks. Write payee codes like payee_x1y2 exactly as they are.`
 
 /** Writes (or rewrites) the recap of a finished month and stores it. */
-export async function writeRecap(uid: string, m: string) {
+export async function writeRecap(uid: string, ym: string) {
   const s = await session(uid, "recap")
-  if (m >= s.today.slice(0, 7)) throw new HttpError(400, "A recap is written once the month is over")
-  const { facts, names } = await recapFacts(s, m)
+  if (ym >= s.today.slice(0, 7)) throw new HttpError(400, m.ai_recap_month_not_over())
+  const { facts, names } = await recapFacts(s, ym)
   const reply = await s.send({
-    system: RECAP_SYSTEM,
+    system: `${RECAP_SYSTEM}\nWrite the headline, summary and points in ${language()}. Keep payee, category and event names as they are.`,
     turns: [{ role: "user", content: json(facts) }],
     maxTokens: 1500,
     timeoutMs: 60_000,
@@ -366,11 +377,11 @@ export async function writeRecap(uid: string, m: string) {
       }))
       .filter((p) => p.text),
   }
-  if (!recap.headline && !recap.summary) throw new HttpError(502, "The model didn't write a recap. Try again.")
+  if (!recap.headline && !recap.summary) throw new HttpError(502, m.ai_recap_empty())
   await db()
     .prepare(`INSERT INTO ai_recaps (user_id, month, currency, body) VALUES (?, ?, ?, ?)
       ON CONFLICT(user_id, month) DO UPDATE SET currency = excluded.currency, body = excluded.body, created_at = unixepoch()`)
-    .bind(uid, m, s.primary, json(recap))
+    .bind(uid, ym, s.primary, json(recap))
     .run()
   return { ...recap, writtenDay: s.today }
 }
@@ -491,7 +502,7 @@ export const askInput = z.object({
     .array(z.object({ role: z.enum(["user", "assistant"]), text: z.string().trim().min(1).max(6000) }))
     .min(1)
     .max(24)
-    .refine((m) => m[m.length - 1].role === "user", "Ask a question"),
+    .refine((list) => list[list.length - 1].role === "user", { error: () => m.ai_ask_question() }),
 })
 
 /** A filter on Activity that shows the entries an answer is based on. */
@@ -536,6 +547,15 @@ const summarizeInput = z.object({
   by: z.enum(["category", "payee", "month", "account", "tag"]),
   type: z.enum(["out", "in"]).optional(),
 })
+
+/** How a summarize look-up groups, as its step label names it. */
+const BY = {
+  category: m.ai_by_category,
+  payee: m.ai_by_payee,
+  month: m.ai_by_month,
+  account: m.ai_by_account,
+  tag: m.ai_by_tag,
+}
 
 const dayProps = {
   from: { type: "string", description: "First day, YYYY-MM-DD" },
@@ -614,7 +634,7 @@ export async function* ask(uid: string, messages: z.infer<typeof askInput>["mess
         const raw = reply.text.trim()
         yield raw
           ? { type: "answer", text: unmask(raw, ctx.names), raw, links: links.slice(0, 4) }
-          : { type: "error", message: "The model didn't answer. Try asking another way.", code: "ai_provider_error" }
+          : { type: "error", message: m.ai_ask_no_answer(), code: "ai_provider_error" }
         return
       }
       turns.push({ role: "assistant", text: reply.text, calls: reply.calls, raw: reply.raw })
@@ -638,11 +658,11 @@ export async function* ask(uid: string, messages: z.infer<typeof askInput>["mess
       }
       turns.push({ role: "tool", results })
     }
-    yield { type: "error", message: "That took too many look-ups. Try a narrower question.", code: "ai_provider_error" }
+    yield { type: "error", message: m.ai_ask_too_many(), code: "ai_provider_error" }
   } catch (e) {
     yield {
       type: "error",
-      message: e instanceof Error ? e.message : "Something went wrong",
+      message: e instanceof Error ? e.message : m.common_something_went_wrong(),
       code: e instanceof HttpError && e.code === "ai_unavailable" ? "ai_unavailable" : "ai_provider_error",
     }
   }
@@ -656,7 +676,7 @@ export async function askOnce(uid: string, messages: z.infer<typeof askInput>["m
     else if (ev.type === "answer") return { answer: ev.text, raw: ev.raw, lookups, links: ev.links }
     else throw new HttpError(ev.code === "ai_unavailable" ? 409 : 502, ev.message, ev.code)
   }
-  throw new HttpError(502, "The model didn't answer.", "ai_provider_error")
+  throw new HttpError(502, m.ai_no_answer(), "ai_provider_error")
 }
 
 /** The system prompt and the tools, bound to this person's data and privacy settings. */
@@ -724,7 +744,8 @@ How to answer:
 - Look things up before answering, and never guess a figure. If the data can't answer the question, say so plainly.
 - Be brief: a sentence or two, then a short list only when it helps. Put the key figure in **bold**. Write money like ${fmt(123456, p)}.
 - Spending and income never include transfers between the person's own accounts or balance corrections.
-- Use plain words. No tables, no headings, no advice unless asked.${privacy.length ? `\n\nPrivacy:\n${privacy.map((l) => `- ${l}`).join("\n")}` : ""}
+- Use plain words. No tables, no headings, no advice unless asked.
+- Write in ${language()}. Keep payee, category, account, event and tag names exactly as they are.${privacy.length ? `\n\nPrivacy:\n${privacy.map((l) => `- ${l}`).join("\n")}` : ""}
 
 Categories: ${json(cats.filter((c) => !isNeutral(c.id)).map((c) => ({ id: c.id, name: c.name, type: c.income ? "income" : "expense", ...(c.parent_id && { parent: c.parent_id }) })))}
 Accounts: ${json(accounts.map((a) => a.sent))}
@@ -742,7 +763,11 @@ Tags: ${json(tags.map((t) => t.tag))}`
     from && to && from.slice(0, 7) === to.slice(0, 7) && linkMonth(from, to).ok
       ? label(from.slice(0, 7))
       : from || to
-        ? `${from ?? "the start"} to ${to ?? "today"}`
+        ? from && to
+          ? m.ai_range_between({ from: dayName(from), to: dayName(to) })
+          : from
+            ? m.ai_range_since({ from: dayName(from) })
+            : m.ai_range_until({ to: dayName(to!) })
         : label(s.today.slice(0, 7))
 
   type Run = { label: string; link?: AskLink; result: () => Promise<unknown> }
@@ -755,7 +780,7 @@ Tags: ${json(tags.map((t) => t.tag))}`
       )
     )
   const invalid = (e: z.ZodError): Run => ({
-    label: "Checking the question",
+    label: m.ai_step_checking_question(),
     result: async () => ({ error: e.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ") }),
   })
 
@@ -775,7 +800,12 @@ Tags: ${json(tags.map((t) => t.tag))}`
           wallet && accounts.find((a) => a.id === wallet)?.name,
         ]
           .filter(Boolean)
-          .join(", ") || (f.type === "in" ? "income" : f.type === "transfers" ? "transfers" : "transactions")
+          .join(", ") ||
+        (f.type === "in"
+          ? m.ai_what_income()
+          : f.type === "transfers"
+            ? m.ai_what_transfers()
+            : m.ai_what_transactions())
       // An event's page in Activity shows all of it, which is what a look-up by event is about.
       const allDates = !!f.event || (!f.from && !f.to && !!f.tag)
       const lm = linkMonth(f.from, f.to)
@@ -790,7 +820,7 @@ Tags: ${json(tags.map((t) => t.tag))}`
         max: f.max === undefined ? undefined : Math.round(f.max * 100),
       }
       return {
-        label: `Looking through ${what}${allDates ? "" : `, ${range(f.from, f.to)}`}`,
+        label: allDates ? m.ai_step_find({ what }) : m.ai_step_find_range({ what, range: range(f.from, f.to) }),
         link:
           allDates || lm.ok
             ? {
@@ -857,7 +887,7 @@ Tags: ${json(tags.map((t) => t.tag))}`
       const to = f.to ?? s.today
       const income = f.type === "in"
       return {
-        label: `Adding up ${income ? "income" : "spending"} by ${f.by}, ${range(from, to)}`,
+        label: (income ? m.ai_step_sum_income : m.ai_step_sum_spending)({ by: BY[f.by](), range: range(from, to) }),
         result: async () => {
           const { results } = await db()
             .prepare(`SELECT t.name, t.amount, t.date, t.category_id, t.wallet_id, t.tags, w.currency FROM transactions t
@@ -915,7 +945,7 @@ Tags: ${json(tags.map((t) => t.tag))}`
 
     accounts() {
       return {
-        label: "Checking your accounts",
+        label: m.ai_step_accounts(),
         result: async () => {
           const wallets = (await finance.loadWallets(s.uid)).filter((w) => !w.archived)
           const nw = netWorth(wallets, p, rates)
@@ -943,7 +973,7 @@ Tags: ${json(tags.map((t) => t.tag))}`
 
     recurring() {
       return {
-        label: "Checking your recurring payments",
+        label: m.ai_step_recurring(),
         result: async () => {
           const subs = (await loadSubscriptions(s.uid, s.today)).filter((x) => !x.ended)
           return {
@@ -972,7 +1002,7 @@ Tags: ${json(tags.map((t) => t.tag))}`
 const base64 = z
   .string()
   .min(100)
-  .regex(/^[A-Za-z0-9+/]+=*$/, "That isn't a file Kosha can read")
+  .regex(/^[A-Za-z0-9+/]+=*$/, { error: () => m.ai_invalid_file() })
 export const pdfInput = z.object({
   /** The account it's for, when known; a first import reads the account from the statement instead. */
   walletId: z.string().min(1).optional(),
@@ -1027,7 +1057,7 @@ export async function readStatement(uid: string, input: z.infer<typeof pdfInput>
       },
     ]
   })
-  if (!lines.length) throw new HttpError(502, "Couldn't find any transactions in that PDF")
+  if (!lines.length) throw new HttpError(502, m.ai_statement_empty())
   const opening = raw?.opening == null ? null : num(raw.opening)
   const closing = raw?.closing == null ? null : num(raw.closing)
   // A model can misread a line, so the lines must take the opening balance to the closing one, to the cent.
@@ -1097,7 +1127,7 @@ Reply {"header": <row number of the header, or -1>, "date": <column>, "descripti
   const raw = readJson(reply.text)
   const col = (v: unknown) => (typeof v === "number" && Number.isInteger(v) && v >= 0 && v < 60 ? v : null)
   const date = col(raw?.date)
-  if (!raw || date === null) throw new HttpError(502, "Couldn't work out that file's columns")
+  if (!raw || date === null) throw new HttpError(502, m.ai_layout_unknown())
   return {
     header: typeof raw.header === "number" && raw.header >= -1 && raw.header < input.rows.length ? raw.header : 0,
     date,
@@ -1189,10 +1219,7 @@ export const differenceInput = z.object({
  */
 export async function explainDifference(uid: string, input: z.infer<typeof differenceInput>) {
   const s = await session(uid, "statements")
-  if (!s.shares.payee || !s.shares.amount)
-    throw unavailable(
-      "Finding a difference with AI needs payee names and amounts shared, under Settings › AI › What AI can see."
-    )
+  if (!s.shares.payee || !s.shares.amount) throw unavailable(m.ai_difference_needs_shares())
   const refs = [...input.ticked, ...input.unticked].map((e, i) => ({ ...e, ref: `e${i + 1}` }))
   const when = (d: string) => (s.shares.date ? d : d.slice(0, 7))
   const entry = (e: (typeof refs)[number]) => ({ ref: e.ref, date: when(e.day), payee: e.name, amount: e.amount / 100 })
@@ -1201,7 +1228,8 @@ export async function explainDifference(uid: string, input: z.infer<typeof diffe
 {"summary": "...", "suggestions": [{"text": "...", "refs": ["e1"]}]}
 - summary: one or two plain sentences on what most likely explains the difference.
 - suggestions: up to four specific things to check or change, most likely first. Name entries by payee in the text, and list the entries each is about in refs. For example an entry ticked that isn't on the statement, one missing, a duplicate, a wrong amount, a wrong sign, or a fee not entered yet.
-Only use the data given, and never invent entries. When the data can't explain part of the difference, say so rather than guessing at one.`,
+Only use the data given, and never invent entries. When the data can't explain part of the difference, say so rather than guessing at one.
+Write the summary and suggestions in ${language()}. Keep payee names as they are.`,
     turns: [
       {
         role: "user",

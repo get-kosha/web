@@ -1,0 +1,316 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "import_columns": "Columnas",
+  "import_columns_remembered": "como la última vez con este banco",
+  "import_columns_by_ai": "identificadas por la IA",
+  "import_columns_confident": "identificadas por el encabezado",
+  "import_columns_check": "revísalas",
+  "import_columns_column": "Columna {n}",
+  "import_role_ignore": "Ignorar",
+  "import_role_date": "Fecha",
+  "import_role_description": "Descripción",
+  "import_role_amount": "Importe",
+  "import_role_debit": "Salidas",
+  "import_role_credit": "Entradas",
+  "import_role_balance": "Saldo",
+  "import_columns_dates": "Fechas",
+  "import_columns_format": "Formato",
+  "import_date_dmy": "Día primero (31/01/2026)",
+  "import_date_mdy": "Mes primero (01/31/2026)",
+  "import_date_ymd": "Año primero (2026-01-31)",
+  "import_date_text": "Nombres de mes (31 Jan 2026)",
+  "import_columns_invert": "Los gastos aparecen como importe positivo",
+  "import_columns_lines_read": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{n} línea leída",
+        "countPlural=*": "{n} líneas leídas"
+      }
+    }
+  ],
+  "import_head_title": "Importar extractos · Kosha",
+  "import_title": "Importar extractos",
+  "import_sub": "Kosha reparte tus extractos en cuentas. Revisa cada una y después los beneficiarios.",
+  "import_new_account": "Nueva cuenta",
+  "import_type_bank": "Cuenta bancaria",
+  "import_type_card": "Tarjeta de crédito",
+  "import_error_pdf": "Kosha lee archivos CSV, OFX y QFX. Exporta uno de esos formatos desde tu banco.",
+  "import_error_no_transactions": "Ese archivo no tiene movimientos",
+  "import_error_no_rows": "Ese archivo no tiene filas que Kosha pueda leer",
+  "import_error_unreadable": "No se pudo leer",
+  "import_error_check": "No se pudieron comprobar tus cuentas",
+  "import_drop": "Suelta aquí tus extractos o {#choose}elige archivos{/choose}",
+  "import_drop_more": "Suelta aquí más extractos o {#choose}elige archivos{/choose}",
+  "import_drop_hint": "CSV, OFX o QFX de tu banca online. Añade todos los meses que tengas, de todos tus bancos y tarjetas, de una vez.",
+  "import_drop_hint_pdf": "CSV, OFX o QFX de tu banca online, o extractos en PDF. Añade todos los meses que tengas, de todos tus bancos y tarjetas, de una vez.",
+  "import_reading": "Leyendo {name}",
+  "import_dismiss": "Descartar {name}",
+  "import_reading_files": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Leyendo {n} archivo…",
+        "countPlural=*": "Leyendo {n} archivos…"
+      }
+    }
+  ],
+  "import_summary": [
+    {
+      "declarations": [
+        "input count",
+        "input n",
+        "input accounts",
+        "input a",
+        "local countPlural = count: plural",
+        "local accountsPlural = accounts: plural"
+      ],
+      "selectors": ["countPlural", "accountsPlural"],
+      "match": {
+        "countPlural=one, accountsPlural=one": "{n} movimiento en {a} cuenta",
+        "countPlural=one, accountsPlural=*": "{n} movimiento en {a} cuentas",
+        "countPlural=*, accountsPlural=one": "{n} movimientos en {a} cuenta",
+        "countPlural=*, accountsPlural=*": "{n} movimientos en {a} cuentas"
+      }
+    }
+  ],
+  "import_check_payees": "Revisar beneficiarios",
+  "import_into": "Importar en",
+  "import_new_account_option": "Una cuenta nueva",
+  "import_into_wallet": "En {name}",
+  "import_field_name": "Nombre",
+  "import_field_type": "Tipo",
+  "import_field_currency": "Moneda",
+  "import_owed_on": "Adeudado el {day} ({currency})",
+  "import_balance_on": "Saldo el {day} ({currency})",
+  "import_closing_placeholder": "Según tu último extracto",
+  "import_closing_from_file": "Según el extracto.",
+  "import_closing_hint": "Kosha calcula a partir de él el saldo inicial. Déjalo vacío si no lo sabes.",
+  "import_credit_limit": "Límite de crédito ({currency})",
+  "import_optional": "Opcional",
+  "import_foreign": "{file} está en {from} y esta cuenta está en {to}.",
+  "import_off": "Las líneas leídas de {file} no cuadran con su saldo final por {amount}. Compáralas con el PDF.",
+  "import_stmt_lines": [
+    {
+      "declarations": ["input count", "input n", "input from", "input to", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{n} línea, del {from} al {to}",
+        "countPlural=*": "{n} líneas, del {from} al {to}"
+      }
+    }
+  ],
+  "import_stmt_no_lines": "No se leyó ninguna línea",
+  "import_move_label": "Mover {file} a otra cuenta",
+  "import_move_placeholder": "Mover a…",
+  "import_remove": "Quitar {file}",
+  "import_account_range": [
+    {
+      "declarations": ["input count", "input n", "input from", "input to", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{n} movimiento del {from} al {to}.",
+        "countPlural=*": "{n} movimientos del {from} al {to}."
+      }
+    }
+  ],
+  "import_account_dupes": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{n} línea que aparece en más de un extracto se ha contado una sola vez.",
+        "countPlural=*": "{n} líneas que aparecen en más de un extracto se han contado una sola vez."
+      }
+    }
+  ],
+  "import_review_title": "Revisa beneficiarios y categorías",
+  "import_review_sub": [
+    {
+      "declarations": [
+        "input count",
+        "input n",
+        "input payees",
+        "input p",
+        "local countPlural = count: plural",
+        "local payeesPlural = payees: plural"
+      ],
+      "selectors": ["countPlural", "payeesPlural"],
+      "match": {
+        "countPlural=one, payeesPlural=one": "{n} movimiento: {p} beneficiario. Un cambio en un beneficiario se aplica a todos sus movimientos.",
+        "countPlural=one, payeesPlural=*": "{n} movimiento: {p} beneficiarios. Un cambio en un beneficiario se aplica a todos sus movimientos.",
+        "countPlural=*, payeesPlural=one": "{n} movimientos: {p} beneficiario. Un cambio en un beneficiario se aplica a todos sus movimientos.",
+        "countPlural=*, payeesPlural=*": "{n} movimientos: {p} beneficiarios. Un cambio en un beneficiario se aplica a todos sus movimientos."
+      }
+    }
+  ],
+  "import_review_sub_transfers": [
+    {
+      "declarations": [
+        "input count",
+        "input n",
+        "input payees",
+        "input p",
+        "input transfers",
+        "input t",
+        "local countPlural = count: plural",
+        "local payeesPlural = payees: plural",
+        "local transfersPlural = transfers: plural"
+      ],
+      "selectors": ["countPlural", "payeesPlural", "transfersPlural"],
+      "match": {
+        "countPlural=one, payeesPlural=one, transfersPlural=one": "{n} movimiento: {p} beneficiario y {t} transferencia entre tus cuentas. Un cambio en un beneficiario se aplica a todos sus movimientos.",
+        "countPlural=one, payeesPlural=one, transfersPlural=*": "{n} movimiento: {p} beneficiario y {t} transferencias entre tus cuentas. Un cambio en un beneficiario se aplica a todos sus movimientos.",
+        "countPlural=one, payeesPlural=*, transfersPlural=one": "{n} movimiento: {p} beneficiarios y {t} transferencia entre tus cuentas. Un cambio en un beneficiario se aplica a todos sus movimientos.",
+        "countPlural=one, payeesPlural=*, transfersPlural=*": "{n} movimiento: {p} beneficiarios y {t} transferencias entre tus cuentas. Un cambio en un beneficiario se aplica a todos sus movimientos.",
+        "countPlural=*, payeesPlural=one, transfersPlural=one": "{n} movimientos: {p} beneficiario y {t} transferencia entre tus cuentas. Un cambio en un beneficiario se aplica a todos sus movimientos.",
+        "countPlural=*, payeesPlural=one, transfersPlural=*": "{n} movimientos: {p} beneficiario y {t} transferencias entre tus cuentas. Un cambio en un beneficiario se aplica a todos sus movimientos.",
+        "countPlural=*, payeesPlural=*, transfersPlural=one": "{n} movimientos: {p} beneficiarios y {t} transferencia entre tus cuentas. Un cambio en un beneficiario se aplica a todos sus movimientos.",
+        "countPlural=*, payeesPlural=*, transfersPlural=*": "{n} movimientos: {p} beneficiarios y {t} transferencias entre tus cuentas. Un cambio en un beneficiario se aplica a todos sus movimientos."
+      }
+    }
+  ],
+  "import_review_nothing": "Todo lo de estos extractos ya está en Kosha, así que no hay nada que añadir.",
+  "import_review_back": "Cuentas",
+  "import_review_show": "Mostrar",
+  "import_tab_check": "Por revisar ({n})",
+  "import_tab_all": "Todos ({n})",
+  "import_tab_transfers": "Transferencias ({n})",
+  "import_naming": "Poniendo nombre a los beneficiarios…",
+  "import_rest": "Poner el resto en",
+  "import_rest_label": "Categoría para el resto",
+  "import_rest_placeholder": "una categoría",
+  "import_leave_them_out": "Dejarlos fuera",
+  "import_apply": "Aplicar",
+  "import_transfer_pair": "De {from} a {to}",
+  "import_not_transfer": "No es una transferencia",
+  "import_transfer_from": "Transferencia desde {name}",
+  "import_transfer_to": "Transferencia a {name}",
+  "import_leave_out": "Dejar fuera",
+  "import_show_more": "Mostrar {n} más",
+  "import_all_sorted": "Todos los beneficiarios tienen categoría.",
+  "import_nothing_new": "No hay nada nuevo que importar",
+  "import_without_category": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{n} beneficiario sin categoría",
+        "countPlural=*": "{n} beneficiarios sin categoría"
+      }
+    }
+  ],
+  "import_ready": "Todo listo cuando quieras",
+  "import_button": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Importar {n} movimiento",
+        "countPlural=*": "Importar {n} movimientos"
+      }
+    }
+  ],
+  "import_payee_for": "Beneficiario de {text}",
+  "import_payments_range": [
+    {
+      "declarations": ["input count", "input n", "input from", "input to", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{n} pago, del {from} al {to}",
+        "countPlural=*": "{n} pagos, del {from} al {to}"
+      }
+    }
+  ],
+  "import_category_for": "Categoría de {payee}",
+  "import_pick_category": "Elige una categoría",
+  "import_hide_lines": "Ocultar los movimientos",
+  "import_show_lines": "Mostrar los movimientos",
+  "import_progress_setup": "Configurando {name}",
+  "import_progress_adding": [
+    {
+      "declarations": ["input count", "input n", "input name", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Añadiendo {n} movimiento a {name}",
+        "countPlural=*": "Añadiendo {n} movimientos a {name}"
+      }
+    }
+  ],
+  "import_progress_transfers": "Vinculando las transferencias entre tus cuentas",
+  "import_progress_checking": "Comprobando {name} con su extracto",
+  "import_importing": "Importando",
+  "import_failed": "{error}. Lo que se guardó sigue guardado; si lo vuelves a intentar, continúa desde ahí.",
+  "import_back_to_review": "Volver a la revisión",
+  "import_done_title": "Tus extractos ya están dentro",
+  "import_done_summary": [
+    {
+      "declarations": [
+        "input count",
+        "input n",
+        "input accounts",
+        "input a",
+        "local countPlural = count: plural",
+        "local accountsPlural = accounts: plural"
+      ],
+      "selectors": ["countPlural", "accountsPlural"],
+      "match": {
+        "countPlural=one, accountsPlural=one": "{n} movimiento en {a} cuenta.",
+        "countPlural=one, accountsPlural=*": "{n} movimiento en {a} cuentas.",
+        "countPlural=*, accountsPlural=one": "{n} movimientos en {a} cuenta.",
+        "countPlural=*, accountsPlural=*": "{n} movimientos en {a} cuentas."
+      }
+    }
+  ],
+  "import_done_summary_transfers": [
+    {
+      "declarations": [
+        "input count",
+        "input n",
+        "input accounts",
+        "input a",
+        "input transfers",
+        "input t",
+        "local countPlural = count: plural",
+        "local accountsPlural = accounts: plural",
+        "local transfersPlural = transfers: plural"
+      ],
+      "selectors": ["countPlural", "accountsPlural", "transfersPlural"],
+      "match": {
+        "countPlural=one, accountsPlural=one, transfersPlural=one": "{n} movimiento en {a} cuenta, con {t} transferencia entre ellas vinculada.",
+        "countPlural=one, accountsPlural=one, transfersPlural=*": "{n} movimiento en {a} cuenta, con {t} transferencias entre ellas vinculadas.",
+        "countPlural=one, accountsPlural=*, transfersPlural=one": "{n} movimiento en {a} cuentas, con {t} transferencia entre ellas vinculada.",
+        "countPlural=one, accountsPlural=*, transfersPlural=*": "{n} movimiento en {a} cuentas, con {t} transferencias entre ellas vinculadas.",
+        "countPlural=*, accountsPlural=one, transfersPlural=one": "{n} movimientos en {a} cuenta, con {t} transferencia entre ellas vinculada.",
+        "countPlural=*, accountsPlural=one, transfersPlural=*": "{n} movimientos en {a} cuenta, con {t} transferencias entre ellas vinculadas.",
+        "countPlural=*, accountsPlural=*, transfersPlural=one": "{n} movimientos en {a} cuentas, con {t} transferencia entre ellas vinculada.",
+        "countPlural=*, accountsPlural=*, transfersPlural=*": "{n} movimientos en {a} cuentas, con {t} transferencias entre ellas vinculadas."
+      }
+    }
+  ],
+  "import_done_matches": "Coincide con el extracto hasta el {day}",
+  "import_transactions": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{n} movimiento",
+        "countPlural=*": "{n} movimientos"
+      }
+    }
+  ],
+  "import_done_recurring": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Kosha detectó {n} pago que se repite. Configúralo como recurrente.",
+        "countPlural=*": "Kosha detectó {n} pagos que se repiten. Configúralos como recurrentes."
+      }
+    }
+  ],
+  "import_done_overview": "Ver tu resumen",
+  "import_done_transactions": "Ver los movimientos"
+}

@@ -1,0 +1,168 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "reconcile_hint_an_entry": "ある取引",
+  "reconcile_hint_exact_unticked": "{name}（{amount}）が差額とちょうど同じです。明細に載っていませんか？",
+  "reconcile_hint_exact_ticked": "{name}（{amount}）が差額とちょうど同じです。本当に明細に載っていますか？",
+  "reconcile_hint_wrong_way_in": "{name}が差額のちょうど半分です。出金ではなく入金として、逆に記録していませんか？",
+  "reconcile_hint_wrong_way_out": "{name}が差額のちょうど半分です。入金ではなく出金として、逆に記録していませんか？",
+  "reconcile_hint_swapped": "{name}は{amount}ではなく{meant}ではありませんか？ 数字の入れ違いはよくあるミスです。",
+  "reconcile_hint_decimal": "{name}は{amount}ではなく{meant}ではありませんか？ 小数点の位置が間違っているかもしれません。",
+  "reconcile_hint_pair": "{first}と{second}を合わせると差額になります。",
+  "reconcile_hint_duplicate": "{name}が2回あります。どちらかが重複していませんか？",
+  "reconcile_hint_late": "期間の最後の数日の取引は、次の明細に載ることがあります。",
+  "reconcile_hint_look_out": "まだKoshaにない{amount}の手数料、請求、利息が明細に載っていないか確認してください。",
+  "reconcile_hint_look_in": "まだKoshaにない{amount}の利息、返金、入金が明細に載っていないか確認してください。",
+  "reconcile_gap_uncovered": "{from}〜{to}の明細がありません。",
+  "reconcile_gap_opening": "{next}の開始残高は{opening}ですが、{previous}の締め残高は{closing}です。明細が抜けている可能性があります。",
+  "reconcile_head_title": "照合 · Kosha",
+  "reconcile_title": "照合",
+  "reconcile_picker_sub": "口座を銀行の明細と照合するか、明細をインポートしてください。",
+  "reconcile_picker_empty": "先に銀行口座かカードを追加してください。",
+  "reconcile_reconciled_to": "{day}まで照合済み",
+  "reconcile_never_reconciled": "未照合",
+  "reconcile_transfer_to_name": "{account}へ",
+  "reconcile_transfer_from_name": "{account}から",
+  "reconcile_transfer_to_other": "別の口座へ",
+  "reconcile_transfer_from_other": "別の口座から",
+  "reconcile_no_payee": "取引先なし",
+  "reconcile_pdf_unsupported": "Koshaが読み取れるのはCSV、OFX、QFXファイルです。銀行からいずれかの形式で書き出してください。",
+  "reconcile_currency_mismatch": "この明細の通貨は{statementCurrency}ですが、{account}の通貨は{currency}です。",
+  "reconcile_ofx_empty": "そのOFXファイルには取引がありません",
+  "reconcile_csv_empty": "そのファイルにはKoshaが読み取れる行がありません",
+  "reconcile_read_failed": "そのファイルを読み取れませんでした",
+  "reconcile_pick_category_first": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "先に{count}行のカテゴリを選んでください"
+      }
+    }
+  ],
+  "reconcile_added": [
+    {
+      "declarations": ["input count", "input account", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{account}に{count}件の取引を追加しました"
+      }
+    }
+  ],
+  "reconcile_add_failed": "追加できませんでした",
+  "reconcile_change_failed": "変更できませんでした",
+  "reconcile_finish_failed": "完了できませんでした",
+  "reconcile_undone": "照合を取り消しました",
+  "reconcile_undo_failed": "取り消せませんでした",
+  "reconcile_ask_failed": "質問できませんでした",
+  "reconcile_hint_opening_gap": "この明細の開始残高は{opening}ですが、前回照合した明細の締め残高は{closing}でした。間の明細が抜けている可能性があります。",
+  "reconcile_hint_single_missing": "明細にある{payee}（{amount}）が差額とちょうど同じです。Koshaに追加してください。",
+  "reconcile_hint_missing_closes": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "Koshaにない{count}行を追加すると、差額がちょうどなくなります。"
+      }
+    }
+  ],
+  "reconcile_hint_missing_count": [
+    {
+      "declarations": ["input count", "input amount", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "明細の{count}行がまだKoshaにありません（{amount}）。"
+      }
+    }
+  ],
+  "reconcile_hint_close": "{name}：Koshaでは{kosha}、明細では{statement}です。",
+  "reconcile_balance_label": "締め残高（{currency}）",
+  "reconcile_owed_label": "明細の未払い残高（{currency}）",
+  "reconcile_account_title": "{account}を照合",
+  "reconcile_done_title": "{account}は明細と一致しています",
+  "reconcile_done_checked": [
+    {
+      "declarations": ["input count", "input n", "input day", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{day}までの{n}件の取引を確認しました。"
+      }
+    }
+  ],
+  "reconcile_done_correction": "{amount}の修正で差額を解消しました。",
+  "reconcile_done_marked": "これらは照合済みとして記録され、変更する前にKoshaがお知らせします。",
+  "reconcile_back_to_accounts": "口座に戻る",
+  "reconcile_last_reconciled": "前回の照合：{day}まで",
+  "reconcile_check_each": "各取引を銀行の明細と照らし合わせてください。",
+  "reconcile_other_account": "別の口座",
+  "reconcile_drift": "{day}に照合した取引がその後{amount}変わったため、その明細と一致しなくなりました。どれかが編集または削除されています。もう一度確認するには、その照合を取り消してください。",
+  "reconcile_pdf_off": "このPDFから読み取った行は、明細の締め残高と{amount}ずれています。読み取りを誤った行があるかもしれません。追加する前にPDFと照らし合わせて確認してください。",
+  "reconcile_reading": "{file}を読み取り中…",
+  "reconcile_file_lines": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count}行"
+      }
+    }
+  ],
+  "reconcile_read_by_ai": "AIが読み取り",
+  "reconcile_another_file": "別のファイル",
+  "reconcile_drop": "ここに明細をドロップするか、{#choose}ファイルを選択{/choose}",
+  "reconcile_drop_formats": "銀行のCSV、OFX、QFXに対応。一致するものにKoshaがチェックを付け、足りないものを一覧にします。",
+  "reconcile_drop_formats_pdf": "銀行のCSV、OFX、QFX、またはPDFの明細に対応。一致するものにKoshaがチェックを付け、足りないものを一覧にします。",
+  "reconcile_statement_date": "明細の日付",
+  "reconcile_quick_balance": "今日のKoshaの残高は{#amount}{amount}{/amount}です。銀行の利用可能残高ではなく、現在の残高と比べてください。",
+  "reconcile_quick_owed": "今日のKoshaの未払い残高は{#amount}{amount}{/amount}です。銀行の利用可能額ではなく、現在の残高と比べてください。",
+  "reconcile_same_as_bank": "銀行の表示と同じ",
+  "reconcile_missing_title": "明細にあってKoshaにないもの（{count}）",
+  "reconcile_naming_payees": "取引先名を付けています…",
+  "reconcile_payee": "取引先",
+  "reconcile_category_for": "{name}のカテゴリ",
+  "reconcile_pick_category": "カテゴリを選択",
+  "reconcile_transfer_to": "{account}への振替",
+  "reconcile_transfer_from": "{account}からの振替",
+  "reconcile_include_line": "この行を追加",
+  "reconcile_leave_out_line": "この行を取り込まない",
+  "reconcile_saving_teaches": "保存すると、次の明細のためにKoshaがこれらの取引先名を覚えます。",
+  "reconcile_add_to_kosha": "{count}件をKoshaに追加",
+  "reconcile_close_title": "近いが金額が違うもの（{count}）",
+  "reconcile_close_detail": "Kosha：{koshaDay} {kosha} · 明細：{statementDay} {statement}",
+  "reconcile_use_amount": "{amount}にする",
+  "reconcile_not_same": "別の取引",
+  "reconcile_in_kosha": "Kosha内",
+  "reconcile_tick_title": "明細にあるものにチェック",
+  "reconcile_ticked_count": "{count}件チェック済み",
+  "reconcile_before_group": "この明細より前（{count}）",
+  "reconcile_before_hint": "以前の明細に載っていたためチェック済み",
+  "reconcile_nothing": "{day}までに照合するものはありません。",
+  "reconcile_note_amount_differs": "金額が違う",
+  "reconcile_note_next_statement": "次の明細に載る見込み",
+  "reconcile_note_not_on_statement": "明細にない",
+  "reconcile_note_still_due": "未払い",
+  "reconcile_after_group": "{day}より後（{count}）",
+  "reconcile_after_hint": "次の明細で照合",
+  "reconcile_finding_title": "差額の原因を探す",
+  "reconcile_ask_ai": "AIに聞く",
+  "reconcile_past": "過去の照合",
+  "reconcile_history_entries": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count}件の取引"
+      }
+    }
+  ],
+  "reconcile_corrected_by": "{amount}修正",
+  "reconcile_figure_statement": "明細",
+  "reconcile_figure_statement_owed": "明細の未払い残高",
+  "reconcile_figure_ticked": "Koshaでチェック済み",
+  "reconcile_figure_ticked_owed": "チェック済みでの未払い残高",
+  "reconcile_figure_difference": "差額",
+  "reconcile_figure_none": "なし",
+  "reconcile_finish_with_correction": "{amount}を修正して完了",
+  "reconcile_enter_balance": "明細の残高を入力してください",
+  "reconcile_finish": "照合を完了",
+  "reconcile_show": "表示"
+}

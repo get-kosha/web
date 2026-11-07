@@ -3,6 +3,8 @@ import { Link, createFileRoute, useNavigate, useRouter } from "@tanstack/react-r
 import { CaretLeftIcon, CaretRightIcon, PlusIcon, XIcon } from "@phosphor-icons/react/ssr"
 import { toast } from "sonner"
 import { z } from "zod"
+import { ParaglideMessage } from "@inlang/paraglide-js-react"
+import { m } from "@/paraglide/messages"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -35,7 +37,7 @@ import {
   type Tx,
 } from "@/lib/api"
 import {
-  LOCALE,
+  intlLocale,
   addDays,
   convert,
   dayOf,
@@ -60,22 +62,30 @@ export const Route = createFileRoute("/_app/subscriptions")({
     ])
     return { subs, income, spotted }
   },
-  head: () => ({ meta: [{ title: "Recurring · Kosha" }] }),
+  head: () => ({ meta: [{ title: m.subs_head_title() }] }),
   pendingComponent: PageSkeleton,
   component: Subscriptions,
 })
 
 const fmtDay = (day: string, o: Intl.DateTimeFormatOptions) =>
-  new Date(`${day}T12:00:00Z`).toLocaleDateString(LOCALE, { ...o, timeZone: "UTC" })
+  new Date(`${day}T12:00:00Z`).toLocaleDateString(intlLocale(), { ...o, timeZone: "UTC" })
 const short = (day: string) => fmtDay(day, { day: "numeric", month: "short" })
 const long = (day: string) => fmtDay(day, { day: "numeric", month: "short", year: "numeric" })
 const daysBetween = (a: string, b: string) => Math.round((Date.parse(b) - Date.parse(a)) / 86_400_000)
-function relative(day: string, today: string) {
-  const d = daysBetween(today, day)
-  return d === 0 ? "today" : d === 1 ? "tomorrow" : d === -1 ? "yesterday" : d > 0 ? `in ${d} days` : `${-d} days ago`
+/** "today", "tomorrow", "in 3 days", "3 days ago", in the active language. */
+const relative = (day: string, today: string) =>
+  new Intl.RelativeTimeFormat(intlLocale(), { numeric: "auto" }).format(daysBetween(today, day), "day")
+const EVERY = { day: m.subs_every_day, week: m.subs_every_week, month: m.subs_every_month, year: m.subs_every_year }
+const INTERVAL = {
+  day: m.subs_interval_day,
+  week: m.subs_interval_week,
+  month: m.subs_interval_month,
+  year: m.subs_interval_year,
 }
-/** Formats an interval as "month", "3 months" or "year". */
-const every = (n: number, unit: Unit) => (n === 1 ? unit : `${n} ${unit}s`)
+/** An interval as a phrase: "every month", "every 3 months". */
+const every = (n: number, unit: Unit) => EVERY[unit]({ count: n })
+/** An interval under the "Every" column: "month", "3 months". */
+const interval = (n: number, unit: Unit) => INTERVAL[unit]({ count: n })
 /** Next date in the list: "1 Dec", or "Oct '27" when it's most of a year away. */
 const nextLabel = (day: string, today: string) =>
   day > addDays(today, 300) ? `${fmtDay(day, { month: "short" })} '${day.slice(2, 4)}` : short(day)
@@ -83,12 +93,35 @@ const nextLabel = (day: string, today: string) =>
 type Group = "Bills" | "Subscriptions" | "Income" | "Transfers"
 const groupOf = (x: SubscriptionView): Group =>
   x.to_wallet_id ? "Transfers" : x.amount > 0 ? "Income" : x.kind === "repetitive" ? "Bills" : "Subscriptions"
-const KIND_LABEL: Record<Group, string> = {
-  Bills: "Bill",
-  Subscriptions: "Subscription",
-  Income: "Income",
-  Transfers: "Transfer",
-}
+// Message functions per group, called at render time so they follow the language.
+const GROUP_TEXT: Record<Group, { title: () => string; kind: () => string; endThis: () => string; end: () => string }> =
+  {
+    Bills: {
+      title: m.subs_group_bills,
+      kind: m.subs_kind_bill,
+      endThis: m.subs_end_this_bill,
+      end: m.subs_end_bill,
+    },
+    Subscriptions: {
+      title: m.subs_group_subscriptions,
+      kind: m.subs_kind_subscription,
+      endThis: m.subs_end_this_subscription,
+      end: m.subs_end_subscription,
+    },
+    Income: {
+      title: m.subs_group_income,
+      kind: m.subs_kind_income,
+      endThis: m.subs_end_this_income,
+      end: m.subs_end_income,
+    },
+    Transfers: {
+      title: m.subs_group_transfers,
+      kind: m.subs_kind_transfer,
+      endThis: m.subs_end_this_transfer,
+      end: m.subs_end_transfer,
+    },
+  }
+const num = ({ children }: { children?: React.ReactNode }) => <span className="num">{children}</span>
 const isOpen = (i: Instance) => i.status !== "paid" && i.status !== "skipped"
 const COLS = "grid grid-cols-[minmax(0,1fr)_5.5rem_5rem] gap-4 md:grid-cols-[minmax(0,1fr)_5.75rem_5.5rem_6rem_5.75rem]"
 
@@ -132,12 +165,17 @@ function Subscriptions() {
     <div className="pb-8">
       <div className={cn(selected && "max-lg:hidden")}>
         <PageHeader
-          title="Recurring"
+          title={m.subs_title()}
           sub={
             <>
-              <span className="num">{active.length - transfersActive}</span> active ·{" "}
-              <span className="num">{transfersActive}</span> transfer{transfersActive === 1 ? "" : "s"} ·{" "}
-              <span className="num">{ended.length}</span> ended
+              <ParaglideMessage
+                message={m.subs_count_active}
+                inputs={{ count: active.length - transfersActive }}
+                markup={{ num }}
+              />{" "}
+              ·{" "}
+              <ParaglideMessage message={m.subs_count_transfers} inputs={{ count: transfersActive }} markup={{ num }} />{" "}
+              · <ParaglideMessage message={m.subs_count_ended} inputs={{ count: ended.length }} markup={{ num }} />
             </>
           }
         >
@@ -147,7 +185,7 @@ function Subscriptions() {
             className="gap-2 bg-card px-3 text-[13px] font-normal"
             onClick={() => setCreating(true)}
           >
-            <PlusIcon /> New recurring
+            <PlusIcon /> {m.subs_new_button()}
           </Button>
         </PageHeader>
       </div>
@@ -156,28 +194,32 @@ function Subscriptions() {
         <div className={cn("grid gap-5", selected && "max-lg:hidden")}>
           <Card className="grid grid-cols-2 gap-px bg-border py-0 lg:grid-cols-4">
             <Total
-              label="Committed per month"
+              label={m.subs_committed()}
               value={<RollingMoney value={committed} currency={cur} />}
-              hint={`Bills ${money(bills)} · subscriptions ${money(subsCost)}`}
+              hint={m.subs_committed_hint({ bills: money(bills), subscriptions: money(subsCost) })}
             />
             <Total
-              label="Per year"
+              label={m.subs_per_year()}
               value={<RollingMoney value={committed * 12} currency={cur} />}
               hint={
                 yearIncome > 0
-                  ? `${Math.round(((committed * 12) / yearIncome) * 100)}% of income`
-                  : "No income in the last year"
+                  ? m.subs_share_of_income({
+                      percent: new Intl.NumberFormat(intlLocale(), { style: "percent" }).format(
+                        (committed * 12) / yearIncome
+                      ),
+                    })
+                  : m.subs_no_income()
               }
             />
             <Total
-              label="Due in the next 7 days"
+              label={m.subs_due_soon()}
               value={<RollingMoney value={dueSoonTotal} currency={cur} />}
-              hint={dueSoon.length ? [...new Set(dueSoon.map((d) => d.x.name))].join(", ") : "Nothing due"}
+              hint={dueSoon.length ? [...new Set(dueSoon.map((d) => d.x.name))].join(", ") : m.subs_nothing_due()}
             />
             <Total
-              label="Moved to savings"
+              label={m.subs_moved_to_savings()}
               value={<RollingMoney value={moved} currency={cur} />}
-              hint="per month · not counted"
+              hint={m.subs_moved_hint()}
               muted
             />
           </Card>
@@ -189,32 +231,32 @@ function Subscriptions() {
         <div className="flex flex-wrap items-start gap-5">
           <Card
             className={cn("min-w-0 flex-[999_1_560px] gap-0 py-1", selected && "max-lg:hidden")}
-            aria-label="Recurring payments"
+            aria-label={m.subs_list_label()}
           >
             {groups.length === 0 && (
               <div className="p-8 text-center text-sm text-muted-foreground">
-                <p>Nothing recurring yet. Add rent, a subscription or a regular transfer once and Kosha tracks it.</p>
+                <p>{m.subs_empty()}</p>
                 <Button variant="outline" className="mt-3" onClick={() => setCreating(true)}>
-                  <PlusIcon /> New recurring
+                  <PlusIcon /> {m.subs_new_button()}
                 </Button>
               </div>
             )}
             {groups.map(({ g, rows }, n) => {
               const total = rows.reduce((t, x) => t + perMonth(x), 0)
               return (
-                <section key={g} aria-label={g} className={cn(n > 0 && "border-t")}>
+                <section key={g} aria-label={GROUP_TEXT[g].title()} className={cn(n > 0 && "border-t")}>
                   <div className={cn(COLS, "items-baseline px-4 pt-4 pb-1.5 text-xs text-muted-foreground")}>
-                    <h2 className="text-[13px] font-medium text-foreground">{g}</h2>
+                    <h2 className="text-[13px] font-medium text-foreground">{GROUP_TEXT[g].title()}</h2>
                     {n === 0 ? (
                       <>
-                        <span className="max-md:hidden">Every</span>
-                        <span>Next</span>
-                        <span className="text-right max-md:hidden">Amount</span>
-                        <span className="text-right">Per month</span>
+                        <span className="max-md:hidden">{m.subs_column_every()}</span>
+                        <span>{m.subs_column_next()}</span>
+                        <span className="text-right max-md:hidden">{m.subs_column_amount()}</span>
+                        <span className="text-right">{m.subs_column_per_month()}</span>
                       </>
                     ) : (
                       <span className="num col-span-2 text-right md:col-span-4">
-                        {g === "Transfers" ? "not counted" : money(total)}
+                        {g === "Transfers" ? m.subs_not_counted() : money(total)}
                       </span>
                     )}
                   </div>
@@ -246,12 +288,12 @@ function Subscriptions() {
                       showEnded && "rotate-90"
                     )}
                   />{" "}
-                  Ended ({ended.length})
+                  {m.subs_ended_count({ count: ended.length })}
                 </Button>
               ) : (
                 <span />
               )}
-              <span className="text-xs text-muted-foreground">Sorted by cost per month</span>
+              <span className="text-xs text-muted-foreground">{m.subs_sorted_hint()}</span>
             </div>
             {showEnded && (
               <div className="border-t pb-1 motion-safe:animate-in motion-safe:duration-200 motion-safe:ease-out motion-safe:fade-in-0 motion-safe:slide-in-from-top-1">
@@ -265,7 +307,7 @@ function Subscriptions() {
           {shown && (
             <Card
               className={cn("min-w-0 flex-[1_1_360px] gap-0 p-5 lg:max-w-[400px]", !selected && "max-lg:hidden")}
-              aria-label={`${shown.name} details`}
+              aria-label={m.subs_details_label({ name: shown.name })}
             >
               <Detail key={shown.id} sub={shown} today={today} displayCurrency={cur} />
             </Card>
@@ -276,10 +318,8 @@ function Subscriptions() {
       <Dialog open={!!adopting} onOpenChange={(o) => !o && setAdopting(null)}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Make {adopting?.name} recurring</DialogTitle>
-            <DialogDescription>
-              Its {adopting?.count} past payments are filed under it, so they show in its history.
-            </DialogDescription>
+            <DialogTitle>{m.subs_adopt_title({ name: adopting?.name ?? "" })}</DialogTitle>
+            <DialogDescription>{m.subs_adopt_description({ count: adopting?.count ?? 0 })}</DialogDescription>
           </DialogHeader>
           {adopting && (
             <SubscriptionForm
@@ -299,7 +339,7 @@ function Subscriptions() {
       <Dialog open={creating} onOpenChange={setCreating}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>New recurring</DialogTitle>
+            <DialogTitle>{m.subs_new_title()}</DialogTitle>
           </DialogHeader>
           <SubscriptionForm
             onDone={(id) => {
@@ -329,16 +369,16 @@ function Spotted({ list, today, onAdd }: { list: Guess[]; today: string; onAdd: 
       await router.invalidate()
     } catch (e) {
       setHidden((h) => h.filter((n) => n !== g.name))
-      toast.error(e instanceof Error ? e.message : "Couldn't hide it")
+      toast.error(e instanceof Error ? e.message : m.subs_hide_failed())
     }
   }
   return (
     <section aria-labelledby="spotted-h">
       <div className="mx-1 mb-2.5 flex items-baseline justify-between gap-3">
         <h2 id="spotted-h" className="text-[13px] font-medium">
-          Looks recurring
+          {m.subs_spotted_title()}
         </h2>
-        <span className="text-xs text-muted-foreground">Spotted from payments on a steady rhythm</span>
+        <span className="text-xs text-muted-foreground">{m.subs_spotted_hint()}</span>
       </div>
       <Card className="gap-0 py-0">
         {shown.map((g) => {
@@ -355,24 +395,25 @@ function Spotted({ list, today, onAdd }: { list: Guess[]; today: string; onAdd: 
                   <div className="truncate text-sm font-medium">{g.name}</div>
                   <div className="text-xs text-muted-foreground">
                     <span className="num">
-                      {g.variable ? "about " : ""}
-                      {fmt(Math.abs(g.amount), cur)}
+                      {g.variable
+                        ? m.subs_about_amount({ amount: fmt(Math.abs(g.amount), cur) })
+                        : fmt(Math.abs(g.amount), cur)}
                     </span>{" "}
-                    every {every(g.every, g.unit)} · paid {g.count} times, last on {short(g.lastDay)} · next around{" "}
-                    {nextLabel(g.nextDay, today)}
+                    {every(g.every, g.unit)} · {m.subs_spotted_paid({ count: g.count, day: short(g.lastDay) })} ·{" "}
+                    {m.subs_spotted_next({ day: nextLabel(g.nextDay, today) })}
                   </div>
                 </div>
               </div>
               <div className="flex items-center gap-1">
                 <Button size="sm" variant="outline" className="bg-card max-md:h-11" onClick={() => onAdd(g)}>
-                  <PlusIcon /> Make recurring
+                  <PlusIcon /> {m.subs_make_recurring()}
                 </Button>
                 <Button
                   size="icon"
                   variant="ghost"
                   className="text-muted-foreground max-md:size-11"
-                  aria-label={`${g.name} isn't recurring`}
-                  title="Not recurring"
+                  aria-label={m.subs_dismiss_label({ name: g.name })}
+                  title={m.subs_not_recurring()}
                   onClick={() => dismiss(g)}
                 >
                   <XIcon />
@@ -426,7 +467,7 @@ function Row({
   const meta = useMeta()
   const c = meta.categories.find((k) => k.id === x.category_id)
   const transfer = !!x.to_wallet_id
-  const sub = [transfer ? null : walletName(x.wallet_id), x.variable ? "varies, asks each time" : x.note]
+  const sub = [transfer ? null : walletName(x.wallet_id), x.variable ? m.subs_varies_asks() : x.note]
     .filter(Boolean)
     .join(" · ")
   return (
@@ -452,9 +493,9 @@ function Row({
           {sub && <span className="block truncate text-xs text-muted-foreground">{sub}</span>}
         </span>
       </span>
-      <span className="text-[13px] text-subtle-foreground max-md:hidden">{every(x.every, x.unit)}</span>
+      <span className="text-[13px] text-subtle-foreground max-md:hidden">{interval(x.every, x.unit)}</span>
       <span className={cn("num text-[13px] text-subtle-foreground", x.next?.status === "overdue" && "text-warning")}>
-        {x.ended ? `ended ${short(x.end_day!)}` : x.next ? nextLabel(x.next.day, today) : "—"}
+        {x.ended ? m.subs_ended_on_short({ date: short(x.end_day!) }) : x.next ? nextLabel(x.next.day, today) : "—"}
       </span>
       <span className={cn("num text-right max-md:hidden", x.amount > 0 && !transfer && "text-positive")}>
         {x.variable ? "~" : ""}
@@ -477,7 +518,7 @@ function Strip({
   toCur: (v: number, from: string) => number
   money: (v: number) => string
 }) {
-  const m = useMeta()
+  const meta = useMeta()
   // ponytail: uses each schedule's next 6 instances, so a daily item only fills its first week.
   const days = Array.from({ length: 30 }, (_, n) => {
     const day = addDays(today, n)
@@ -491,7 +532,7 @@ function Strip({
           if (x.to_wallet_id) moved += v
           else if (!isNeutral(x.category_id)) out += v
           else continue
-          names.push(x.to_wallet_id ? (m.wallets.find((w) => w.id === x.to_wallet_id)?.name ?? x.name) : x.name)
+          names.push(x.to_wallet_id ? (meta.wallets.find((w) => w.id === x.to_wallet_id)?.name ?? x.name) : x.name)
         }
     return { day, out, moved, names }
   })
@@ -504,22 +545,25 @@ function Strip({
       .map((d) => d.day)
   )
   const busy = days.filter((d) => d.names.length)
+  const and = new Intl.ListFormat(intlLocale(), { type: "conjunction" })
   const label = busy.length
-    ? `Payments in the next 30 days: ${busy.map((d) => `${short(d.day)} ${d.names.join(" and ")} ${money(d.out + d.moved)}`).join("; ")}`
-    : "No payments in the next 30 days"
+    ? m.subs_strip_label({
+        list: busy.map((d) => `${short(d.day)} ${and.format(d.names)} ${money(d.out + d.moved)}`).join("; "),
+      })
+    : m.subs_strip_empty()
 
   return (
     <Card size="sm" className="gap-3">
       <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2 px-5">
-        <h2 className="text-sm font-medium">Next 30 days</h2>
+        <h2 className="text-sm font-medium">{m.subs_strip_title()}</h2>
         <div className="flex gap-4 text-xs text-subtle-foreground">
           <span className="flex items-center gap-1.5">
             <span className="size-2.5 rounded-[2px] bg-chart-2" />
-            Bills &amp; subscriptions
+            {m.subs_strip_bills()}
           </span>
           <span className="flex items-center gap-1.5">
             <span className="size-2.5 rounded-[2px] border-[1.5px] border-dashed border-muted-foreground" />
-            Transfers
+            {m.subs_group_transfers()}
           </span>
         </div>
       </div>
@@ -591,7 +635,7 @@ function Detail({ sub, today, displayCurrency }: { sub: SubscriptionView; today:
   const wallet = meta.wallets.find((w) => w.id === sub.wallet_id)
   const toWallet = meta.wallets.find((w) => w.id === sub.to_wallet_id)
   const isTransfer = !!toWallet
-  const kind = KIND_LABEL[groupOf(sub)]
+  const text = GROUP_TEXT[groupOf(sub)]
   const signed = (v: number) => fmt(isTransfer ? Math.abs(v) : v, sub.currency)
   const paidTotal = sub.history.reduce((t, h) => t + h.amount, 0)
   const since = sub.history.at(-1)?.day ?? sub.start_day
@@ -604,7 +648,7 @@ function Detail({ sub, today, displayCurrency }: { sub: SubscriptionView; today:
       await router.invalidate()
       toast.success(ok)
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Couldn't update the payment")
+      toast.error(e instanceof Error ? e.message : m.subs_update_payment_failed())
     }
   }
 
@@ -637,9 +681,9 @@ function Detail({ sub, today, displayCurrency }: { sub: SubscriptionView; today:
       })
       await router.invalidate()
       setConfirm(null)
-      toast.success(end ? `${sub.name} ended` : `${sub.name} resumed`)
+      toast.success(end ? m.subs_ended_toast({ name: sub.name }) : m.subs_resumed_toast({ name: sub.name }))
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Couldn't update the schedule")
+      toast.error(e instanceof Error ? e.message : m.subs_update_schedule_failed())
     }
   }
 
@@ -654,9 +698,9 @@ function Detail({ sub, today, displayCurrency }: { sub: SubscriptionView; today:
       setConfirm(null)
       await navigate({ search: (p) => ({ ...p, id: undefined }) })
       await router.invalidate()
-      toast.success("Deleted")
+      toast.success(m.subs_deleted())
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Couldn't delete it")
+      toast.error(e instanceof Error ? e.message : m.subs_delete_failed())
     }
   }
 
@@ -668,10 +712,14 @@ function Detail({ sub, today, displayCurrency }: { sub: SubscriptionView; today:
           search={(p) => ({ ...p, id: undefined })}
           className="mb-3 -ml-1 inline-flex min-h-11 items-center gap-1 text-sm text-muted-foreground lg:hidden"
         >
-          <CaretLeftIcon className="size-4" /> Recurring
+          <CaretLeftIcon className="size-4" /> {m.subs_title()}
         </Link>
         <p className="text-xs text-muted-foreground">
-          {kind} · every {every(sub.every, sub.unit)} · since {fmtDay(since, { month: "short", year: "numeric" })}
+          {m.subs_detail_meta({
+            kind: text.kind(),
+            every: every(sub.every, sub.unit),
+            date: fmtDay(since, { month: "short", year: "numeric" }),
+          })}
         </p>
         <h2 className="mt-2 flex items-start gap-2.5 text-lg leading-snug font-semibold tracking-[-0.02em] text-balance">
           <CategoryIcon icon={c?.icon} className="mt-[3px] size-5" />
@@ -689,7 +737,7 @@ function Detail({ sub, today, displayCurrency }: { sub: SubscriptionView; today:
             {signed(sub.amount)}
           </span>
           <span className="text-xs text-muted-foreground">
-            {sub.variable ? "varies" : `every ${every(sub.every, sub.unit)}`}
+            {sub.variable ? m.subs_varies() : every(sub.every, sub.unit)}
             {!isTransfer && wallet ? ` · ${wallet.name}` : ""}
           </span>
         </p>
@@ -698,37 +746,33 @@ function Detail({ sub, today, displayCurrency }: { sub: SubscriptionView; today:
 
       {sub.ended ? (
         <div className="rounded-xl bg-muted p-4 text-sm">
-          <p className="font-medium">Ended {long(sub.end_day!)}</p>
-          <p className="mt-1 text-xs text-muted-foreground">No more payments. Past payments stay in Activity.</p>
+          <p className="font-medium">{m.subs_ended_on({ date: long(sub.end_day!) })}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{m.subs_ended_hint()}</p>
         </div>
       ) : next ? (
         <div className="rounded-xl bg-muted p-4">
           <div className="flex items-baseline justify-between gap-3">
             <span className="text-sm font-medium">
-              Next: {fmtDay(next.day, { weekday: "short", day: "numeric", month: "short" })}
+              {m.subs_next_on({ date: fmtDay(next.day, { weekday: "short", day: "numeric", month: "short" }) })}
             </span>
             <span className={cn("text-xs text-muted-foreground", next.status === "overdue" && "text-warning")}>
               {relative(next.day, today)}
             </span>
           </div>
           <p className="mt-1 text-xs text-muted-foreground">
-            {sub.variable
-              ? "Kosha will ask for the amount"
-              : sub.auto_pay
-                ? "Recorded automatically on the day"
-                : "Mark it paid when it goes out"}
-            {next.edited && " · changed for this payment only"}
-            {sub.end_day && ` · ends ${long(sub.end_day)}`}
+            {sub.variable ? m.subs_will_ask() : sub.auto_pay ? m.subs_auto_recorded() : m.subs_mark_when_out()}
+            {next.edited && ` · ${m.subs_changed_once()}`}
+            {sub.end_day && ` · ${m.subs_ends_on({ date: long(sub.end_day) })}`}
           </p>
           {/* The primary action takes the full width. The rest share one row, so nothing overflows a narrow panel. */}
           <div className="mt-3.5 grid grid-cols-2 gap-2">
             {sub.variable ? (
               <Button size="lg" className="col-span-2" onClick={() => setInstance({ i: next, pay: true })}>
-                Enter amount
+                {m.subs_enter_amount_button()}
               </Button>
             ) : (
-              <Button size="lg" className="col-span-2" onClick={() => act(next, "pay", "Marked as paid")}>
-                {isTransfer ? "Mark done now" : "Mark paid now"}
+              <Button size="lg" className="col-span-2" onClick={() => act(next, "pay", m.subs_marked_paid())}>
+                {isTransfer ? m.subs_mark_done_now() : m.subs_mark_paid_now()}
               </Button>
             )}
             {!sub.variable && (
@@ -738,35 +782,37 @@ function Detail({ sub, today, displayCurrency }: { sub: SubscriptionView; today:
                 className="bg-card"
                 onClick={() => setInstance({ i: next, pay: false })}
               >
-                Change amount
+                {m.subs_change_amount()}
               </Button>
             )}
             <Button
               size="lg"
               variant="outline"
               className={cn("bg-card", sub.variable && "col-span-2")}
-              onClick={() => act(next, "skip", "Skipped")}
+              onClick={() => act(next, "skip", m.subs_skipped())}
             >
-              Skip this one
+              {m.subs_skip_this()}
             </Button>
           </div>
         </div>
       ) : (
-        <p className="rounded-xl bg-muted p-4 text-sm text-muted-foreground">No more payments scheduled.</p>
+        <p className="rounded-xl bg-muted p-4 text-sm text-muted-foreground">{m.subs_no_more_scheduled()}</p>
       )}
 
       <dl className="grid gap-2 text-sm">
-        <Mini label={isTransfer ? "Moved so far" : "Paid so far"} value={signed(paidTotal)} />
-        <Mini label="Payments" value={String(sub.history.length)} />
+        <Mini label={isTransfer ? m.subs_moved_so_far() : m.subs_paid_so_far()} value={signed(paidTotal)} />
+        <Mini label={m.subs_payments()} value={String(sub.history.length)} />
         <Mini
-          label="Per year"
+          label={m.subs_per_year()}
           value={fmt(Math.abs(convert(sub.monthly * 12, sub.currency, displayCurrency, meta.rates)), displayCurrency)}
         />
       </dl>
 
       <section>
-        <h3 className="mb-1.5 text-[13px] font-medium">History</h3>
-        {sub.history.length === 0 && <p className="border-t py-3 text-sm text-muted-foreground">No payments yet.</p>}
+        <h3 className="mb-1.5 text-[13px] font-medium">{m.subs_history()}</h3>
+        {sub.history.length === 0 && (
+          <p className="border-t py-3 text-sm text-muted-foreground">{m.subs_no_payments()}</p>
+        )}
         <div className={cn(sub.history.length > 0 && "border-b")}>
           {sub.history.slice(0, 5).map((h) => (
             <button
@@ -780,7 +826,7 @@ function Detail({ sub, today, displayCurrency }: { sub: SubscriptionView; today:
               <span className="truncate text-subtle-foreground">
                 {[h.wallet_id !== sub.wallet_id && walletName(h.wallet_id), h.note && h.note !== sub.note && h.note]
                   .filter(Boolean)
-                  .join(" · ") || (isTransfer ? "Moved" : "Paid")}
+                  .join(" · ") || (isTransfer ? m.subs_moved() : m.subs_paid())}
               </span>
               <span className="num whitespace-nowrap">{signed(h.amount)}</span>
             </button>
@@ -792,7 +838,7 @@ function Detail({ sub, today, displayCurrency }: { sub: SubscriptionView; today:
             search={(p) => ({ ...p, q: sub.name })}
             className="mt-2.5 inline-block text-xs text-muted-foreground hover:text-foreground"
           >
-            All {sub.history.length} payments →
+            {m.subs_all_payments({ count: sub.history.length })}
           </Link>
         )}
       </section>
@@ -801,12 +847,12 @@ function Detail({ sub, today, displayCurrency }: { sub: SubscriptionView; today:
 
       <div className="-mx-2.5 flex flex-wrap items-center justify-between gap-2 border-t pt-3">
         <Button variant="ghost" size="lg" onClick={() => setEditing(true)}>
-          Edit
+          {m.common_edit()}
         </Button>
         {sub.ended ? (
           <div className="flex gap-1">
             <Button variant="ghost" size="lg" onClick={() => setEnd(null)}>
-              Resume
+              {m.subs_resume()}
             </Button>
             <Button
               variant="ghost"
@@ -814,7 +860,7 @@ function Detail({ sub, today, displayCurrency }: { sub: SubscriptionView; today:
               className="text-destructive hover:text-destructive"
               onClick={() => setConfirm("delete")}
             >
-              Delete
+              {m.common_delete()}
             </Button>
           </div>
         ) : (
@@ -824,7 +870,7 @@ function Detail({ sub, today, displayCurrency }: { sub: SubscriptionView; today:
             className="text-destructive hover:text-destructive"
             onClick={() => setConfirm("end")}
           >
-            End this {kind.toLowerCase()}
+            {text.endThis()}
           </Button>
         )}
       </div>
@@ -832,17 +878,17 @@ function Detail({ sub, today, displayCurrency }: { sub: SubscriptionView; today:
       <Dialog open={!!confirm} onOpenChange={(o) => !o && setConfirm(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{confirm === "delete" ? `Delete ${sub.name}?` : `End ${sub.name}?`}</DialogTitle>
+            <DialogTitle>
+              {confirm === "delete" ? m.subs_delete_title({ name: sub.name }) : m.subs_end_title({ name: sub.name })}
+            </DialogTitle>
             <DialogDescription>
-              {confirm === "delete"
-                ? "This removes the schedule. Past payments stay in Activity as ordinary transactions."
-                : "No payments after today. Past payments stay in Activity, and you can resume it later."}
+              {confirm === "delete" ? m.subs_delete_description() : m.subs_end_description()}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
+            <DialogClose render={<Button variant="outline" />}>{m.common_cancel()}</DialogClose>
             <Button variant="destructive" onClick={() => (confirm === "delete" ? remove() : setEnd(today))}>
-              {confirm === "delete" ? "Delete" : `End ${kind.toLowerCase()}`}
+              {confirm === "delete" ? m.common_delete() : text.end()}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -851,7 +897,7 @@ function Detail({ sub, today, displayCurrency }: { sub: SubscriptionView; today:
       <Dialog open={editing} onOpenChange={setEditing}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Edit {sub.name}</DialogTitle>
+            <DialogTitle>{m.subs_edit_title({ name: sub.name })}</DialogTitle>
           </DialogHeader>
           <SubscriptionForm initial={sub} onDone={() => setEditing(false)} />
         </DialogContent>
@@ -865,7 +911,11 @@ function Detail({ sub, today, displayCurrency }: { sub: SubscriptionView; today:
         </DialogContent>
       </Dialog>
 
-      <TransactionSheet open={!!payment} title={isTransfer ? "Edit transfer" : "Edit payment"} onClose={closePayment}>
+      <TransactionSheet
+        open={!!payment}
+        title={isTransfer ? m.subs_edit_transfer() : m.subs_edit_payment()}
+        onClose={closePayment}
+      >
         {payment && (
           <TransactionForm key={payment.id} initial={payment} onDone={closePayment} onCancel={closePayment} />
         )}
@@ -911,7 +961,7 @@ function InstanceForm({
   async function save(e: React.FormEvent) {
     e.preventDefault()
     const cents = parseAmount(amount)
-    if (!cents) return toast.error("Enter an amount")
+    if (!cents) return toast.error(m.subs_enter_amount())
     try {
       await updateOccurrence({
         data: {
@@ -925,10 +975,10 @@ function InstanceForm({
         },
       })
       await router.invalidate()
-      toast.success(pay ? "Recorded" : "Payment updated")
+      toast.success(pay ? m.subs_recorded() : m.subs_payment_updated())
       onDone()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Couldn't save the payment")
+      toast.error(err instanceof Error ? err.message : m.subs_save_payment_failed())
     }
   }
 
@@ -946,14 +996,16 @@ function InstanceForm({
         </DialogTitle>
         <DialogDescription>
           {pay
-            ? `Enter what was ${toWallet ? "transferred" : "paid"} this time.`
-            : "Only this payment changes. Other payments keep the regular amount and date."}
+            ? toWallet
+              ? m.subs_pay_transfer_description()
+              : m.subs_pay_description()
+            : m.subs_edit_once_description()}
         </DialogDescription>
       </DialogHeader>
       <div className="grid grid-cols-2 gap-3">
         <div className="grid gap-1.5">
           <Label htmlFor="i-amount">
-            Amount <span className="text-muted-foreground uppercase">({sub.currency})</span>
+            {m.subs_amount()} <span className="text-muted-foreground uppercase">({sub.currency})</span>
           </Label>
           <Input
             id="i-amount"
@@ -965,14 +1017,15 @@ function InstanceForm({
           />
         </div>
         <div className="grid gap-1.5">
-          <Label htmlFor="i-day">Date</Label>
+          <Label htmlFor="i-day">{m.subs_date()}</Label>
           <DatePicker id="i-day" value={day} onChange={setDay} />
         </div>
       </div>
       {crossCurrency && (
         <div className="grid gap-1.5">
           <Label htmlFor="i-received">
-            Received in {toWallet.name} <span className="text-muted-foreground uppercase">({toWallet.currency})</span>
+            {m.subs_received_in({ name: toWallet.name })}{" "}
+            <span className="text-muted-foreground uppercase">({toWallet.currency})</span>
           </Label>
           <Input
             id="i-received"
@@ -981,23 +1034,23 @@ function InstanceForm({
             inputMode="decimal"
             className="num"
           />
-          <p className="text-xs text-muted-foreground">Leave empty to use the exchange rate.</p>
+          <p className="text-xs text-muted-foreground">{m.subs_leave_empty_rate()}</p>
         </div>
       )}
       <div className="grid gap-1.5">
         <Label htmlFor="i-note">
-          Note <span className="text-muted-foreground">(optional)</span>
+          {m.subs_note()} <span className="text-muted-foreground">{m.accounts_optional()}</span>
         </Label>
         <Input id="i-note" value={note} onChange={(e) => setNote(e.target.value)} />
       </div>
       <div className="flex gap-2">
         {instance.edited && (
           <Button type="button" variant="ghost" onClick={reset}>
-            Reset to regular
+            {m.subs_reset_regular()}
           </Button>
         )}
         <Button type="submit" className="flex-1">
-          {pay ? "Record" : "Save this payment"}
+          {pay ? m.subs_record() : m.subs_save_this_payment()}
         </Button>
       </div>
     </form>

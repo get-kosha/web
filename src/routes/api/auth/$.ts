@@ -7,7 +7,7 @@ import { auth, demoLocked, getUser } from "@/server/auth.server"
 // approving an app for it.
 async function post(request: Request) {
   if (!new URL(request.url).pathname.endsWith("/sign-out") && demoLocked((await getUser(request))?.id))
-    return Response.json({ code: "DEMO_READ_ONLY", message: DEMO_READ_ONLY }, { status: 403 })
+    return Response.json({ code: "DEMO_READ_ONLY", message: DEMO_READ_ONLY() }, { status: 403 })
   return auth.handler(request)
 }
 

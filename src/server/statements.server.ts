@@ -2,6 +2,7 @@
 // lib/statement.ts; this file reads and writes what they need. Every query is scoped by user_id.
 
 import { z } from "zod"
+import { m } from "@/paraglide/messages"
 import {
   CORRECTION_CATEGORY,
   NEUTRAL_SQL,
@@ -76,7 +77,7 @@ export async function reconcileData(uid: string, walletId: string) {
       archived: number
       balance: number
     }>()
-  if (!account) throw new HttpError(404, "Account not found")
+  if (!account) throw new HttpError(404, m.server_account_not_found())
   const cols = `t.id, t.date, t.amount, t.name, t.note, t.category_id, t.paid, t.transfer_id, t.bank_ref, t.reconciled_id,
     (SELECT x.wallet_id FROM transactions x WHERE x.user_id = t.user_id AND x.transfer_id = t.transfer_id AND x.id <> t.id) AS counter_wallet_id`
   const [history, open, done, settled, layouts, aliases] = await DB.batch([
@@ -151,8 +152,7 @@ export async function finishReconcile(uid: string, data: z.infer<typeof finishIn
       WHERE user_id = ? AND wallet_id = ? AND reconciled_id IS NOT NULL AND paid = 1`).bind(uid, data.walletId),
   ])
   const rows = found.results as { id: string; amount: number }[]
-  if (rows.length !== new Set(data.ids).size)
-    throw new HttpError(409, "Some entries changed while you were reconciling. Reload and try again.")
+  if (rows.length !== new Set(data.ids).size) throw new HttpError(409, m.server_entries_changed())
   const cleared = (settled.results[0] as { total: number }).total + rows.reduce((t, r) => t + r.amount, 0)
   const diff = data.balance - cleared
   const { results: acc } = await DB.prepare(
@@ -160,9 +160,8 @@ export async function finishReconcile(uid: string, data: z.infer<typeof finishIn
   )
     .bind(uid, data.walletId)
     .all<{ currency: string; type: AccountType; credit_limit: number | null }>()
-  if (!acc.length) throw new HttpError(404, "Account not found")
-  if (diff && !data.adjust)
-    throw new HttpError(409, `Still off by ${fmt(diff, acc[0].currency)}. Find the difference, or add a correction.`)
+  if (!acc.length) throw new HttpError(404, m.server_account_not_found())
+  if (diff && !data.adjust) throw new HttpError(409, m.server_still_off_by({ amount: fmt(diff, acc[0].currency) }))
   const id = crypto.randomUUID()
   const adjustId = diff ? crypto.randomUUID() : null
   await DB.batch([
@@ -176,10 +175,11 @@ export async function finishReconcile(uid: string, data: z.infer<typeof finishIn
     ...(adjustId
       ? [
           DB.prepare(`INSERT INTO transactions (user_id, id, wallet_id, category_id, name, amount, date, reconciled_id)
-            VALUES (?, ?, ?, '${CORRECTION_CATEGORY}', 'Reconciliation adjustment', ?, ?, ?)`).bind(
+            VALUES (?, ?, ?, '${CORRECTION_CATEGORY}', ?, ?, ?, ?)`).bind(
             uid,
             adjustId,
             data.walletId,
+            m.server_reconciliation_adjustment(),
             diff,
             unixOf(data.statementDay, tz, 23, 59),
             id
@@ -208,13 +208,13 @@ export async function undoReconcile(uid: string, id: string) {
   const r = await DB.prepare("SELECT wallet_id, adjustment_tx_id FROM reconciliations WHERE user_id = ? AND id = ?")
     .bind(uid, id)
     .first<{ wallet_id: string; adjustment_tx_id: string | null }>()
-  if (!r) throw new HttpError(404, "Reconciliation not found")
+  if (!r) throw new HttpError(404, m.server_reconciliation_not_found())
   const latest = await DB.prepare(
     "SELECT id FROM reconciliations WHERE user_id = ? AND wallet_id = ? ORDER BY statement_day DESC, created_at DESC LIMIT 1"
   )
     .bind(uid, r.wallet_id)
     .first<{ id: string }>()
-  if (latest?.id !== id) throw new HttpError(409, "Only the latest reconciliation can be undone")
+  if (latest?.id !== id) throw new HttpError(409, m.server_undo_latest_only())
   await DB.batch([
     DB.prepare("DELETE FROM transactions WHERE user_id = ? AND id = ?").bind(uid, r.adjustment_tx_id),
     DB.prepare("UPDATE transactions SET reconciled_id = NULL WHERE user_id = ? AND reconciled_id = ?").bind(uid, id),
@@ -274,10 +274,10 @@ export async function importLines(uid: string, data: z.infer<typeof importInput>
     .bind(uid)
     .all<{ id: string; currency: string }>()
   const own = wallets.find((w) => w.id === data.walletId)
-  if (!own) throw new HttpError(404, "Account not found")
+  if (!own) throw new HttpError(404, m.server_account_not_found())
   for (const [i, l] of data.lines.entries()) {
     if (l.transferWith ? !wallets.some((w) => w.id === l.transferWith && w.id !== data.walletId) : !l.categoryId)
-      throw new HttpError(400, `Line ${i + 1}: pick a category`)
+      throw new HttpError(400, m.server_line_pick_category({ n: i + 1 }))
   }
   const plain = data.lines.flatMap((l, i) => (l.transferWith ? [] : [{ l, i }]))
   const moves = data.lines.flatMap((l, i) => (l.transferWith ? [{ l, i }] : []))
@@ -398,7 +398,7 @@ export async function linkPayments(uid: string, subscriptionId: string, list: st
   const sub = await DB.prepare("SELECT 1 FROM subscriptions WHERE user_id = ? AND id = ?")
     .bind(uid, subscriptionId)
     .first()
-  if (!sub) throw new HttpError(404, "Recurring payment not found")
+  if (!sub) throw new HttpError(404, m.server_recurring_not_found())
   const { results } = await DB.prepare(`SELECT id, date FROM transactions WHERE user_id = ? AND subscription_id IS NULL
     AND transfer_id IS NULL AND id IN (SELECT value FROM json_each(?))`)
     .bind(uid, ids(list))
@@ -820,7 +820,7 @@ export async function finishImport(uid: string, data: z.infer<typeof finishImpor
     WHERE user_id = wallets.user_id AND wallet_id = wallets.id) AS done FROM wallets WHERE user_id = ? AND id = ?`)
     .bind(uid, data.walletId)
     .first<{ id: string; done: number }>()
-  if (!account) throw new HttpError(404, "Account not found")
+  if (!account) throw new HttpError(404, m.server_account_not_found())
   let opening = 0
   let reconciled = false
   if (data.closing && !account.done) {
@@ -835,10 +835,11 @@ export async function finishImport(uid: string, data: z.infer<typeof finishImpor
       ...(opening
         ? [
             DB.prepare(`INSERT INTO transactions (user_id, id, wallet_id, category_id, name, amount, date)
-            VALUES (?, ?, ?, '${CORRECTION_CATEGORY}', 'Opening balance', ?, ?)`).bind(
+            VALUES (?, ?, ?, '${CORRECTION_CATEGORY}', ?, ?, ?)`).bind(
               uid,
               crypto.randomUUID(),
               data.walletId,
+              m.server_opening_balance(),
               opening,
               unixOf(data.firstDay, tz)
             ),
@@ -868,10 +869,10 @@ export async function finishImport(uid: string, data: z.infer<typeof finishImpor
   }
   if (data.keep !== null)
     await DB.prepare(`INSERT INTO transactions (user_id, id, wallet_id, category_id, name, amount, date)
-      SELECT ?1, ?2, ?3, '${CORRECTION_CATEGORY}', 'Balance correction', diff, unixepoch()
+      SELECT ?1, ?2, ?3, '${CORRECTION_CATEGORY}', ?5, diff, unixepoch()
       FROM (SELECT ?4 - COALESCE(SUM(amount), 0) AS diff FROM transactions WHERE user_id = ?1 AND wallet_id = ?3 AND paid = 1)
       WHERE diff <> 0`)
-      .bind(uid, crypto.randomUUID(), data.walletId, data.keep)
+      .bind(uid, crypto.randomUUID(), data.walletId, data.keep, m.server_balance_correction())
       .run()
   return { opening, reconciled }
 }

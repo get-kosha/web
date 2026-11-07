@@ -1,6 +1,11 @@
 // The password reset email. Mail apps load no web fonts and drop CSS classes, so everything is inline styles
 // on react-email's table-based components, in a system font stack, light only. Preview with `npm run email`.
+import type { ReactNode } from "react"
+// Text follows the language of the request that asked for the reset; `npm run email` has none, so it shows English.
+import { ParaglideMessage } from "@inlang/paraglide-js-react"
 import { Body, Button, Container, Head, Heading, Hr, Html, Img, Link, Preview, Section, Text } from "react-email"
+import { m } from "../paraglide/messages.js"
+import { getLocale } from "../paraglide/runtime.js"
 
 export type ResetPasswordProps = {
   email: string
@@ -22,13 +27,14 @@ const ground = "#f0f0ed"
 
 export default function ResetPasswordEmail({ email, url, requestedAt, origin }: ResetPasswordProps) {
   const strong = { color: ink, fontWeight: 500 }
+  const bold = ({ children }: { children?: ReactNode }) => <span style={strong}>{children}</span>
   return (
-    <Html lang="en">
+    <Html lang={getLocale()}>
       <Head>
         <meta name="color-scheme" content="light only" />
         <meta name="supported-color-schemes" content="light only" />
       </Head>
-      <Preview>The link works once, for one hour.</Preview>
+      <Preview>{m.email_reset_preview()}</Preview>
       <Body style={{ margin: 0, padding: "40px 16px", backgroundColor: ground, fontFamily: font, color: ink }}>
         <Container style={{ maxWidth: 560 }}>
           <Section style={{ padding: 40, border: `1px solid ${border}`, borderRadius: 16, backgroundColor: "#ffffff" }}>
@@ -43,11 +49,10 @@ export default function ResetPasswordEmail({ email, url, requestedAt, origin }: 
                 letterSpacing: "-0.02em",
               }}
             >
-              Reset your password
+              {m.email_reset_title()}
             </Heading>
             <Text style={{ margin: "14px 0 0", fontSize: 15, lineHeight: "24px", color: subtle }}>
-              Someone asked to reset the password for the Kosha account <span style={strong}>{email}</span>. If that was
-              you, set a new one below. The link works once, for one hour.
+              <ParaglideMessage message={m.email_reset_body} inputs={{ email }} markup={{ strong: bold }} />
             </Text>
             <Button
               href={url}
@@ -63,10 +68,10 @@ export default function ResetPasswordEmail({ email, url, requestedAt, origin }: 
                 textDecoration: "none",
               }}
             >
-              Set a new password
+              {m.email_reset_button()}
             </Button>
             <Text style={{ margin: "24px 0 8px", fontSize: 13, lineHeight: "18px", color: muted }}>
-              Or paste this link into your browser:
+              {m.email_reset_paste()}
             </Text>
             <Text
               style={{
@@ -85,11 +90,10 @@ export default function ResetPasswordEmail({ email, url, requestedAt, origin }: 
             </Text>
             <Hr style={{ margin: "24px 0", border: "none", borderTop: `1px solid ${border}` }} />
             <Text style={{ margin: 0, fontSize: 14, lineHeight: "21px", color: subtle }}>
-              <span style={strong}>Didn't ask for this?</span> Ignore this email. Your password stays the same, and
-              nobody can change it without this link.
+              <ParaglideMessage message={m.email_reset_not_you} markup={{ strong: bold }} />
             </Text>
             <Text style={{ margin: "6px 0 0", fontSize: 12, lineHeight: "18px", color: muted }}>
-              Requested on {requestedAt}.
+              {m.email_reset_requested({ date: requestedAt })}
             </Text>
           </Section>
           <Text style={{ margin: "20px 0 0", textAlign: "center", fontSize: 12, lineHeight: "18px", color: muted }}>
@@ -98,7 +102,7 @@ export default function ResetPasswordEmail({ email, url, requestedAt, origin }: 
               {new URL(origin).host}
             </Link>
             <br />
-            You're getting this because a password reset was asked for on your account.
+            {m.email_reset_footer()}
           </Text>
         </Container>
       </Body>

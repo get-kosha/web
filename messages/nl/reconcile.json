@@ -1,0 +1,175 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "reconcile_hint_an_entry": "een transactie",
+  "reconcile_hint_exact_unticked": "{name} ({amount}) is precies het verschil. Staat die op het afschrift?",
+  "reconcile_hint_exact_ticked": "{name} ({amount}) is precies het verschil. Staat die echt op het afschrift?",
+  "reconcile_hint_wrong_way_in": "{name} is de helft van het verschil. Staat die verkeerd om, als bij in plaats van af?",
+  "reconcile_hint_wrong_way_out": "{name} is de helft van het verschil. Staat die verkeerd om, als af in plaats van bij?",
+  "reconcile_hint_swapped": "Was {name} {meant} in plaats van {amount}? Omgedraaide cijfers zijn een veelgemaakte vergissing.",
+  "reconcile_hint_decimal": "Was {name} {meant} in plaats van {amount}? Misschien staat de komma op de verkeerde plek.",
+  "reconcile_hint_pair": "{first} en {second} vormen samen het verschil.",
+  "reconcile_hint_duplicate": "{name} staat er twee keer in. Is er een dubbel?",
+  "reconcile_hint_late": "Transacties uit de laatste dagen van de periode kunnen ook pas op het volgende afschrift staan.",
+  "reconcile_hint_look_out": "Zoek op het afschrift naar kosten, een afschrijving of rente van {amount} die nog niet in Kosha staat.",
+  "reconcile_hint_look_in": "Zoek op het afschrift naar rente, een terugbetaling of een bijschrijving van {amount} die nog niet in Kosha staat.",
+  "reconcile_gap_uncovered": "Geen afschrift dekt {from} tot {to}.",
+  "reconcile_gap_opening": "{next} begint met {opening}, maar {previous} eindigt met {closing}. Er ontbreekt misschien een afschrift.",
+  "reconcile_head_title": "Afstemmen · Kosha",
+  "reconcile_title": "Afstemmen",
+  "reconcile_picker_sub": "Controleer een rekening aan de hand van het afschrift van je bank, of importeer het afschrift.",
+  "reconcile_picker_empty": "Voeg eerst een bankrekening of creditcard toe.",
+  "reconcile_reconciled_to": "Afgestemd tot {day}",
+  "reconcile_never_reconciled": "Nooit afgestemd",
+  "reconcile_transfer_to_name": "Naar {account}",
+  "reconcile_transfer_from_name": "Van {account}",
+  "reconcile_transfer_to_other": "Naar een andere rekening",
+  "reconcile_transfer_from_other": "Van een andere rekening",
+  "reconcile_no_payee": "Geen tegenpartij",
+  "reconcile_pdf_unsupported": "Kosha leest CSV-, OFX- en QFX-bestanden. Exporteer een van die formaten bij je bank.",
+  "reconcile_currency_mismatch": "Dit afschrift is in {statementCurrency}, en {account} is in {currency}.",
+  "reconcile_ofx_empty": "Dat OFX-bestand bevat geen transacties",
+  "reconcile_csv_empty": "Dat bestand bevat geen regels die Kosha kan lezen",
+  "reconcile_read_failed": "Dat bestand kon niet worden gelezen",
+  "reconcile_pick_category_first": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Kies eerst een categorie voor 1 regel",
+        "countPlural=other": "Kies eerst een categorie voor {count} regels"
+      }
+    }
+  ],
+  "reconcile_added": [
+    {
+      "declarations": ["input count", "input account", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "1 transactie toegevoegd aan {account}",
+        "countPlural=other": "{count} transacties toegevoegd aan {account}"
+      }
+    }
+  ],
+  "reconcile_add_failed": "Toevoegen mislukt",
+  "reconcile_change_failed": "Wijzigen mislukt",
+  "reconcile_finish_failed": "Afronden mislukt",
+  "reconcile_undone": "Afstemming ongedaan gemaakt",
+  "reconcile_undo_failed": "Ongedaan maken mislukt",
+  "reconcile_ask_failed": "Vragen mislukt",
+  "reconcile_hint_opening_gap": "Dit afschrift begint met {opening}, maar het laatste dat je hebt afgestemd eindigde met {closing}. Er ontbreekt misschien een afschrift daartussen.",
+  "reconcile_hint_single_missing": "{payee} ({amount}) op het afschrift is precies het verschil. Voeg die toe aan Kosha.",
+  "reconcile_hint_missing_closes": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Als je de regel toevoegt die in Kosha ontbreekt, is het verschil precies weg.",
+        "countPlural=other": "Als je de {count} regels toevoegt die in Kosha ontbreken, is het verschil precies weg."
+      }
+    }
+  ],
+  "reconcile_hint_missing_count": [
+    {
+      "declarations": ["input count", "input amount", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "1 regel op het afschrift staat nog niet in Kosha ({amount}).",
+        "countPlural=other": "{count} regels op het afschrift staan nog niet in Kosha ({amount})."
+      }
+    }
+  ],
+  "reconcile_hint_close": "{name}: Kosha heeft {kosha}, het afschrift {statement}.",
+  "reconcile_balance_label": "Eindsaldo ({currency})",
+  "reconcile_owed_label": "Openstaand volgens afschrift ({currency})",
+  "reconcile_account_title": "{account} afstemmen",
+  "reconcile_done_title": "{account} klopt met je afschrift",
+  "reconcile_done_checked": [
+    {
+      "declarations": ["input count", "input n", "input day", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "1 transactie gecontroleerd tot {day}.",
+        "countPlural=other": "{n} transacties gecontroleerd tot {day}."
+      }
+    }
+  ],
+  "reconcile_done_correction": "Een correctie van {amount} heeft het verschil weggewerkt.",
+  "reconcile_done_marked": "Kosha markeert ze als afgestemd en waarschuwt je voordat je er een wijzigt.",
+  "reconcile_back_to_accounts": "Terug naar rekeningen",
+  "reconcile_last_reconciled": "Laatst afgestemd tot {day}",
+  "reconcile_check_each": "Controleer elke transactie aan de hand van het afschrift van je bank.",
+  "reconcile_other_account": "Andere rekening",
+  "reconcile_drift": "Transacties die op {day} zijn afgestemd, zijn sindsdien met {amount} veranderd, dus ze kloppen niet meer met dat afschrift. Er is er een bewerkt of verwijderd; maak die afstemming ongedaan om ze opnieuw te controleren.",
+  "reconcile_pdf_off": "De regels uit deze pdf wijken {amount} af van het eindsaldo. Misschien is een regel verkeerd gelezen; vergelijk ze met de pdf voordat je iets toevoegt.",
+  "reconcile_reading": "{file} lezen…",
+  "reconcile_file_lines": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "1 regel",
+        "countPlural=other": "{count} regels"
+      }
+    }
+  ],
+  "reconcile_read_by_ai": "gelezen door AI",
+  "reconcile_another_file": "Ander bestand",
+  "reconcile_drop": "Sleep je afschrift hierheen, of {#choose}kies een bestand{/choose}",
+  "reconcile_drop_formats": "CSV, OFX of QFX van je bank. Kosha vinkt af wat klopt en toont wat er ontbreekt.",
+  "reconcile_drop_formats_pdf": "CSV, OFX of QFX van je bank, of een pdf-afschrift. Kosha vinkt af wat klopt en toont wat er ontbreekt.",
+  "reconcile_statement_date": "Datum afschrift",
+  "reconcile_quick_balance": "Kosha toont vandaag {#amount}{amount}{/amount}. Vergelijk dat met het huidige saldo bij je bank, niet met het beschikbare saldo.",
+  "reconcile_quick_owed": "Volgens Kosha sta je vandaag {#amount}{amount}{/amount} open. Vergelijk dat met het huidige saldo bij je bank, niet met het beschikbare saldo.",
+  "reconcile_same_as_bank": "Mijn bank toont hetzelfde",
+  "reconcile_missing_title": "Op het afschrift, niet in Kosha ({count})",
+  "reconcile_naming_payees": "Tegenpartijen benoemen…",
+  "reconcile_payee": "Tegenpartij",
+  "reconcile_category_for": "Categorie voor {name}",
+  "reconcile_pick_category": "Kies een categorie",
+  "reconcile_transfer_to": "Overboeking naar {account}",
+  "reconcile_transfer_from": "Overboeking van {account}",
+  "reconcile_include_line": "Deze regel toevoegen",
+  "reconcile_leave_out_line": "Deze regel weglaten",
+  "reconcile_saving_teaches": "Bij het opslaan onthoudt Kosha deze namen van tegenpartijen voor je volgende afschrift.",
+  "reconcile_add_to_kosha": "{count} toevoegen aan Kosha",
+  "reconcile_close_title": "Bijna, maar niet hetzelfde bedrag ({count})",
+  "reconcile_close_detail": "Kosha {kosha} op {koshaDay} · afschrift {statement} op {statementDay}",
+  "reconcile_use_amount": "{amount} gebruiken",
+  "reconcile_not_same": "Niet hetzelfde",
+  "reconcile_in_kosha": "In Kosha",
+  "reconcile_tick_title": "Vink af wat op het afschrift staat",
+  "reconcile_ticked_count": "{count} afgevinkt",
+  "reconcile_before_group": "Vóór dit afschrift ({count})",
+  "reconcile_before_hint": "Afgevinkt, omdat ze op eerdere afschriften stonden",
+  "reconcile_nothing": "Niets af te stemmen tot {day}.",
+  "reconcile_note_amount_differs": "Bedrag verschilt",
+  "reconcile_note_next_statement": "Waarschijnlijk op het volgende afschrift",
+  "reconcile_note_not_on_statement": "Niet op het afschrift",
+  "reconcile_note_still_due": "Nog te betalen",
+  "reconcile_after_group": "Na {day} ({count})",
+  "reconcile_after_hint": "Voor het volgende afschrift",
+  "reconcile_finding_title": "Het verschil vinden",
+  "reconcile_ask_ai": "Vraag AI",
+  "reconcile_past": "Eerdere afstemmingen",
+  "reconcile_history_entries": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "1 transactie",
+        "countPlural=other": "{count} transacties"
+      }
+    }
+  ],
+  "reconcile_corrected_by": "gecorrigeerd met {amount}",
+  "reconcile_figure_statement": "Afschrift",
+  "reconcile_figure_statement_owed": "Openstaand volgens afschrift",
+  "reconcile_figure_ticked": "Afgevinkt in Kosha",
+  "reconcile_figure_ticked_owed": "Openstaand volgens afgevinkt",
+  "reconcile_figure_difference": "Verschil",
+  "reconcile_figure_none": "Geen",
+  "reconcile_finish_with_correction": "Afronden met een correctie van {amount}",
+  "reconcile_enter_balance": "Vul het saldo op het afschrift in",
+  "reconcile_finish": "Afstemming afronden",
+  "reconcile_show": "Tonen"
+}

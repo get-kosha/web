@@ -1,0 +1,168 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "reconcile_hint_an_entry": "某笔交易",
+  "reconcile_hint_exact_unticked": "{name}（{amount}）正好等于差额。它在对账单上吗？",
+  "reconcile_hint_exact_ticked": "{name}（{amount}）正好等于差额。它真的在对账单上吗？",
+  "reconcile_hint_wrong_way_in": "{name} 是差额的一半。是否方向记反了，应该是入账而不是出账？",
+  "reconcile_hint_wrong_way_out": "{name} 是差额的一半。是否方向记反了，应该是出账而不是入账？",
+  "reconcile_hint_swapped": "{name} 应该是 {meant} 而不是 {amount} 吗？数字颠倒是常见的笔误。",
+  "reconcile_hint_decimal": "{name} 应该是 {meant} 而不是 {amount} 吗？小数点的位置可能错了。",
+  "reconcile_hint_pair": "{first} 和 {second} 加起来正好等于差额。",
+  "reconcile_hint_duplicate": "{name} 出现了两次。其中一笔是重复的吗？",
+  "reconcile_hint_late": "期末最后几天的交易可能会出现在下一份对账单上。",
+  "reconcile_hint_look_out": "在对账单上找一找 Kosha 中还没有的一笔 {amount} 的手续费、扣费或利息。",
+  "reconcile_hint_look_in": "在对账单上找一找 Kosha 中还没有的一笔 {amount} 的利息、退款或入账。",
+  "reconcile_gap_uncovered": "没有对账单覆盖 {from} 至 {to}。",
+  "reconcile_gap_opening": "{next} 的期初余额为 {opening}，但 {previous} 的期末余额为 {closing}。可能缺少一份对账单。",
+  "reconcile_head_title": "对账 · Kosha",
+  "reconcile_title": "对账",
+  "reconcile_picker_sub": "将账户与银行对账单核对，或导入对账单。",
+  "reconcile_picker_empty": "请先添加一个银行账户或信用卡。",
+  "reconcile_reconciled_to": "已对账至 {day}",
+  "reconcile_never_reconciled": "从未对账",
+  "reconcile_transfer_to_name": "转到 {account}",
+  "reconcile_transfer_from_name": "从 {account} 转入",
+  "reconcile_transfer_to_other": "转到另一个账户",
+  "reconcile_transfer_from_other": "从另一个账户转入",
+  "reconcile_no_payee": "无交易对象",
+  "reconcile_pdf_unsupported": "Kosha 可读取 CSV、OFX 和 QFX 文件。请从银行导出其中一种格式。",
+  "reconcile_currency_mismatch": "此对账单的货币是 {statementCurrency}，而 {account} 的货币是 {currency}。",
+  "reconcile_ofx_empty": "该 OFX 文件中没有交易",
+  "reconcile_csv_empty": "该文件中没有 Kosha 能读取的行",
+  "reconcile_read_failed": "无法读取该文件",
+  "reconcile_pick_category_first": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "请先为 {count} 行选择分类"
+      }
+    }
+  ],
+  "reconcile_added": [
+    {
+      "declarations": ["input count", "input account", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "已向 {account} 添加 {count} 笔交易"
+      }
+    }
+  ],
+  "reconcile_add_failed": "添加失败",
+  "reconcile_change_failed": "修改失败",
+  "reconcile_finish_failed": "无法完成",
+  "reconcile_undone": "已撤销对账",
+  "reconcile_undo_failed": "撤销失败",
+  "reconcile_ask_failed": "提问失败",
+  "reconcile_hint_opening_gap": "此对账单的期初余额为 {opening}，但你上次对账的对账单期末余额为 {closing}。中间可能缺少一份对账单。",
+  "reconcile_hint_single_missing": "对账单上的 {payee}（{amount}）正好等于差额。把它添加到 Kosha 吧。",
+  "reconcile_hint_missing_closes": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "添加 Kosha 中缺少的 {count} 行，差额就正好抵消。"
+      }
+    }
+  ],
+  "reconcile_hint_missing_count": [
+    {
+      "declarations": ["input count", "input amount", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "对账单上有 {count} 行还不在 Kosha 中（{amount}）。"
+      }
+    }
+  ],
+  "reconcile_hint_close": "{name}：Kosha 中为 {kosha}，对账单上为 {statement}。",
+  "reconcile_balance_label": "期末余额（{currency}）",
+  "reconcile_owed_label": "对账单欠款（{currency}）",
+  "reconcile_account_title": "对账 {account}",
+  "reconcile_done_title": "{account} 与对账单一致",
+  "reconcile_done_checked": [
+    {
+      "declarations": ["input count", "input n", "input day", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "已核对 {n} 笔交易，截至 {day}。"
+      }
+    }
+  ],
+  "reconcile_done_correction": "一笔 {amount} 的更正抵消了差额。",
+  "reconcile_done_marked": "Kosha 会将它们标记为已对账，修改其中任何一笔前都会先提醒你。",
+  "reconcile_back_to_accounts": "返回账户",
+  "reconcile_last_reconciled": "上次对账至 {day}",
+  "reconcile_check_each": "将每笔交易与银行对账单逐一核对。",
+  "reconcile_other_account": "其他账户",
+  "reconcile_drift": "{day} 对账的交易此后变化了 {amount}，与那份对账单已对不上。其中有交易被编辑或删除；撤销那次对账即可重新核对。",
+  "reconcile_pdf_off": "从此 PDF 读取的各行与其期末余额相差 {amount}。可能有一行识别有误；添加之前请对照 PDF 检查。",
+  "reconcile_reading": "正在读取 {file}…",
+  "reconcile_file_lines": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count} 行"
+      }
+    }
+  ],
+  "reconcile_read_by_ai": "由 AI 识别",
+  "reconcile_another_file": "换一个文件",
+  "reconcile_drop": "将对账单拖到这里，或{#choose}选择文件{/choose}",
+  "reconcile_drop_formats": "银行导出的 CSV、OFX 或 QFX 文件。Kosha 会勾选匹配的交易并列出缺少的交易。",
+  "reconcile_drop_formats_pdf": "银行导出的 CSV、OFX 或 QFX 文件，或 PDF 对账单。Kosha 会勾选匹配的交易并列出缺少的交易。",
+  "reconcile_statement_date": "对账单日期",
+  "reconcile_quick_balance": "Kosha 显示今天的余额为 {#amount}{amount}{/amount}。请与银行的当前余额比较，而不是可用余额。",
+  "reconcile_quick_owed": "Kosha 显示你今天欠款 {#amount}{amount}{/amount}。请与银行的当前余额比较，而不是可用余额。",
+  "reconcile_same_as_bank": "和银行显示的一致",
+  "reconcile_missing_title": "对账单上有，Kosha 中没有（{count}）",
+  "reconcile_naming_payees": "正在命名交易对象…",
+  "reconcile_payee": "交易对象",
+  "reconcile_category_for": "{name} 的分类",
+  "reconcile_pick_category": "请选择分类",
+  "reconcile_transfer_to": "转账到 {account}",
+  "reconcile_transfer_from": "从 {account} 转入",
+  "reconcile_include_line": "添加此行",
+  "reconcile_leave_out_line": "不添加此行",
+  "reconcile_saving_teaches": "保存后，Kosha 会记住这些交易对象名称，用于下一份对账单。",
+  "reconcile_add_to_kosha": "将 {count} 笔添加到 Kosha",
+  "reconcile_close_title": "接近，但金额不同（{count}）",
+  "reconcile_close_detail": "Kosha：{koshaDay} {kosha} · 对账单：{statementDay} {statement}",
+  "reconcile_use_amount": "使用 {amount}",
+  "reconcile_not_same": "不是同一笔",
+  "reconcile_in_kosha": "Kosha 中",
+  "reconcile_tick_title": "勾选对账单上有的交易",
+  "reconcile_ticked_count": "已勾选 {count} 笔",
+  "reconcile_before_group": "本对账单之前（{count}）",
+  "reconcile_before_hint": "已勾选，因为它们在之前的对账单上",
+  "reconcile_nothing": "截至 {day} 没有需要对账的交易。",
+  "reconcile_note_amount_differs": "金额不同",
+  "reconcile_note_next_statement": "可能在下一份对账单上",
+  "reconcile_note_not_on_statement": "不在对账单上",
+  "reconcile_note_still_due": "尚未到期",
+  "reconcile_after_group": "{day} 之后（{count}）",
+  "reconcile_after_hint": "留给下一份对账单",
+  "reconcile_finding_title": "查找差额",
+  "reconcile_ask_ai": "问 AI",
+  "reconcile_past": "过往对账",
+  "reconcile_history_entries": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count} 笔交易"
+      }
+    }
+  ],
+  "reconcile_corrected_by": "更正 {amount}",
+  "reconcile_figure_statement": "对账单",
+  "reconcile_figure_statement_owed": "对账单欠款",
+  "reconcile_figure_ticked": "Kosha 中已勾选",
+  "reconcile_figure_ticked_owed": "已勾选的欠款",
+  "reconcile_figure_difference": "差额",
+  "reconcile_figure_none": "无",
+  "reconcile_finish_with_correction": "添加 {amount} 的更正并完成",
+  "reconcile_enter_balance": "请输入对账单余额",
+  "reconcile_finish": "完成对账",
+  "reconcile_show": "显示"
+}

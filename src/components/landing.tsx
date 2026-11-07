@@ -2,7 +2,9 @@
 // It tells one story: add each payment in your pocket in seconds, then make sense of it at your desk.
 import type { ReactNode } from "react"
 import { CheckIcon, GithubLogoIcon, SparkleIcon } from "@phosphor-icons/react/ssr"
+import { ParaglideMessage } from "@inlang/paraglide-js-react"
 import { KoshaLogo } from "@/components/kosha-mark"
+import { LanguageSwitch } from "@/components/language-switch"
 import {
   AiSeesDemo,
   ApiDemo,
@@ -29,6 +31,7 @@ import {
   WeekDemo,
 } from "@/components/landing-demos"
 import { cn } from "@/lib/utils"
+import { m } from "@/paraglide/messages"
 
 const SOURCE = "https://github.com/amruthpillai/kosha"
 const SIGN_UP = "/login?mode=up"
@@ -90,7 +93,7 @@ function ChapterHead({ id, title, lead, tone }: { id: string; title: ReactNode; 
 function NeedsAi() {
   return (
     <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-current/25 px-2 py-0.5 font-sans text-xs font-medium tracking-normal">
-      <SparkleIcon weight="fill" className="size-3" aria-hidden="true" /> AI
+      <SparkleIcon weight="fill" className="size-3" aria-hidden="true" /> {m.landing_ai_badge()}
     </span>
   )
 }
@@ -138,8 +141,8 @@ export function Landing({ demo }: { demo: boolean }) {
           <ChapterHead
             id="pocket"
             tone="peacock"
-            title={`Last week took ${WEEK_STATS.seconds} seconds`}
-            lead={`${WEEK_STATS.entries} payments, each written down as it happened, most in about five seconds. You notice what you spend while it's fresh, and the month's totals are right with nothing to piece together later.`}
+            title={m.landing_pocket_title({ seconds: WEEK_STATS.seconds })}
+            lead={m.landing_pocket_lead({ count: WEEK_STATS.entries })}
           />
           <div className="relative mt-14 lg:mt-20">
             <div aria-hidden="true" className={cn(coin, "-bottom-12 -left-28 size-64")} />
@@ -150,8 +153,8 @@ export function Landing({ demo }: { demo: boolean }) {
             <Cell
               tone="peacock"
               className="lg:col-span-7"
-              title="Type it in one line"
-              body="Kosha reads the amount, date and account, and guesses the rest from what you entered before."
+              title={m.landing_quick_add_title()}
+              body={m.landing_quick_add_body()}
             >
               <QuickAddDemo />
             </Cell>
@@ -159,16 +162,16 @@ export function Landing({ demo }: { demo: boolean }) {
               tone="peacock"
               ai
               className="lg:col-span-5"
-              title="Or describe it"
-              body="Write it the way you'd say it, and AI fills in the amount, date, payee, category and note."
+              title={m.landing_sentence_title()}
+              body={m.landing_sentence_body()}
             >
               <SentenceDemo />
             </Cell>
             <Cell
               tone="peacock"
               className="lg:col-span-5"
-              title="Add it offline"
-              body="Install Kosha from your phone's browser. New entries you add without a signal sync when you're back online."
+              title={m.landing_offline_title()}
+              body={m.landing_offline_body()}
             >
               <OfflineDemo />
             </Cell>
@@ -176,8 +179,8 @@ export function Landing({ demo }: { demo: boolean }) {
               tone="peacock"
               ai
               className="lg:col-span-7"
-              title="Snap the receipt"
-              body="Kosha reads the payee, amount, date and time, and converts a receipt in another currency at today's rate."
+              title={m.landing_receipt_title()}
+              body={m.landing_receipt_body()}
             >
               <ReceiptDemo />
             </Cell>
@@ -188,19 +191,18 @@ export function Landing({ demo }: { demo: boolean }) {
           <div className={grid}>
             <div className="lg:col-span-7">
               <h2 id="desk-title" className={cn(h2, "max-w-[16ch]")}>
-                See the month while it's happening
+                {m.landing_desk_title()}
               </h2>
               <p className={cn("mt-6 max-w-[36rem] text-[17px] leading-relaxed text-pretty", quiet.paper)}>
-                Kosha compares each day with your average for the six months before, so by the 10th you know whether
-                you're on track.
+                {m.landing_desk_lead()}
               </p>
             </div>
             <Cell
               tone="paper"
               ai
               className="lg:col-span-5"
-              title="Read a note on last month"
-              body="In the first week of each month, Kosha writes what changed and why."
+              title={m.landing_recap_title()}
+              body={m.landing_recap_body()}
             >
               <RecapDemo />
             </Cell>
@@ -209,33 +211,27 @@ export function Landing({ demo }: { demo: boolean }) {
             <Cell
               tone="paper"
               className="lg:col-span-8"
-              title="Compare it with a usual month"
-              body="Kosha plots spending so far against your usual pace and projects where the month will end. Switch the month or the currency."
+              title={m.landing_overview_title()}
+              body={m.landing_overview_body()}
             >
               <OverviewDemo />
             </Cell>
-            <Cell
-              tone="paper"
-              ai
-              className="lg:col-span-4"
-              title="Ask about your money"
-              body="Answers come from your own entries, with links to the ones behind them."
-            >
+            <Cell tone="paper" ai className="lg:col-span-4" title={m.landing_ask_title()} body={m.landing_ask_body()}>
               <AskDemo />
             </Cell>
             <Cell
               tone="paper"
               className="lg:col-span-8"
-              title="See what's still to pay"
-              body="Set a schedule once. Kosha records a fixed amount on the day it's due and asks you when the amount varies. Skip or change any one payment."
+              title={m.landing_recurring_title()}
+              body={m.landing_recurring_body()}
             >
               <RecurringDemo />
             </Cell>
             <Cell
               tone="paper"
               className="lg:col-span-4"
-              title="Clear what needs attention"
-              body="Kosha flags a card to pay off, a bill not marked paid, a category above its usual and a value that's out of date."
+              title={m.landing_attention_title()}
+              body={m.landing_attention_body()}
             >
               <AttentionDemo />
             </Cell>
@@ -246,33 +242,21 @@ export function Landing({ demo }: { demo: boolean }) {
           <ChapterHead
             id="statements"
             tone="marigold"
-            title="Once a month, check it against the bank"
-            lead="Import a year of statements to start, and Kosha knows your usual month from day one. Each month after, it ticks off what matches and lists what's missing."
+            title={m.landing_statements_title()}
+            lead={m.landing_statements_lead()}
           />
           <div className={cn(grid, "mt-14 lg:mt-20")}>
             <div className="flex flex-col gap-12 lg:col-span-5">
-              <Cell
-                tone="marigold"
-                title="Import every statement at once"
-                body="Kosha reads CSV, OFX and QFX files, and PDFs when AI is on. Bank text turns into payees you recognise."
-              >
+              <Cell tone="marigold" title={m.landing_import_title()} body={m.landing_import_body()}>
                 <ImportDemo />
               </Cell>
-              <Cell
-                tone="marigold"
-                title="Spot the bills you haven't set up"
-                body="Kosha spots payees you pay on a steady rhythm. Make one recurring, and its past payments are filed under it."
-              >
+              <Cell tone="marigold" title={m.landing_spotted_title()} body={m.landing_spotted_body()}>
                 <SpottedDemo />
               </Cell>
             </div>
             {/* The reconciliation stays in view while the import and spotted payments scroll past it. */}
             <div className="lg:sticky lg:top-8 lg:col-span-7 lg:self-start">
-              <Cell
-                tone="marigold"
-                title="Find out why it doesn't add up"
-                body="When the difference isn't zero, Kosha runs a bookkeeper's checks, like swapped digits, a wrong sign or a duplicate. Try fixing this one."
-              >
+              <Cell tone="marigold" title={m.landing_reconcile_title()} body={m.landing_reconcile_body()}>
                 <ReconcileDemo />
               </Cell>
             </div>
@@ -280,33 +264,20 @@ export function Landing({ demo }: { demo: boolean }) {
         </Section>
 
         <Section id="accounts" className={paper}>
-          <ChapterHead
-            id="accounts"
-            tone="paper"
-            title="Every account in one net worth"
-            lead="Kosha adds up bank accounts, cash, cards and investments, each in its own currency, at daily exchange rates. Cards count what you owe, and investments count what you put in plus their latest gain."
-          />
+          <ChapterHead id="accounts" tone="paper" title={m.landing_accounts_title()} lead={m.landing_accounts_lead()} />
           <div className={cn(grid, "mt-14 lg:mt-20")}>
             <div className="lg:col-span-6">
               <NetWorthDemo />
             </div>
             <div className="flex flex-col gap-12 lg:col-span-6">
-              <Cell
-                tone="paper"
-                title="See what an exchange cost"
-                body="Kosha adds the fee to what the provider's rate lost against the market rate that day."
-              >
+              <Cell tone="paper" title={m.landing_exchange_title()} body={m.landing_exchange_body()}>
                 <ExchangeDemo />
               </Cell>
               <div className="grid flex-1 gap-x-6 gap-y-12 sm:grid-cols-2">
-                <Cell
-                  tone="paper"
-                  title="See what a trip cost"
-                  body="Create an event with the trip's dates, and new entries in that range join it."
-                >
+                <Cell tone="paper" title={m.landing_trip_title()} body={m.landing_trip_body()}>
                   <TripDemo />
                 </Cell>
-                <Cell tone="paper" title="Move money" body="Transfers between your accounts never count as spending.">
+                <Cell tone="paper" title={m.landing_transfer_title()} body={m.landing_transfer_body()}>
                   <TransferDemo />
                 </Cell>
               </div>
@@ -315,30 +286,25 @@ export function Landing({ demo }: { demo: boolean }) {
         </Section>
 
         <Section id="ai" className="bg-ink text-chalk [--ring-on:var(--color-chalk)] dark:bg-ink-deep">
-          <ChapterHead
-            id="ai"
-            tone="ink"
-            title="AI with your own key"
-            lead="Every AI feature is optional and runs on your provider: Anthropic, OpenAI, Gemini, OpenRouter, Ollama or any OpenAI-compatible endpoint. Turn on only what you want."
-          />
+          <ChapterHead id="ai" tone="ink" title={m.landing_ai_title()} lead={m.landing_ai_lead()} />
           <div className={cn(grid, "mt-14 lg:mt-20")}>
             <Cell
               tone="ink"
               className="lg:col-span-6"
-              title="Choose what AI can see"
-              body="Switch payee names off and Kosha sends a code instead, then puts the real name back in the reply."
+              title={m.landing_ai_sees_title()}
+              body={m.landing_ai_sees_body()}
             >
               <AiSeesDemo />
             </Cell>
             <Cell
               tone="ink"
               className="lg:col-span-6"
-              title="Use it from Claude, ChatGPT or Cursor"
+              title={m.landing_api_title()}
               body={
                 <>
-                  Accounts, entries, recurring payments and statements are also MCP tools and REST endpoints.{" "}
+                  {m.landing_api_body()}{" "}
                   <a href={API_DOCS} className={cn(textLink, "text-chalk")}>
-                    Read the API reference
+                    {m.landing_api_link()}
                   </a>
                 </>
               }
@@ -360,10 +326,10 @@ function Hero({ demo }: { demo: boolean }) {
   return (
     <header className={cn("relative isolate overflow-hidden px-4 sm:px-8 md:px-12", paper)}>
       <div className="mx-auto w-full max-w-[1280px]">
-        <nav aria-label="Main" className="flex h-[76px] items-center gap-1">
+        <nav aria-label={m.landing_nav_label()} className="flex h-[76px] items-center gap-1">
           <a
             href="/"
-            aria-label="Kosha home"
+            aria-label={m.landing_home_label()}
             className="mr-auto inline-flex h-11 items-center rounded-md transition-opacity hover:opacity-75"
           >
             <KoshaLogo className="text-[26px] text-foreground" />
@@ -372,33 +338,39 @@ function Hero({ demo }: { demo: boolean }) {
             <GithubLogoIcon className="size-5" aria-hidden="true" />
             <span className="max-sm:sr-only">GitHub</span>
           </a>
+          <LanguageSwitch className="h-11 rounded-lg px-2 text-sm text-subtle-foreground hover:bg-foreground/5 sm:px-3" />
           <a href="/login" className={navLink}>
-            Sign in
+            {m.landing_sign_in()}
           </a>
           <a href={SIGN_UP} className={cn(button, solid, "ml-1 h-11 px-4 text-sm max-sm:hidden")}>
-            Create an account
+            {m.landing_create_account()}
           </a>
         </nav>
 
         <div className="pt-6 pb-16 lg:pt-4 lg:pb-14">
           <h1 className={cn(display, "text-[clamp(2.5rem,5.6vw,5rem)] leading-[0.92] tracking-[-0.04em]")}>
-            <span className="block">Personal finance,</span>
-            <span className="block">a few seconds at a time</span>
+            <ParaglideMessage
+              message={m.landing_hero_title}
+              inputs={{}}
+              markup={{
+                first: ({ children }) => <span className="block">{children}</span>,
+                second: ({ children }) => <span className="block">{children}</span>,
+              }}
+            />
           </h1>
 
           <div className="mt-8 grid gap-x-12 gap-y-8 lg:mt-6 lg:grid-cols-12 lg:items-center">
             <div className="lg:col-span-6">
               <p className="max-w-[34rem] text-lg leading-relaxed text-pretty text-subtle-foreground">
-                Add each payment on your phone as you pay. At your desk, see how the month is going and check it against
-                your bank.
+                {m.landing_hero_lead()}
               </p>
               <p className="mt-3 text-sm text-muted-foreground">
-                Free and open source, MIT licensed.
+                {m.landing_hero_licence()}
                 {demo && (
                   <>
                     {" "}
                     <a href={DEMO_SIGN_IN} className={cn(textLink, "whitespace-nowrap")}>
-                      Try the demo account
+                      {m.landing_try_demo()}
                     </a>
                   </>
                 )}
@@ -406,10 +378,10 @@ function Hero({ demo }: { demo: boolean }) {
             </div>
             <div className="flex flex-wrap gap-3 lg:col-span-6 lg:justify-self-end">
               <a href={SIGN_UP} className={cn(button, solid)}>
-                Create an account
+                {m.landing_create_account()}
               </a>
               <a href={SOURCE} className={cn(button, outline)}>
-                <GithubLogoIcon className="size-[18px]" aria-hidden="true" /> View on GitHub
+                <GithubLogoIcon className="size-[18px]" aria-hidden="true" /> {m.landing_view_on_github()}
               </a>
             </div>
           </div>
@@ -435,12 +407,12 @@ npm run deploy`
 
 /** What comes with an account at getkosha.app, each line true of the app today. */
 const FACTS = [
-  "Passkeys and two-factor codes",
-  "Add entries offline on your phone",
-  "Import CSV, OFX and QFX files",
-  "Export to CSV or JSON, any time",
-  "AI only with your own key",
-  "Any currency, at daily rates",
+  m.landing_fact_passkeys,
+  m.landing_fact_offline,
+  m.landing_fact_import,
+  m.landing_fact_export,
+  m.landing_fact_ai,
+  m.landing_fact_currency,
 ]
 
 const footerLink = "inline-flex min-h-11 items-center rounded-sm hover:text-paper"
@@ -453,53 +425,56 @@ function Closing({ demo }: { demo: boolean }) {
         <h2
           className={cn(display, "max-w-[14ch] text-[clamp(2.75rem,6.6vw,5.5rem)] leading-[0.92] tracking-[-0.04em]")}
         >
-          Start with the next thing you buy
+          {m.landing_closing_title()}
         </h2>
         <p className={cn("mt-6 max-w-[36rem] text-lg leading-relaxed text-pretty", quiet.peacock)}>
-          Kosha is free and open source under the MIT licence. Use it here, or run your own copy on Cloudflare.
+          {m.landing_closing_lead()}
         </p>
 
         <div className="mt-14 grid gap-x-12 gap-y-12 lg:mt-16 lg:grid-cols-2">
           <div className="flex flex-col rounded-2xl bg-paper p-6 text-ink [--ring-on:var(--color-ink)] sm:p-8">
-            <h3 className="font-display text-[28px] leading-tight font-bold tracking-[-0.02em]">Use getkosha.app</h3>
+            <h3 className="font-display text-[28px] leading-tight font-bold tracking-[-0.02em]">
+              {m.landing_hosted_title()}
+            </h3>
             <p className="mt-2 max-w-[40ch] text-[15px] leading-relaxed text-pretty text-ink/75">
-              Your account, in your browser and on your phone. Nothing to install from a store.
+              {m.landing_hosted_body()}
             </p>
             <ul className="mt-6 grid gap-x-6 sm:grid-cols-2">
               {FACTS.map((f) => (
-                <li key={f} className="flex min-h-11 items-center gap-2.5 border-t border-ink/10 text-[15px]">
+                <li key={f()} className="flex min-h-11 items-center gap-2.5 border-t border-ink/10 text-[15px]">
                   <CheckIcon weight="bold" className="size-4 shrink-0 text-peacock" aria-hidden="true" />
-                  {f}
+                  {f()}
                 </li>
               ))}
             </ul>
             <div className="mt-auto flex flex-wrap items-center gap-x-5 gap-y-3 pt-8">
               <a href={SIGN_UP} className={cn(button, "bg-ink text-paper hover:bg-ink/85")}>
-                Create an account
+                {m.landing_create_account()}
               </a>
               {demo && (
                 <a href={DEMO_SIGN_IN} className={cn(textLink, "text-sm")}>
-                  Try the demo account
+                  {m.landing_try_demo()}
                 </a>
               )}
             </div>
           </div>
           <div className="flex min-w-0 flex-col lg:py-8">
-            <h3 className="font-display text-[28px] leading-tight font-bold tracking-[-0.02em]">Run your own copy</h3>
+            <h3 className="font-display text-[28px] leading-tight font-bold tracking-[-0.02em]">
+              {m.landing_self_host_title()}
+            </h3>
             <p className={cn("mt-2 max-w-[44ch] text-[15px] leading-relaxed text-pretty", quiet.peacock)}>
-              One Cloudflare Worker and a D1 database. The README has every step, including a script that imports a
-              Cashew backup.
+              {m.landing_self_host_body()}
             </p>
             <pre
               tabIndex={0}
-              aria-label="Commands to deploy your own copy"
+              aria-label={m.landing_self_host_commands_label()}
               className="mt-5 overflow-x-auto rounded-xl bg-peacock-night/70 px-5 py-4 font-mono text-[13px] leading-[1.9] text-paper/95"
             >
               {DEPLOY}
             </pre>
             <div className="mt-auto pt-6">
               <a href={SOURCE} className={cn(button, "border border-paper/40 hover:border-paper")}>
-                <GithubLogoIcon className="size-[18px]" aria-hidden="true" /> View on GitHub
+                <GithubLogoIcon className="size-[18px]" aria-hidden="true" /> {m.landing_view_on_github()}
               </a>
             </div>
           </div>
@@ -514,19 +489,19 @@ function Closing({ demo }: { demo: boolean }) {
             GitHub
           </a>
           <a href={API_DOCS} className={footerLink}>
-            API reference
+            {m.landing_footer_api()}
           </a>
           <a href="/privacy" className={footerLink}>
-            Privacy
+            {m.landing_footer_privacy()}
           </a>
           <a href="/terms" className={footerLink}>
-            Terms
+            {m.landing_footer_terms()}
           </a>
           <a href="/login" className={footerLink}>
-            Sign in
+            {m.landing_sign_in()}
           </a>
           <a href={`${SOURCE}/blob/main/LICENSE`} className={cn(footerLink, "basis-full sm:basis-auto")}>
-            © 2026 Kosha, MIT licence
+            {m.landing_footer_licence()}
           </a>
         </div>
       </div>

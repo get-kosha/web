@@ -7,9 +7,10 @@ import { AiMark } from "@/components/ai"
 import { CategoryIcon } from "@/components/category-icon"
 import { Meta, RATES, Rolling, appWindow, mockButton, mockPrimary, out, sum } from "@/components/landing-demos"
 import { Switch } from "@/components/ui/switch"
-import { convert, exchange, fmt, redactForAi, type AiShares } from "@/lib/core"
+import { convert, exchange, fmt, intlLocale, redactForAi, type AiShares } from "@/lib/core"
 import { differenceHints, payeeFor, starterCategory } from "@/lib/statement"
 import { cn } from "@/lib/utils"
+import { m } from "@/paraglide/messages"
 
 // ---------- Statements: bank text becomes payees ----------
 
@@ -30,13 +31,14 @@ const BANK_LINES = [
 ]
 /** Payees this person already has, so a bank's longer name lands on the one they use. */
 const KNOWN = ["Tesco", "Northwind Ltd"]
-const STARTERS: Record<string, { name: string; icon: string }> = {
-  groceries: { name: "Groceries", icon: "ph:shopping-cart" },
-  dining: { name: "Dining", icon: "ph:fork-knife" },
-  bills: { name: "Bills", icon: "ph:lightning" },
-  transit: { name: "Transit", icon: "ph:train" },
-  entertainment: { name: "Entertainment", icon: "ph:film-slate" },
-  salary: { name: "Salary", icon: "ph:briefcase" },
+// Names are message functions, called while rendering so each visit gets its own language.
+const STARTERS: Record<string, { name: () => string; icon: string }> = {
+  groceries: { name: m.landing_cat_groceries, icon: "ph:shopping-cart" },
+  dining: { name: m.landing_cat_dining, icon: "ph:fork-knife" },
+  bills: { name: m.landing_cat_bills, icon: "ph:lightning" },
+  transit: { name: m.landing_cat_transit, icon: "ph:train" },
+  entertainment: { name: m.landing_cat_entertainment, icon: "ph:film-slate" },
+  salary: { name: m.landing_cat_salary, icon: "ph:briefcase" },
 }
 const HAVE = new Set(Object.keys(STARTERS))
 const IMPORTED = BANK_LINES.map((l) => ({
@@ -48,7 +50,10 @@ const IMPORTED = BANK_LINES.map((l) => ({
 export function ImportDemo() {
   return (
     <div className={cn(appWindow, "flex h-full flex-col")}>
-      <ul className="flex flex-wrap gap-1.5 border-b px-4 py-3 @min-[480px]:px-5" aria-label="Statement files">
+      <ul
+        className="flex flex-wrap gap-1.5 border-b px-4 py-3 @min-[480px]:px-5"
+        aria-label={m.landing_import_files_label()}
+      >
         {FILES.map((f) => (
           <li
             key={f.name}
@@ -71,7 +76,7 @@ export function ImportDemo() {
             <span className="flex min-w-0 items-center gap-2 text-[13px]">
               <CategoryIcon icon={l.category?.icon} className="size-4" />
               <span className="truncate">{l.payee}</span>
-              <span className="truncate text-xs text-muted-foreground">{l.category?.name}</span>
+              <span className="truncate text-xs text-muted-foreground">{l.category?.name()}</span>
             </span>
             <span className={cn("num text-[13px] @max-[559px]:hidden", l.amount > 0 && "text-positive")}>
               {l.amount > 0 ? `+${fmt(l.amount, "eur")}` : out(-l.amount)}
@@ -81,9 +86,9 @@ export function ImportDemo() {
       </ul>
       <dl className="mt-auto grid grid-cols-3 gap-3 border-t bg-muted/50 px-4 py-3.5 text-xs @min-[480px]:px-5">
         {[
-          ["Accounts", "4, by account number"],
-          ["Overlaps", "9 lines counted once"],
-          ["Transfers", "4 pairs linked"],
+          [m.landing_import_accounts(), m.landing_import_accounts_value()],
+          [m.landing_import_overlaps(), m.landing_import_overlaps_value()],
+          [m.landing_import_transfers(), m.landing_import_transfers_value()],
         ].map(([k, v]) => (
           <div key={k} className="min-w-0">
             <dt className="text-muted-foreground">{k}</dt>
@@ -104,29 +109,37 @@ const OPENING = 51240
  * −34.21 where the receipt said −43.21: add the fee and the digits hint appears.
  */
 const STATEMENT = 288791
-const FEE: Rec = { id: "fee", day: "2026-10-31", name: "Account fee", amount: -500 }
+const fee = (): Rec => ({ id: "fee", day: "2026-10-31", name: m.landing_entry_account_fee(), amount: -500 })
 const STATEMENT_DAY = "2026-10-31"
-const ENTRIES: Rec[] = [
+const entryList = (): Rec[] => [
   { id: "salary", day: "2026-10-01", name: "Northwind Ltd", amount: 420000 },
-  { id: "rent", day: "2026-10-01", name: "Rent", amount: -124000 },
+  { id: "rent", day: "2026-10-01", name: m.landing_entry_rent(), amount: -124000 },
   { id: "spotify", day: "2026-10-06", name: "Spotify", amount: -1099 },
   { id: "tesco", day: "2026-10-09", name: "Tesco", amount: -3421 },
   { id: "pizza", day: "2026-10-14", name: "Pizza Hut", amount: -2490 },
   { id: "netflix", day: "2026-10-17", name: "Netflix", amount: -1399 },
   { id: "octopus", day: "2026-10-22", name: "Octopus Energy", amount: -8640 },
-  { id: "savings", day: "2026-10-28", name: "To Savings", amount: -40000 },
+  { id: "savings", day: "2026-10-28", name: m.landing_entry_to_savings(), amount: -40000 },
 ]
 const signed = (cents: number) => (cents < 0 ? out(-cents) : fmt(cents, "eur"))
-const shortDay = (day: string) => `${Number(day.slice(8))} Oct`
+const dayFormat = (): Intl.DateTimeFormatOptions => ({ day: "numeric", month: "short", timeZone: "UTC" })
+const noon = (day: string) => new Date(`${day}T12:00:00Z`)
+const shortDay = (day: string) => noon(day).toLocaleDateString(intlLocale(), dayFormat())
+/** A rate or price to four decimals, in the visitor's number format. */
+const four = (n: number, currency?: string) =>
+  n.toLocaleString(intlLocale(), {
+    minimumFractionDigits: 4,
+    ...(currency && { style: "currency", currency: currency.toUpperCase() }),
+  })
 
 export function ReconcileDemo() {
   const hintsRef = useRef<HTMLDivElement>(null)
   const finishRef = useRef<HTMLButtonElement>(null)
   const [unticked, setUnticked] = useState<Set<string>>(new Set())
   const [fixed, setFixed] = useState<Record<string, number>>({})
-  const [fee, setFee] = useState(false)
+  const [feeAdded, setFeeAdded] = useState(false)
   const [done, setDone] = useState(false)
-  const entries = [...ENTRIES, ...(fee ? [FEE] : [])].map((e) => ({ ...e, amount: fixed[e.id] ?? e.amount }))
+  const entries = [...entryList(), ...(feeAdded ? [fee()] : [])].map((e) => ({ ...e, amount: fixed[e.id] ?? e.amount }))
   const ticked = entries.filter((e) => !unticked.has(e.id))
   const left = entries.filter((e) => unticked.has(e.id))
   const cleared = OPENING + sum(ticked.map((e) => e.amount))
@@ -145,15 +158,18 @@ export function ReconcileDemo() {
   const action = (ids: string[]) => {
     if (ids.length !== 1) return null
     const e = entries.find((x) => x.id === ids[0])!
-    if (unticked.has(e.id)) return { label: `Tick ${e.name}`, run: () => toggle(e.id) }
+    if (unticked.has(e.id)) return { label: m.landing_reconcile_tick({ name: e.name }), run: () => toggle(e.id) }
     if (e.id === "tesco" && e.amount === -3421 && diff === -900)
-      return { label: `Change to ${out(4321)}`, run: () => setFixed({ ...fixed, tesco: -4321 }) }
+      return {
+        label: m.landing_reconcile_change_to({ amount: out(4321) }),
+        run: () => setFixed({ ...fixed, tesco: -4321 }),
+      }
     return null
   }
   // The button a visitor pressed goes away, so focus moves to what comes next: the hints, then Finish.
   useEffect(() => {
-    if (fee) hintsRef.current?.focus()
-  }, [fee])
+    if (feeAdded) hintsRef.current?.focus()
+  }, [feeAdded])
   useEffect(() => {
     if (fixed.tesco) finishRef.current?.focus()
   }, [fixed])
@@ -161,7 +177,7 @@ export function ReconcileDemo() {
   const reset = () => {
     setUnticked(new Set())
     setFixed({})
-    setFee(false)
+    setFeeAdded(false)
     setDone(false)
   }
 
@@ -169,16 +185,20 @@ export function ReconcileDemo() {
     <div className={cn(appWindow, "flex h-full flex-col")}>
       <div className="flex flex-wrap items-end justify-between gap-3 border-b px-4 py-4 @min-[480px]:px-5">
         <div>
-          <p className="text-sm font-medium">Current account</p>
-          <p className="text-xs text-muted-foreground">{done ? "Reconciled to 31 Oct" : "Statement to 31 Oct"}</p>
+          <p className="text-sm font-medium">{m.landing_account_current()}</p>
+          <p className="text-xs text-muted-foreground">
+            {done
+              ? m.landing_reconcile_reconciled_to({ day: shortDay(STATEMENT_DAY) })
+              : m.landing_reconcile_statement_to({ day: shortDay(STATEMENT_DAY) })}
+          </p>
         </div>
         <div className="text-right">
-          <p className="text-xs text-muted-foreground">Statement balance</p>
+          <p className="text-xs text-muted-foreground">{m.landing_reconcile_statement_balance()}</p>
           <p className="num mt-0.5 rounded-md border px-2.5 py-1 text-sm">{fmt(STATEMENT, "eur")}</p>
         </div>
       </div>
 
-      <ul className="py-1" aria-label="Entries in October">
+      <ul className="py-1" aria-label={m.landing_reconcile_entries_label()}>
         {entries.map((e) => {
           const on = !unticked.has(e.id)
           return (
@@ -219,16 +239,16 @@ export function ReconcileDemo() {
         })}
       </ul>
 
-      {!fee && (
+      {!feeAdded && (
         <div className="border-t px-4 py-3 @min-[480px]:px-5">
-          <p className="text-xs text-muted-foreground">On the statement, not in Kosha</p>
+          <p className="text-xs text-muted-foreground">{m.landing_reconcile_missing()}</p>
           <div className="mt-1.5 flex min-h-11 items-center gap-3 text-[13px]">
             <span className="w-[18px] shrink-0" />
-            <span className="num w-12 shrink-0 text-xs text-muted-foreground">31 Oct</span>
-            <span className="min-w-0 flex-1 truncate">Account fee</span>
+            <span className="num w-12 shrink-0 text-xs text-muted-foreground">{shortDay(STATEMENT_DAY)}</span>
+            <span className="min-w-0 flex-1 truncate">{m.landing_entry_account_fee()}</span>
             <span className="num">{out(500)}</span>
-            <button type="button" onClick={() => setFee(true)} className={cn(mockButton, "h-8")}>
-              Add it
+            <button type="button" onClick={() => setFeeAdded(true)} className={cn(mockButton, "h-8")}>
+              {m.landing_reconcile_add_it()}
             </button>
           </div>
         </div>
@@ -236,7 +256,7 @@ export function ReconcileDemo() {
 
       {!done && diff !== 0 && (
         <div ref={hintsRef} tabIndex={-1} className="mx-3 mb-3 rounded-xl bg-muted p-3.5" aria-live="polite">
-          <p className="text-xs font-medium">Finding the difference</p>
+          <p className="text-xs font-medium">{m.landing_reconcile_hints_title()}</p>
           <ul className="mt-2 flex flex-col gap-2">
             {hints.map((h) => {
               const a = action(h.ids)
@@ -257,17 +277,17 @@ export function ReconcileDemo() {
 
       <div className="mt-auto grid grid-cols-3 gap-3 border-t px-4 py-3.5 text-xs @min-[480px]:px-5">
         <div className="min-w-0">
-          <p className="text-muted-foreground">Statement</p>
+          <p className="text-muted-foreground">{m.landing_reconcile_statement()}</p>
           <p className="num mt-1 truncate text-sm">{fmt(STATEMENT, "eur")}</p>
         </div>
         <div className="min-w-0">
-          <p className="text-muted-foreground">Ticked in Kosha</p>
+          <p className="text-muted-foreground">{m.landing_reconcile_ticked()}</p>
           <p className="num mt-1 truncate text-sm">
             <Rolling cents={cleared} currency="eur" />
           </p>
         </div>
         <div className="min-w-0">
-          <p className="text-muted-foreground">Difference</p>
+          <p className="text-muted-foreground">{m.landing_reconcile_difference()}</p>
           <p className={cn("num mt-1 truncate text-sm", diff ? "text-warning" : "text-positive")}>
             <Rolling cents={diff} currency="eur" />
           </p>
@@ -276,14 +296,14 @@ export function ReconcileDemo() {
       <div className="flex items-center justify-between gap-3 border-t px-4 py-3 @min-[480px]:px-5">
         <p className="text-xs text-muted-foreground" aria-live="polite">
           {done
-            ? "Kosha warns before you change a reconciled entry."
+            ? m.landing_reconcile_done_note()
             : diff
-              ? "Tick what's on the statement."
-              : "It adds up."}
+              ? m.landing_reconcile_tick_note()
+              : m.landing_reconcile_adds_up()}
         </p>
         {done ? (
           <button type="button" onClick={reset} className={mockButton}>
-            Undo
+            {m.common_undo()}
           </button>
         ) : (
           <button
@@ -293,7 +313,7 @@ export function ReconcileDemo() {
             onClick={() => setDone(true)}
             className={mockPrimary}
           >
-            Finish reconciling
+            {m.landing_reconcile_finish()}
           </button>
         )}
       </div>
@@ -304,8 +324,8 @@ export function ReconcileDemo() {
 // ---------- Statements: recurring payments, spotted ----------
 
 const SPOTTED = [
-  { id: "gym", name: "PureGym", every: "Every month", payments: 7, amount: 3499 },
-  { id: "icloud", name: "iCloud+", every: "Every month", payments: 12, amount: 299 },
+  { id: "gym", name: "PureGym", payments: 7, amount: 3499 },
+  { id: "icloud", name: "iCloud+", payments: 12, amount: 299 },
 ]
 
 export function SpottedDemo() {
@@ -321,11 +341,11 @@ export function SpottedDemo() {
                 <span className="block truncate text-sm">{s.name}</span>
                 <Meta>
                   {on ? (
-                    `Recurring now, with its ${s.payments} past payments`
+                    m.landing_spotted_made({ count: s.payments })
                   ) : (
                     <>
-                      <span>{s.every}</span>
-                      <span>{s.payments} payments</span>
+                      <span>{m.landing_spotted_every_month()}</span>
+                      <span>{m.landing_spotted_payments({ count: s.payments })}</span>
                     </>
                   )}
                 </Meta>
@@ -343,7 +363,7 @@ export function SpottedDemo() {
                 }
                 className={cn(on ? mockButton : mockPrimary, "@max-[420px]:w-full")}
               >
-                {on ? "Undo" : "Make recurring"}
+                {on ? m.common_undo() : m.landing_spotted_make()}
               </button>
             </li>
           )
@@ -364,33 +384,34 @@ type DemoAccount = {
   gain?: number
   limit?: number
 }
-const ACCOUNTS: { group: string; items: DemoAccount[] }[] = [
+const accounts = (): { group: string; items: DemoAccount[] }[] => [
   {
-    group: "Bank and cash",
+    group: m.landing_networth_group_bank(),
     items: [
-      { name: "Current account", type: "bank", currency: "eur", balance: 481240 },
-      { name: "Savings in the UK", type: "bank", currency: "gbp", balance: 1265000 },
+      { name: m.landing_account_current(), type: "bank", currency: "eur", balance: 481240 },
+      { name: m.landing_account_savings_uk(), type: "bank", currency: "gbp", balance: 1265000 },
       { name: "Wise", type: "bank", currency: "usd", balance: 193015 },
     ],
   },
   {
-    group: "Credit cards",
-    items: [{ name: "Visa Card", type: "credit", currency: "eur", balance: 141230, limit: 600000 }],
+    group: m.landing_networth_group_credit(),
+    items: [{ name: m.landing_account_visa(), type: "credit", currency: "eur", balance: 141230, limit: 600000 }],
   },
   {
-    group: "Investments",
+    group: m.landing_networth_group_investments(),
     items: [
-      { name: "Index fund", type: "investment", currency: "eur", balance: 3800000, gain: 512500 },
-      { name: "US shares", type: "investment", currency: "usd", balance: 2150000, gain: 318000 },
+      { name: m.landing_account_index_fund(), type: "investment", currency: "eur", balance: 3800000, gain: 512500 },
+      { name: m.landing_account_us_shares(), type: "investment", currency: "usd", balance: 2150000, gain: 318000 },
     ],
   },
 ]
 const worth = (a: DemoAccount) => (a.type === "credit" ? -a.balance : a.balance + (a.gain ?? 0))
 const DISPLAY = [
-  { key: "eur", name: "euros" },
-  { key: "usd", name: "US dollars" },
-  { key: "gbp", name: "pounds" },
+  { key: "eur", title: m.landing_networth_in_eur },
+  { key: "usd", title: m.landing_networth_in_usd },
+  { key: "gbp", title: m.landing_networth_in_gbp },
 ]
+const percent = (n: number) => n.toLocaleString(intlLocale(), { style: "percent", maximumFractionDigits: 1 })
 
 /**
  * Net worth as the chapter's big figure, with the display-currency switch beside it, over the accounts
@@ -398,7 +419,8 @@ const DISPLAY = [
  */
 export function NetWorthDemo() {
   const [currency, setCurrency] = useState("eur")
-  const all = ACCOUNTS.flatMap((g) => g.items)
+  const groups = accounts()
+  const all = groups.flatMap((g) => g.items)
   const total = sum(all.map((a) => convert(worth(a), a.currency, currency, RATES)))
   const eurGbp = RATES.gbp / RATES.eur
 
@@ -406,16 +428,14 @@ export function NetWorthDemo() {
     <div className="flex h-full flex-col gap-8">
       <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
         <div className="min-w-0">
-          <p className="text-[15px] text-subtle-foreground">
-            Net worth, in {DISPLAY.find((d) => d.key === currency)!.name}
-          </p>
+          <p className="text-[15px] text-subtle-foreground">{DISPLAY.find((d) => d.key === currency)!.title()}</p>
           <div className="cents-muted mt-2 font-display text-[clamp(3rem,7vw,6rem)] leading-[0.95] font-bold tracking-[-0.04em] tabular-nums">
             <Rolling cents={total} currency={currency} />
           </div>
         </div>
         <div
           role="group"
-          aria-label="Show totals in"
+          aria-label={m.landing_networth_show_in()}
           className="inline-flex rounded-xl border border-foreground/15 p-1"
         >
           {DISPLAY.map((d) => (
@@ -434,7 +454,7 @@ export function NetWorthDemo() {
 
       <div className={cn(appWindow, "flex flex-1 flex-col")}>
         <div className="divide-y">
-          {ACCOUNTS.map((g) => (
+          {groups.map((g) => (
             <div key={g.group} className="px-4 py-3 @min-[480px]:px-5">
               <p className="text-xs text-muted-foreground">{g.group}</p>
               <ul className="mt-1">
@@ -447,15 +467,20 @@ export function NetWorthDemo() {
                         <div className="truncate">{a.name}</div>
                         <div className="truncate text-xs text-muted-foreground">
                           {a.type === "credit"
-                            ? `${Math.round((a.balance / a.limit!) * 100)}% of ${fmt(a.limit!, a.currency)} used`
-                            : `${a.type === "bank" ? "Bank" : "Investment"}, ${a.currency.toUpperCase()}`}
+                            ? m.landing_networth_credit_used({
+                                percent: percent(Math.round((a.balance / a.limit!) * 100) / 100),
+                                limit: fmt(a.limit!, a.currency),
+                              })
+                            : (a.type === "bank" ? m.landing_networth_bank_meta : m.landing_networth_investment_meta)({
+                                currency: a.currency.toUpperCase(),
+                              })}
                         </div>
                       </div>
                       <div className="shrink-0 text-right whitespace-nowrap">
                         <div className="num">{local < 0 ? out(-local, a.currency) : fmt(local, a.currency)}</div>
                         {a.gain ? (
                           <div className="num text-xs text-positive">
-                            +{fmt(a.gain, a.currency)}, {Math.round((a.gain / a.balance) * 1000) / 10}%
+                            +{fmt(a.gain, a.currency)}, {percent(a.gain / a.balance)}
                           </div>
                         ) : null}
                         {a.currency !== currency && (
@@ -473,7 +498,9 @@ export function NetWorthDemo() {
           ))}
         </div>
         <p className="num mt-auto border-t px-4 py-3 text-xs text-muted-foreground @min-[480px]:px-5">
-          €1 = £{eurGbp.toFixed(4)}, rates updated today
+          {m.landing_networth_rates({
+            rate: `${(1).toLocaleString(intlLocale(), { style: "currency", currency: "EUR", maximumFractionDigits: 0 })} = ${four(eurGbp, "gbp")}`,
+          })}
         </p>
       </div>
     </div>
@@ -488,25 +515,29 @@ export function ExchangeDemo() {
   return (
     <div className={cn(appWindow, "px-4 py-4 @min-[480px]:px-5")}>
       <div className="flex items-baseline justify-between gap-3 text-[13px]">
-        <span className="truncate font-medium">Current account to Savings in the UK</span>
-        <span className="shrink-0 text-xs text-muted-foreground">12 Nov, via Wise</span>
+        <span className="truncate font-medium">
+          {m.landing_exchange_route({ from: m.landing_account_current(), to: m.landing_account_savings_uk() })}
+        </span>
+        <span className="shrink-0 text-xs text-muted-foreground">
+          {m.landing_exchange_when({ day: shortDay("2026-11-12") })}
+        </span>
       </div>
       <dl className="mt-3 grid grid-cols-3 gap-x-4 gap-y-3 text-xs @min-[520px]:grid-cols-6">
         {[
-          ["Sent", fmt(50255, "eur")],
-          ["Fee", fmt(255, "eur")],
-          ["Received", fmt(42175, "gbp")],
-          ["Rate", SWAP.rate.toFixed(4)],
-          ["Market", SWAP.marketRate!.toFixed(4)],
-          ["Cost", fmt(Math.round(SWAP.totalCost), "eur")],
-        ].map(([k, v]) => (
+          ["sent", m.landing_exchange_sent(), fmt(50255, "eur")],
+          ["fee", m.landing_exchange_fee(), fmt(255, "eur")],
+          ["received", m.landing_exchange_received(), fmt(42175, "gbp")],
+          ["rate", m.landing_exchange_rate(), four(SWAP.rate)],
+          ["market", m.landing_exchange_market(), four(SWAP.marketRate!)],
+          ["cost", m.landing_exchange_cost(), fmt(Math.round(SWAP.totalCost), "eur")],
+        ].map(([k, label, v]) => (
           <div key={k} className="min-w-0">
-            <dt className="text-muted-foreground">{k}</dt>
+            <dt className="text-muted-foreground">{label}</dt>
             <dd
               className={cn(
                 "num mt-1 truncate text-sm",
-                k === "Market" && "text-muted-foreground",
-                k === "Cost" && "text-warning"
+                k === "market" && "text-muted-foreground",
+                k === "cost" && "text-warning"
               )}
             >
               {v}
@@ -519,35 +550,35 @@ export function ExchangeDemo() {
 }
 
 /** Transfers: two linked rows each, one out and one in, and an exchange's fee as its own expense. */
-const TRANSFERS: { day: string; rows: { account: string; text: string }[]; fee?: string }[] = [
+const transfers = (): { day: string; rows: { account: string; text: string }[]; fee?: string }[] => [
   {
-    day: "2 Nov",
+    day: "2026-11-02",
     rows: [
-      { account: "Current account", text: "−€1,180.00" },
-      { account: "Visa Card", text: "+€1,180.00" },
+      { account: m.landing_account_current(), text: out(118000) },
+      { account: m.landing_account_visa(), text: `+${fmt(118000, "eur")}` },
     ],
   },
   {
-    day: "28 Oct",
+    day: "2026-10-28",
     rows: [
-      { account: "Current account", text: "−€400.00" },
-      { account: "Index fund", text: "+€400.00" },
+      { account: m.landing_account_current(), text: out(40000) },
+      { account: m.landing_account_index_fund(), text: `+${fmt(40000, "eur")}` },
     ],
   },
   {
-    day: "12 Nov",
+    day: "2026-11-12",
     rows: [
-      { account: "Current account", text: "−€500.00" },
-      { account: "Savings in the UK", text: "+£421.75" },
+      { account: m.landing_account_current(), text: out(50000) },
+      { account: m.landing_account_savings_uk(), text: `+${fmt(42175, "gbp")}` },
     ],
-    fee: "−€2.55",
+    fee: out(255),
   },
 ]
 
 export function TransferDemo() {
   return (
     <div className={cn(appWindow, "flex h-full flex-col")}>
-      {TRANSFERS.map((t) => (
+      {transfers().map((t) => (
         <div key={t.day} className="border-b px-2 py-2">
           {t.rows.map((r, i) => (
             <div key={r.account} className="flex min-h-11 items-center gap-3 rounded-lg px-2 text-[13px]">
@@ -555,14 +586,14 @@ export function TransferDemo() {
                 {i === 0 ? (
                   <CategoryIcon icon="ph:arrows-left-right" className="size-4" />
                 ) : (
-                  <LinkSimpleIcon className="size-4 text-subtle-foreground" aria-label="Linked to the row above" />
+                  <LinkSimpleIcon className="size-4 text-subtle-foreground" aria-label={m.landing_transfer_linked()} />
                 )}
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block truncate">{r.account}</span>
                 <Meta>
-                  <span>Transfer</span>
-                  <span>{t.day}</span>
+                  <span>{m.landing_transfer_label()}</span>
+                  <span>{shortDay(t.day)}</span>
                 </Meta>
               </span>
               <span className={cn("num shrink-0", i === 1 && "text-positive")}>{r.text}</span>
@@ -574,9 +605,9 @@ export function TransferDemo() {
                 <CategoryIcon icon="ph:receipt" className="size-4" />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block truncate">Transfer fee</span>
+                <span className="block truncate">{m.landing_transfer_fee()}</span>
                 <Meta>
-                  <span>Counts as spending</span>
+                  <span>{m.landing_transfer_fee_counts()}</span>
                 </Meta>
               </span>
               <span className="num shrink-0">{t.fee}</span>
@@ -585,7 +616,7 @@ export function TransferDemo() {
         </div>
       ))}
       <p className="mt-auto border-t bg-muted/50 px-4 py-3 text-xs text-muted-foreground">
-        Paying off a card and moving savings stay out of income and spending. Only the fee counts.
+        {m.landing_transfer_note()}
       </p>
     </div>
   )
@@ -594,19 +625,21 @@ export function TransferDemo() {
 /** An event: everything added between its dates, totalled. */
 export function TripDemo() {
   const parts = [
-    { name: "Travel", icon: "ph:airplane-tilt", cents: 58000 },
-    { name: "Dining", icon: "ph:fork-knife", cents: 12450 },
-    { name: "Other", icon: "ph:shopping-bag", cents: 3810 },
+    { name: m.landing_cat_travel(), icon: "ph:airplane-tilt", cents: 58000 },
+    { name: m.landing_cat_dining(), icon: "ph:fork-knife", cents: 12450 },
+    { name: m.landing_cat_other(), icon: "ph:shopping-bag", cents: 3810 },
   ]
   const total = sum(parts.map((p) => p.cents))
   return (
     <div className={cn(appWindow, "flex h-full flex-col px-4 py-4 @min-[480px]:px-5")}>
       <div className="flex items-baseline justify-between gap-3 text-[13px]">
-        <span className="font-medium">Lisbon</span>
-        <span className="text-xs text-muted-foreground">12 to 16 Oct</span>
+        <span className="font-medium">{m.landing_trip_name()}</span>
+        <span className="text-xs text-muted-foreground">
+          {new Intl.DateTimeFormat(intlLocale(), dayFormat()).formatRange(noon("2026-10-12"), noon("2026-10-16"))}
+        </span>
       </div>
       <p className="num mt-2 text-2xl tracking-[-0.03em]">{fmt(total, "eur")}</p>
-      <p className="text-xs text-muted-foreground">23 entries</p>
+      <p className="text-xs text-muted-foreground">{m.landing_trip_entries({ count: 23 })}</p>
       <ul className="mt-4 flex flex-col border-t text-[13px]">
         {[
           ["Hotel Lis", 30400],
@@ -647,20 +680,20 @@ export function TripDemo() {
 
 // ---------- AI: what it can see ----------
 
-const SAMPLE_TX = {
+const sampleTx = () => ({
   payee: "Pizza Hut",
   amount: -2490,
   currency: "eur",
   day: "2026-11-14",
-  note: "Sam's birthday",
-  account: "Visa Card",
-}
-const SHARES: { key: keyof AiShares; label: string }[] = [
-  { key: "payee", label: "Payee names" },
-  { key: "amount", label: "Amounts" },
-  { key: "date", label: "Exact dates" },
-  { key: "note", label: "Notes" },
-  { key: "account", label: "Account names" },
+  note: m.landing_ai_sample_note(),
+  account: m.landing_account_visa(),
+})
+const SHARES: { key: keyof AiShares; label: () => string }[] = [
+  { key: "payee", label: m.landing_ai_share_payee },
+  { key: "amount", label: m.landing_ai_share_amount },
+  { key: "date", label: m.landing_ai_share_date },
+  { key: "note", label: m.landing_ai_share_note },
+  { key: "account", label: m.landing_ai_share_account },
 ]
 
 export function AiSeesDemo() {
@@ -672,20 +705,20 @@ export function AiSeesDemo() {
     note: false,
     account: false,
   })
-  const sent = JSON.stringify(redactForAi(SAMPLE_TX, shares, "demo"), null, 2)
+  const sent = JSON.stringify(redactForAi(sampleTx(), shares, "demo"), null, 2)
   return (
     <div className={cn(appWindow, "flex h-full flex-col")}>
       <div className="px-4 py-4 @min-[480px]:px-5">
-        <p className="text-[13px] font-medium">What AI can see</p>
+        <p className="text-[13px] font-medium">{m.landing_ai_sees_heading()}</p>
         <ul className="mt-2 divide-y">
           {SHARES.map((s) => (
             <li key={s.key}>
               <label className="flex min-h-11 items-center justify-between gap-3 text-sm">
-                {s.label}
+                {s.label()}
                 <Switch
                   checked={shares[s.key]}
                   onCheckedChange={(v) => setShares({ ...shares, [s.key]: v })}
-                  aria-label={s.label}
+                  aria-label={s.label()}
                 />
               </label>
             </li>
@@ -693,10 +726,10 @@ export function AiSeesDemo() {
         </ul>
       </div>
       <div className="flex flex-1 flex-col border-t bg-muted/50 px-4 py-4 @min-[480px]:px-5">
-        <p className="text-xs text-muted-foreground">Sent for a Pizza Hut payment</p>
+        <p className="text-xs text-muted-foreground">{m.landing_ai_sent_for({ payee: "Pizza Hut" })}</p>
         <pre
           tabIndex={0}
-          aria-label="What the request contains"
+          aria-label={m.landing_ai_request_label()}
           aria-live="polite"
           className="mt-2 flex-1 overflow-x-auto rounded-lg bg-card px-3.5 py-3 font-mono text-[12px] leading-relaxed"
         >
@@ -729,14 +762,18 @@ export function ApiDemo() {
   const [tab, setTab] = useState<"mcp" | "rest">("mcp")
   const copy = (text: string) =>
     navigator.clipboard.writeText(text).then(
-      () => toast("Copied"),
-      () => toast.error("Couldn't copy. Select the text instead.")
+      () => toast(m.landing_api_copied()),
+      () => toast.error(m.landing_api_copy_failed())
     )
 
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-chalk/10 bg-chalk/[0.04] text-chalk">
       <div className="flex items-center justify-between gap-3 border-b border-chalk/10 px-4 py-3 sm:px-5">
-        <div role="group" aria-label="Interface" className="inline-flex rounded-md bg-chalk/[0.06] p-0.5">
+        <div
+          role="group"
+          aria-label={m.landing_api_interface()}
+          className="inline-flex rounded-md bg-chalk/[0.06] p-0.5"
+        >
           {(
             [
               ["mcp", "MCP"],
@@ -759,19 +796,20 @@ export function ApiDemo() {
           onClick={() => copy(tab === "mcp" ? MCP_URL : REST)}
           className="inline-flex h-8 items-center gap-1.5 rounded-md px-2.5 text-xs text-chalk/70 transition-colors hover:bg-chalk/10 hover:text-chalk max-md:h-11"
         >
-          <CopyIcon className="size-3.5" aria-hidden="true" /> {tab === "mcp" ? "Copy connector URL" : "Copy request"}
+          <CopyIcon className="size-3.5" aria-hidden="true" />{" "}
+          {tab === "mcp" ? m.landing_api_copy_url() : m.landing_api_copy_request()}
         </button>
       </div>
       {tab === "mcp" ? (
         <div className="flex flex-col gap-4 p-4 sm:p-5">
-          <Code label="Custom connector">{MCP_URL}</Code>
-          <Code label="Tool call">{MCP_CALL}</Code>
-          <Code label="Result">{MCP_REPLY}</Code>
+          <Code label={m.landing_api_custom_connector()}>{MCP_URL}</Code>
+          <Code label={m.landing_api_tool_call()}>{MCP_CALL}</Code>
+          <Code label={m.landing_api_result()}>{MCP_REPLY}</Code>
         </div>
       ) : (
         <div className="flex flex-col gap-4 p-4 sm:p-5">
-          <Code label="Request">{REST}</Code>
-          <Code label="Response">{REST_REPLY}</Code>
+          <Code label={m.landing_api_request()}>{REST}</Code>
+          <Code label={m.landing_api_response()}>{REST_REPLY}</Code>
         </div>
       )}
     </div>

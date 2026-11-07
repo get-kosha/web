@@ -1,0 +1,316 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "import_columns": "Kolommen",
+  "import_columns_remembered": "zoals de vorige keer bij deze bank",
+  "import_columns_by_ai": "herkend door AI",
+  "import_columns_confident": "herkend aan de kopregel",
+  "import_columns_check": "controleer deze",
+  "import_columns_column": "Kolom {n}",
+  "import_role_ignore": "Negeren",
+  "import_role_date": "Datum",
+  "import_role_description": "Omschrijving",
+  "import_role_amount": "Bedrag",
+  "import_role_debit": "Af",
+  "import_role_credit": "Bij",
+  "import_role_balance": "Saldo",
+  "import_columns_dates": "Datums",
+  "import_columns_format": "Notatie",
+  "import_date_dmy": "Dag eerst (31/01/2026)",
+  "import_date_mdy": "Maand eerst (01/31/2026)",
+  "import_date_ymd": "Jaar eerst (2026-01-31)",
+  "import_date_text": "Maandnamen (31 jan 2026)",
+  "import_columns_invert": "Uitgaven staan als positief bedrag",
+  "import_columns_lines_read": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{n} regel gelezen",
+        "countPlural=*": "{n} regels gelezen"
+      }
+    }
+  ],
+  "import_head_title": "Afschriften importeren · Kosha",
+  "import_title": "Afschriften importeren",
+  "import_sub": "Kosha verdeelt je afschriften over rekeningen. Controleer ze een voor een, en daarna de tegenpartijen.",
+  "import_new_account": "Nieuwe rekening",
+  "import_type_bank": "Bankrekening",
+  "import_type_card": "Creditcard",
+  "import_error_pdf": "Kosha leest CSV-, OFX- en QFX-bestanden. Exporteer een van die formaten bij je bank.",
+  "import_error_no_transactions": "Dat bestand bevat geen transacties",
+  "import_error_no_rows": "Dat bestand bevat geen regels die Kosha kan lezen",
+  "import_error_unreadable": "Kon het niet lezen",
+  "import_error_check": "Kon je rekeningen niet controleren",
+  "import_drop": "Sleep je afschriften hierheen, of {#choose}kies bestanden{/choose}",
+  "import_drop_more": "Sleep meer afschriften hierheen, of {#choose}kies bestanden{/choose}",
+  "import_drop_hint": "CSV, OFX of QFX uit je internetbankieren. Voeg alle maanden die je hebt toe, van elke bank en kaart, in één keer.",
+  "import_drop_hint_pdf": "CSV, OFX of QFX uit je internetbankieren, of pdf-afschriften. Voeg alle maanden die je hebt toe, van elke bank en kaart, in één keer.",
+  "import_reading": "{name} lezen",
+  "import_dismiss": "{name} sluiten",
+  "import_reading_files": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{n} bestand lezen…",
+        "countPlural=*": "{n} bestanden lezen…"
+      }
+    }
+  ],
+  "import_summary": [
+    {
+      "declarations": [
+        "input count",
+        "input n",
+        "input accounts",
+        "input a",
+        "local countPlural = count: plural",
+        "local accountsPlural = accounts: plural"
+      ],
+      "selectors": ["countPlural", "accountsPlural"],
+      "match": {
+        "countPlural=one, accountsPlural=one": "{n} transactie in {a} rekening",
+        "countPlural=one, accountsPlural=*": "{n} transactie in {a} rekeningen",
+        "countPlural=*, accountsPlural=one": "{n} transacties in {a} rekening",
+        "countPlural=*, accountsPlural=*": "{n} transacties in {a} rekeningen"
+      }
+    }
+  ],
+  "import_check_payees": "Tegenpartijen controleren",
+  "import_into": "Importeren in",
+  "import_new_account_option": "Een nieuwe rekening",
+  "import_into_wallet": "In {name}",
+  "import_field_name": "Naam",
+  "import_field_type": "Type",
+  "import_field_currency": "Valuta",
+  "import_owed_on": "Openstaand op {day} ({currency})",
+  "import_balance_on": "Saldo op {day} ({currency})",
+  "import_closing_placeholder": "Van je laatste afschrift",
+  "import_closing_from_file": "Van het afschrift.",
+  "import_closing_hint": "Kosha berekent er het beginsaldo mee. Laat het leeg als je het niet weet.",
+  "import_credit_limit": "Kredietlimiet ({currency})",
+  "import_optional": "Optioneel",
+  "import_foreign": "{file} is in {from}, en deze rekening is in {to}.",
+  "import_off": "De regels uit {file} wijken {amount} af van het eindsaldo. Vergelijk ze met de pdf.",
+  "import_stmt_lines": [
+    {
+      "declarations": ["input count", "input n", "input from", "input to", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{n} regel, {from} tot {to}",
+        "countPlural=*": "{n} regels, {from} tot {to}"
+      }
+    }
+  ],
+  "import_stmt_no_lines": "Geen regels gelezen",
+  "import_move_label": "{file} naar een andere rekening verplaatsen",
+  "import_move_placeholder": "Verplaatsen naar…",
+  "import_remove": "{file} verwijderen",
+  "import_account_range": [
+    {
+      "declarations": ["input count", "input n", "input from", "input to", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{n} transactie van {from} tot {to}.",
+        "countPlural=*": "{n} transacties van {from} tot {to}."
+      }
+    }
+  ],
+  "import_account_dupes": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{n} regel die in meer dan één afschrift stond, is één keer geteld.",
+        "countPlural=*": "{n} regels die in meer dan één afschrift stonden, zijn één keer geteld."
+      }
+    }
+  ],
+  "import_review_title": "Tegenpartijen en categorieën controleren",
+  "import_review_sub": [
+    {
+      "declarations": [
+        "input count",
+        "input n",
+        "input payees",
+        "input p",
+        "local countPlural = count: plural",
+        "local payeesPlural = payees: plural"
+      ],
+      "selectors": ["countPlural", "payeesPlural"],
+      "match": {
+        "countPlural=one, payeesPlural=one": "{n} transactie: {p} tegenpartij. Een wijziging aan een tegenpartij geldt voor al haar transacties.",
+        "countPlural=one, payeesPlural=*": "{n} transactie: {p} tegenpartijen. Een wijziging aan een tegenpartij geldt voor al haar transacties.",
+        "countPlural=*, payeesPlural=one": "{n} transacties: {p} tegenpartij. Een wijziging aan een tegenpartij geldt voor al haar transacties.",
+        "countPlural=*, payeesPlural=*": "{n} transacties: {p} tegenpartijen. Een wijziging aan een tegenpartij geldt voor al haar transacties."
+      }
+    }
+  ],
+  "import_review_sub_transfers": [
+    {
+      "declarations": [
+        "input count",
+        "input n",
+        "input payees",
+        "input p",
+        "input transfers",
+        "input t",
+        "local countPlural = count: plural",
+        "local payeesPlural = payees: plural",
+        "local transfersPlural = transfers: plural"
+      ],
+      "selectors": ["countPlural", "payeesPlural", "transfersPlural"],
+      "match": {
+        "countPlural=one, payeesPlural=one, transfersPlural=one": "{n} transactie: {p} tegenpartij en {t} overboeking tussen je rekeningen. Een wijziging aan een tegenpartij geldt voor al haar transacties.",
+        "countPlural=one, payeesPlural=one, transfersPlural=*": "{n} transactie: {p} tegenpartij en {t} overboekingen tussen je rekeningen. Een wijziging aan een tegenpartij geldt voor al haar transacties.",
+        "countPlural=one, payeesPlural=*, transfersPlural=one": "{n} transactie: {p} tegenpartijen en {t} overboeking tussen je rekeningen. Een wijziging aan een tegenpartij geldt voor al haar transacties.",
+        "countPlural=one, payeesPlural=*, transfersPlural=*": "{n} transactie: {p} tegenpartijen en {t} overboekingen tussen je rekeningen. Een wijziging aan een tegenpartij geldt voor al haar transacties.",
+        "countPlural=*, payeesPlural=one, transfersPlural=one": "{n} transacties: {p} tegenpartij en {t} overboeking tussen je rekeningen. Een wijziging aan een tegenpartij geldt voor al haar transacties.",
+        "countPlural=*, payeesPlural=one, transfersPlural=*": "{n} transacties: {p} tegenpartij en {t} overboekingen tussen je rekeningen. Een wijziging aan een tegenpartij geldt voor al haar transacties.",
+        "countPlural=*, payeesPlural=*, transfersPlural=one": "{n} transacties: {p} tegenpartijen en {t} overboeking tussen je rekeningen. Een wijziging aan een tegenpartij geldt voor al haar transacties.",
+        "countPlural=*, payeesPlural=*, transfersPlural=*": "{n} transacties: {p} tegenpartijen en {t} overboekingen tussen je rekeningen. Een wijziging aan een tegenpartij geldt voor al haar transacties."
+      }
+    }
+  ],
+  "import_review_nothing": "Alles uit deze afschriften staat al in Kosha, dus er valt niets toe te voegen.",
+  "import_review_back": "Rekeningen",
+  "import_review_show": "Tonen",
+  "import_tab_check": "Te controleren ({n})",
+  "import_tab_all": "Alle tegenpartijen ({n})",
+  "import_tab_transfers": "Overboekingen ({n})",
+  "import_naming": "Tegenpartijen benoemen…",
+  "import_rest": "Zet de rest in",
+  "import_rest_label": "Categorie voor de rest",
+  "import_rest_placeholder": "een categorie",
+  "import_leave_them_out": "Weglaten",
+  "import_apply": "Toepassen",
+  "import_transfer_pair": "{from} naar {to}",
+  "import_not_transfer": "Geen overboeking",
+  "import_transfer_from": "Overboeking van {name}",
+  "import_transfer_to": "Overboeking naar {name}",
+  "import_leave_out": "Weglaten",
+  "import_show_more": "Nog {n} tonen",
+  "import_all_sorted": "Elke tegenpartij heeft een categorie.",
+  "import_nothing_new": "Niets nieuws om te importeren",
+  "import_without_category": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{n} tegenpartij zonder categorie",
+        "countPlural=*": "{n} tegenpartijen zonder categorie"
+      }
+    }
+  ],
+  "import_ready": "Klaar wanneer jij het bent",
+  "import_button": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{n} transactie importeren",
+        "countPlural=*": "{n} transacties importeren"
+      }
+    }
+  ],
+  "import_payee_for": "Tegenpartij voor {text}",
+  "import_payments_range": [
+    {
+      "declarations": ["input count", "input n", "input from", "input to", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{n} betaling, {from} tot {to}",
+        "countPlural=*": "{n} betalingen, {from} tot {to}"
+      }
+    }
+  ],
+  "import_category_for": "Categorie voor {payee}",
+  "import_pick_category": "Kies een categorie",
+  "import_hide_lines": "Transacties verbergen",
+  "import_show_lines": "Transacties tonen",
+  "import_progress_setup": "{name} instellen",
+  "import_progress_adding": [
+    {
+      "declarations": ["input count", "input n", "input name", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{n} transactie toevoegen aan {name}",
+        "countPlural=*": "{n} transacties toevoegen aan {name}"
+      }
+    }
+  ],
+  "import_progress_transfers": "Overboekingen tussen je rekeningen koppelen",
+  "import_progress_checking": "{name} afstemmen met het afschrift",
+  "import_importing": "Importeren",
+  "import_failed": "{error}. Wat al is opgeslagen, blijft opgeslagen; als je het opnieuw probeert, gaat het daar verder.",
+  "import_back_to_review": "Terug naar de controle",
+  "import_done_title": "Je afschriften zijn binnen",
+  "import_done_summary": [
+    {
+      "declarations": [
+        "input count",
+        "input n",
+        "input accounts",
+        "input a",
+        "local countPlural = count: plural",
+        "local accountsPlural = accounts: plural"
+      ],
+      "selectors": ["countPlural", "accountsPlural"],
+      "match": {
+        "countPlural=one, accountsPlural=one": "{n} transactie in {a} rekening.",
+        "countPlural=one, accountsPlural=*": "{n} transactie in {a} rekeningen.",
+        "countPlural=*, accountsPlural=one": "{n} transacties in {a} rekening.",
+        "countPlural=*, accountsPlural=*": "{n} transacties in {a} rekeningen."
+      }
+    }
+  ],
+  "import_done_summary_transfers": [
+    {
+      "declarations": [
+        "input count",
+        "input n",
+        "input accounts",
+        "input a",
+        "input transfers",
+        "input t",
+        "local countPlural = count: plural",
+        "local accountsPlural = accounts: plural",
+        "local transfersPlural = transfers: plural"
+      ],
+      "selectors": ["countPlural", "accountsPlural", "transfersPlural"],
+      "match": {
+        "countPlural=one, accountsPlural=one, transfersPlural=one": "{n} transactie in {a} rekening, met {t} overboeking ertussen gekoppeld.",
+        "countPlural=one, accountsPlural=one, transfersPlural=*": "{n} transactie in {a} rekening, met {t} overboekingen ertussen gekoppeld.",
+        "countPlural=one, accountsPlural=*, transfersPlural=one": "{n} transactie in {a} rekeningen, met {t} overboeking ertussen gekoppeld.",
+        "countPlural=one, accountsPlural=*, transfersPlural=*": "{n} transactie in {a} rekeningen, met {t} overboekingen ertussen gekoppeld.",
+        "countPlural=*, accountsPlural=one, transfersPlural=one": "{n} transacties in {a} rekening, met {t} overboeking ertussen gekoppeld.",
+        "countPlural=*, accountsPlural=one, transfersPlural=*": "{n} transacties in {a} rekening, met {t} overboekingen ertussen gekoppeld.",
+        "countPlural=*, accountsPlural=*, transfersPlural=one": "{n} transacties in {a} rekeningen, met {t} overboeking ertussen gekoppeld.",
+        "countPlural=*, accountsPlural=*, transfersPlural=*": "{n} transacties in {a} rekeningen, met {t} overboekingen ertussen gekoppeld."
+      }
+    }
+  ],
+  "import_done_matches": "Klopt met het afschrift tot {day}",
+  "import_transactions": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{n} transactie",
+        "countPlural=*": "{n} transacties"
+      }
+    }
+  ],
+  "import_done_recurring": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Kosha zag {n} betaling die terugkomt. Stel hem in als terugkerend.",
+        "countPlural=*": "Kosha zag {n} betalingen die terugkomen. Stel ze in als terugkerend."
+      }
+    }
+  ],
+  "import_done_overview": "Naar je overzicht",
+  "import_done_transactions": "Naar de transacties"
+}

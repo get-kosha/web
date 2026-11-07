@@ -1,0 +1,189 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "reconcile_hint_an_entry": "операция",
+  "reconcile_hint_exact_unticked": "{name} ({amount}) — ровно разница. Эта операция есть в выписке?",
+  "reconcile_hint_exact_ticked": "{name} ({amount}) — ровно разница. Эта операция точно есть в выписке?",
+  "reconcile_hint_wrong_way_in": "{name} — ровно половина разницы. Может, направление перепутано и это поступление, а не списание?",
+  "reconcile_hint_wrong_way_out": "{name} — ровно половина разницы. Может, направление перепутано и это списание, а не поступление?",
+  "reconcile_hint_swapped": "Может, {name} — это {meant}, а не {amount}? Переставленные цифры — частая ошибка.",
+  "reconcile_hint_decimal": "Может, {name} — это {meant}, а не {amount}? Возможно, запятая стоит не на месте.",
+  "reconcile_hint_pair": "{first} и {second} вместе дают разницу.",
+  "reconcile_hint_duplicate": "{name} встречается дважды. Может, одна из операций — дубликат?",
+  "reconcile_hint_late": "Операции последних дней периода могут попасть уже в следующую выписку.",
+  "reconcile_hint_look_out": "Поищите в выписке комиссию, списание или проценты на {amount}, которых ещё нет в Kosha.",
+  "reconcile_hint_look_in": "Поищите в выписке проценты, возврат или поступление на {amount}, которых ещё нет в Kosha.",
+  "reconcile_gap_uncovered": "Нет выписки за период с {from} по {to}.",
+  "reconcile_gap_opening": "{next} начинается с баланса {opening}, а {previous} заканчивается на {closing}. Возможно, не хватает выписки.",
+  "reconcile_head_title": "Сверка · Kosha",
+  "reconcile_title": "Сверка",
+  "reconcile_picker_sub": "Сверьте счёт с банковской выпиской или импортируйте выписку.",
+  "reconcile_picker_empty": "Сначала добавьте банковский счёт или карту.",
+  "reconcile_reconciled_to": "Сверено по {day}",
+  "reconcile_never_reconciled": "Ещё не сверялся",
+  "reconcile_transfer_to_name": "На {account}",
+  "reconcile_transfer_from_name": "С {account}",
+  "reconcile_transfer_to_other": "На другой счёт",
+  "reconcile_transfer_from_other": "С другого счёта",
+  "reconcile_no_payee": "Без контрагента",
+  "reconcile_pdf_unsupported": "Kosha читает файлы CSV, OFX и QFX. Выгрузите один из них в интернет-банке.",
+  "reconcile_currency_mismatch": "Эта выписка в {statementCurrency}, а счёт {account} — в {currency}.",
+  "reconcile_ofx_empty": "В этом файле OFX нет операций",
+  "reconcile_csv_empty": "В этом файле нет строк, которые Kosha может прочитать",
+  "reconcile_read_failed": "Не удалось прочитать файл",
+  "reconcile_pick_category_first": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Сначала выберите категорию для {count} строки",
+        "countPlural=few": "Сначала выберите категорию для {count} строк",
+        "countPlural=many": "Сначала выберите категорию для {count} строк",
+        "countPlural=other": "Сначала выберите категорию для {count} строки"
+      }
+    }
+  ],
+  "reconcile_added": [
+    {
+      "declarations": ["input count", "input account", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "На счёт {account} добавлена {count} операция",
+        "countPlural=few": "На счёт {account} добавлены {count} операции",
+        "countPlural=many": "На счёт {account} добавлено {count} операций",
+        "countPlural=other": "На счёт {account} добавлено {count} операции"
+      }
+    }
+  ],
+  "reconcile_add_failed": "Не удалось добавить",
+  "reconcile_change_failed": "Не удалось изменить",
+  "reconcile_finish_failed": "Не удалось завершить",
+  "reconcile_undone": "Сверка отменена",
+  "reconcile_undo_failed": "Не удалось отменить",
+  "reconcile_ask_failed": "Не удалось спросить",
+  "reconcile_hint_opening_gap": "Эта выписка начинается с баланса {opening}, а последняя сверенная заканчивалась на {closing}. Возможно, не хватает выписки между ними.",
+  "reconcile_hint_single_missing": "{payee} ({amount}) в выписке — ровно разница. Добавьте эту операцию в Kosha.",
+  "reconcile_hint_missing_closes": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Если добавить {count} строку, которой нет в Kosha, разница закроется полностью.",
+        "countPlural=few": "Если добавить {count} строки, которых нет в Kosha, разница закроется полностью.",
+        "countPlural=many": "Если добавить {count} строк, которых нет в Kosha, разница закроется полностью.",
+        "countPlural=other": "Если добавить {count} строки, которых нет в Kosha, разница закроется полностью."
+      }
+    }
+  ],
+  "reconcile_hint_missing_count": [
+    {
+      "declarations": ["input count", "input amount", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} строки из выписки ещё нет в Kosha ({amount}).",
+        "countPlural=few": "{count} строк из выписки ещё нет в Kosha ({amount}).",
+        "countPlural=many": "{count} строк из выписки ещё нет в Kosha ({amount}).",
+        "countPlural=other": "{count} строки из выписки ещё нет в Kosha ({amount})."
+      }
+    }
+  ],
+  "reconcile_hint_close": "{name}: в Kosha {kosha}, в выписке {statement}.",
+  "reconcile_balance_label": "Конечный баланс ({currency})",
+  "reconcile_owed_label": "Задолженность по выписке ({currency})",
+  "reconcile_account_title": "Сверка: {account}",
+  "reconcile_done_title": "{account} совпадает с выпиской",
+  "reconcile_done_checked": [
+    {
+      "declarations": ["input count", "input n", "input day", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Проверена {n} операция по {day}.",
+        "countPlural=few": "Проверены {n} операции по {day}.",
+        "countPlural=many": "Проверено {n} операций по {day}.",
+        "countPlural=other": "Проверено {n} операции по {day}."
+      }
+    }
+  ],
+  "reconcile_done_correction": "Разницу закрыла корректировка на {amount}.",
+  "reconcile_done_marked": "Kosha отмечает их как сверенные и предупредит, прежде чем вы что-то из них измените.",
+  "reconcile_back_to_accounts": "Назад к счетам",
+  "reconcile_last_reconciled": "Последняя сверка по {day}",
+  "reconcile_check_each": "Сверьте каждую операцию с банковской выпиской.",
+  "reconcile_other_account": "Другой счёт",
+  "reconcile_drift": "Операции, сверенные {day}, с тех пор изменились на {amount} и больше не сходятся с той выпиской. Одну из них изменили или удалили; отмените ту сверку, чтобы проверить их заново.",
+  "reconcile_pdf_off": "Строки, прочитанные из этого PDF, расходятся с конечным балансом на {amount}. Возможно, какая-то строка распознана неверно; сверьте их с PDF, прежде чем добавлять.",
+  "reconcile_reading": "Читаем {file}…",
+  "reconcile_file_lines": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} строка",
+        "countPlural=few": "{count} строки",
+        "countPlural=many": "{count} строк",
+        "countPlural=other": "{count} строки"
+      }
+    }
+  ],
+  "reconcile_read_by_ai": "распознано ИИ",
+  "reconcile_another_file": "Другой файл",
+  "reconcile_drop": "Перетащите выписку сюда или {#choose}выберите файл{/choose}",
+  "reconcile_drop_formats": "CSV, OFX или QFX из вашего банка. Kosha отметит совпадения и покажет, чего не хватает.",
+  "reconcile_drop_formats_pdf": "CSV, OFX или QFX из вашего банка либо выписка в PDF. Kosha отметит совпадения и покажет, чего не хватает.",
+  "reconcile_statement_date": "Дата выписки",
+  "reconcile_quick_balance": "Сегодня Kosha показывает {#amount}{amount}{/amount}. Сравните с текущим балансом в банке, а не с доступным.",
+  "reconcile_quick_owed": "Сегодня Kosha показывает задолженность {#amount}{amount}{/amount}. Сравните с текущим балансом в банке, а не с доступным.",
+  "reconcile_same_as_bank": "В банке то же самое",
+  "reconcile_missing_title": "Есть в выписке, нет в Kosha ({count})",
+  "reconcile_naming_payees": "Подбираем названия контрагентов…",
+  "reconcile_payee": "Контрагент",
+  "reconcile_category_for": "Категория для {name}",
+  "reconcile_pick_category": "Выберите категорию",
+  "reconcile_transfer_to": "Перевод на {account}",
+  "reconcile_transfer_from": "Перевод с {account}",
+  "reconcile_include_line": "Добавить эту строку",
+  "reconcile_leave_out_line": "Не добавлять эту строку",
+  "reconcile_saving_teaches": "При сохранении Kosha запомнит эти названия контрагентов для следующей выписки.",
+  "reconcile_add_to_kosha": "Добавить в Kosha: {count}",
+  "reconcile_close_title": "Похоже, но сумма другая ({count})",
+  "reconcile_close_detail": "Kosha: {kosha}, {koshaDay} · выписка: {statement}, {statementDay}",
+  "reconcile_use_amount": "Взять {amount}",
+  "reconcile_not_same": "Это другое",
+  "reconcile_in_kosha": "В Kosha",
+  "reconcile_tick_title": "Отметьте то, что есть в выписке",
+  "reconcile_ticked_count": "Отмечено: {count}",
+  "reconcile_before_group": "До этой выписки ({count})",
+  "reconcile_before_hint": "Отмечены, так как были в прошлых выписках",
+  "reconcile_nothing": "До {day} сверять нечего.",
+  "reconcile_note_amount_differs": "Сумма отличается",
+  "reconcile_note_next_statement": "Скорее всего, в следующей выписке",
+  "reconcile_note_not_on_statement": "Нет в выписке",
+  "reconcile_note_still_due": "Ещё не оплачено",
+  "reconcile_after_group": "После {day} ({count})",
+  "reconcile_after_hint": "Для следующей выписки",
+  "reconcile_finding_title": "Поиск разницы",
+  "reconcile_ask_ai": "Спросить ИИ",
+  "reconcile_past": "Прошлые сверки",
+  "reconcile_history_entries": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} операция",
+        "countPlural=few": "{count} операции",
+        "countPlural=many": "{count} операций",
+        "countPlural=other": "{count} операции"
+      }
+    }
+  ],
+  "reconcile_corrected_by": "скорректировано на {amount}",
+  "reconcile_figure_statement": "Выписка",
+  "reconcile_figure_statement_owed": "Задолженность по выписке",
+  "reconcile_figure_ticked": "Отмечено в Kosha",
+  "reconcile_figure_ticked_owed": "Задолженность по отмеченным",
+  "reconcile_figure_difference": "Разница",
+  "reconcile_figure_none": "Нет",
+  "reconcile_finish_with_correction": "Завершить с корректировкой на {amount}",
+  "reconcile_enter_balance": "Введите баланс по выписке",
+  "reconcile_finish": "Завершить сверку",
+  "reconcile_show": "Показать"
+}

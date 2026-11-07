@@ -1,0 +1,367 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "accounts_head_title": "Konten · Kosha",
+  "accounts_title": "Konten",
+  "accounts_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{#num}{count}{/num} Konto",
+        "countPlural=other": "{#num}{count}{/num} Konten"
+      }
+    }
+  ],
+  "accounts_new": "Neues Konto",
+  "accounts_group_bank_cash": "Bank & Bargeld",
+  "accounts_group_credit": "Kreditkarten",
+  "accounts_group_investment": "Geldanlagen",
+  "accounts_type_bank_account": "Bankkonto",
+  "accounts_type_bank": "Bank",
+  "accounts_type_cash": "Bargeld",
+  "accounts_type_credit": "Kreditkarte",
+  "accounts_type_investment": "Geldanlage",
+  "accounts_archived": "Archiviert",
+  "accounts_archived_count": "Archiviert ({count})",
+  "accounts_archived_label": "Archivierte Konten",
+  "accounts_archived_hint": "Archivierte Konten zählen weiter zum Vermögen",
+  "accounts_details_label": "Details zu {name}",
+  "accounts_edit_title": "{name} bearbeiten",
+  "accounts_rates_updated_today": "heute aktualisiert",
+  "accounts_rates_updated_yesterday": "gestern aktualisiert",
+  "accounts_rates_updated_on": "aktualisiert am {date}",
+  "accounts_rate_shown": "{currency} umgerechnet mit {rate} = {base}",
+  "accounts_net_worth": "Vermögen",
+  "accounts_change_period": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "in {count} Monat",
+        "countPlural=other": "in {count} Monaten"
+      }
+    }
+  ],
+  "accounts_range_label": "Zeitraum",
+  "accounts_range_1y": "1 J",
+  "accounts_range_2y": "2 J",
+  "accounts_range_all": "Alle",
+  "accounts_worth_empty": "Deine Vermögenskurve beginnt nach deinem ersten Monat mit Buchungen.",
+  "accounts_chart_other": "Weitere Konten",
+  "accounts_chart_gains": "Nicht realisierte Gewinne",
+  "accounts_chart_key": "Legende",
+  "accounts_no_value": "Noch kein Wert erfasst",
+  "accounts_value_age": "Wert ist {days} Tage alt",
+  "accounts_value_as_of": "Wert vom {date}",
+  "accounts_available": "{amount} verfügbar",
+  "accounts_last_entry": "letzte Buchung am {date}",
+  "accounts_credit_used": "{percent} von {limit}",
+  "accounts_balance": "Kontostand",
+  "accounts_another_account": "anderes Konto",
+  "accounts_restored_toast": "{name} wiederhergestellt",
+  "accounts_archived_toast": "{name} archiviert",
+  "accounts_save_failed": "Speichern fehlgeschlagen",
+  "accounts_delete_failed": "Löschen fehlgeschlagen",
+  "accounts_in_month": "Ein · {month}",
+  "accounts_out_month": "Aus · {month}",
+  "accounts_moved": "Umgebucht",
+  "accounts_recent": "Zuletzt",
+  "accounts_all_count": "Alle {n} →",
+  "accounts_no_transactions": "Noch keine Buchungen.",
+  "accounts_untitled": "Ohne Namen",
+  "accounts_update_value_hint": "Trag den heutigen Wert von deinem Broker ein, damit dein Vermögen aktuell bleibt.",
+  "accounts_update_gains": "Wertentwicklung aktualisieren",
+  "accounts_reconciled_to": "Abgeglichen bis {date}",
+  "accounts_match_bank": "Stimmt das mit deiner Bank überein?",
+  "accounts_reconcile_hint": "Hak die Buchungen auf deinem Kontoauszug ab oder importiere ihn, und Kosha findet, was fehlt.",
+  "accounts_reconcile": "Abgleichen",
+  "accounts_fix_balance": "Kontostand korrigieren",
+  "accounts_edit_account": "Konto bearbeiten",
+  "accounts_unarchive": "Wiederherstellen",
+  "accounts_archive": "Archivieren",
+  "accounts_enter_balance": "Gib den Kontostand ein",
+  "accounts_corrected_by": "Um {amount} korrigiert",
+  "accounts_balance_matches": "Kontostand stimmt bereits",
+  "accounts_fix_title": "{name} korrigieren",
+  "accounts_fix_credit_description": "Gib ein, was du laut Kreditkartenabrechnung schuldest.",
+  "accounts_fix_description": "Gib den Kontostand ein, den deine Bank anzeigt.",
+  "accounts_currently_owed": "Aktuell offen",
+  "accounts_fix_adds_correction": "Bucht eine Korrektur von {amount}.",
+  "accounts_no_correction": "Keine Korrektur nötig.",
+  "accounts_enter_credit_limit": "Gib das Kreditlimit ein",
+  "accounts_updated": "Konto aktualisiert",
+  "accounts_added": "Konto hinzugefügt",
+  "accounts_name": "Name",
+  "accounts_type": "Art",
+  "accounts_currency": "Währung",
+  "accounts_credit_limit": "Kreditlimit",
+  "accounts_credit_hint": "Der Kontostand ist das, was du noch ausgeben kannst. Beim Vermögen zählt die Differenz als Schulden.",
+  "accounts_investment_hint": "Der Kontostand ist das Geld, das du eingezahlt hast. Nutze ab und zu „Wertentwicklung aktualisieren“, um Kursgewinne in dein Vermögen aufzunehmen.",
+  "accounts_invested_so_far": "Bisher investiert",
+  "accounts_current_balance": "Aktueller Kontostand",
+  "accounts_optional": "(optional)",
+  "accounts_save_adds_correction": "Beim Speichern wird eine Korrektur von {amount} gebucht.",
+  "accounts_correct_hint": "Gib den Kontostand deiner Bank ein, um ihn zu korrigieren.",
+  "accounts_archived_checkbox": "Archiviert {#muted}(in der Schnelleingabe ausgeblendet, zählt weiter zum Vermögen){/muted}",
+  "accounts_gains_history": "Verlauf der Wertentwicklung",
+  "accounts_delete_valuation": "Eintrag vom {date} löschen",
+  "accounts_add_account": "Konto hinzufügen",
+  "accounts_delete_title": "{name} löschen?",
+  "accounts_delete_description": "Dieses Konto hat keine Buchungen. Beim Löschen wird auch der Verlauf der Wertentwicklung gelöscht.",
+  "accounts_delete_account": "Konto löschen",
+  "accounts_fx_title": "Währungsumtausch",
+  "accounts_fx_sent": [
+    {
+      "declarations": ["input count", "input sent", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{#num}{sent}{/num} in {count} Umbuchung gesendet",
+        "countPlural=other": "{#num}{sent}{/num} in {count} Umbuchungen gesendet"
+      }
+    }
+  ],
+  "accounts_fx_cost": "Kosten ggü. Marktkurs {#num}{cost}{/num}",
+  "accounts_fx_year": "Jahr",
+  "accounts_fx_date": "Datum",
+  "accounts_fx_route": "Konten",
+  "accounts_fx_sent_column": "Gesendet",
+  "accounts_fx_rate": "Kurs",
+  "accounts_fx_market": "Markt",
+  "accounts_fx_received": "Erhalten",
+  "accounts_fx_cost_column": "Kosten",
+  "accounts_fx_footer": "Die Kosten sind die Gebühr plus das, was der Kurs des Anbieters an dem Tag gegenüber dem Marktkurs verloren hat. Negativ heißt, du warst besser als der Markt. Bearbeite eine Umbuchung unter Aktivität, um Gebühr oder Anbieter einzutragen.",
+
+  "subs_head_title": "Wiederkehrend · Kosha",
+  "subs_title": "Wiederkehrend",
+  "subs_count_active": "{#num}{count}{/num} aktiv",
+  "subs_count_transfers": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{#num}{count}{/num} Umbuchung",
+        "countPlural=other": "{#num}{count}{/num} Umbuchungen"
+      }
+    }
+  ],
+  "subs_count_ended": "{#num}{count}{/num} beendet",
+  "subs_new_button": "Neue Zahlung",
+  "subs_new_title": "Neue wiederkehrende Zahlung",
+  "subs_every_day": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": { "countPlural=one": "täglich", "countPlural=other": "alle {count} Tage" }
+    }
+  ],
+  "subs_every_week": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": { "countPlural=one": "wöchentlich", "countPlural=other": "alle {count} Wochen" }
+    }
+  ],
+  "subs_every_month": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": { "countPlural=one": "monatlich", "countPlural=other": "alle {count} Monate" }
+    }
+  ],
+  "subs_every_year": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": { "countPlural=one": "jährlich", "countPlural=other": "alle {count} Jahre" }
+    }
+  ],
+  "subs_interval_day": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": { "countPlural=one": "täglich", "countPlural=other": "alle {count} Tage" }
+    }
+  ],
+  "subs_interval_week": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": { "countPlural=one": "wöchentlich", "countPlural=other": "alle {count} Wochen" }
+    }
+  ],
+  "subs_interval_month": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": { "countPlural=one": "monatlich", "countPlural=other": "alle {count} Monate" }
+    }
+  ],
+  "subs_interval_year": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": { "countPlural=one": "jährlich", "countPlural=other": "alle {count} Jahre" }
+    }
+  ],
+  "subs_group_bills": "Rechnungen",
+  "subs_group_subscriptions": "Abos",
+  "subs_group_income": "Einnahmen",
+  "subs_group_transfers": "Umbuchungen",
+  "subs_kind_bill": "Rechnung",
+  "subs_kind_subscription": "Abo",
+  "subs_kind_income": "Einnahme",
+  "subs_kind_transfer": "Umbuchung",
+  "subs_end_this_bill": "Diese Rechnung beenden",
+  "subs_end_this_subscription": "Dieses Abo beenden",
+  "subs_end_this_income": "Diese Einnahme beenden",
+  "subs_end_this_transfer": "Diese Umbuchung beenden",
+  "subs_end_bill": "Rechnung beenden",
+  "subs_end_subscription": "Abo beenden",
+  "subs_end_income": "Einnahme beenden",
+  "subs_end_transfer": "Umbuchung beenden",
+  "subs_committed": "Fest verplant pro Monat",
+  "subs_committed_hint": "Rechnungen {bills} · Abos {subscriptions}",
+  "subs_per_year": "Pro Jahr",
+  "subs_share_of_income": "{percent} der Einnahmen",
+  "subs_no_income": "Keine Einnahmen im letzten Jahr",
+  "subs_due_soon": "Fällig in den nächsten 7 Tagen",
+  "subs_nothing_due": "Nichts fällig",
+  "subs_moved_to_savings": "Zurückgelegt",
+  "subs_moved_hint": "pro Monat · nicht mitgezählt",
+  "subs_list_label": "Wiederkehrende Zahlungen",
+  "subs_empty": "Noch nichts Wiederkehrendes. Trag Miete, ein Abo oder eine regelmäßige Umbuchung einmal ein, und Kosha behält sie im Blick.",
+  "subs_column_every": "Rhythmus",
+  "subs_column_next": "Nächste",
+  "subs_column_amount": "Betrag",
+  "subs_column_per_month": "Pro Monat",
+  "subs_not_counted": "nicht mitgezählt",
+  "subs_ended_count": "Beendet ({count})",
+  "subs_sorted_hint": "Sortiert nach Kosten pro Monat",
+  "subs_details_label": "Details zu {name}",
+  "subs_adopt_title": "{name} als wiederkehrend anlegen",
+  "subs_adopt_description": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Die {count} bisherige Zahlung wird zugeordnet und erscheint im Verlauf.",
+        "countPlural=other": "Die {count} bisherigen Zahlungen werden zugeordnet und erscheinen im Verlauf."
+      }
+    }
+  ],
+  "subs_hide_failed": "Ausblenden fehlgeschlagen",
+  "subs_spotted_title": "Sieht wiederkehrend aus",
+  "subs_spotted_hint": "Erkannt an Zahlungen in festem Rhythmus",
+  "subs_about_amount": "etwa {amount}",
+  "subs_spotted_paid": [
+    {
+      "declarations": ["input count", "input day", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count}-mal bezahlt, zuletzt am {day}",
+        "countPlural=other": "{count}-mal bezahlt, zuletzt am {day}"
+      }
+    }
+  ],
+  "subs_spotted_next": "als Nächstes etwa {day}",
+  "subs_make_recurring": "Als wiederkehrend anlegen",
+  "subs_dismiss_label": "{name} ist nicht wiederkehrend",
+  "subs_not_recurring": "Nicht wiederkehrend",
+  "subs_varies_asks": "variabel, fragt jedes Mal",
+  "subs_ended_on_short": "beendet {date}",
+  "subs_strip_label": "Zahlungen in den nächsten 30 Tagen: {list}",
+  "subs_strip_empty": "Keine Zahlungen in den nächsten 30 Tagen",
+  "subs_strip_title": "Nächste 30 Tage",
+  "subs_strip_bills": "Rechnungen & Abos",
+  "subs_update_payment_failed": "Zahlung konnte nicht aktualisiert werden",
+  "subs_ended_toast": "{name} beendet",
+  "subs_resumed_toast": "{name} fortgesetzt",
+  "subs_update_schedule_failed": "Zeitplan konnte nicht aktualisiert werden",
+  "subs_deleted": "Gelöscht",
+  "subs_delete_failed": "Löschen fehlgeschlagen",
+  "subs_detail_meta": "{kind} · {every} · seit {date}",
+  "subs_varies": "variabel",
+  "subs_ended_on": "Beendet am {date}",
+  "subs_ended_hint": "Keine weiteren Zahlungen. Bisherige Zahlungen bleiben in Aktivität.",
+  "subs_next_on": "Nächste: {date}",
+  "subs_will_ask": "Kosha fragt nach dem Betrag",
+  "subs_auto_recorded": "Wird am Tag automatisch erfasst",
+  "subs_mark_when_out": "Als bezahlt markieren, sobald sie abgeht",
+  "subs_changed_once": "nur für diese Zahlung geändert",
+  "subs_ends_on": "endet am {date}",
+  "subs_enter_amount_button": "Betrag eingeben",
+  "subs_marked_paid": "Als bezahlt markiert",
+  "subs_mark_done_now": "Jetzt erledigt",
+  "subs_mark_paid_now": "Jetzt bezahlt",
+  "subs_change_amount": "Betrag ändern",
+  "subs_skipped": "Übersprungen",
+  "subs_skip_this": "Diese überspringen",
+  "subs_no_more_scheduled": "Keine weiteren Zahlungen geplant.",
+  "subs_moved_so_far": "Bisher umgebucht",
+  "subs_paid_so_far": "Bisher bezahlt",
+  "subs_payments": "Zahlungen",
+  "subs_history": "Verlauf",
+  "subs_no_payments": "Noch keine Zahlungen.",
+  "subs_moved": "Umgebucht",
+  "subs_paid": "Bezahlt",
+  "subs_all_payments": "Alle {count} Zahlungen →",
+  "subs_resume": "Fortsetzen",
+  "subs_delete_title": "{name} löschen?",
+  "subs_end_title": "{name} beenden?",
+  "subs_delete_description": "Damit wird der Zeitplan entfernt. Bisherige Zahlungen bleiben als normale Buchungen in Aktivität.",
+  "subs_end_description": "Nach heute gibt es keine Zahlungen mehr. Bisherige Zahlungen bleiben in Aktivität, und du kannst später fortsetzen.",
+  "subs_edit_title": "{name} bearbeiten",
+  "subs_edit_transfer": "Umbuchung bearbeiten",
+  "subs_edit_payment": "Zahlung bearbeiten",
+  "subs_enter_amount": "Gib einen Betrag ein",
+  "subs_recorded": "Erfasst",
+  "subs_payment_updated": "Zahlung aktualisiert",
+  "subs_save_payment_failed": "Zahlung konnte nicht gespeichert werden",
+  "subs_pay_transfer_description": "Gib ein, was diesmal umgebucht wurde.",
+  "subs_pay_description": "Gib ein, was diesmal bezahlt wurde.",
+  "subs_edit_once_description": "Nur diese Zahlung ändert sich. Alle anderen behalten den regulären Betrag und das Datum.",
+  "subs_amount": "Betrag",
+  "subs_date": "Datum",
+  "subs_received_in": "Erhalten auf {name}",
+  "subs_leave_empty_rate": "Leer lassen, um den Wechselkurs zu verwenden.",
+  "subs_note": "Notiz",
+  "subs_reset_regular": "Zurücksetzen",
+  "subs_record": "Erfassen",
+  "subs_save_this_payment": "Diese Zahlung speichern",
+
+  "subs_unit_days": "Tage",
+  "subs_unit_weeks": "Wochen",
+  "subs_unit_months": "Monate",
+  "subs_unit_years": "Jahre",
+  "subs_enter_usual_amount": "Gib den üblichen Betrag ein",
+  "subs_pick_to_account": "Wähl das Konto, auf das das Geld geht",
+  "subs_pick_category": "Wähl eine Kategorie",
+  "subs_transfer_added": "Wiederkehrende Umbuchung hinzugefügt",
+  "subs_income_added": "Wiederkehrende Einnahme hinzugefügt",
+  "subs_bill_added": "Rechnung hinzugefügt",
+  "subs_subscription_added": "Abo hinzugefügt",
+  "subs_type": "Art",
+  "subs_name": "Name",
+  "subs_from": "Von",
+  "subs_to": "An",
+  "subs_account": "Konto",
+  "subs_category": "Kategorie",
+  "subs_usual_amount": "Üblicher Betrag",
+  "subs_repeats_every": "Wiederholt sich alle",
+  "subs_interval": "Intervall",
+  "subs_variable": "Betrag ändert sich jedes Mal",
+  "subs_variable_hint": "Kosha erinnert dich, wenn sie fällig ist, und fragt nach dem Betrag, statt sie automatisch zu erfassen.",
+  "subs_amount_received": "Erhaltener Betrag",
+  "subs_next_payment": "Nächste Zahlung",
+  "subs_first_payment": "Erste Zahlung",
+  "subs_ends": "Endet",
+  "subs_never": "Nie",
+  "subs_backfill_hint": "Kosha erfasst die Zahlungen vom {date} bis heute.",
+  "subs_auto_pay": "Zahlungen automatisch erfassen",
+  "subs_changes_hint": "Änderungen gelten für anstehende Zahlungen. Bisherige Zahlungen bleiben unverändert.",
+  "subs_save_changes": "Änderungen speichern",
+  "subs_add_transfer": "Umbuchung hinzufügen",
+  "subs_add_income": "Einnahme hinzufügen",
+  "subs_add_bill": "Rechnung hinzufügen",
+  "subs_add_subscription": "Abo hinzufügen"
+}

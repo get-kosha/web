@@ -1,0 +1,282 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "import_columns": "列",
+  "import_columns_remembered": "この銀行の前回の設定",
+  "import_columns_by_ai": "AIが判別",
+  "import_columns_confident": "見出し行から判別",
+  "import_columns_check": "確認してください",
+  "import_columns_column": "{n}列目",
+  "import_role_ignore": "無視",
+  "import_role_date": "日付",
+  "import_role_description": "摘要",
+  "import_role_amount": "金額",
+  "import_role_debit": "出金",
+  "import_role_credit": "入金",
+  "import_role_balance": "残高",
+  "import_columns_dates": "日付",
+  "import_columns_format": "形式",
+  "import_date_dmy": "日が先（31/01/2026）",
+  "import_date_mdy": "月が先（01/31/2026）",
+  "import_date_ymd": "年が先（2026-01-31）",
+  "import_date_text": "月が英語名（31 Jan 2026）",
+  "import_columns_invert": "支出がプラスの金額で表示されている",
+  "import_columns_lines_read": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{n}行を読み取りました"
+      }
+    }
+  ],
+  "import_head_title": "明細のインポート · Kosha",
+  "import_title": "明細のインポート",
+  "import_sub": "Koshaが明細を口座ごとに振り分けます。各口座を確認してから、取引先を確認してください。",
+  "import_new_account": "新しい口座",
+  "import_type_bank": "銀行口座",
+  "import_type_card": "クレジットカード",
+  "import_error_pdf": "Koshaが読み取れるのはCSV、OFX、QFXファイルです。銀行からいずれかの形式で書き出してください。",
+  "import_error_no_transactions": "そのファイルには取引がありません",
+  "import_error_no_rows": "そのファイルにはKoshaが読み取れる行がありません",
+  "import_error_unreadable": "読み取れませんでした",
+  "import_error_check": "口座を確認できませんでした",
+  "import_drop": "ここに明細をドロップするか、{#choose}ファイルを選択{/choose}",
+  "import_drop_more": "ここに明細を追加でドロップするか、{#choose}ファイルを選択{/choose}",
+  "import_drop_hint": "オンラインバンキングのCSV、OFX、QFXに対応。すべての銀行とカードの、手元にある全月分をまとめて追加できます。",
+  "import_drop_hint_pdf": "オンラインバンキングのCSV、OFX、QFX、またはPDFの明細に対応。すべての銀行とカードの、手元にある全月分をまとめて追加できます。",
+  "import_reading": "{name}を読み取り中",
+  "import_dismiss": "{name}を閉じる",
+  "import_reading_files": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{n}個のファイルを読み取り中…"
+      }
+    }
+  ],
+  "import_summary": [
+    {
+      "declarations": [
+        "input count",
+        "input n",
+        "input accounts",
+        "input a",
+        "local countPlural = count: plural",
+        "local accountsPlural = accounts: plural"
+      ],
+      "selectors": ["countPlural", "accountsPlural"],
+      "match": {
+        "countPlural=other, accountsPlural=other": "{a}口座で{n}件の取引"
+      }
+    }
+  ],
+  "import_check_payees": "取引先を確認",
+  "import_into": "インポート先",
+  "import_new_account_option": "新しい口座",
+  "import_into_wallet": "{name}へ",
+  "import_field_name": "名前",
+  "import_field_type": "種類",
+  "import_field_currency": "通貨",
+  "import_owed_on": "{day}時点の未払い残高（{currency}）",
+  "import_balance_on": "{day}時点の残高（{currency}）",
+  "import_closing_placeholder": "最新の明細から",
+  "import_closing_from_file": "明細から取得しました。",
+  "import_closing_hint": "この金額からKoshaが開始残高を計算します。わからない場合は空欄のままにしてください。",
+  "import_credit_limit": "利用限度額（{currency}）",
+  "import_optional": "任意",
+  "import_foreign": "{file}の通貨は{from}ですが、この口座の通貨は{to}です。",
+  "import_off": "{file}から読み取った行は、明細の締め残高と{amount}ずれています。PDFと照らし合わせて確認してください。",
+  "import_stmt_lines": [
+    {
+      "declarations": ["input count", "input n", "input from", "input to", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{n}行、{from}〜{to}"
+      }
+    }
+  ],
+  "import_stmt_no_lines": "読み取った行はありません",
+  "import_move_label": "{file}を別の口座に移動",
+  "import_move_placeholder": "移動先…",
+  "import_remove": "{file}を外す",
+  "import_account_range": [
+    {
+      "declarations": ["input count", "input n", "input from", "input to", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{from}〜{to}の取引{n}件。"
+      }
+    }
+  ],
+  "import_account_dupes": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "複数の明細に含まれていた{n}行は1回だけ数えています。"
+      }
+    }
+  ],
+  "import_review_title": "取引先とカテゴリを確認",
+  "import_review_sub": [
+    {
+      "declarations": [
+        "input count",
+        "input n",
+        "input payees",
+        "input p",
+        "local countPlural = count: plural",
+        "local payeesPlural = payees: plural"
+      ],
+      "selectors": ["countPlural", "payeesPlural"],
+      "match": {
+        "countPlural=other, payeesPlural=other": "{n}件の取引、取引先は{p}件。取引先への変更は、その取引先のすべての取引に適用されます。"
+      }
+    }
+  ],
+  "import_review_sub_transfers": [
+    {
+      "declarations": [
+        "input count",
+        "input n",
+        "input payees",
+        "input p",
+        "input transfers",
+        "input t",
+        "local countPlural = count: plural",
+        "local payeesPlural = payees: plural",
+        "local transfersPlural = transfers: plural"
+      ],
+      "selectors": ["countPlural", "payeesPlural", "transfersPlural"],
+      "match": {
+        "countPlural=other, payeesPlural=other, transfersPlural=other": "{n}件の取引、取引先は{p}件、口座間の振替は{t}件。取引先への変更は、その取引先のすべての取引に適用されます。"
+      }
+    }
+  ],
+  "import_review_nothing": "これらの明細の内容はすべてKoshaに登録済みのため、追加するものはありません。",
+  "import_review_back": "口座",
+  "import_review_show": "表示",
+  "import_tab_check": "要確認（{n}）",
+  "import_tab_all": "すべての取引先（{n}）",
+  "import_tab_transfers": "振替（{n}）",
+  "import_naming": "取引先名を付けています…",
+  "import_rest": "残りをまとめて",
+  "import_rest_label": "残りのカテゴリ",
+  "import_rest_placeholder": "カテゴリを選択",
+  "import_leave_them_out": "取り込まない",
+  "import_apply": "適用",
+  "import_transfer_pair": "{from} → {to}",
+  "import_not_transfer": "振替ではない",
+  "import_transfer_from": "{name}からの振替",
+  "import_transfer_to": "{name}への振替",
+  "import_leave_out": "取り込まない",
+  "import_show_more": "さらに{n}件を表示",
+  "import_all_sorted": "すべての取引先にカテゴリが設定されています。",
+  "import_nothing_new": "新しくインポートするものはありません",
+  "import_without_category": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "カテゴリ未設定の取引先が{n}件"
+      }
+    }
+  ],
+  "import_ready": "準備ができました",
+  "import_button": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{n}件の取引をインポート"
+      }
+    }
+  ],
+  "import_payee_for": "{text}の取引先",
+  "import_payments_range": [
+    {
+      "declarations": ["input count", "input n", "input from", "input to", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "支払い{n}件、{from}〜{to}"
+      }
+    }
+  ],
+  "import_category_for": "{payee}のカテゴリ",
+  "import_pick_category": "カテゴリを選択",
+  "import_hide_lines": "取引を隠す",
+  "import_show_lines": "取引を表示",
+  "import_progress_setup": "{name}を準備中",
+  "import_progress_adding": [
+    {
+      "declarations": ["input count", "input n", "input name", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{name}に{n}件の取引を追加中"
+      }
+    }
+  ],
+  "import_progress_transfers": "口座間の振替を紐付け中",
+  "import_progress_checking": "{name}を明細と照合中",
+  "import_importing": "インポート中",
+  "import_failed": "{error}。保存済みの内容はそのまま残ります。再試行すると、続きから再開します。",
+  "import_back_to_review": "確認画面に戻る",
+  "import_done_title": "明細を取り込みました",
+  "import_done_summary": [
+    {
+      "declarations": [
+        "input count",
+        "input n",
+        "input accounts",
+        "input a",
+        "local countPlural = count: plural",
+        "local accountsPlural = accounts: plural"
+      ],
+      "selectors": ["countPlural", "accountsPlural"],
+      "match": {
+        "countPlural=other, accountsPlural=other": "{a}口座に{n}件の取引。"
+      }
+    }
+  ],
+  "import_done_summary_transfers": [
+    {
+      "declarations": [
+        "input count",
+        "input n",
+        "input accounts",
+        "input a",
+        "input transfers",
+        "input t",
+        "local countPlural = count: plural",
+        "local accountsPlural = accounts: plural",
+        "local transfersPlural = transfers: plural"
+      ],
+      "selectors": ["countPlural", "accountsPlural", "transfersPlural"],
+      "match": {
+        "countPlural=other, accountsPlural=other, transfersPlural=other": "{a}口座に{n}件の取引。口座間の振替{t}件を紐付けました。"
+      }
+    }
+  ],
+  "import_done_matches": "{day}までの明細と一致",
+  "import_transactions": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{n}件の取引"
+      }
+    }
+  ],
+  "import_done_recurring": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "繰り返し発生している支払いが{n}件見つかりました。定期支払いとして登録しましょう。"
+      }
+    }
+  ],
+  "import_done_overview": "概要を見る",
+  "import_done_transactions": "取引を見る"
+}

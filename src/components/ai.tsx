@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { SparkleIcon } from "@phosphor-icons/react/ssr"
 import { scanReceipt, suggestCategory } from "@/lib/api"
 import { cn } from "@/lib/utils"
+import { m } from "@/paraglide/messages"
 
 // Client pieces the AI features share. Each surface renders these only while its feature is on (meta.ai).
 
@@ -50,7 +51,7 @@ export function useAiCategory(payee: string, kind: "expense" | "income", on: boo
 /** Scales a photo down to at most 1600px on its long side and encodes it as base64 JPEG. */
 async function shrink(file: Blob) {
   const bitmap = await createImageBitmap(file).catch(() => {
-    throw new Error("Kosha can't open that image here. Try a JPEG or PNG.")
+    throw new Error(m.overview_ai_image_unsupported())
   })
   const scale = Math.min(1, 1600 / Math.max(bitmap.width, bitmap.height))
   const canvas = document.createElement("canvas")
@@ -59,7 +60,7 @@ async function shrink(file: Blob) {
   canvas.getContext("2d")!.drawImage(bitmap, 0, 0, canvas.width, canvas.height)
   bitmap.close()
   const blob = await new Promise<Blob | null>((done) => canvas.toBlob(done, "image/jpeg", 0.82))
-  if (!blob) throw new Error("Couldn't read that photo")
+  if (!blob) throw new Error(m.overview_ai_photo_unreadable())
   const bytes = new Uint8Array(await blob.arrayBuffer())
   let bin = ""
   for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000))
@@ -68,7 +69,7 @@ async function shrink(file: Blob) {
 
 /** Receipt scanning: reads amount, date and payee from a photo. */
 export async function readReceipt(file: Blob) {
-  if (!file.type.startsWith("image/")) throw new Error("Pick a photo of the receipt")
+  if (!file.type.startsWith("image/")) throw new Error(m.overview_ai_pick_photo())
   return scanReceipt({ data: { image: await shrink(file), mime: "image/jpeg" } })
 }
 

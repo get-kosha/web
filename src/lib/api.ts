@@ -1,5 +1,6 @@
 import { createIsomorphicFn, createServerFn } from "@tanstack/react-start"
 import { z } from "zod"
+import { m } from "@/paraglide/messages"
 import { monthOf, monthRange, dayOf } from "@/lib/core"
 import { db, getSettings } from "@/server/db.server"
 import * as finance from "@/server/finance.server"
@@ -103,7 +104,7 @@ export type Meta = Awaited<ReturnType<typeof getMeta>>
 export const uploadAvatar = createServerFn({ method: "POST" })
   .validator((data: FormData) => {
     const file = data instanceof FormData ? data.get("file") : null
-    if (!(file instanceof Blob) || file.size > 512 * 1024) throw new Error("Choose an image under 512 KB")
+    if (!(file instanceof Blob) || file.size > 512 * 1024) throw new Error(m.server_avatar_too_big())
     return file
   })
   .handler(async ({ data }) => setAvatar(await userId(), data))
@@ -129,7 +130,7 @@ export const uploadAttachment = createServerFn({ method: "POST" })
   .validator((data: FormData) => {
     const transactionId = data instanceof FormData ? data.get("transactionId") : null
     const file = data instanceof FormData ? data.get("file") : null
-    if (typeof transactionId !== "string" || !(file instanceof File)) throw new Error("Choose a file")
+    if (typeof transactionId !== "string" || !(file instanceof File)) throw new Error(m.server_choose_file())
     return { transactionId, file }
   })
   .handler(async ({ data }) => files.addAttachment(await userId(), data.transactionId, data.file))
@@ -399,7 +400,16 @@ export const getApiAccess = createServerFn({ method: "GET" }).handler(async () =
 
 /** The key is returned once, here; only its hash is stored. */
 export const addApiKey = createServerFn({ method: "POST" })
-  .validator(z.object({ name: z.string().trim().min(1, "Name the key").max(60), scope: z.enum(["read", "write"]) }))
+  .validator(
+    z.object({
+      name: z
+        .string()
+        .trim()
+        .min(1, { error: () => m.server_api_key_name_required() })
+        .max(60),
+      scope: z.enum(["read", "write"]),
+    })
+  )
   .handler(async ({ data }) => createApiKey(await userId(), data))
 
 export const removeApiKey = createServerFn({ method: "POST" })
@@ -420,7 +430,7 @@ export const getConsentRequest = createServerFn({ method: "GET" })
   .validator(z.object({ query: z.string().max(8000).optional() }))
   .handler(async ({ data }) => {
     const user = await getUser()
-    if (!user) throw new Error("Not signed in")
+    if (!user) throw new Error(m.server_not_signed_in())
     return { ...(await consentDetails(data.query ?? new URL(getRequest().url).search)), email: user.email }
   })
 
@@ -475,7 +485,7 @@ async function credentials(uid: string, data: z.infer<typeof providerInput>) {
   const key =
     data.key || (stored?.key_cipher && stored.key_iv ? await decryptKey(stored.key_cipher, stored.key_iv) : "")
   const baseUrl = usesBaseUrl(data.id) ? checkBaseUrl(data.baseUrl || stored?.base_url || "") : null
-  if (!usesBaseUrl(data.id) && !key) throw new Error("Paste an API key")
+  if (!usesBaseUrl(data.id) && !key) throw new Error(m.server_paste_api_key())
   return { key, baseUrl, stored }
 }
 
@@ -489,7 +499,15 @@ export const testAiProvider = createServerFn({ method: "POST" })
 
 /** Connects or updates a provider. The first one connected becomes the default. */
 export const saveAiProvider = createServerFn({ method: "POST" })
-  .validator(providerInput.extend({ model: z.string().trim().min(1, "Pick a model").max(200) }))
+  .validator(
+    providerInput.extend({
+      model: z
+        .string()
+        .trim()
+        .min(1, { error: () => m.server_pick_model() })
+        .max(200),
+    })
+  )
   .handler(async ({ data }) => {
     const uid = await userId()
     const { key, baseUrl, stored } = await credentials(uid, data)
@@ -520,7 +538,7 @@ export const setDefaultAiProvider = createServerFn({ method: "POST" })
     const uid = await userId()
     const DB = db()
     const row = await DB.prepare("SELECT 1 FROM ai_providers WHERE user_id = ? AND id = ?").bind(uid, data.id).first()
-    if (!row) throw new Error("Connect it first")
+    if (!row) throw new Error(m.server_connect_first())
     await DB.prepare("UPDATE ai_providers SET is_default = (id = ?) WHERE user_id = ?").bind(data.id, uid).run()
   })
 
@@ -659,7 +677,14 @@ export const accountSummary = createServerFn({ method: "GET" }).handler(async ()
 
 /** Adds a password to an account that signs in with passkeys only. Changing an existing one goes through authClient.changePassword. */
 export const setAccountPassword = createServerFn({ method: "POST" })
-  .validator(z.object({ password: z.string().min(10, "Use at least 10 characters").max(128) }))
+  .validator(
+    z.object({
+      password: z
+        .string()
+        .min(10, { error: () => m.server_password_min_length() })
+        .max(128),
+    })
+  )
   .handler(async ({ data }) => {
     await userId()
     await auth.api.setPassword({ body: { newPassword: data.password }, headers: getRequest().headers })

@@ -1,0 +1,298 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "import_columns": "कॉलम",
+  "import_columns_remembered": "इस बैंक के पिछली बार जैसे",
+  "import_columns_by_ai": "AI ने पहचाने",
+  "import_columns_confident": "हेडर से पहचाने गए",
+  "import_columns_check": "इन्हें जाँच लें",
+  "import_columns_column": "कॉलम {n}",
+  "import_role_ignore": "अनदेखा करें",
+  "import_role_date": "तारीख",
+  "import_role_description": "विवरण",
+  "import_role_amount": "रकम",
+  "import_role_debit": "निकासी",
+  "import_role_credit": "जमा",
+  "import_role_balance": "बैलेंस",
+  "import_columns_dates": "तारीखें",
+  "import_columns_format": "फ़ॉर्मैट",
+  "import_date_dmy": "पहले दिन (31/01/2026)",
+  "import_date_mdy": "पहले महीना (01/31/2026)",
+  "import_date_ymd": "पहले साल (2026-01-31)",
+  "import_date_text": "महीने के नाम (31 Jan 2026)",
+  "import_columns_invert": "खर्च पॉज़िटिव रकम के रूप में दिखाया गया है",
+  "import_columns_lines_read": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{n} लाइन पढ़ी गई",
+        "countPlural=*": "{n} लाइनें पढ़ी गईं"
+      }
+    }
+  ],
+  "import_head_title": "स्टेटमेंट इम्पोर्ट करें · Kosha",
+  "import_title": "स्टेटमेंट इम्पोर्ट करें",
+  "import_sub": "Kosha आपके स्टेटमेंट को खातों में बाँटता है। हर खाता जाँचें, फिर पार्टियाँ।",
+  "import_new_account": "नया खाता",
+  "import_type_bank": "बैंक खाता",
+  "import_type_card": "क्रेडिट कार्ड",
+  "import_error_pdf": "Kosha CSV, OFX और QFX फ़ाइलें पढ़ता है। अपने बैंक से इनमें से कोई एक एक्सपोर्ट करें।",
+  "import_error_no_transactions": "उस फ़ाइल में कोई लेन-देन नहीं है",
+  "import_error_no_rows": "उस फ़ाइल में ऐसी कोई लाइन नहीं है जिसे Kosha पढ़ सके",
+  "import_error_unreadable": "उसे पढ़ा नहीं जा सका",
+  "import_error_check": "आपके खाते जाँचे नहीं जा सके",
+  "import_drop": "अपने स्टेटमेंट यहाँ छोड़ें, या {#choose}फ़ाइलें चुनें{/choose}",
+  "import_drop_more": "और स्टेटमेंट यहाँ छोड़ें, या {#choose}फ़ाइलें चुनें{/choose}",
+  "import_drop_hint": "आपकी ऑनलाइन बैंकिंग से CSV, OFX या QFX। हर बैंक और कार्ड के जितने महीने आपके पास हैं, सब एक साथ जोड़ें।",
+  "import_drop_hint_pdf": "आपकी ऑनलाइन बैंकिंग से CSV, OFX या QFX, या PDF स्टेटमेंट। हर बैंक और कार्ड के जितने महीने आपके पास हैं, सब एक साथ जोड़ें।",
+  "import_reading": "{name} पढ़ रहे हैं",
+  "import_dismiss": "{name} हटाएँ",
+  "import_reading_files": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{n} फ़ाइल पढ़ रहे हैं…",
+        "countPlural=*": "{n} फ़ाइलें पढ़ रहे हैं…"
+      }
+    }
+  ],
+  "import_summary": [
+    {
+      "declarations": [
+        "input count",
+        "input n",
+        "input accounts",
+        "input a",
+        "local countPlural = count: plural",
+        "local accountsPlural = accounts: plural"
+      ],
+      "selectors": ["countPlural", "accountsPlural"],
+      "match": {
+        "countPlural=*, accountsPlural=one": "{a} खाते में {n} लेन-देन",
+        "countPlural=*, accountsPlural=*": "{a} खातों में {n} लेन-देन"
+      }
+    }
+  ],
+  "import_check_payees": "पार्टियाँ जाँचें",
+  "import_into": "किसमें इम्पोर्ट करें",
+  "import_new_account_option": "एक नया खाता",
+  "import_into_wallet": "{name} में",
+  "import_field_name": "नाम",
+  "import_field_type": "प्रकार",
+  "import_field_currency": "मुद्रा",
+  "import_owed_on": "{day} को बकाया ({currency})",
+  "import_balance_on": "{day} को बैलेंस ({currency})",
+  "import_closing_placeholder": "आपके सबसे नए स्टेटमेंट से",
+  "import_closing_from_file": "स्टेटमेंट से।",
+  "import_closing_hint": "Kosha इससे शुरुआती बैलेंस निकालता है। अगर आपको नहीं पता, तो खाली छोड़ दें।",
+  "import_credit_limit": "क्रेडिट लिमिट ({currency})",
+  "import_optional": "वैकल्पिक",
+  "import_foreign": "{file} {from} में है, और यह खाता {to} में है।",
+  "import_off": "{file} से पढ़ी गई लाइनें उसके क्लोज़िंग बैलेंस से {amount} अलग हैं। उन्हें PDF से मिलाकर देखें।",
+  "import_stmt_lines": [
+    {
+      "declarations": ["input count", "input n", "input from", "input to", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{n} लाइन, {from} से {to} तक",
+        "countPlural=*": "{n} लाइनें, {from} से {to} तक"
+      }
+    }
+  ],
+  "import_stmt_no_lines": "कोई लाइन नहीं पढ़ी गई",
+  "import_move_label": "{file} को दूसरे खाते में ले जाएँ",
+  "import_move_placeholder": "यहाँ ले जाएँ…",
+  "import_remove": "{file} हटाएँ",
+  "import_account_range": [
+    {
+      "declarations": ["input count", "input n", "input from", "input to", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{from} से {to} तक {n} लेन-देन।",
+        "countPlural=*": "{from} से {to} तक {n} लेन-देन।"
+      }
+    }
+  ],
+  "import_account_dupes": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "एक से ज़्यादा स्टेटमेंट में मौजूद {n} लाइन एक ही बार गिनी गई।",
+        "countPlural=*": "एक से ज़्यादा स्टेटमेंट में मौजूद {n} लाइनें एक ही बार गिनी गईं।"
+      }
+    }
+  ],
+  "import_review_title": "पार्टियाँ और श्रेणियाँ जाँचें",
+  "import_review_sub": [
+    {
+      "declarations": [
+        "input count",
+        "input n",
+        "input payees",
+        "input p",
+        "local countPlural = count: plural",
+        "local payeesPlural = payees: plural"
+      ],
+      "selectors": ["countPlural", "payeesPlural"],
+      "match": {
+        "countPlural=*, payeesPlural=one": "{n} लेन-देन: {p} पार्टी। किसी पार्टी में किया गया बदलाव उसके सभी लेन-देन पर लागू होता है।",
+        "countPlural=*, payeesPlural=*": "{n} लेन-देन: {p} पार्टियाँ। किसी पार्टी में किया गया बदलाव उसके सभी लेन-देन पर लागू होता है।"
+      }
+    }
+  ],
+  "import_review_sub_transfers": [
+    {
+      "declarations": [
+        "input count",
+        "input n",
+        "input payees",
+        "input p",
+        "input transfers",
+        "input t",
+        "local countPlural = count: plural",
+        "local payeesPlural = payees: plural",
+        "local transfersPlural = transfers: plural"
+      ],
+      "selectors": ["countPlural", "payeesPlural", "transfersPlural"],
+      "match": {
+        "countPlural=*, payeesPlural=one, transfersPlural=*": "{n} लेन-देन: {p} पार्टी और आपके खातों के बीच {t} ट्रांसफ़र। किसी पार्टी में किया गया बदलाव उसके सभी लेन-देन पर लागू होता है।",
+        "countPlural=*, payeesPlural=*, transfersPlural=*": "{n} लेन-देन: {p} पार्टियाँ और आपके खातों के बीच {t} ट्रांसफ़र। किसी पार्टी में किया गया बदलाव उसके सभी लेन-देन पर लागू होता है।"
+      }
+    }
+  ],
+  "import_review_nothing": "इन स्टेटमेंट में सब कुछ पहले से Kosha में है, इसलिए जोड़ने के लिए कुछ नहीं है।",
+  "import_review_back": "खाते",
+  "import_review_show": "दिखाएँ",
+  "import_tab_check": "जाँचने के लिए ({n})",
+  "import_tab_all": "सभी पार्टियाँ ({n})",
+  "import_tab_transfers": "ट्रांसफ़र ({n})",
+  "import_naming": "पार्टियों के नाम तय कर रहे हैं…",
+  "import_rest": "बाकी को इसमें डालें",
+  "import_rest_label": "बाकी के लिए श्रेणी",
+  "import_rest_placeholder": "कोई श्रेणी",
+  "import_leave_them_out": "उन्हें छोड़ दें",
+  "import_apply": "लागू करें",
+  "import_transfer_pair": "{from} से {to}",
+  "import_not_transfer": "ट्रांसफ़र नहीं है",
+  "import_transfer_from": "{name} से ट्रांसफ़र",
+  "import_transfer_to": "{name} को ट्रांसफ़र",
+  "import_leave_out": "छोड़ दें",
+  "import_show_more": "{n} और दिखाएँ",
+  "import_all_sorted": "हर पार्टी की एक श्रेणी है।",
+  "import_nothing_new": "इम्पोर्ट करने के लिए कुछ नया नहीं",
+  "import_without_category": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{n} पार्टी बिना श्रेणी के",
+        "countPlural=*": "{n} पार्टियाँ बिना श्रेणी के"
+      }
+    }
+  ],
+  "import_ready": "जब आप तैयार हों",
+  "import_button": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{n} लेन-देन इम्पोर्ट करें",
+        "countPlural=*": "{n} लेन-देन इम्पोर्ट करें"
+      }
+    }
+  ],
+  "import_payee_for": "{text} के लिए पार्टी",
+  "import_payments_range": [
+    {
+      "declarations": ["input count", "input n", "input from", "input to", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{n} भुगतान, {from} से {to} तक",
+        "countPlural=*": "{n} भुगतान, {from} से {to} तक"
+      }
+    }
+  ],
+  "import_category_for": "{payee} के लिए श्रेणी",
+  "import_pick_category": "श्रेणी चुनें",
+  "import_hide_lines": "लेन-देन छिपाएँ",
+  "import_show_lines": "लेन-देन दिखाएँ",
+  "import_progress_setup": "{name} सेट अप हो रहा है",
+  "import_progress_adding": [
+    {
+      "declarations": ["input count", "input n", "input name", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{name} में {n} लेन-देन जोड़ रहे हैं",
+        "countPlural=*": "{name} में {n} लेन-देन जोड़ रहे हैं"
+      }
+    }
+  ],
+  "import_progress_transfers": "आपके खातों के बीच ट्रांसफ़र जोड़ रहे हैं",
+  "import_progress_checking": "{name} को उसके स्टेटमेंट से जाँच रहे हैं",
+  "import_importing": "इम्पोर्ट हो रहा है",
+  "import_failed": "{error}। जो सेव हो गया है वह सेव रहेगा; फिर से कोशिश करने पर वहीं से आगे बढ़ेगा।",
+  "import_back_to_review": "जाँच पर वापस जाएँ",
+  "import_done_title": "आपके स्टेटमेंट आ गए",
+  "import_done_summary": [
+    {
+      "declarations": [
+        "input count",
+        "input n",
+        "input accounts",
+        "input a",
+        "local countPlural = count: plural",
+        "local accountsPlural = accounts: plural"
+      ],
+      "selectors": ["countPlural", "accountsPlural"],
+      "match": {
+        "countPlural=*, accountsPlural=one": "{a} खाते में {n} लेन-देन।",
+        "countPlural=*, accountsPlural=*": "{a} खातों में {n} लेन-देन।"
+      }
+    }
+  ],
+  "import_done_summary_transfers": [
+    {
+      "declarations": [
+        "input count",
+        "input n",
+        "input accounts",
+        "input a",
+        "input transfers",
+        "input t",
+        "local countPlural = count: plural",
+        "local accountsPlural = accounts: plural",
+        "local transfersPlural = transfers: plural"
+      ],
+      "selectors": ["countPlural", "accountsPlural", "transfersPlural"],
+      "match": {
+        "countPlural=*, accountsPlural=one, transfersPlural=*": "{a} खाते में {n} लेन-देन, और उनके बीच {t} ट्रांसफ़र जोड़े गए।",
+        "countPlural=*, accountsPlural=*, transfersPlural=*": "{a} खातों में {n} लेन-देन, और उनके बीच {t} ट्रांसफ़र जोड़े गए।"
+      }
+    }
+  ],
+  "import_done_matches": "{day} तक स्टेटमेंट से मेल खाता है",
+  "import_transactions": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{n} लेन-देन",
+        "countPlural=*": "{n} लेन-देन"
+      }
+    }
+  ],
+  "import_done_recurring": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Kosha को {n} ऐसा भुगतान मिला जो दोहराया जाता है। उसे नियमित भुगतान के रूप में सेट करें।",
+        "countPlural=*": "Kosha को {n} ऐसे भुगतान मिले जो दोहराए जाते हैं। उन्हें नियमित भुगतान के रूप में सेट करें।"
+      }
+    }
+  ],
+  "import_done_overview": "अपना ओवरव्यू देखें",
+  "import_done_transactions": "लेन-देन देखें"
+}

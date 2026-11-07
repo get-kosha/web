@@ -1,0 +1,175 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "reconcile_hint_an_entry": "un movimento",
+  "reconcile_hint_exact_unticked": "{name} ({amount}) è esattamente la differenza. È nell'estratto conto?",
+  "reconcile_hint_exact_ticked": "{name} ({amount}) è esattamente la differenza. È davvero nell'estratto conto?",
+  "reconcile_hint_wrong_way_in": "{name} è metà della differenza. È nel verso sbagliato, un'entrata invece di un'uscita?",
+  "reconcile_hint_wrong_way_out": "{name} è metà della differenza. È nel verso sbagliato, un'uscita invece di un'entrata?",
+  "reconcile_hint_swapped": "{name} era {meant} invece di {amount}? Le cifre invertite sono un errore comune.",
+  "reconcile_hint_decimal": "{name} era {meant} invece di {amount}? La virgola potrebbe essere nel posto sbagliato.",
+  "reconcile_hint_pair": "{first} e {second} insieme fanno la differenza.",
+  "reconcile_hint_duplicate": "{name} compare due volte. Uno è un duplicato?",
+  "reconcile_hint_late": "I movimenti degli ultimi giorni del periodo possono comparire invece nell'estratto conto successivo.",
+  "reconcile_hint_look_out": "Cerca nell'estratto conto una commissione, un addebito o degli interessi di {amount} che non sono ancora in Kosha.",
+  "reconcile_hint_look_in": "Cerca nell'estratto conto degli interessi, un rimborso o un accredito di {amount} che non sono ancora in Kosha.",
+  "reconcile_gap_uncovered": "Nessun estratto conto copre il periodo {from} – {to}.",
+  "reconcile_gap_opening": "{next} si apre a {opening}, ma {previous} si chiude a {closing}. Potrebbe mancare un estratto conto.",
+  "reconcile_head_title": "Riconcilia · Kosha",
+  "reconcile_title": "Riconcilia",
+  "reconcile_picker_sub": "Confronta un conto con l'estratto conto della tua banca, oppure importa l'estratto conto.",
+  "reconcile_picker_empty": "Aggiungi prima un conto bancario o una carta.",
+  "reconcile_reconciled_to": "Riconciliato fino al {day}",
+  "reconcile_never_reconciled": "Mai riconciliato",
+  "reconcile_transfer_to_name": "Verso {account}",
+  "reconcile_transfer_from_name": "Da {account}",
+  "reconcile_transfer_to_other": "Verso un altro conto",
+  "reconcile_transfer_from_other": "Da un altro conto",
+  "reconcile_no_payee": "Nessun beneficiario",
+  "reconcile_pdf_unsupported": "Kosha legge file CSV, OFX e QFX. Esportane uno dalla tua banca.",
+  "reconcile_currency_mismatch": "Questo estratto conto è in {statementCurrency}, mentre {account} è in {currency}.",
+  "reconcile_ofx_empty": "Il file OFX non contiene movimenti",
+  "reconcile_csv_empty": "Il file non contiene righe che Kosha può leggere",
+  "reconcile_read_failed": "Impossibile leggere il file",
+  "reconcile_pick_category_first": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Scegli prima una categoria per 1 riga",
+        "countPlural=*": "Scegli prima una categoria per {count} righe"
+      }
+    }
+  ],
+  "reconcile_added": [
+    {
+      "declarations": ["input count", "input account", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Aggiunto 1 movimento a {account}",
+        "countPlural=*": "Aggiunti {count} movimenti a {account}"
+      }
+    }
+  ],
+  "reconcile_add_failed": "Impossibile aggiungerli",
+  "reconcile_change_failed": "Impossibile modificarlo",
+  "reconcile_finish_failed": "Impossibile completare",
+  "reconcile_undone": "Riconciliazione annullata",
+  "reconcile_undo_failed": "Impossibile annullarla",
+  "reconcile_ask_failed": "Impossibile chiedere",
+  "reconcile_hint_opening_gap": "Questo estratto conto si apre a {opening}, ma l'ultimo che hai riconciliato si chiudeva a {closing}. Potrebbe mancare un estratto conto intermedio.",
+  "reconcile_hint_single_missing": "{payee} ({amount}) nell'estratto conto è esattamente la differenza. Aggiungilo a Kosha.",
+  "reconcile_hint_missing_closes": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Aggiungendo la riga che manca in Kosha la differenza si chiude esattamente.",
+        "countPlural=*": "Aggiungendo le {count} righe che mancano in Kosha la differenza si chiude esattamente."
+      }
+    }
+  ],
+  "reconcile_hint_missing_count": [
+    {
+      "declarations": ["input count", "input amount", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "1 riga dell'estratto conto non è ancora in Kosha ({amount}).",
+        "countPlural=*": "{count} righe dell'estratto conto non sono ancora in Kosha ({amount})."
+      }
+    }
+  ],
+  "reconcile_hint_close": "{name}: Kosha ha {kosha}, l'estratto conto {statement}.",
+  "reconcile_balance_label": "Saldo finale ({currency})",
+  "reconcile_owed_label": "Dovuto secondo l'estratto conto ({currency})",
+  "reconcile_account_title": "Riconcilia {account}",
+  "reconcile_done_title": "{account} corrisponde al tuo estratto conto",
+  "reconcile_done_checked": [
+    {
+      "declarations": ["input count", "input n", "input day", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "1 movimento controllato fino al {day}.",
+        "countPlural=*": "{n} movimenti controllati fino al {day}."
+      }
+    }
+  ],
+  "reconcile_done_correction": "Una correzione di {amount} ha chiuso la differenza.",
+  "reconcile_done_marked": "Kosha li segna come riconciliati e ti avvisa prima che tu ne modifichi uno.",
+  "reconcile_back_to_accounts": "Torna ai conti",
+  "reconcile_last_reconciled": "Ultima riconciliazione fino al {day}",
+  "reconcile_check_each": "Controlla ogni movimento con l'estratto conto della tua banca.",
+  "reconcile_other_account": "Altro conto",
+  "reconcile_drift": "I movimenti riconciliati il {day} sono cambiati di {amount} da allora, quindi non corrispondono più a quell'estratto conto. Uno è stato modificato o eliminato; annulla quella riconciliazione per ricontrollarli.",
+  "reconcile_pdf_off": "Le righe lette da questo PDF si discostano dal suo saldo finale di {amount}. Una riga potrebbe essere stata letta male; confrontale con il PDF prima di aggiungerle.",
+  "reconcile_reading": "Lettura di {file}…",
+  "reconcile_file_lines": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "1 riga",
+        "countPlural=*": "{count} righe"
+      }
+    }
+  ],
+  "reconcile_read_by_ai": "letto dall'IA",
+  "reconcile_another_file": "Un altro file",
+  "reconcile_drop": "Trascina qui il tuo estratto conto, oppure {#choose}scegli un file{/choose}",
+  "reconcile_drop_formats": "CSV, OFX o QFX dalla tua banca. Kosha spunta ciò che corrisponde ed elenca ciò che manca.",
+  "reconcile_drop_formats_pdf": "CSV, OFX o QFX dalla tua banca, oppure un estratto conto in PDF. Kosha spunta ciò che corrisponde ed elenca ciò che manca.",
+  "reconcile_statement_date": "Data dell'estratto conto",
+  "reconcile_quick_balance": "Oggi Kosha mostra {#amount}{amount}{/amount}. Confrontalo con il saldo contabile della tua banca, non con quello disponibile.",
+  "reconcile_quick_owed": "Oggi Kosha mostra che devi {#amount}{amount}{/amount}. Confrontalo con il saldo contabile della tua banca, non con quello disponibile.",
+  "reconcile_same_as_bank": "La mia banca mostra lo stesso",
+  "reconcile_missing_title": "Nell'estratto conto, non in Kosha ({count})",
+  "reconcile_naming_payees": "Assegno i nomi ai beneficiari…",
+  "reconcile_payee": "Beneficiario",
+  "reconcile_category_for": "Categoria per {name}",
+  "reconcile_pick_category": "Scegli una categoria",
+  "reconcile_transfer_to": "Giroconto verso {account}",
+  "reconcile_transfer_from": "Giroconto da {account}",
+  "reconcile_include_line": "Aggiungi questa riga",
+  "reconcile_leave_out_line": "Escludi questa riga",
+  "reconcile_saving_teaches": "Salvando, Kosha impara questi nomi di beneficiari per il prossimo estratto conto.",
+  "reconcile_add_to_kosha": "Aggiungi {count} a Kosha",
+  "reconcile_close_title": "Simili, ma non dello stesso importo ({count})",
+  "reconcile_close_detail": "Kosha {kosha} il {koshaDay} · estratto conto {statement} il {statementDay}",
+  "reconcile_use_amount": "Usa {amount}",
+  "reconcile_not_same": "Non è lo stesso",
+  "reconcile_in_kosha": "In Kosha",
+  "reconcile_tick_title": "Spunta ciò che è nell'estratto conto",
+  "reconcile_ticked_count": "{count} spuntati",
+  "reconcile_before_group": "Prima di questo estratto conto ({count})",
+  "reconcile_before_hint": "Spuntati, perché erano negli estratti conto precedenti",
+  "reconcile_nothing": "Niente da riconciliare fino al {day}.",
+  "reconcile_note_amount_differs": "L'importo è diverso",
+  "reconcile_note_next_statement": "Probabilmente nel prossimo estratto conto",
+  "reconcile_note_not_on_statement": "Non è nell'estratto conto",
+  "reconcile_note_still_due": "Ancora da pagare",
+  "reconcile_after_group": "Dopo il {day} ({count})",
+  "reconcile_after_hint": "Per il prossimo estratto conto",
+  "reconcile_finding_title": "Ricerca della differenza",
+  "reconcile_ask_ai": "Chiedi all'IA",
+  "reconcile_past": "Riconciliazioni passate",
+  "reconcile_history_entries": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "1 movimento",
+        "countPlural=*": "{count} movimenti"
+      }
+    }
+  ],
+  "reconcile_corrected_by": "corretto di {amount}",
+  "reconcile_figure_statement": "Estratto conto",
+  "reconcile_figure_statement_owed": "Dovuto secondo l'estratto conto",
+  "reconcile_figure_ticked": "Spuntati in Kosha",
+  "reconcile_figure_ticked_owed": "Dovuto secondo gli spuntati",
+  "reconcile_figure_difference": "Differenza",
+  "reconcile_figure_none": "Nessuna",
+  "reconcile_finish_with_correction": "Completa con una correzione di {amount}",
+  "reconcile_enter_balance": "Inserisci il saldo dell'estratto conto",
+  "reconcile_finish": "Completa la riconciliazione",
+  "reconcile_show": "Mostra"
+}

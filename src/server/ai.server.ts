@@ -1,4 +1,5 @@
 import { env } from "cloudflare:workers"
+import { m } from "@/paraglide/messages"
 
 // Keys are encrypted at rest with AES-GCM: a random IV per row, and a key derived from the Worker secret
 // AI_KEY_SECRET. Only server functions that call a provider decrypt; nothing returns a key to the browser.
@@ -43,13 +44,10 @@ export function checkBaseUrl(raw: string) {
   try {
     url = new URL(raw.trim())
   } catch {
-    throw new Error("Enter a full URL, like https://ollama.example.com")
+    throw new Error(m.ai_url_invalid())
   }
-  if (url.protocol !== "https:" && url.protocol !== "http:") throw new Error("Use an http or https URL")
-  if (PRIVATE_HOST.test(url.hostname))
-    throw new Error(
-      "Cloudflare can't reach a local or private address. Use a URL it can reach, such as a Cloudflare Tunnel."
-    )
+  if (url.protocol !== "https:" && url.protocol !== "http:") throw new Error(m.ai_url_protocol())
+  if (PRIVATE_HOST.test(url.hostname)) throw new Error(m.ai_url_private())
   return url.toString().replace(/\/+$/, "")
 }
 
@@ -96,7 +94,7 @@ export async function listModels(id: AiProviderId, key: string, baseUrl: string 
       ok: false as const,
       ms: Date.now() - started,
       models: [],
-      error: timeout ? "No answer within 8 seconds" : e instanceof Error ? e.message : "Couldn't reach it",
+      error: timeout ? m.ai_models_timeout() : e instanceof Error ? e.message : m.ai_models_unreachable(),
     }
   }
 }
@@ -121,13 +119,13 @@ export type Reply = { text: string; calls: ToolCall[]; tokensIn: number; tokensO
 export type Provider = { id: AiProviderId; model: string; key: string; baseUrl: string | null }
 export type ChatRequest = { system: string; turns: Turn[]; tools?: Tool[]; maxTokens: number; timeoutMs: number }
 
-const PROVIDER_NAMES: Record<AiProviderId, string> = {
-  anthropic: "Anthropic",
-  openai: "OpenAI",
-  gemini: "Gemini",
-  openrouter: "OpenRouter",
-  ollama: "Ollama",
-  compatible: "Your endpoint",
+const PROVIDER_NAMES: Record<AiProviderId, () => string> = {
+  anthropic: () => "Anthropic",
+  openai: () => "OpenAI",
+  gemini: () => "Gemini",
+  openrouter: () => "OpenRouter",
+  ollama: () => "Ollama",
+  compatible: m.ai_provider_your_endpoint,
 }
 
 // Anthropic has its Messages API and OpenAI its Responses API (its newer models refuse tools with reasoning on
@@ -166,15 +164,17 @@ export async function chat(p: Provider, req: ChatRequest): Promise<Reply> {
     const timeout = e instanceof Error && e.name === "TimeoutError"
     throw new Error(
       timeout
-        ? `${PROVIDER_NAMES[p.id]} didn't answer in time`
-        : `Couldn't reach ${p.id === "compatible" ? "your endpoint" : PROVIDER_NAMES[p.id]}`
+        ? m.ai_provider_timeout({ provider: PROVIDER_NAMES[p.id]() })
+        : p.id === "compatible"
+          ? m.ai_endpoint_unreachable()
+          : m.ai_provider_unreachable({ provider: PROVIDER_NAMES[p.id]() })
     )
   }
   const body = (await res.json().catch(() => null)) as Record<string, unknown> | null
   if (!res.ok || !body) {
     const err = body?.error as { message?: string } | string | undefined
     const message = (typeof err === "string" ? err : err?.message) || `HTTP ${res.status}`
-    throw new Error(`${PROVIDER_NAMES[p.id]}: ${message}`)
+    throw new Error(`${PROVIDER_NAMES[p.id]()}: ${message}`)
   }
   return anthropic ? anthropicReply(body) : openai ? responsesReply(body) : chatReply(body)
 }
@@ -397,35 +397,38 @@ function chatReply(body: Record<string, unknown>): Reply {
   return { text, calls, tokensIn: usage.prompt_tokens ?? 0, tokensOut: usage.completion_tokens ?? 0 }
 }
 
-/** The request as the log shows it, as readable sections. Images become a size note, and very long requests are cut. */
+/**
+ * The request as the log shows it, as readable sections. Images become a size note, and very long requests
+ * are cut. The section names are in the person's language when the call is logged.
+ */
 function logRequest(req: ChatRequest) {
-  const parts = [`System\n${req.system}`]
+  const parts = [`${m.ai_log_system()}\n${req.system}`]
   for (const t of req.turns) {
     if (t.role === "user")
       parts.push(
-        `You\n${
+        `${m.ai_log_you()}\n${
           typeof t.content === "string"
             ? t.content
             : t.content
-                .map((p) =>
-                  p.type === "text"
-                    ? p.text
-                    : `[${p.type === "pdf" ? `PDF ${p.name}` : "photo"}, ${Math.round((p.data.length * 3) / 4 / 1024)} KB]`
-                )
+                .map((p) => {
+                  if (p.type === "text") return p.text
+                  const size = Math.round((p.data.length * 3) / 4 / 1024)
+                  return p.type === "pdf" ? m.ai_log_pdf({ name: p.name, size }) : m.ai_log_photo({ size })
+                })
                 .join("\n")
         }`
       )
     else if (t.role === "assistant")
       parts.push(
-        `Model\n${[t.text, ...(t.calls ?? []).map((c) => `→ ${c.name}(${JSON.stringify(c.input)})`)]
+        `${m.ai_log_model()}\n${[t.text, ...(t.calls ?? []).map((c) => `→ ${c.name}(${JSON.stringify(c.input)})`)]
           .filter(Boolean)
           .join("\n")}`
       )
-    else parts.push(...t.results.map((r) => `Kosha's answer to the look-up\n${r.content}`))
+    else parts.push(...t.results.map((r) => `${m.ai_log_tool_result()}\n${r.content}`))
   }
-  if (req.tools?.length) parts.push(`Look-ups offered\n${req.tools.map((t) => t.name).join(", ")}`)
+  if (req.tools?.length) parts.push(`${m.ai_log_tools()}\n${req.tools.map((t) => t.name).join(", ")}`)
   const text = parts.join("\n\n")
-  return text.length > 200_000 ? `${text.slice(0, 200_000)}\n… cut at 200,000 characters` : text
+  return text.length > 200_000 ? `${text.slice(0, 200_000)}\n${m.ai_log_cut()}` : text
 }
 
 /**
@@ -439,7 +442,7 @@ export async function logCall(
   const DB = env.DB
   const response = o.reply
     ? [o.reply.text, ...o.reply.calls.map((c) => `→ ${c.name}(${JSON.stringify(c.input)})`)].join("\n")
-    : `Error: ${o.error ?? "unknown"}`
+    : m.ai_log_error({ message: o.error ?? m.ai_log_error_unknown() })
   await DB.batch([
     DB.prepare(`INSERT INTO ai_log (user_id, id, provider, model, feature, request, response, tokens_in, tokens_out)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`).bind(

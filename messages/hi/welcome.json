@@ -1,0 +1,131 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "welcome_page_title": "स्वागत है · Kosha",
+  "welcome_type_bank": "बैंक",
+  "welcome_type_cash": "नकद",
+  "welcome_type_card": "कार्ड",
+  "welcome_type_investment": "निवेश",
+  "welcome_type_bank_account": "बैंक खाता",
+  "welcome_type_credit_card": "क्रेडिट कार्ड",
+  "welcome_type_investment_long": "निवेश",
+  "welcome_suggest_current": "चालू खाता",
+  "welcome_suggest_savings": "बचत",
+  "welcome_suggest_investments": "निवेश",
+  "welcome_suggest_pension": "पेंशन",
+  "welcome_field_balance": "बैलेंस",
+  "welcome_field_owed": "बकाया",
+  "welcome_field_credit_limit": "क्रेडिट लिमिट",
+  "welcome_field_put_in": "लगाई गई रकम",
+  "welcome_field_value_today": "आज की वैल्यू",
+  "welcome_name_save_failed": "आपका नाम सेव नहीं हो सका",
+  "welcome_title": "Kosha में आपका स्वागत है",
+  "welcome_sub": "ये तीन बातें जाँच लें, फिर अपने खाते जोड़ें। इसमें बस एक-दो मिनट लगेंगे।",
+  "welcome_name_title": "आपका नाम",
+  "welcome_name_description": "मेन्यू में दिखता है।",
+  "welcome_name_error": "Kosha में दिखाने के लिए नाम लिखें।",
+  "welcome_currency_title": "मुख्य मुद्रा",
+  "welcome_currency_description": "नेट वर्थ और कुल रकम इसी में जोड़ी जाती हैं।",
+  "welcome_tz_title": "टाइम ज़ोन",
+  "welcome_tz_description": "दिन और महीने इसी के हिसाब से चलते हैं।",
+  "welcome_change_later": "आप तीनों को बाद में सेटिंग्स में बदल सकते हैं।",
+  "welcome_saving": "सेव हो रहा है…",
+  "welcome_accounts_title": "अपने खाते जोड़ें",
+  "welcome_accounts_sub": "हर खाते में आज जितना है, वह लिखें। जो खाते आपके पास नहीं हैं उन्हें हटा दें, और बाकी जोड़ें।",
+  "welcome_net_worth": "नेट वर्थ",
+  "welcome_adding": "जोड़ रहे हैं…",
+  "welcome_add_accounts": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} खाता जोड़ें",
+        "countPlural=other": "{count} खाते जोड़ें"
+      }
+    }
+  ],
+  "welcome_add_an_account": "खाता जोड़ें",
+  "welcome_progress_label": "सेटअप",
+  "welcome_progress_step": "2 में से चरण {at}",
+  "welcome_skip": "अभी छोड़ें",
+  "welcome_rows_label": "नए खाते",
+  "welcome_rows_empty": "अभी कोई खाता नहीं। नीचे पहला खाता जोड़ें।",
+  "welcome_another_account": "एक और खाता",
+  "welcome_credit_left_hint": "बचा हुआ क्रेडिट देखने के लिए लिमिट जोड़ें।",
+  "welcome_credit_left": "{#num}{amount}{/num} क्रेडिट बचा है",
+  "welcome_gain_hint": "रिटर्न गिनने के लिए आज की वैल्यू जोड़ें।",
+  "welcome_gain": "{#num}{amount}{/num} का फ़ायदा",
+  "welcome_loss": "{#num}{amount}{/num} का नुकसान",
+  "welcome_account_name_label": "खाते का नाम",
+  "welcome_account_name_placeholder": "HDFC, SBI, Paytm…",
+  "welcome_type_of": "{name} का प्रकार",
+  "welcome_type_of_account": "खाते का प्रकार",
+  "welcome_remove": "{name} हटाएँ",
+  "welcome_remove_this_account": "यह खाता हटाएँ",
+  "welcome_currency_label": "मुद्रा",
+  "welcome_currency_of": "{name} की मुद्रा",
+  "welcome_currency_of_this_account": "इस खाते की मुद्रा",
+  "welcome_error_name": "इस खाते को नाम दें।",
+  "welcome_error_amount": "रकम अंकों में लिखें, जैसे 1,250.00।",
+  "welcome_amount_placeholder": "0.00",
+  "welcome_currency_search_placeholder": "मुद्रा खोजें",
+  "welcome_currency_search_label": "मुद्राएँ खोजें",
+  "welcome_currency_empty": "कोई मुद्रा मेल नहीं खाती।",
+  "welcome_done_title": "सब तैयार है",
+  "welcome_done_added": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} खाता जोड़ा गया।",
+        "countPlural=other": "{count} खाते जोड़े गए।"
+      }
+    }
+  ],
+  "welcome_done_added_currencies": [
+    {
+      "declarations": ["input count", "input currencies", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{currencies} मुद्राओं में {count} खाता जोड़ा गया।",
+        "countPlural=other": "{currencies} मुद्राओं में {count} खाते जोड़े गए।"
+      }
+    }
+  ],
+  "welcome_accounts_added": "खाते जोड़े गए",
+  "welcome_owed": "बकाया",
+  "welcome_history_title": "अपनी पुरानी हिस्ट्री भरें",
+  "welcome_history_body": "अपने बैंक के स्टेटमेंट इम्पोर्ट करें, और Kosha उनके पिछले लेन-देन इन खातों में जोड़ देगा।",
+  "welcome_import": "स्टेटमेंट इम्पोर्ट करें",
+  "welcome_add_transaction": "लेन-देन जोड़ें",
+  "ask_page_title": "Kosha से पूछें · Kosha",
+  "ask_title": "Kosha से पूछें",
+  "ask_subtitle": "आपके पैसे से जुड़े सवाल, आपके डेटा से जवाब।",
+  "ask_new_chat": "नई चैट",
+  "ask_input_label": "अपने पैसे के बारे में सवाल पूछें",
+  "ask_placeholder": "अपने पैसे के बारे में पूछें",
+  "ask_placeholder_follow_up": "आगे का सवाल पूछें",
+  "ask_submit": "पूछें",
+  "ask_your_endpoint": "आपका एंडपॉइंट",
+  "ask_answered_by": "{provider} ({model}) ने जवाब दिया।",
+  "ask_privacy": "Kosha सिर्फ़ वही भेजता है जिसकी {#link}AI क्या देख सकता है{/link} में अनुमति है। ज़रूरी आँकड़े गतिविधि में जाँच लें।",
+  "ask_error": "पूछा नहीं जा सका",
+  "ask_suggest_category": "इस महीने मैंने {category} पर कितना खर्च किया?",
+  "ask_suggest_spent": "इस महीने मैंने कितना खर्च किया?",
+  "ask_suggest_biggest": "पिछले महीने मेरे सबसे बड़े खर्च कौन-से थे?",
+  "ask_suggest_compare": "यह महीना आम महीने के मुकाबले कैसा है?",
+  "ask_suggest_event": "{event} में कुल कितना खर्च हुआ?",
+  "ask_suggest_subscriptions": "मेरे सब्सक्रिप्शन पर हर महीने कितना खर्च होता है?",
+  "ask_empty_title": "अपने पैसे के बारे में कुछ भी पूछें",
+  "ask_empty_body": "Kosha आपके खातों, लेन-देन और नियमित भुगतानों में जवाब ढूँढता है, और बताता है कि हर जवाब कहाँ से आया।",
+  "ask_thinking": "सोच रहा है",
+  "ask_how_found": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Kosha ने यह कैसे ढूँढा ({count} खोज)",
+        "countPlural=other": "Kosha ने यह कैसे ढूँढा ({count} खोजें)"
+      }
+    }
+  ]
+}

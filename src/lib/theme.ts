@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from "react"
 import { PREFS, type Prefs } from "@/lib/core"
+import { getLocale, setLocale } from "@/paraglide/runtime"
 
 export type Theme = Prefs["theme"]
 
@@ -82,6 +83,11 @@ export function setDevicePref<K extends DevicePref>(key: K, value: Prefs[K]) {
 
 /** Brings this device in line with the account's saved preferences (another device may have changed them). */
 export function syncPreferences(prefs: Prefs) {
+  // The language comes from a cookie, so a new browser follows the account's choice once, then reloads.
+  if (prefs.language && prefs.language !== getLocale()) {
+    void setLocale(prefs.language)
+    return
+  }
   if (getTheme() !== prefs.theme) setTheme(prefs.theme)
   for (const key of Object.keys(ATTRS) as DevicePref[]) {
     if ((read(key) ?? PREFS[key].fallback) !== prefs[key]) setDevicePref(key, prefs[key])

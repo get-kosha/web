@@ -1,0 +1,127 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "welcome_page_title": "ようこそ · Kosha",
+  "welcome_type_bank": "銀行",
+  "welcome_type_cash": "現金",
+  "welcome_type_card": "カード",
+  "welcome_type_investment": "投資",
+  "welcome_type_bank_account": "銀行口座",
+  "welcome_type_credit_card": "クレジットカード",
+  "welcome_type_investment_long": "投資",
+  "welcome_suggest_current": "普通預金",
+  "welcome_suggest_savings": "貯蓄",
+  "welcome_suggest_investments": "投資",
+  "welcome_suggest_pension": "年金",
+  "welcome_field_balance": "残高",
+  "welcome_field_owed": "未払い残高",
+  "welcome_field_credit_limit": "利用限度額",
+  "welcome_field_put_in": "投資額",
+  "welcome_field_value_today": "現在の評価額",
+  "welcome_name_save_failed": "名前を保存できませんでした",
+  "welcome_title": "Koshaへようこそ",
+  "welcome_sub": "3つの項目を確認してから、口座を追加しましょう。1〜2分で終わります。",
+  "welcome_name_title": "名前",
+  "welcome_name_description": "メニューに表示されます。",
+  "welcome_name_error": "Koshaに表示する名前を入力してください。",
+  "welcome_currency_title": "基本通貨",
+  "welcome_currency_description": "純資産と合計はこの通貨で計算されます。",
+  "welcome_tz_title": "タイムゾーン",
+  "welcome_tz_description": "日と月はこのタイムゾーンに従います。",
+  "welcome_change_later": "3つとも、あとで設定から変更できます。",
+  "welcome_saving": "保存中…",
+  "welcome_accounts_title": "口座を追加",
+  "welcome_accounts_sub": "それぞれの今日の残高を入力してください。持っていないものは削除し、ほかの口座を追加しましょう。",
+  "welcome_net_worth": "純資産",
+  "welcome_adding": "追加中…",
+  "welcome_add_accounts": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count}口座を追加"
+      }
+    }
+  ],
+  "welcome_add_an_account": "口座を追加",
+  "welcome_progress_label": "セットアップ",
+  "welcome_progress_step": "ステップ {at}/2",
+  "welcome_skip": "今はスキップ",
+  "welcome_rows_label": "新しい口座",
+  "welcome_rows_empty": "口座はまだありません。下から最初の口座を追加してください。",
+  "welcome_another_account": "口座をもう1つ追加",
+  "welcome_credit_left_hint": "限度額を入力すると、利用可能額が表示されます。",
+  "welcome_credit_left": "利用可能額 {#num}{amount}{/num}",
+  "welcome_gain_hint": "現在の評価額を入力すると、評価損益が計算されます。",
+  "welcome_gain": "評価益 {#num}{amount}{/num}",
+  "welcome_loss": "評価損 {#num}{amount}{/num}",
+  "welcome_account_name_label": "口座名",
+  "welcome_account_name_placeholder": "三菱UFJ、楽天銀行、Wise…",
+  "welcome_type_of": "{name}の種類",
+  "welcome_type_of_account": "口座の種類",
+  "welcome_remove": "{name}を削除",
+  "welcome_remove_this_account": "この口座を削除",
+  "welcome_currency_label": "通貨",
+  "welcome_currency_of": "{name}の通貨",
+  "welcome_currency_of_this_account": "この口座の通貨",
+  "welcome_error_name": "この口座に名前を付けてください。",
+  "welcome_error_amount": "金額は 1,250.00 のように数字で入力してください。",
+  "welcome_amount_placeholder": "0.00",
+  "welcome_currency_search_placeholder": "通貨を検索",
+  "welcome_currency_search_label": "通貨を検索",
+  "welcome_currency_empty": "一致する通貨はありません。",
+  "welcome_done_title": "準備が整いました",
+  "welcome_done_added": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count}口座を追加しました。"
+      }
+    }
+  ],
+  "welcome_done_added_currencies": [
+    {
+      "declarations": ["input count", "input currencies", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{currencies}種類の通貨で{count}口座を追加しました。"
+      }
+    }
+  ],
+  "welcome_accounts_added": "追加した口座",
+  "welcome_owed": "未払い",
+  "welcome_history_title": "過去の記録を取り込む",
+  "welcome_history_body": "銀行の明細をインポートすると、過去の取引がこれらの口座に追加されます。",
+  "welcome_import": "明細をインポート",
+  "welcome_add_transaction": "取引を追加",
+  "ask_page_title": "Koshaに質問 · Kosha",
+  "ask_title": "Koshaに質問",
+  "ask_subtitle": "お金についての質問に、あなたのデータから回答します。",
+  "ask_new_chat": "新しいチャット",
+  "ask_input_label": "お金について質問する",
+  "ask_placeholder": "お金について質問",
+  "ask_placeholder_follow_up": "続けて質問",
+  "ask_submit": "質問",
+  "ask_your_endpoint": "独自のエンドポイント",
+  "ask_answered_by": "{provider}（{model}）による回答です。",
+  "ask_privacy": "Koshaが送信するのは{#link}AIに見せる情報{/link}で許可した内容だけです。重要な数字は履歴で確認してください。",
+  "ask_error": "質問できませんでした",
+  "ask_suggest_category": "今月、{category}にいくら使った？",
+  "ask_suggest_spent": "今月はいくら使った？",
+  "ask_suggest_biggest": "先月の大きな出費は？",
+  "ask_suggest_compare": "今月はいつもの月と比べてどう？",
+  "ask_suggest_event": "{event}には合計いくらかかった？",
+  "ask_suggest_subscriptions": "サブスクに毎月いくらかかっている？",
+  "ask_empty_title": "お金のことなら何でも質問",
+  "ask_empty_body": "Koshaが口座、取引、定期支払いを調べ、それぞれの回答の根拠を示します。",
+  "ask_thinking": "考え中",
+  "ask_how_found": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "Koshaがこの回答を見つけた方法（参照{count}回）"
+      }
+    }
+  ]
+}

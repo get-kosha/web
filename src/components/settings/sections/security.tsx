@@ -30,21 +30,55 @@ import { Pill, SettingGroup, SettingRow } from "@/components/settings/row"
 import { errorOf, useSave } from "@/components/settings/saved"
 import { savePreferences, setAccountPassword } from "@/lib/api"
 import { authClient } from "@/lib/auth-client"
-import { LOCALE } from "@/lib/core"
+import { intlLocale } from "@/lib/core"
 import { cn } from "@/lib/utils"
+import { m } from "@/paraglide/messages"
 
 /** Account counts and sign-in facts, loaded once by the settings layout. */
 export const useAccount = () => getRouteApi("/_app/settings").useLoaderData()
 
 const when = (d: Date | string) =>
-  new Date(d).toLocaleDateString(LOCALE, { day: "numeric", month: "short", year: "numeric" })
+  new Date(d).toLocaleDateString(intlLocale(), { day: "numeric", month: "short", year: "numeric" })
+
+type AuthError = { code?: string; message?: string; status?: number }
+
+/** Better Auth's error codes in Kosha's words, since its own messages are English only. */
+function authMessage(error: AuthError) {
+  if (error.status === 429) return m.settings_sec_err_too_many()
+  switch (error.code) {
+    case "INVALID_PASSWORD":
+      return m.settings_sec_err_wrong_password()
+    case "PASSWORD_TOO_SHORT":
+      return m.settings_sec_err_password_short()
+    case "PASSWORD_TOO_LONG":
+      return m.settings_sec_err_password_long()
+    case "INVALID_CODE":
+    case "INVALID_BACKUP_CODE":
+      return m.settings_sec_err_wrong_code()
+    case "TOO_MANY_ATTEMPTS_REQUEST_NEW_CODE":
+    case "ACCOUNT_TEMPORARILY_LOCKED":
+      return m.settings_sec_err_too_many()
+    case "SESSION_EXPIRED":
+    case "SESSION_NOT_FRESH":
+      return m.settings_sec_err_session_old()
+    case "AUTH_CANCELLED":
+    case "ERROR_CEREMONY_ABORTED":
+      return m.settings_sec_err_passkey_cancelled()
+    case "ERROR_AUTHENTICATOR_PREVIOUSLY_REGISTERED":
+      return m.settings_sec_err_passkey_exists()
+    case "FAILED_TO_UNLINK_LAST_ACCOUNT":
+      return m.settings_sec_err_last_account()
+    default:
+      return m.common_something_went_wrong()
+  }
+}
 
 /** Better Auth client calls resolve to { error }; turn that into a toast and a boolean. */
-export async function attempt(fn: () => Promise<{ error: { message?: string } | null } | unknown>, ok?: string) {
+export async function attempt(fn: () => Promise<{ error: AuthError | null } | unknown>, ok?: string) {
   try {
-    const res = (await fn()) as { error?: { message?: string } | null } | undefined
+    const res = (await fn()) as { error?: AuthError | null } | undefined
     if (res?.error) {
-      toast.error(res.error.message || "Something went wrong")
+      toast.error(authMessage(res.error))
       return false
     }
     if (ok) toast.success(ok)
@@ -61,10 +95,10 @@ type Account = ReturnType<typeof useAccount>
 /** The four checklist steps, done or not. The rail badge and the phone nudge count the open ones. */
 export function securitySteps(account: Account, backupSavedAt: string | null) {
   return [
-    { key: "password", label: "A password", done: account.hasPassword },
-    { key: "passkey", label: "A passkey on this device", done: account.passkeys > 0 },
-    { key: "two-factor", label: "Two-factor authentication", done: account.twoFactor },
-    { key: "codes", label: "Backup codes saved", done: account.twoFactor && !!backupSavedAt },
+    { key: "password", label: m.settings_sec_step_password(), done: account.hasPassword },
+    { key: "passkey", label: m.settings_sec_step_passkey(), done: account.passkeys > 0 },
+    { key: "two-factor", label: m.settings_sec_two_factor(), done: account.twoFactor },
+    { key: "codes", label: m.settings_sec_step_codes(), done: account.twoFactor && !!backupSavedAt },
   ] as const
 }
 
@@ -77,7 +111,12 @@ export function Security() {
   const [before, setBefore] = useState<Set<string> | null>(null)
   const addPasskey = async () => {
     const ids = new Set(passkeys.data?.map((p) => p.id))
-    if (await save(() => authClient.passkey.addPasskey({ name: deviceName() }))) {
+    const add = async () => {
+      const res = await authClient.passkey.addPasskey({ name: deviceName() })
+      if (res?.error) throw new Error(authMessage(res.error))
+      return res
+    }
+    if (await save(add)) {
       setBefore(ids)
       passkeys.refetch()
     }
@@ -92,7 +131,7 @@ export function Security() {
           codes: () => setStep("regenerate"),
         }}
       />
-      <SettingGroup label="Sign-in">
+      <SettingGroup label={m.settings_sec_signin()}>
         <Password open={pwOpen} setOpen={setPwOpen} />
         <Passkeys list={passkeys} before={before} onAdd={addPasskey} />
         <Google />
@@ -108,12 +147,18 @@ const RING = 138.2 // 2πr for r = 22
 /** Shows "1 of 4 done" as a ring, with each open step and the flow that finishes it. Hidden once all are done. */
 function Checklist({ actions }: { actions: Record<"password" | "passkey" | "two-factor" | "codes", () => void> }) {
   const account = useAccount()
-  const backupSavedAt = getRouteApi("/_app").useLoaderData({ select: (m) => m.prefs.backup_codes_saved_at })
+  const backupSavedAt = getRouteApi("/_app").useLoaderData({ select: (d) => d.prefs.backup_codes_saved_at })
   const steps = securitySteps(account, backupSavedAt)
   const done = steps.filter((s) => s.done).length
   if (done === steps.length) return null
   const label = (key: (typeof steps)[number]["key"]) =>
-    key === "password" ? "Set" : key === "passkey" ? "Add" : key === "two-factor" ? "Turn on" : "Save codes"
+    key === "password"
+      ? m.settings_sec_action_set()
+      : key === "passkey"
+        ? m.common_add()
+        : key === "two-factor"
+          ? m.settings_sec_action_turn_on()
+          : m.settings_sec_action_save_codes()
   return (
     <SettingGroup>
       <div id="checklist" className="px-5 py-5 max-md:px-4">
@@ -122,7 +167,7 @@ function Checklist({ actions }: { actions: Record<"password" | "passkey" | "two-
             viewBox="0 0 56 56"
             className="size-14 shrink-0 -rotate-90"
             role="img"
-            aria-label={`${done} of 4 security steps done`}
+            aria-label={m.settings_sec_ring_label({ done, total: steps.length })}
           >
             <circle cx="28" cy="28" r="22" fill="none" strokeWidth="5" className="stroke-muted" />
             <circle
@@ -137,10 +182,8 @@ function Checklist({ actions }: { actions: Record<"password" | "passkey" | "two-
             />
           </svg>
           <div>
-            <div className="text-[15px] font-semibold">{done} of 4 done</div>
-            <p className="mt-0.5 text-[13px] text-muted-foreground">
-              Two minutes to finish. Each step makes your account harder to take over.
-            </p>
+            <div className="text-[15px] font-semibold">{m.settings_sec_progress({ done, total: steps.length })}</div>
+            <p className="mt-0.5 text-[13px] text-muted-foreground">{m.settings_sec_checklist_description()}</p>
           </div>
         </div>
         <ul className="mt-4 grid">
@@ -185,15 +228,11 @@ function Password({ open, setOpen }: { open: boolean; setOpen: (o: boolean) => v
   return (
     <SettingRow
       id="password"
-      title="Password"
-      description={
-        hasPassword
-          ? "At least 10 characters. Changing it signs out your other devices."
-          : "You sign in without a password. Add one as a fallback."
-      }
+      title={m.settings_sec_password()}
+      description={hasPassword ? m.settings_sec_password_description() : m.settings_sec_password_description_none()}
       control={
         <Button variant="outline" className="h-9 bg-card px-3 text-[13px] font-normal" onClick={() => setOpen(true)}>
-          {hasPassword ? "Change password" : "Set a password"}
+          {hasPassword ? m.settings_sec_change_password() : m.settings_sec_set_a_password()}
         </Button>
       }
     >
@@ -229,11 +268,11 @@ function Passkeys({
   return (
     <SettingRow
       id="passkeys"
-      title="Passkeys"
-      description="Sign in with Face ID, Touch ID, Windows Hello or a security key."
+      title={m.settings_sec_passkeys()}
+      description={m.settings_sec_passkeys_description()}
       control={
         <Button variant="outline" className="h-9 bg-card px-3 text-[13px] font-normal" onClick={onAdd}>
-          <FingerprintIcon /> Add a passkey
+          <FingerprintIcon /> {m.settings_sec_add_passkey()}
         </Button>
       }
     >
@@ -251,15 +290,16 @@ function Passkeys({
               <div className="min-w-0 flex-1">
                 <PasskeyName id={p.id} name={p.name ?? ""} onSaved={refetch} />
                 <p className="text-xs text-muted-foreground">
-                  Added {when(p.createdAt)}
-                  {p.backedUp ? " · synced" : ""}
+                  {p.backedUp
+                    ? m.settings_sec_passkey_added_synced({ date: when(p.createdAt) })
+                    : m.settings_sec_passkey_added({ date: when(p.createdAt) })}
                 </p>
               </div>
               <Button
                 variant="ghost"
                 size="icon"
-                aria-label={`Remove ${p.name || "passkey"}`}
-                onClick={() => setRemoving({ id: p.id, name: p.name || "this passkey" })}
+                aria-label={p.name ? m.settings_sec_remove_named({ name: p.name }) : m.settings_sec_remove_passkey()}
+                onClick={() => setRemoving({ id: p.id, name: p.name ?? "" })}
               >
                 <TrashIcon />
               </Button>
@@ -271,24 +311,31 @@ function Passkeys({
         <Dialog open onOpenChange={(o) => !o && setRemoving(null)}>
           <DialogContent className="sm:max-w-sm">
             <DialogHeader>
-              <DialogTitle>Remove {removing.name}?</DialogTitle>
-              <DialogDescription>
-                You won't be able to sign in with it any more. Your other sign-in methods keep working.
-              </DialogDescription>
+              <DialogTitle>
+                {removing.name
+                  ? m.settings_sec_remove_title({ name: removing.name })
+                  : m.settings_sec_remove_this_title()}
+              </DialogTitle>
+              <DialogDescription>{m.settings_sec_remove_body()}</DialogDescription>
             </DialogHeader>
             <DialogFooter>
               <Button variant="outline" onClick={() => setRemoving(null)}>
-                Cancel
+                {m.common_cancel()}
               </Button>
               <Button
                 variant="destructive"
                 onClick={async () => {
-                  if (await attempt(() => authClient.passkey.deletePasskey({ id: removing.id }), "Passkey removed"))
+                  if (
+                    await attempt(
+                      () => authClient.passkey.deletePasskey({ id: removing.id }),
+                      m.settings_sec_passkey_removed()
+                    )
+                  )
                     refetch()
                   setRemoving(null)
                 }}
               >
-                Remove
+                {m.common_remove()}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -299,10 +346,12 @@ function Passkeys({
 }
 
 /** What to say when Google sends you back here without connecting. */
-const LINK_ERRORS: Record<string, string> = {
-  email_does_not_match: "That Google account has a different email. Choose the one with your Kosha email.",
-  account_already_linked_to_different_user: "That Google account is already connected to another Kosha account.",
-}
+const linkError = (code: string) =>
+  code === "email_does_not_match"
+    ? m.settings_sec_google_mismatch()
+    : code === "account_already_linked_to_different_user"
+      ? m.settings_sec_google_taken()
+      : m.settings_sec_google_failed()
 
 /** Signing in with Google. Hidden when this deployment has no Google client. */
 function Google() {
@@ -314,7 +363,7 @@ function Google() {
     const url = new URL(window.location.href)
     const code = url.searchParams.get("error")
     if (!code) return
-    toast.error(LINK_ERRORS[code] ?? "Couldn't connect Google. Try again.")
+    toast.error(linkError(code))
     url.searchParams.delete("error")
     url.searchParams.delete("error_description")
     history.replaceState(history.state, "", url)
@@ -328,10 +377,10 @@ function Google() {
       title="Google"
       description={
         !accountId
-          ? "Sign in with the Google account that has your Kosha email."
+          ? m.settings_sec_google_description_none()
           : hasPassword
-            ? "Connected. You can sign in with Google."
-            : "Connected. Set a password before you disconnect it, so you can still sign in."
+            ? m.settings_sec_google_description_on()
+            : m.settings_sec_google_description_no_password()
       }
       control={
         accountId ? (
@@ -341,7 +390,7 @@ function Google() {
             disabled={!hasPassword}
             onClick={() => setRemoving(true)}
           >
-            Disconnect
+            {m.settings_sec_disconnect()}
           </Button>
         ) : (
           <Button
@@ -354,7 +403,7 @@ function Google() {
               )
             }}
           >
-            <GoogleLogoIcon /> Connect Google
+            <GoogleLogoIcon /> {m.settings_sec_connect_google()}
           </Button>
         )
       }
@@ -363,27 +412,25 @@ function Google() {
         <Dialog open onOpenChange={(o) => !o && setRemoving(false)}>
           <DialogContent className="sm:max-w-sm">
             <DialogHeader>
-              <DialogTitle>Disconnect Google?</DialogTitle>
-              <DialogDescription>
-                You won't be able to sign in with Google any more. Your other sign-in methods keep working.
-              </DialogDescription>
+              <DialogTitle>{m.settings_sec_google_disconnect_title()}</DialogTitle>
+              <DialogDescription>{m.settings_sec_google_disconnect_body()}</DialogDescription>
             </DialogHeader>
             <DialogFooter>
               <Button variant="outline" onClick={() => setRemoving(false)}>
-                Cancel
+                {m.common_cancel()}
               </Button>
               <Button
                 variant="destructive"
                 onClick={async () => {
                   const res = await authClient.unlinkAccount({ accountId: accountId! })
                   // Better Auth only unlinks from a session started in the last day.
-                  if (res.error?.code === "SESSION_NOT_FRESH")
-                    toast.error("Sign out and back in, then disconnect Google.")
-                  else if (await attempt(async () => res, "Google disconnected")) void router.invalidate()
+                  if (res.error?.code === "SESSION_NOT_FRESH") toast.error(m.settings_sec_google_not_fresh())
+                  else if (await attempt(async () => res, m.settings_sec_google_disconnected()))
+                    void router.invalidate()
                   setRemoving(false)
                 }}
               >
-                Disconnect
+                {m.settings_sec_disconnect()}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -399,15 +446,16 @@ function PasskeyName({ id, name, onSaved }: { id: string; name: string; onSaved:
   useEffect(() => setValue(name), [name])
   return (
     <input
-      aria-label="Passkey name"
+      aria-label={m.settings_sec_passkey_name()}
       value={value}
-      placeholder="Passkey"
+      placeholder={m.settings_sec_passkey_placeholder()}
       onChange={(e) => setValue(e.target.value)}
       onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
       onBlur={async () => {
         const next = value.trim()
         if (next === name) return
-        if (await attempt(() => authClient.passkey.updatePasskey({ id, name: next }), "Passkey renamed")) onSaved()
+        if (await attempt(() => authClient.passkey.updatePasskey({ id, name: next }), m.settings_sec_passkey_renamed()))
+          onSaved()
         else setValue(name)
       }}
       className="-mx-1 w-full rounded-sm bg-transparent px-1 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
@@ -425,7 +473,7 @@ function deviceName() {
         ? "Android"
         : /Windows/.test(ua)
           ? "Windows"
-          : "This device"
+          : m.settings_sec_this_device()
   return os
 }
 
@@ -446,13 +494,13 @@ function TwoFactor({ step, setStep }: { step: Step; setStep: (s: Step) => void }
   return (
     <SettingRow
       id="two-factor"
-      title="Two-factor authentication"
+      title={m.settings_sec_two_factor()}
       description={
         !hasPassword && !enabled
-          ? "Set a password first. Two-factor protects password sign-in."
+          ? m.settings_sec_two_factor_need_password()
           : enabled
-            ? "On. Signing in with your password also asks for a code from your authenticator app."
-            : "After your password, ask for a code from an authenticator app (1Password, Authy…)."
+            ? m.settings_sec_two_factor_on()
+            : m.settings_sec_two_factor_off()
       }
       control={
         <>
@@ -462,11 +510,11 @@ function TwoFactor({ step, setStep }: { step: Step; setStep: (s: Step) => void }
               className="h-9 px-3 text-[13px] font-normal text-subtle-foreground"
               onClick={() => setStep("regenerate")}
             >
-              Get new backup codes
+              {m.settings_sec_new_codes_button()}
             </Button>
           )}
           <Switch
-            aria-label="Two-factor authentication"
+            aria-label={m.settings_sec_two_factor()}
             checked={enabled || step === "scan" || step === "codes"}
             disabled={!hasPassword && !enabled}
             onCheckedChange={(on) => setStep(on ? "password" : "disable")}
@@ -476,14 +524,14 @@ function TwoFactor({ step, setStep }: { step: Step; setStep: (s: Step) => void }
     >
       {step === "password" && (
         <PasswordPrompt
-          title="Turn on two-factor"
-          description="Confirm it's you. Next you'll scan a QR code with your authenticator app."
-          action="Continue"
+          title={m.settings_sec_enable_title()}
+          description={m.settings_sec_enable_description()}
+          action={m.common_continue()}
           onCancel={close}
           onSubmit={async (password) => {
             const res = await authClient.twoFactor.enable({ password, issuer: "Kosha" })
             if (res.error || !res.data || !("totpURI" in res.data)) {
-              toast.error(res.error?.message || "Couldn't start two-factor")
+              toast.error(res.error ? authMessage(res.error) : m.settings_sec_enable_failed())
               return false
             }
             setSetup({ uri: res.data.totpURI, codes: res.data.backupCodes })
@@ -515,14 +563,14 @@ function TwoFactor({ step, setStep }: { step: Step; setStep: (s: Step) => void }
       )}
       {step === "regenerate" && (
         <PasswordPrompt
-          title="New backup codes"
-          description="Your old backup codes stop working once you get new ones."
-          action="Get new codes"
+          title={m.settings_sec_codes_title()}
+          description={m.settings_sec_codes_description()}
+          action={m.settings_sec_codes_action()}
           onCancel={close}
           onSubmit={async (password) => {
             const res = await authClient.twoFactor.generateBackupCodes({ password })
             if (res.error || !res.data) {
-              toast.error(res.error?.message || "Couldn't make new codes")
+              toast.error(res.error ? authMessage(res.error) : m.settings_sec_codes_failed())
               return false
             }
             setSetup({ uri: "", codes: res.data.backupCodes })
@@ -533,13 +581,13 @@ function TwoFactor({ step, setStep }: { step: Step; setStep: (s: Step) => void }
       )}
       {step === "disable" && (
         <PasswordPrompt
-          title="Turn off two-factor?"
-          description="Signing in will only ask for your password. Your backup codes stop working."
-          action="Turn off"
+          title={m.settings_sec_disable_title()}
+          description={m.settings_sec_disable_description()}
+          action={m.settings_sec_turn_off()}
           destructive
           onCancel={close}
           onSubmit={async (password) => {
-            const ok = await attempt(() => authClient.twoFactor.disable({ password }), "Two-factor turned off")
+            const ok = await attempt(() => authClient.twoFactor.disable({ password }), m.settings_sec_disabled())
             if (ok) {
               void session.refetch()
               void router.invalidate()
@@ -571,7 +619,7 @@ function PasswordDialog({
     e.preventDefault()
     const f = new FormData(e.currentTarget)
     const next = String(f.get("new"))
-    if (next !== String(f.get("confirm"))) return setError("The two new passwords don't match")
+    if (next !== String(f.get("confirm"))) return setError(m.settings_sec_password_mismatch())
     setBusy(true)
     setError("")
     const ok = hasPassword
@@ -582,9 +630,9 @@ function PasswordDialog({
               newPassword: next,
               revokeOtherSessions: true,
             }),
-          "Password changed"
+          m.settings_sec_password_changed()
         )
-      : await attempt(() => setAccountPassword({ data: { password: next } }), "Password set")
+      : await attempt(() => setAccountPassword({ data: { password: next } }), m.settings_sec_password_set())
     setBusy(false)
     if (ok) {
       onDone()
@@ -596,18 +644,25 @@ function PasswordDialog({
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{hasPassword ? "Change password" : "Set a password"}</DialogTitle>
+          <DialogTitle>{hasPassword ? m.settings_sec_change_password() : m.settings_sec_set_a_password()}</DialogTitle>
         </DialogHeader>
         <form onSubmit={submit} className="grid gap-4">
-          {hasPassword && <Field name="current" label="Current password" autoComplete="current-password" />}
+          {hasPassword && (
+            <Field name="current" label={m.settings_sec_current_password()} autoComplete="current-password" />
+          )}
           <Field
             name="new"
-            label="New password"
+            label={m.settings_sec_new_password()}
             autoComplete="new-password"
             minLength={10}
-            hint="At least 10 characters."
+            hint={m.settings_sec_password_hint()}
           />
-          <Field name="confirm" label="New password again" autoComplete="new-password" minLength={10} />
+          <Field
+            name="confirm"
+            label={m.settings_sec_new_password_again()}
+            autoComplete="new-password"
+            minLength={10}
+          />
           {error && (
             <p role="alert" className="text-sm text-destructive">
               {error}
@@ -615,10 +670,10 @@ function PasswordDialog({
           )}
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
+              {m.common_cancel()}
             </Button>
             <Button type="submit" disabled={busy}>
-              {hasPassword ? "Change password" : "Set password"}
+              {hasPassword ? m.settings_sec_change_password() : m.settings_sec_set_password()}
             </Button>
           </DialogFooter>
         </form>
@@ -675,10 +730,10 @@ function PasswordPrompt({
             setBusy(false)
           }}
         >
-          <Field name="password" label="Password" autoComplete="current-password" autoFocus />
+          <Field name="password" label={m.settings_sec_password()} autoComplete="current-password" autoFocus />
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onCancel}>
-              Cancel
+              {m.common_cancel()}
             </Button>
             <Button type="submit" variant={destructive ? "destructive" : "default"} disabled={busy}>
               {action}
@@ -698,18 +753,18 @@ function ScanStep({ uri, onCancel, onVerified }: { uri: string; onCancel: () => 
     <Dialog open onOpenChange={(o) => !o && onCancel()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Scan with your authenticator app</DialogTitle>
-          <DialogDescription>Then type the 6-digit code it shows to finish.</DialogDescription>
+          <DialogTitle>{m.settings_sec_scan_title()}</DialogTitle>
+          <DialogDescription>{m.settings_sec_scan_description()}</DialogDescription>
         </DialogHeader>
         {/* uqr draws the QR here from the secret; it never leaves the page. */}
         <div
           className="mx-auto size-48 rounded-lg bg-white p-2 text-black [&_svg]:size-full"
-          aria-label="QR code for your authenticator app"
+          aria-label={m.settings_sec_qr_label()}
           role="img"
           dangerouslySetInnerHTML={{ __html: renderSVG(uri, { border: 1 }) }}
         />
         <details className="text-xs text-muted-foreground">
-          <summary className="cursor-pointer">Can't scan? Enter this key instead</summary>
+          <summary className="cursor-pointer">{m.settings_sec_cant_scan()}</summary>
           <code className="num mt-2 block rounded-md bg-muted px-3 py-2 break-all text-foreground select-all">
             {secret.match(/.{1,4}/g)?.join(" ")}
           </code>
@@ -721,14 +776,14 @@ function ScanStep({ uri, onCancel, onVerified }: { uri: string; onCancel: () => 
             setBusy(true)
             const ok = await attempt(
               () => authClient.twoFactor.verifyTotp({ code: code.replace(/\s+/g, "") }),
-              "Two-factor is on"
+              m.settings_sec_two_factor_is_on()
             )
             setBusy(false)
             if (ok) onVerified()
           }}
         >
           <div className="grid gap-1.5">
-            <Label htmlFor="totp">Code</Label>
+            <Label htmlFor="totp">{m.settings_sec_code()}</Label>
             <Input
               id="totp"
               value={code}
@@ -743,10 +798,10 @@ function ScanStep({ uri, onCancel, onVerified }: { uri: string; onCancel: () => 
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onCancel}>
-              Cancel
+              {m.common_cancel()}
             </Button>
             <Button type="submit" disabled={busy}>
-              Verify and turn on
+              {m.settings_sec_verify()}
             </Button>
           </DialogFooter>
         </form>
@@ -756,15 +811,13 @@ function ScanStep({ uri, onCancel, onVerified }: { uri: string; onCancel: () => 
 }
 
 function BackupCodes({ codes, onDone }: { codes: string[]; onDone: () => void }) {
-  const text = `Kosha backup codes\nEach code works once.\n\n${codes.join("\n")}\n`
+  const text = `${m.settings_sec_codes_file_title()}\n${m.settings_sec_codes_file_note()}\n\n${codes.join("\n")}\n`
   return (
     <Dialog open onOpenChange={(o) => !o && onDone()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Save your backup codes</DialogTitle>
-          <DialogDescription>
-            If you lose your phone, each of these lets you sign in once. Kosha won't show them again.
-          </DialogDescription>
+          <DialogTitle>{m.settings_sec_save_codes_title()}</DialogTitle>
+          <DialogDescription>{m.settings_sec_save_codes_description()}</DialogDescription>
         </DialogHeader>
         <ol className="num grid grid-cols-2 gap-x-6 gap-y-1.5 rounded-lg bg-muted px-4 py-3 text-sm select-all">
           {codes.map((c) => (
@@ -773,8 +826,11 @@ function BackupCodes({ codes, onDone }: { codes: string[]; onDone: () => void })
         </ol>
         <DialogFooter className="sm:justify-between">
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => attempt(() => navigator.clipboard.writeText(text), "Copied")}>
-              <CopyIcon /> Copy
+            <Button
+              variant="outline"
+              onClick={() => attempt(() => navigator.clipboard.writeText(text), m.settings_sec_copied())}
+            >
+              <CopyIcon /> {m.settings_sec_copy()}
             </Button>
             <Button
               variant="outline"
@@ -786,11 +842,11 @@ function BackupCodes({ codes, onDone }: { codes: string[]; onDone: () => void })
                 URL.revokeObjectURL(a.href)
               }}
             >
-              <DownloadSimpleIcon /> Download
+              <DownloadSimpleIcon /> {m.settings_sec_download()}
             </Button>
           </div>
           <Button onClick={onDone}>
-            <CheckCircleIcon /> I've saved them
+            <CheckCircleIcon /> {m.settings_sec_saved_them()}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -817,7 +873,7 @@ function describe(ua: string | null | undefined) {
         ? "Chrome"
         : /Safari\//.test(s)
           ? "Safari"
-          : "Browser"
+          : m.settings_sec_browser()
   const os = /iPhone|iPad/.test(s)
     ? "iOS"
     : /Android/.test(s)
@@ -829,7 +885,7 @@ function describe(ua: string | null | undefined) {
           : /Linux/.test(s)
             ? "Linux"
             : ""
-  return { label: os ? `${browser} on ${os}` : browser, mobile: /iPhone|Android|Mobile/.test(s) }
+  return { label: os ? m.settings_sec_browser_on({ browser, os }) : browser, mobile: /iPhone|Android|Mobile/.test(s) }
 }
 
 function Sessions() {
@@ -841,7 +897,7 @@ function Sessions() {
 
   return (
     <SettingGroup
-      label="Signed-in devices"
+      label={m.settings_sec_devices()}
       actions={
         others.length > 0 && (
           <Button
@@ -849,16 +905,16 @@ function Sessions() {
             size="sm"
             className="h-8 px-2.5 text-[13px] font-normal text-subtle-foreground"
             onClick={async () => {
-              if (await attempt(() => authClient.revokeOtherSessions(), "Signed out of other devices")) load()
+              if (await attempt(() => authClient.revokeOtherSessions(), m.settings_sec_signed_out_others())) load()
             }}
           >
-            Sign out all others
+            {m.settings_sec_sign_out_others()}
           </Button>
         )
       }
     >
       <div id="devices">
-        {sessions === null && <p className="px-5 py-4 text-sm text-muted-foreground">Loading…</p>}
+        {sessions === null && <p className="px-5 py-4 text-sm text-muted-foreground">{m.common_loading()}</p>}
         {[...(sessions ?? [])]
           .sort(
             (a, b) =>
@@ -878,10 +934,15 @@ function Sessions() {
                 <div className="min-w-0 flex-1">
                   <p className="flex flex-wrap items-center gap-2 text-sm">
                     {d.label}
-                    {here && <Pill>This device</Pill>}
+                    {here && <Pill>{m.settings_sec_this_device()}</Pill>}
                   </p>
                   <p data-plain className="num truncate text-xs text-muted-foreground">
-                    {[s.ipAddress, here ? "active now" : `active ${when(s.updatedAt)}`].filter(Boolean).join(" · ")}
+                    {[
+                      s.ipAddress,
+                      here ? m.settings_sec_active_now() : m.settings_sec_active_on({ date: when(s.updatedAt) }),
+                    ]
+                      .filter(Boolean)
+                      .join(" · ")}
                   </p>
                 </div>
                 {!here && (
@@ -890,10 +951,13 @@ function Sessions() {
                     size="sm"
                     className="h-8 text-[13px] font-normal text-subtle-foreground"
                     onClick={async () => {
-                      if (await attempt(() => authClient.revokeSession({ token: s.token }), "Signed out")) load()
+                      if (
+                        await attempt(() => authClient.revokeSession({ token: s.token }), m.settings_sec_signed_out())
+                      )
+                        load()
                     }}
                   >
-                    Sign out
+                    {m.settings_sec_sign_out()}
                   </Button>
                 )}
               </div>

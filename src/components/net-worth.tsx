@@ -3,6 +3,8 @@ import { Reveal, RollingMoney } from "@/components/motion"
 import type { Wallet } from "@/lib/api"
 import { fmt, netWorth, type Rates } from "@/lib/core"
 import { cn } from "@/lib/utils"
+import { ParaglideMessage } from "@inlang/paraglide-js-react"
+import { m } from "@/paraglide/messages"
 
 /**
  * Cash & bank, money invested and unrealized gains in one bar, each as wide as its share of gross
@@ -14,9 +16,9 @@ export function CompositionBar({ wallets, currency, rates }: { wallets: Wallet[]
   const nw = netWorth(wallets, currency, rates)
   const loss = Math.min(0, nw.gains)
   const groups = [
-    { label: "Cash & bank", value: nw.cash, color: "bg-chart-4" },
-    { label: "Invested", value: nw.invested + loss, color: "bg-chart-2" },
-    { label: "Unrealized gains", value: Math.max(0, nw.gains), color: "hatch", signed: true },
+    { label: m.overview_worth_cash(), value: nw.cash, color: "bg-chart-4" },
+    { label: m.overview_worth_invested(), value: nw.invested + loss, color: "bg-chart-2" },
+    { label: m.overview_worth_gains(), value: Math.max(0, nw.gains), color: "hatch", signed: true },
   ].filter((g) => g.value > 0)
   const gross = groups.reduce((sum, g) => sum + g.value, 0)
   const share = (v: number) => (gross > 0 ? Math.round((v / gross) * 100) : 0)
@@ -49,14 +51,14 @@ export function CompositionBar({ wallets, currency, rates }: { wallets: Wallet[]
         {loss < 0 && (
           <div className="contents">
             <span className="h-0.5 w-2.5 bg-destructive" aria-hidden="true" />
-            <dt>Unrealized loss</dt>
+            <dt>{m.overview_worth_loss()}</dt>
             <dd className="num text-right text-destructive">{fmt(loss, currency)}</dd>
           </div>
         )}
         {cards && (
           <div className="contents">
             <span className="h-0.5 w-2.5 bg-muted-foreground" aria-hidden="true" />
-            <dt>Card balance</dt>
+            <dt>{m.overview_worth_card_balance()}</dt>
             <dd className="num text-right text-subtle-foreground">{fmt(-nw.debt, currency)}</dd>
           </div>
         )}
@@ -86,15 +88,23 @@ export function WorthSplit({
     <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-muted-foreground">
       <span className="inline-flex items-center gap-1.5">
         {swatches && <span className="h-0.5 w-3 rounded-full bg-chart-2" aria-hidden="true" />}
-        <span className="num text-foreground">{fmt(total - gains, currency)}</span> owned
+        <ParaglideMessage
+          message={m.overview_worth_owned}
+          inputs={{ amount: fmt(total - gains, currency) }}
+          markup={{ num: ({ children }) => <span className="num text-foreground">{children}</span> }}
+        />
       </span>
       <span className="inline-flex items-center gap-1.5">
         {swatches && <span className="size-2.5 rounded-[3px] hatch" aria-hidden="true" />}
-        <span className={cn("num", gains > 0 ? "text-positive" : "text-destructive")}>
-          {gains > 0 && "+"}
-          {fmt(gains, currency)}
-        </span>
-        unrealized {gains > 0 ? "gains" : "loss"}
+        <ParaglideMessage
+          message={gains > 0 ? m.overview_worth_split_gains : m.overview_worth_split_loss}
+          inputs={{ amount: `${gains > 0 ? "+" : ""}${fmt(gains, currency)}` }}
+          markup={{
+            num: ({ children }) => (
+              <span className={cn("num", gains > 0 ? "text-positive" : "text-destructive")}>{children}</span>
+            ),
+          }}
+        />
       </span>
     </p>
   )

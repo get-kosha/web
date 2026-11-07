@@ -1,6 +1,6 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
-  "entry": ["scripts/*.ts", "src/sw.js"],
+  "entry": ["scripts/*.ts", "src/sw.js", "project.inlang/paraglide.config.ts"],
   "ignoreIssues": {
     "src/components/ui/**": ["exports", "types"]
   }

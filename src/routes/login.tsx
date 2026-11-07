@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react"
 import { createFileRoute } from "@tanstack/react-router"
 import { EyeIcon, GoogleLogoIcon, KeyIcon } from "@phosphor-icons/react/ssr"
+import { ParaglideMessage } from "@inlang/paraglide-js-react"
 import { REGEXP_ONLY_DIGITS } from "input-otp"
 import { z } from "zod"
 import { cn } from "cn"
@@ -20,6 +21,7 @@ import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from "@/comp
 import { signInOptions } from "@/lib/api"
 import { authClient } from "@/lib/auth-client"
 import { DEMO, MIN_PASSWORD, publicHead, safeReturn } from "@/lib/core"
+import { m } from "@/paraglide/messages"
 
 export const Route = createFileRoute("/login")({
   // Loose: an app signing in through MCP OAuth adds a signed query that must reach the sign-in request.
@@ -34,7 +36,7 @@ export const Route = createFileRoute("/login")({
   }),
   loader: () => signInOptions(),
   // One canonical URL for every ?mode, ?returnTo and OAuth variant of this page.
-  head: () => publicHead("/login", "Sign in · Kosha", "Sign in to Kosha, or create a free account."),
+  head: () => publicHead("/login", m.auth_login_title(), m.auth_login_description()),
   component: Login,
 })
 
@@ -44,34 +46,44 @@ type AuthResult = { error: { code?: string; message?: string; status?: number } 
 /** What to say when Google sign-in comes back with an error code. */
 function googleError(code: string | undefined): Failure | null {
   if (!code) return null
-  if (code === "account_not_linked")
-    return {
-      message:
-        "That email already has a Kosha account. Sign in with your password or passkey, then connect Google in Settings › Sign-in & security.",
-    }
-  return { message: "Signing in with Google didn't work. Try again." }
+  if (code === "account_not_linked") return { message: m.auth_google_not_linked() }
+  return { message: m.auth_google_failed() }
 }
 
-/** Better Auth's error codes in Kosha's words. Null for a cancelled passkey prompt, which needs no message. */
+/**
+ * Better Auth's error codes in Kosha's words. Its own messages are English, so an unknown code gets a
+ * generic line. Null for a cancelled passkey prompt, which needs no message.
+ */
 function failure(error: NonNullable<NonNullable<AuthResult>["error"]>): Failure | null {
-  if (error.status === 429) return { message: "Too many tries. Wait a minute, then try again." }
+  if (error.status === 429) return { message: m.auth_error_rate_limited() }
   switch (error.code) {
     case "AUTH_CANCELLED":
       return null
+    case "OFFLINE":
+      return { message: m.auth_error_offline() }
+    case "DEMO_READ_ONLY":
+      return { message: m.common_demo_read_only() }
     case "INVALID_EMAIL_OR_PASSWORD":
-      return { field: "password", message: "Wrong email or password. Try again, or use a passkey." }
+      return { field: "password", message: m.auth_error_wrong_password() }
     case "INVALID_EMAIL":
-      return { field: "email", message: "Enter a full email address, like you@example.com." }
+      return { field: "email", message: m.auth_error_invalid_email() }
     case "USER_ALREADY_EXISTS":
     case "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL":
-      return { field: "email", message: "That email already has a Kosha account. Sign in instead." }
+      return { field: "email", message: m.auth_error_email_taken() }
     case "PASSWORD_TOO_SHORT":
-      return { field: "password", message: `Use at least ${MIN_PASSWORD} characters.` }
+      return { field: "password", message: m.auth_error_password_short({ min: MIN_PASSWORD }) }
+    case "PASSWORD_TOO_LONG":
+      return { field: "password", message: m.auth_error_password_long() }
+    case "AUTHENTICATION_FAILED":
+    case "PASSKEY_NOT_FOUND":
+    case "CHALLENGE_NOT_FOUND":
+      return { message: m.auth_error_passkey() }
   }
-  return { message: error.message || "Something went wrong. Try again." }
+  return { message: m.auth_error_generic() }
 }
 
-const offline = { error: { message: "Kosha couldn't be reached. Check your connection, then try again." }, data: null }
+// A code of Kosha's own, so failure() and codeError() can say it in the visitor's language.
+const offline = { error: { code: "OFFLINE" }, data: null }
 
 function Login() {
   const search = Route.useSearch()
@@ -161,6 +173,7 @@ function Login() {
   const signIn = mode === "in"
   const fieldError = (field: Failure["field"]) => (error && error.field === field ? error.message : undefined)
   const switchButton = cn(optionClass, "h-9 rounded-lg px-3.5 text-[13px] text-foreground")
+  const legalLink = "text-subtle-foreground underline underline-offset-[3px] hover:text-foreground"
 
   return (
     <AuthShell
@@ -170,36 +183,32 @@ function Login() {
       top={
         signIn ? (
           <>
-            <span>New to Kosha?</span>
+            <span>{m.auth_new_to_kosha()}</span>
             <Button variant="outline" className={switchButton} onClick={() => show({ mode: "up" })}>
-              Create an account
+              {m.auth_create_an_account()}
             </Button>
           </>
         ) : (
           <>
-            <span>Have an account?</span>
+            <span>{m.auth_have_account()}</span>
             <Button variant="outline" className={switchButton} onClick={() => show({})}>
-              Sign in
+              {m.auth_sign_in()}
             </Button>
           </>
         )
       }
     >
-      {notice && signIn && !demo && <AuthNotice title="Password changed">Sign in with your new password.</AuthNotice>}
-      <AuthHeader home band title={demo ? "Look around the demo" : signIn ? "Welcome back" : "Create your account"}>
-        {demo
-          ? "A shared account with 14 months of sample data."
-          : signIn
-            ? !notice && "Sign in to your treasury."
-            : "Start with your email. You'll add accounts next."}
+      {notice && signIn && !demo && (
+        <AuthNotice title={m.auth_password_changed()}>{m.auth_password_changed_body()}</AuthNotice>
+      )}
+      <AuthHeader home band title={demo ? m.auth_demo_title() : signIn ? m.auth_welcome_back() : m.auth_create_title()}>
+        {demo ? m.auth_demo_lead() : signIn ? !notice && m.auth_sign_in_lead() : m.auth_create_lead()}
       </AuthHeader>
 
       {demo && (
         <div className="flex gap-3 rounded-[14px] border bg-card px-4 py-3.5 text-sm text-subtle-foreground">
           <EyeIcon aria-hidden="true" className="mt-0.5 size-[18px] shrink-0" />
-          <p>
-            You can open everything. Adding, editing and deleting are turned off, so the next person sees it as you did.
-          </p>
+          <p>{m.auth_demo_note()}</p>
         </div>
       )}
 
@@ -208,9 +217,9 @@ function Login() {
           <AuthField
             id="name"
             name="name"
-            label="Name"
+            label={m.auth_name()}
             autoComplete="name"
-            aside={<span className="text-xs text-muted-foreground">Optional</span>}
+            aside={<span className="text-xs text-muted-foreground">{m.auth_optional()}</span>}
           />
         )}
         <AuthField
@@ -218,9 +227,9 @@ function Login() {
           id="email"
           name="email"
           type="email"
-          label="Email"
+          label={m.auth_email()}
           required
-          placeholder="you@example.com"
+          placeholder={m.auth_email_placeholder()}
           autoComplete={signIn ? "username webauthn" : "username"}
           value={demo ? DEMO.email : email}
           onChange={(e) => setEmail(e.target.value)}
@@ -232,7 +241,7 @@ function Login() {
           id="password"
           name="password"
           type="password"
-          label="Password"
+          label={m.auth_password()}
           required
           minLength={signIn ? undefined : MIN_PASSWORD}
           autoComplete={signIn ? "current-password" : "new-password"}
@@ -243,7 +252,7 @@ function Login() {
           }}
           locked={demo}
           meter={!signIn}
-          hint={demo ? "Filled in for you." : undefined}
+          hint={demo ? m.auth_demo_filled() : undefined}
           error={fieldError("password")}
           aside={
             signIn &&
@@ -253,37 +262,37 @@ function Login() {
                 href={`/forgot-password${email ? `?email=${encodeURIComponent(email)}` : ""}`}
                 className="text-[13px] leading-[18px] text-subtle-foreground underline decoration-chart-4 underline-offset-[3px] hover:text-foreground"
               >
-                Forgot password?
+                {m.auth_forgot_password()}
               </a>
             )
           }
         />
         {error && !error.field && <AuthError>{error.message}</AuthError>}
         <Button type="submit" size="auth" disabled={busy} className="mt-1">
-          {demo ? "Open the demo" : signIn ? "Sign in" : "Create account"}
+          {demo ? m.auth_open_demo() : signIn ? m.auth_sign_in() : m.auth_create_account()}
         </Button>
       </form>
 
       {signIn && !demo && (
         <>
-          <AuthDivider>or sign in with</AuthDivider>
+          <AuthDivider>{m.auth_or_sign_in_with()}</AuthDivider>
           <div className={cn("grid gap-2.5", google && "grid-cols-2")}>
             <Button
               variant="outline"
               size="auth-option"
               className={optionClass}
-              aria-label="Sign in with a passkey"
+              aria-label={m.auth_sign_in_passkey()}
               disabled={busy}
               onClick={passkey}
             >
-              <KeyIcon className="text-subtle-foreground" /> Passkey
+              <KeyIcon className="text-subtle-foreground" /> {m.auth_passkey()}
             </Button>
             {google && (
               <Button
                 variant="outline"
                 size="auth-option"
                 className={optionClass}
-                aria-label="Sign in with Google"
+                aria-label={m.auth_sign_in_google()}
                 disabled={busy}
                 onClick={signInWithGoogle}
               >
@@ -293,10 +302,16 @@ function Login() {
           </div>
           {hasDemo && (
             <p className="text-sm text-muted-foreground">
-              Just looking?{" "}
-              <button type="button" className={linkClass} onClick={() => show({ demo: true })}>
-                Open the demo
-              </button>
+              <ParaglideMessage
+                message={m.auth_just_looking}
+                markup={{
+                  demo: ({ children }) => (
+                    <button type="button" className={linkClass} onClick={() => show({ demo: true })}>
+                      {children}
+                    </button>
+                  ),
+                }}
+              />
             </p>
           )}
         </>
@@ -305,7 +320,7 @@ function Login() {
       {!signIn && google && (
         <>
           <div className="max-md:hidden">
-            <AuthDivider>or</AuthDivider>
+            <AuthDivider>{m.auth_or()}</AuthDivider>
           </div>
           <Button
             variant="outline"
@@ -314,40 +329,62 @@ function Login() {
             disabled={busy}
             onClick={signInWithGoogle}
           >
-            <GoogleLogoIcon className="text-subtle-foreground" /> Sign up with Google
+            <GoogleLogoIcon className="text-subtle-foreground" /> {m.auth_sign_up_google()}
           </Button>
         </>
       )}
 
       {!signIn && (
         <p className="text-xs leading-[18px] text-muted-foreground">
-          By creating an account you agree to the{" "}
-          <a href="/terms" className="text-subtle-foreground underline underline-offset-[3px] hover:text-foreground">
-            terms
-          </a>{" "}
-          and{" "}
-          <a href="/privacy" className="text-subtle-foreground underline underline-offset-[3px] hover:text-foreground">
-            privacy policy
-          </a>
-          .
+          <ParaglideMessage
+            message={m.auth_agree}
+            markup={{
+              terms: ({ children }) => (
+                <a href="/terms" className={legalLink}>
+                  {children}
+                </a>
+              ),
+              privacy: ({ children }) => (
+                <a href="/privacy" className={legalLink}>
+                  {children}
+                </a>
+              ),
+            }}
+          />
         </p>
       )}
 
       {demo && (
         <p className="text-sm text-muted-foreground">
-          Have an account?{" "}
-          <button type="button" className={linkClass} onClick={() => show({})}>
-            Sign in to your own
-          </button>
+          <ParaglideMessage
+            message={m.auth_demo_own_account}
+            markup={{
+              link: ({ children }) => (
+                <button type="button" className={linkClass} onClick={() => show({})}>
+                  {children}
+                </button>
+              ),
+            }}
+          />
         </p>
       )}
 
       {/* On phones the switch sits at the bottom of the sheet; desktop has it in the top bar. */}
       <p className="mt-auto pt-2 text-center text-sm text-muted-foreground md:hidden">
-        {signIn ? "No account yet? " : "Have an account? "}
-        <button type="button" className={cn(linkClass, "min-h-11")} onClick={() => show(signIn ? { mode: "up" } : {})}>
-          {signIn ? "Create one" : "Sign in"}
-        </button>
+        <ParaglideMessage
+          message={signIn ? m.auth_phone_no_account : m.auth_phone_have_account}
+          markup={{
+            link: ({ children }) => (
+              <button
+                type="button"
+                className={cn(linkClass, "min-h-11")}
+                onClick={() => show(signIn ? { mode: "up" } : {})}
+              >
+                {children}
+              </button>
+            ),
+          }}
+        />
       </p>
     </AuthShell>
   )
@@ -355,11 +392,16 @@ function Login() {
 
 /** What to say when a two-factor code is turned down. */
 function codeError(error: { code?: string; message?: string; status?: number }) {
-  if (error.status === 429 || error.code === "ACCOUNT_TEMPORARILY_LOCKED")
-    return "Too many tries. Wait a few minutes, then try again."
-  if (error.code === "INVALID_TWO_FACTOR_COOKIE") return "This sign-in timed out. Go back and sign in again."
-  if (error.code === "INVALID_CODE" || error.code === "INVALID_BACKUP_CODE") return "That code didn't work. Try again."
-  return error.message || "That code didn't work. Try again."
+  if (
+    error.status === 429 ||
+    error.code === "ACCOUNT_TEMPORARILY_LOCKED" ||
+    error.code?.startsWith("TOO_MANY_ATTEMPTS")
+  )
+    return m.auth_2fa_rate_limited()
+  if (error.code === "INVALID_TWO_FACTOR_COOKIE" || error.code === "OTP_HAS_EXPIRED") return m.auth_2fa_timed_out()
+  if (error.code === "OFFLINE") return m.auth_error_offline()
+  if (error.code === "INVALID_CODE" || error.code === "INVALID_BACKUP_CODE") return m.auth_2fa_bad_code()
+  return m.auth_error_generic()
 }
 
 /** Second step of sign-in: a code from the authenticator app, or one of the backup codes. */
@@ -402,34 +444,37 @@ function TwoFactorStep({
     setError("")
   }
 
-  const toggleLabel = backup ? "Use the authenticator app" : "Use a backup code"
+  const toggleLabel = backup ? m.auth_2fa_use_app() : m.auth_2fa_use_backup()
   const describedBy = error ? "code-error" : "code-hint"
 
   return (
     <AuthShell phone="focused" back={onBack}>
       {/* Focus goes to the code field rather than the title: it's what the step asks for, and iOS and Android
           offer the code from it. Its label and hint name the step. */}
-      <AuthHeader title="Two-factor check">
+      <AuthHeader title={m.auth_2fa_title()}>
         {backup ? (
-          "Enter one of the backup codes you saved. Each works once."
-        ) : (
+          m.auth_2fa_backup_lead()
+        ) : email ? (
           <>
-            Enter the 6-digit code from your authenticator app
-            {email && (
-              <span className="max-md:hidden">
-                {" "}
-                for <strong>{email}</strong>
-              </span>
-            )}
-            .
+            {/* Phones leave out the address to keep the lead short. */}
+            <span className="max-md:hidden">
+              <ParaglideMessage
+                message={m.auth_2fa_lead_for}
+                inputs={{ email }}
+                markup={{ strong: ({ children }) => <strong>{children}</strong> }}
+              />
+            </span>
+            <span className="md:hidden">{m.auth_2fa_lead()}</span>
           </>
+        ) : (
+          m.auth_2fa_lead()
         )}
       </AuthHeader>
 
       <form onSubmit={submit} className="flex flex-1 flex-col gap-[22px] md:flex-none">
         <div className="flex flex-col gap-2.5">
           <label htmlFor="code" className="mb-0.5 text-[13px] leading-[18px] font-medium text-subtle-foreground">
-            {backup ? "Backup code" : "Code"}
+            {backup ? m.auth_2fa_backup_label() : m.auth_2fa_code_label()}
           </label>
           {backup ? (
             <Input
@@ -480,8 +525,8 @@ function TwoFactorStep({
               </InputOTP>
               {!error && (
                 <span id="code-hint" className="text-xs text-muted-foreground">
-                  <span className="max-md:hidden">Pasting the whole code works too.</span>
-                  <span className="md:hidden">Your phone may offer the code above the keyboard.</span>
+                  <span className="max-md:hidden">{m.auth_2fa_paste_hint()}</span>
+                  <span className="md:hidden">{m.auth_2fa_phone_hint()}</span>
                 </span>
               )}
             </>
@@ -497,10 +542,10 @@ function TwoFactorStep({
             className="mt-px size-[18px] shrink-0 accent-primary max-md:mt-0 max-md:size-5"
           />
           <span className="flex flex-col gap-0.5">
-            <span className="text-sm max-md:text-[15px]">Trust this device for 30 days</span>
+            <span className="text-sm max-md:text-[15px]">{m.auth_2fa_trust()}</span>
             <span className="text-xs text-muted-foreground">
-              Kosha won't ask for a code on this <span className="max-md:hidden">browser</span>
-              <span className="md:hidden">phone</span> until then.
+              <span className="max-md:hidden">{m.auth_2fa_trust_browser()}</span>
+              <span className="md:hidden">{m.auth_2fa_trust_phone()}</span>
             </span>
           </span>
         </label>
@@ -508,10 +553,10 @@ function TwoFactorStep({
         {/* Phones pin the action to the bottom, with the backup-code help around it. */}
         <div className="flex flex-col gap-1.5 max-md:mt-auto">
           <p className="mb-2 text-center text-[13px] leading-[19px] text-muted-foreground md:hidden">
-            No access to your authenticator app? Each backup code you saved works once.
+            {m.auth_2fa_no_access()}
           </p>
           <Button type="submit" size="auth" disabled={busy}>
-            Verify
+            {m.auth_2fa_verify()}
           </Button>
           <Button variant="link" className="h-11 text-[15px] text-foreground underline md:hidden" onClick={toggle}>
             {toggleLabel}
@@ -524,9 +569,7 @@ function TwoFactorStep({
           {toggleLabel}
         </button>
         <p className="text-[13px] leading-[19px] text-muted-foreground">
-          {backup
-            ? "Back to the 6-digit code from your authenticator app."
-            : "No access to your authenticator app? Each backup code you saved works once."}
+          {backup ? m.auth_2fa_back_to_code() : m.auth_2fa_no_access()}
         </p>
       </div>
     </AuthShell>

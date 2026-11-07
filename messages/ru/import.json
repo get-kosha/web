@@ -1,0 +1,329 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "import_columns": "Столбцы",
+  "import_columns_remembered": "как в прошлый раз для этого банка",
+  "import_columns_by_ai": "определены ИИ",
+  "import_columns_confident": "определены по заголовку",
+  "import_columns_check": "проверьте их",
+  "import_columns_column": "Столбец {n}",
+  "import_role_ignore": "Пропустить",
+  "import_role_date": "Дата",
+  "import_role_description": "Описание",
+  "import_role_amount": "Сумма",
+  "import_role_debit": "Списания",
+  "import_role_credit": "Поступления",
+  "import_role_balance": "Баланс",
+  "import_columns_dates": "Даты",
+  "import_columns_format": "Формат",
+  "import_date_dmy": "Сначала день (31/01/2026)",
+  "import_date_mdy": "Сначала месяц (01/31/2026)",
+  "import_date_ymd": "Сначала год (2026-01-31)",
+  "import_date_text": "Названия месяцев (31 Jan 2026)",
+  "import_columns_invert": "Расходы указаны положительными суммами",
+  "import_columns_lines_read": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Прочитана {n} строка",
+        "countPlural=few": "Прочитаны {n} строки",
+        "countPlural=many": "Прочитано {n} строк",
+        "countPlural=*": "Прочитано {n} строки"
+      }
+    }
+  ],
+  "import_head_title": "Импорт выписок · Kosha",
+  "import_title": "Импорт выписок",
+  "import_sub": "Kosha распределит выписки по счетам. Проверьте каждый счёт, затем контрагентов.",
+  "import_new_account": "Новый счёт",
+  "import_type_bank": "Банковский счёт",
+  "import_type_card": "Кредитная карта",
+  "import_error_pdf": "Kosha читает файлы CSV, OFX и QFX. Выгрузите один из них в интернет-банке.",
+  "import_error_no_transactions": "В этом файле нет операций",
+  "import_error_no_rows": "В этом файле нет строк, которые Kosha может прочитать",
+  "import_error_unreadable": "Не удалось прочитать",
+  "import_error_check": "Не удалось проверить ваши счета",
+  "import_drop": "Перетащите выписки сюда или {#choose}выберите файлы{/choose}",
+  "import_drop_more": "Перетащите сюда ещё выписки или {#choose}выберите файлы{/choose}",
+  "import_drop_hint": "CSV, OFX или QFX из интернет-банка. Добавьте сразу все месяцы, что у вас есть, по всем банкам и картам.",
+  "import_drop_hint_pdf": "CSV, OFX или QFX из интернет-банка либо выписки в PDF. Добавьте сразу все месяцы, что у вас есть, по всем банкам и картам.",
+  "import_reading": "Читаем {name}",
+  "import_dismiss": "Убрать {name}",
+  "import_reading_files": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Читаем {n} файл…",
+        "countPlural=few": "Читаем {n} файла…",
+        "countPlural=many": "Читаем {n} файлов…",
+        "countPlural=*": "Читаем {n} файла…"
+      }
+    }
+  ],
+  "import_summary": [
+    {
+      "declarations": [
+        "input count",
+        "input n",
+        "input accounts",
+        "input a",
+        "local countPlural = count: plural",
+        "local accountsPlural = accounts: plural"
+      ],
+      "selectors": ["countPlural", "accountsPlural"],
+      "match": {
+        "countPlural=one, accountsPlural=one": "{n} операция на {a} счёте",
+        "countPlural=one, accountsPlural=*": "{n} операция на {a} счетах",
+        "countPlural=few, accountsPlural=one": "{n} операции на {a} счёте",
+        "countPlural=few, accountsPlural=*": "{n} операции на {a} счетах",
+        "countPlural=many, accountsPlural=one": "{n} операций на {a} счёте",
+        "countPlural=many, accountsPlural=*": "{n} операций на {a} счетах",
+        "countPlural=*, accountsPlural=one": "{n} операции на {a} счёте",
+        "countPlural=*, accountsPlural=*": "{n} операции на {a} счетах"
+      }
+    }
+  ],
+  "import_check_payees": "Проверить контрагентов",
+  "import_into": "Куда импортировать",
+  "import_new_account_option": "Новый счёт",
+  "import_into_wallet": "На счёт {name}",
+  "import_field_name": "Название",
+  "import_field_type": "Тип",
+  "import_field_currency": "Валюта",
+  "import_owed_on": "Задолженность на {day} ({currency})",
+  "import_balance_on": "Баланс на {day} ({currency})",
+  "import_closing_placeholder": "Из последней выписки",
+  "import_closing_from_file": "Из выписки.",
+  "import_closing_hint": "По нему Kosha рассчитает начальный остаток. Оставьте пустым, если не знаете.",
+  "import_credit_limit": "Кредитный лимит ({currency})",
+  "import_optional": "Необязательно",
+  "import_foreign": "{file} — в валюте {from}, а этот счёт — в {to}.",
+  "import_off": "Строки, прочитанные из {file}, расходятся с конечным балансом выписки на {amount}. Сверьте их с PDF.",
+  "import_stmt_lines": [
+    {
+      "declarations": ["input count", "input n", "input from", "input to", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{n} строка, с {from} по {to}",
+        "countPlural=few": "{n} строки, с {from} по {to}",
+        "countPlural=many": "{n} строк, с {from} по {to}",
+        "countPlural=*": "{n} строки, с {from} по {to}"
+      }
+    }
+  ],
+  "import_stmt_no_lines": "Строки не прочитаны",
+  "import_move_label": "Перенести {file} на другой счёт",
+  "import_move_placeholder": "Перенести на…",
+  "import_remove": "Убрать {file}",
+  "import_account_range": [
+    {
+      "declarations": ["input count", "input n", "input from", "input to", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{n} операция с {from} по {to}.",
+        "countPlural=few": "{n} операции с {from} по {to}.",
+        "countPlural=many": "{n} операций с {from} по {to}.",
+        "countPlural=*": "{n} операции с {from} по {to}."
+      }
+    }
+  ],
+  "import_account_dupes": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{n} строка есть в нескольких выписках — учтена один раз.",
+        "countPlural=few": "{n} строки есть в нескольких выписках — учтены один раз.",
+        "countPlural=many": "{n} строк есть в нескольких выписках — учтены один раз.",
+        "countPlural=*": "{n} строки есть в нескольких выписках — учтены один раз."
+      }
+    }
+  ],
+  "import_review_title": "Проверьте контрагентов и категории",
+  "import_review_sub": [
+    {
+      "declarations": [
+        "input count",
+        "input n",
+        "input payees",
+        "input p",
+        "local countPlural = count: plural",
+        "local payeesPlural = payees: plural"
+      ],
+      "selectors": ["countPlural", "payeesPlural"],
+      "match": {
+        "countPlural=*, payeesPlural=*": "Операций: {n}, контрагентов: {p}. Изменение контрагента применяется ко всем его операциям."
+      }
+    }
+  ],
+  "import_review_sub_transfers": [
+    {
+      "declarations": [
+        "input count",
+        "input n",
+        "input payees",
+        "input p",
+        "input transfers",
+        "input t",
+        "local countPlural = count: plural",
+        "local payeesPlural = payees: plural",
+        "local transfersPlural = transfers: plural"
+      ],
+      "selectors": ["countPlural", "payeesPlural", "transfersPlural"],
+      "match": {
+        "countPlural=*, payeesPlural=*, transfersPlural=*": "Операций: {n}, контрагентов: {p}, переводов между вашими счетами: {t}. Изменение контрагента применяется ко всем его операциям."
+      }
+    }
+  ],
+  "import_review_nothing": "Всё из этих выписок уже есть в Kosha, добавлять нечего.",
+  "import_review_back": "Счета",
+  "import_review_show": "Показать",
+  "import_tab_check": "Проверить ({n})",
+  "import_tab_all": "Все контрагенты ({n})",
+  "import_tab_transfers": "Переводы ({n})",
+  "import_naming": "Подбираем названия контрагентов…",
+  "import_rest": "Остальное отнести в",
+  "import_rest_label": "Категория для остального",
+  "import_rest_placeholder": "категорию",
+  "import_leave_them_out": "Не импортировать их",
+  "import_apply": "Применить",
+  "import_transfer_pair": "{from} → {to}",
+  "import_not_transfer": "Не перевод",
+  "import_transfer_from": "Перевод с {name}",
+  "import_transfer_to": "Перевод на {name}",
+  "import_leave_out": "Не импортировать",
+  "import_show_more": "Показать ещё {n}",
+  "import_all_sorted": "У каждого контрагента есть категория.",
+  "import_nothing_new": "Нечего импортировать",
+  "import_without_category": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{n} контрагент без категории",
+        "countPlural=few": "{n} контрагента без категории",
+        "countPlural=many": "{n} контрагентов без категории",
+        "countPlural=*": "{n} контрагента без категории"
+      }
+    }
+  ],
+  "import_ready": "Всё готово",
+  "import_button": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Импортировать {n} операцию",
+        "countPlural=few": "Импортировать {n} операции",
+        "countPlural=many": "Импортировать {n} операций",
+        "countPlural=*": "Импортировать {n} операции"
+      }
+    }
+  ],
+  "import_payee_for": "Контрагент для «{text}»",
+  "import_payments_range": [
+    {
+      "declarations": ["input count", "input n", "input from", "input to", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{n} платёж, с {from} по {to}",
+        "countPlural=few": "{n} платежа, с {from} по {to}",
+        "countPlural=many": "{n} платежей, с {from} по {to}",
+        "countPlural=*": "{n} платежа, с {from} по {to}"
+      }
+    }
+  ],
+  "import_category_for": "Категория для {payee}",
+  "import_pick_category": "Выберите категорию",
+  "import_hide_lines": "Скрыть операции",
+  "import_show_lines": "Показать операции",
+  "import_progress_setup": "Настраиваем {name}",
+  "import_progress_adding": [
+    {
+      "declarations": ["input count", "input n", "input name", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Добавляем {n} операцию на {name}",
+        "countPlural=few": "Добавляем {n} операции на {name}",
+        "countPlural=many": "Добавляем {n} операций на {name}",
+        "countPlural=*": "Добавляем {n} операции на {name}"
+      }
+    }
+  ],
+  "import_progress_transfers": "Связываем переводы между вашими счетами",
+  "import_progress_checking": "Сверяем {name} с выпиской",
+  "import_importing": "Импорт",
+  "import_failed": "{error}. Сохранённое останется; повторная попытка продолжит с этого места.",
+  "import_back_to_review": "Назад к проверке",
+  "import_done_title": "Выписки загружены",
+  "import_done_summary": [
+    {
+      "declarations": [
+        "input count",
+        "input n",
+        "input accounts",
+        "input a",
+        "local countPlural = count: plural",
+        "local accountsPlural = accounts: plural"
+      ],
+      "selectors": ["countPlural", "accountsPlural"],
+      "match": {
+        "countPlural=one, accountsPlural=one": "{n} операция на {a} счёте.",
+        "countPlural=one, accountsPlural=*": "{n} операция на {a} счетах.",
+        "countPlural=few, accountsPlural=one": "{n} операции на {a} счёте.",
+        "countPlural=few, accountsPlural=*": "{n} операции на {a} счетах.",
+        "countPlural=many, accountsPlural=one": "{n} операций на {a} счёте.",
+        "countPlural=many, accountsPlural=*": "{n} операций на {a} счетах.",
+        "countPlural=*, accountsPlural=one": "{n} операции на {a} счёте.",
+        "countPlural=*, accountsPlural=*": "{n} операции на {a} счетах."
+      }
+    }
+  ],
+  "import_done_summary_transfers": [
+    {
+      "declarations": [
+        "input count",
+        "input n",
+        "input accounts",
+        "input a",
+        "input transfers",
+        "input t",
+        "local countPlural = count: plural",
+        "local accountsPlural = accounts: plural",
+        "local transfersPlural = transfers: plural"
+      ],
+      "selectors": ["countPlural", "accountsPlural", "transfersPlural"],
+      "match": {
+        "countPlural=*, accountsPlural=*, transfersPlural=*": "Операций: {n}, счетов: {a}, связанных переводов между ними: {t}."
+      }
+    }
+  ],
+  "import_done_matches": "Совпадает с выпиской по {day}",
+  "import_transactions": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{n} операция",
+        "countPlural=few": "{n} операции",
+        "countPlural=many": "{n} операций",
+        "countPlural=*": "{n} операции"
+      }
+    }
+  ],
+  "import_done_recurring": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Kosha нашла {n} повторяющийся платёж. Сделайте его регулярным.",
+        "countPlural=few": "Kosha нашла {n} повторяющихся платежа. Сделайте их регулярными.",
+        "countPlural=many": "Kosha нашла {n} повторяющихся платежей. Сделайте их регулярными.",
+        "countPlural=*": "Kosha нашла {n} повторяющегося платежа. Сделайте их регулярными."
+      }
+    }
+  ],
+  "import_done_overview": "Открыть обзор",
+  "import_done_transactions": "Открыть операции"
+}

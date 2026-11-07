@@ -1,0 +1,309 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "import_columns": "Spalten",
+  "import_columns_remembered": "wie beim letzten Mal bei dieser Bank",
+  "import_columns_by_ai": "von der KI erkannt",
+  "import_columns_confident": "aus der Kopfzeile erkannt",
+  "import_columns_check": "bitte prüfen",
+  "import_columns_column": "Spalte {n}",
+  "import_role_ignore": "Ignorieren",
+  "import_role_date": "Datum",
+  "import_role_description": "Beschreibung",
+  "import_role_amount": "Betrag",
+  "import_role_debit": "Belastung",
+  "import_role_credit": "Gutschrift",
+  "import_role_balance": "Kontostand",
+  "import_columns_dates": "Datum",
+  "import_columns_format": "Format",
+  "import_date_dmy": "Tag zuerst (31.01.2026)",
+  "import_date_mdy": "Monat zuerst (01/31/2026)",
+  "import_date_ymd": "Jahr zuerst (2026-01-31)",
+  "import_date_text": "Monatsnamen (31 Jan 2026)",
+  "import_columns_invert": "Ausgaben sind als positive Beträge angegeben",
+  "import_columns_lines_read": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{n} Zeile gelesen",
+        "countPlural=*": "{n} Zeilen gelesen"
+      }
+    }
+  ],
+  "import_head_title": "Kontoauszüge importieren · Kosha",
+  "import_title": "Kontoauszüge importieren",
+  "import_sub": "Kosha ordnet deine Kontoauszüge den Konten zu. Prüf jedes Konto, danach die Zahlungspartner.",
+  "import_new_account": "Neues Konto",
+  "import_type_bank": "Bankkonto",
+  "import_type_card": "Kreditkarte",
+  "import_error_pdf": "Kosha liest CSV-, OFX- und QFX-Dateien. Exportier eine davon aus deinem Onlinebanking.",
+  "import_error_no_transactions": "Diese Datei enthält keine Buchungen",
+  "import_error_no_rows": "Diese Datei hat keine Zeilen, die Kosha lesen kann",
+  "import_error_unreadable": "Konnte nicht gelesen werden",
+  "import_error_check": "Deine Konten konnten nicht geprüft werden",
+  "import_drop": "Zieh deine Kontoauszüge hierher oder {#choose}wähl Dateien aus{/choose}",
+  "import_drop_more": "Zieh weitere Kontoauszüge hierher oder {#choose}wähl Dateien aus{/choose}",
+  "import_drop_hint": "CSV, OFX oder QFX aus deinem Onlinebanking. Füg alle Monate hinzu, die du hast, von jeder Bank und Karte, alles auf einmal.",
+  "import_drop_hint_pdf": "CSV, OFX oder QFX aus deinem Onlinebanking oder Kontoauszüge als PDF. Füg alle Monate hinzu, die du hast, von jeder Bank und Karte, alles auf einmal.",
+  "import_reading": "{name} wird gelesen",
+  "import_dismiss": "{name} ausblenden",
+  "import_reading_files": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{n} Datei wird gelesen…",
+        "countPlural=*": "{n} Dateien werden gelesen…"
+      }
+    }
+  ],
+  "import_summary": [
+    {
+      "declarations": [
+        "input count",
+        "input n",
+        "input accounts",
+        "input a",
+        "local countPlural = count: plural",
+        "local accountsPlural = accounts: plural"
+      ],
+      "selectors": ["countPlural", "accountsPlural"],
+      "match": {
+        "countPlural=one, accountsPlural=one": "{n} Buchung in {a} Konto",
+        "countPlural=one, accountsPlural=*": "{n} Buchung in {a} Konten",
+        "countPlural=*, accountsPlural=one": "{n} Buchungen in {a} Konto",
+        "countPlural=*, accountsPlural=*": "{n} Buchungen in {a} Konten"
+      }
+    }
+  ],
+  "import_check_payees": "Zahlungspartner prüfen",
+  "import_into": "Importieren in",
+  "import_new_account_option": "Ein neues Konto",
+  "import_into_wallet": "In {name}",
+  "import_field_name": "Name",
+  "import_field_type": "Typ",
+  "import_field_currency": "Währung",
+  "import_owed_on": "Offen am {day} ({currency})",
+  "import_balance_on": "Kontostand am {day} ({currency})",
+  "import_closing_placeholder": "Aus deinem letzten Kontoauszug",
+  "import_closing_from_file": "Aus dem Kontoauszug.",
+  "import_closing_hint": "Kosha berechnet daraus den Anfangssaldo. Lass das Feld leer, wenn du ihn nicht kennst.",
+  "import_credit_limit": "Kreditlimit ({currency})",
+  "import_optional": "Optional",
+  "import_foreign": "{file} ist in {from}, dieses Konto aber in {to}.",
+  "import_off": "Die aus {file} gelesenen Zeilen weichen um {amount} vom Saldo laut Kontoauszug ab. Prüf sie anhand des PDFs.",
+  "import_stmt_lines": [
+    {
+      "declarations": ["input count", "input n", "input from", "input to", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{n} Zeile, {from} bis {to}",
+        "countPlural=*": "{n} Zeilen, {from} bis {to}"
+      }
+    }
+  ],
+  "import_stmt_no_lines": "Keine Zeilen gelesen",
+  "import_move_label": "{file} in ein anderes Konto verschieben",
+  "import_move_placeholder": "Verschieben nach…",
+  "import_remove": "{file} entfernen",
+  "import_account_range": [
+    {
+      "declarations": ["input count", "input n", "input from", "input to", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{n} Buchung vom {from} bis {to}.",
+        "countPlural=*": "{n} Buchungen vom {from} bis {to}."
+      }
+    }
+  ],
+  "import_account_dupes": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{n} Zeile aus mehreren Kontoauszügen wurde nur einmal gezählt.",
+        "countPlural=*": "{n} Zeilen aus mehreren Kontoauszügen wurden nur einmal gezählt."
+      }
+    }
+  ],
+  "import_review_title": "Zahlungspartner und Kategorien prüfen",
+  "import_review_sub": [
+    {
+      "declarations": [
+        "input count",
+        "input n",
+        "input payees",
+        "input p",
+        "local countPlural = count: plural",
+        "local payeesPlural = payees: plural"
+      ],
+      "selectors": ["countPlural", "payeesPlural"],
+      "match": {
+        "countPlural=one, payeesPlural=*": "{n} Buchung: {p} Zahlungspartner. Eine Änderung an einem Zahlungspartner gilt für alle seine Buchungen.",
+        "countPlural=*, payeesPlural=*": "{n} Buchungen: {p} Zahlungspartner. Eine Änderung an einem Zahlungspartner gilt für alle seine Buchungen."
+      }
+    }
+  ],
+  "import_review_sub_transfers": [
+    {
+      "declarations": [
+        "input count",
+        "input n",
+        "input payees",
+        "input p",
+        "input transfers",
+        "input t",
+        "local countPlural = count: plural",
+        "local payeesPlural = payees: plural",
+        "local transfersPlural = transfers: plural"
+      ],
+      "selectors": ["countPlural", "payeesPlural", "transfersPlural"],
+      "match": {
+        "countPlural=one, payeesPlural=*, transfersPlural=one": "{n} Buchung: {p} Zahlungspartner und {t} Umbuchung zwischen deinen Konten. Eine Änderung an einem Zahlungspartner gilt für alle seine Buchungen.",
+        "countPlural=one, payeesPlural=*, transfersPlural=*": "{n} Buchung: {p} Zahlungspartner und {t} Umbuchungen zwischen deinen Konten. Eine Änderung an einem Zahlungspartner gilt für alle seine Buchungen.",
+        "countPlural=*, payeesPlural=*, transfersPlural=one": "{n} Buchungen: {p} Zahlungspartner und {t} Umbuchung zwischen deinen Konten. Eine Änderung an einem Zahlungspartner gilt für alle seine Buchungen.",
+        "countPlural=*, payeesPlural=*, transfersPlural=*": "{n} Buchungen: {p} Zahlungspartner und {t} Umbuchungen zwischen deinen Konten. Eine Änderung an einem Zahlungspartner gilt für alle seine Buchungen."
+      }
+    }
+  ],
+  "import_review_nothing": "Alles aus diesen Kontoauszügen ist schon in Kosha, es gibt also nichts hinzuzufügen.",
+  "import_review_back": "Konten",
+  "import_review_show": "Anzeigen",
+  "import_tab_check": "Zu prüfen ({n})",
+  "import_tab_all": "Alle ({n})",
+  "import_tab_transfers": "Umbuchungen ({n})",
+  "import_naming": "Zahlungspartner werden benannt…",
+  "import_rest": "Den Rest zuordnen:",
+  "import_rest_label": "Kategorie für den Rest",
+  "import_rest_placeholder": "Kategorie wählen",
+  "import_leave_them_out": "Weglassen",
+  "import_apply": "Übernehmen",
+  "import_transfer_pair": "{from} nach {to}",
+  "import_not_transfer": "Keine Umbuchung",
+  "import_transfer_from": "Umbuchung von {name}",
+  "import_transfer_to": "Umbuchung auf {name}",
+  "import_leave_out": "Weglassen",
+  "import_show_more": "{n} weitere anzeigen",
+  "import_all_sorted": "Jeder Zahlungspartner hat eine Kategorie.",
+  "import_nothing_new": "Nichts Neues zu importieren",
+  "import_without_category": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{n} Zahlungspartner ohne Kategorie"
+      }
+    }
+  ],
+  "import_ready": "Alles bereit",
+  "import_button": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{n} Buchung importieren",
+        "countPlural=*": "{n} Buchungen importieren"
+      }
+    }
+  ],
+  "import_payee_for": "Zahlungspartner für {text}",
+  "import_payments_range": [
+    {
+      "declarations": ["input count", "input n", "input from", "input to", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{n} Zahlung, {from} bis {to}",
+        "countPlural=*": "{n} Zahlungen, {from} bis {to}"
+      }
+    }
+  ],
+  "import_category_for": "Kategorie für {payee}",
+  "import_pick_category": "Kategorie wählen",
+  "import_hide_lines": "Buchungen ausblenden",
+  "import_show_lines": "Buchungen anzeigen",
+  "import_progress_setup": "{name} wird eingerichtet",
+  "import_progress_adding": [
+    {
+      "declarations": ["input count", "input n", "input name", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{n} Buchung wird zu {name} hinzugefügt",
+        "countPlural=*": "{n} Buchungen werden zu {name} hinzugefügt"
+      }
+    }
+  ],
+  "import_progress_transfers": "Umbuchungen zwischen deinen Konten werden verknüpft",
+  "import_progress_checking": "{name} wird mit dem Kontoauszug abgeglichen",
+  "import_importing": "Import läuft",
+  "import_failed": "{error}. Was schon gespeichert ist, bleibt gespeichert. Ein neuer Versuch macht dort weiter.",
+  "import_back_to_review": "Zurück zur Prüfung",
+  "import_done_title": "Deine Kontoauszüge sind importiert",
+  "import_done_summary": [
+    {
+      "declarations": [
+        "input count",
+        "input n",
+        "input accounts",
+        "input a",
+        "local countPlural = count: plural",
+        "local accountsPlural = accounts: plural"
+      ],
+      "selectors": ["countPlural", "accountsPlural"],
+      "match": {
+        "countPlural=one, accountsPlural=one": "{n} Buchung in {a} Konto.",
+        "countPlural=one, accountsPlural=*": "{n} Buchung in {a} Konten.",
+        "countPlural=*, accountsPlural=one": "{n} Buchungen in {a} Konto.",
+        "countPlural=*, accountsPlural=*": "{n} Buchungen in {a} Konten."
+      }
+    }
+  ],
+  "import_done_summary_transfers": [
+    {
+      "declarations": [
+        "input count",
+        "input n",
+        "input accounts",
+        "input a",
+        "input transfers",
+        "input t",
+        "local countPlural = count: plural",
+        "local accountsPlural = accounts: plural",
+        "local transfersPlural = transfers: plural"
+      ],
+      "selectors": ["countPlural", "accountsPlural", "transfersPlural"],
+      "match": {
+        "countPlural=one, accountsPlural=one, transfersPlural=one": "{n} Buchung in {a} Konto, darunter {t} verknüpfte Umbuchung zwischen den Konten.",
+        "countPlural=one, accountsPlural=one, transfersPlural=*": "{n} Buchung in {a} Konto, darunter {t} verknüpfte Umbuchungen zwischen den Konten.",
+        "countPlural=one, accountsPlural=*, transfersPlural=one": "{n} Buchung in {a} Konten, darunter {t} verknüpfte Umbuchung zwischen den Konten.",
+        "countPlural=one, accountsPlural=*, transfersPlural=*": "{n} Buchung in {a} Konten, darunter {t} verknüpfte Umbuchungen zwischen den Konten.",
+        "countPlural=*, accountsPlural=one, transfersPlural=one": "{n} Buchungen in {a} Konto, darunter {t} verknüpfte Umbuchung zwischen den Konten.",
+        "countPlural=*, accountsPlural=one, transfersPlural=*": "{n} Buchungen in {a} Konto, darunter {t} verknüpfte Umbuchungen zwischen den Konten.",
+        "countPlural=*, accountsPlural=*, transfersPlural=one": "{n} Buchungen in {a} Konten, darunter {t} verknüpfte Umbuchung zwischen den Konten.",
+        "countPlural=*, accountsPlural=*, transfersPlural=*": "{n} Buchungen in {a} Konten, darunter {t} verknüpfte Umbuchungen zwischen den Konten."
+      }
+    }
+  ],
+  "import_done_matches": "Stimmt bis {day} mit dem Kontoauszug überein",
+  "import_transactions": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{n} Buchung",
+        "countPlural=*": "{n} Buchungen"
+      }
+    }
+  ],
+  "import_done_recurring": [
+    {
+      "declarations": ["input count", "input n", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Kosha hat {n} Zahlung entdeckt, die sich wiederholt. Richte sie als wiederkehrend ein.",
+        "countPlural=*": "Kosha hat {n} Zahlungen entdeckt, die sich wiederholen. Richte sie als wiederkehrend ein."
+      }
+    }
+  ],
+  "import_done_overview": "Zur Übersicht",
+  "import_done_transactions": "Zu den Buchungen"
+}

@@ -1,0 +1,48 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "site_description": "हर भुगतान कुछ ही सेकंड में जोड़ें, फिर देखें कि महीने का पैसा कहाँ गया। हर खाते और हर मुद्रा के लिए एक मुफ़्त, ओपन-सोर्स पर्सनल फ़ाइनेंस ट्रैकर।",
+  "site_tagline": "आपका हिसाब-किताब, बस कुछ सेकंड में।",
+  "site_landing_title": "Kosha · आपका हिसाब-किताब, बस कुछ सेकंड में",
+  "site_og_image_alt": "Kosha: आपका हिसाब-किताब, बस कुछ सेकंड में",
+  "pwa_synced": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "ऑफ़लाइन जोड़ी गई {count} एंट्री सिंक हो गई",
+        "countPlural=other": "ऑफ़लाइन जोड़ी गई {count} एंट्रियाँ सिंक हो गईं"
+      }
+    }
+  ],
+  "pwa_rejected": "ऑफ़लाइन जोड़ी गई एक एंट्री सेव नहीं हुई: {reason}",
+  "pwa_syncing_title": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} एंट्री सिंक हो रही है",
+        "countPlural=other": "{count} एंट्रियाँ सिंक हो रही हैं"
+      }
+    }
+  ],
+  "pwa_syncing_body": "ऑफ़लाइन रहते हुए आपने जो जोड़ा था, वह भेजा जा रहा है।",
+  "pwa_offline_waiting": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "आपकी पिछली विज़िट का डेटा दिख रहा है। ऑनलाइन आते ही {count} एंट्री सिंक हो जाएगी।",
+        "countPlural=other": "आपकी पिछली विज़िट का डेटा दिख रहा है। ऑनलाइन आते ही {count} एंट्रियाँ सिंक हो जाएँगी।"
+      }
+    }
+  ],
+  "pwa_offline_body": "आपकी पिछली विज़िट का डेटा दिख रहा है। नई एंट्रियाँ ऑनलाइन आते ही सिंक हो जाएँगी।",
+  "pwa_update_title": "Kosha का नया वर्शन तैयार है",
+  "pwa_update_body": "इसे इस्तेमाल करने के लिए फिर से लोड करें।",
+  "pwa_reload": "फिर से लोड करें",
+  "pwa_install_title": "Kosha इंस्टॉल करें",
+  "pwa_install_ios": "Kosha को ऐप की तरह खोलने के लिए Share पर टैप करें, फिर Add to Home Screen चुनें।",
+  "pwa_install_body": "इसे होम स्क्रीन या डॉक से खोलें, ऑफ़लाइन भी।",
+  "pwa_install": "इंस्टॉल करें",
+  "pwa_dismiss": "हटाएँ"
+}

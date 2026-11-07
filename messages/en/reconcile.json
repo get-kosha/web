@@ -1,0 +1,175 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "reconcile_hint_an_entry": "an entry",
+  "reconcile_hint_exact_unticked": "{name} ({amount}) is exactly the difference. Is it on the statement?",
+  "reconcile_hint_exact_ticked": "{name} ({amount}) is exactly the difference. Is it really on the statement?",
+  "reconcile_hint_wrong_way_in": "{name} is half the difference. Is it the wrong way round, money in rather than out?",
+  "reconcile_hint_wrong_way_out": "{name} is half the difference. Is it the wrong way round, money out rather than in?",
+  "reconcile_hint_swapped": "Was {name} {meant} rather than {amount}? Swapped digits are a common slip.",
+  "reconcile_hint_decimal": "Was {name} {meant} rather than {amount}? The decimal point may be in the wrong place.",
+  "reconcile_hint_pair": "{first} and {second} together make the difference.",
+  "reconcile_hint_duplicate": "{name} appears twice. Is one a duplicate?",
+  "reconcile_hint_late": "Entries from the last days of the period can show on the next statement instead.",
+  "reconcile_hint_look_out": "Look on the statement for a fee, a charge or interest of {amount} that isn't in Kosha yet.",
+  "reconcile_hint_look_in": "Look on the statement for interest, a refund or a payment in of {amount} that isn't in Kosha yet.",
+  "reconcile_gap_uncovered": "No statement covers {from} to {to}.",
+  "reconcile_gap_opening": "{next} opens at {opening}, but {previous} closes at {closing}. A statement may be missing.",
+  "reconcile_head_title": "Reconcile · Kosha",
+  "reconcile_title": "Reconcile",
+  "reconcile_picker_sub": "Check an account against your bank's statement, or import the statement.",
+  "reconcile_picker_empty": "Add a bank account or card first.",
+  "reconcile_reconciled_to": "Reconciled to {day}",
+  "reconcile_never_reconciled": "Never reconciled",
+  "reconcile_transfer_to_name": "To {account}",
+  "reconcile_transfer_from_name": "From {account}",
+  "reconcile_transfer_to_other": "To another account",
+  "reconcile_transfer_from_other": "From another account",
+  "reconcile_no_payee": "No payee",
+  "reconcile_pdf_unsupported": "Kosha reads CSV, OFX and QFX files. Export one of those from your bank.",
+  "reconcile_currency_mismatch": "This statement is in {statementCurrency}, and {account} is in {currency}.",
+  "reconcile_ofx_empty": "That OFX file has no transactions",
+  "reconcile_csv_empty": "That file has no rows Kosha can read",
+  "reconcile_read_failed": "Couldn't read that file",
+  "reconcile_pick_category_first": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Pick a category for 1 line first",
+        "countPlural=other": "Pick a category for {count} lines first"
+      }
+    }
+  ],
+  "reconcile_added": [
+    {
+      "declarations": ["input count", "input account", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Added 1 entry to {account}",
+        "countPlural=other": "Added {count} entries to {account}"
+      }
+    }
+  ],
+  "reconcile_add_failed": "Couldn't add them",
+  "reconcile_change_failed": "Couldn't change it",
+  "reconcile_finish_failed": "Couldn't finish",
+  "reconcile_undone": "Reconciliation undone",
+  "reconcile_undo_failed": "Couldn't undo it",
+  "reconcile_ask_failed": "Couldn't ask",
+  "reconcile_hint_opening_gap": "This statement opens at {opening}, but the last one you reconciled closed at {closing}. A statement in between may be missing.",
+  "reconcile_hint_single_missing": "{payee} ({amount}) on the statement is exactly the difference. Add it to Kosha.",
+  "reconcile_hint_missing_closes": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Adding the line missing from Kosha closes the difference exactly.",
+        "countPlural=other": "Adding the {count} lines missing from Kosha closes the difference exactly."
+      }
+    }
+  ],
+  "reconcile_hint_missing_count": [
+    {
+      "declarations": ["input count", "input amount", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "1 line on the statement isn't in Kosha yet ({amount}).",
+        "countPlural=other": "{count} lines on the statement aren't in Kosha yet ({amount})."
+      }
+    }
+  ],
+  "reconcile_hint_close": "{name}: Kosha has {kosha}, the statement {statement}.",
+  "reconcile_balance_label": "Closing balance ({currency})",
+  "reconcile_owed_label": "Owed on the statement ({currency})",
+  "reconcile_account_title": "Reconcile {account}",
+  "reconcile_done_title": "{account} matches your statement",
+  "reconcile_done_checked": [
+    {
+      "declarations": ["input count", "input n", "input day", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "1 entry checked to {day}.",
+        "countPlural=other": "{n} entries checked to {day}."
+      }
+    }
+  ],
+  "reconcile_done_correction": "A correction of {amount} closed the difference.",
+  "reconcile_done_marked": "Kosha marks them reconciled and tells you before you change one.",
+  "reconcile_back_to_accounts": "Back to accounts",
+  "reconcile_last_reconciled": "Last reconciled to {day}",
+  "reconcile_check_each": "Check each entry against your bank's statement.",
+  "reconcile_other_account": "Other account",
+  "reconcile_drift": "Entries reconciled on {day} have changed by {amount} since, so they no longer add up to that statement. One was edited or deleted; undo that reconciliation to check them again.",
+  "reconcile_pdf_off": "The lines read from this PDF miss its closing balance by {amount}. A line may have been misread; check them against the PDF before adding any.",
+  "reconcile_reading": "Reading {file}…",
+  "reconcile_file_lines": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "1 line",
+        "countPlural=other": "{count} lines"
+      }
+    }
+  ],
+  "reconcile_read_by_ai": "read by AI",
+  "reconcile_another_file": "Another file",
+  "reconcile_drop": "Drop your statement here, or {#choose}choose a file{/choose}",
+  "reconcile_drop_formats": "CSV, OFX or QFX from your bank. Kosha ticks what matches and lists what's missing.",
+  "reconcile_drop_formats_pdf": "CSV, OFX or QFX from your bank, or a PDF statement. Kosha ticks what matches and lists what's missing.",
+  "reconcile_statement_date": "Statement date",
+  "reconcile_quick_balance": "Kosha shows {#amount}{amount}{/amount} today. Compare it with your bank's current balance, not the available one.",
+  "reconcile_quick_owed": "Kosha shows you owe {#amount}{amount}{/amount} today. Compare it with your bank's current balance, not the available one.",
+  "reconcile_same_as_bank": "My bank shows the same",
+  "reconcile_missing_title": "On the statement, not in Kosha ({count})",
+  "reconcile_naming_payees": "Naming payees…",
+  "reconcile_payee": "Payee",
+  "reconcile_category_for": "Category for {name}",
+  "reconcile_pick_category": "Pick a category",
+  "reconcile_transfer_to": "Transfer to {account}",
+  "reconcile_transfer_from": "Transfer from {account}",
+  "reconcile_include_line": "Add this line",
+  "reconcile_leave_out_line": "Leave this line out",
+  "reconcile_saving_teaches": "Saving teaches Kosha these payee names for your next statement.",
+  "reconcile_add_to_kosha": "Add {count} to Kosha",
+  "reconcile_close_title": "Close, but not the same amount ({count})",
+  "reconcile_close_detail": "Kosha {kosha} on {koshaDay} · statement {statement} on {statementDay}",
+  "reconcile_use_amount": "Use {amount}",
+  "reconcile_not_same": "Not the same",
+  "reconcile_in_kosha": "In Kosha",
+  "reconcile_tick_title": "Tick what's on the statement",
+  "reconcile_ticked_count": "{count} ticked",
+  "reconcile_before_group": "Before this statement ({count})",
+  "reconcile_before_hint": "Ticked, as they were on earlier statements",
+  "reconcile_nothing": "Nothing to reconcile up to {day}.",
+  "reconcile_note_amount_differs": "Amount differs",
+  "reconcile_note_next_statement": "Likely on the next statement",
+  "reconcile_note_not_on_statement": "Not on the statement",
+  "reconcile_note_still_due": "Still due",
+  "reconcile_after_group": "After {day} ({count})",
+  "reconcile_after_hint": "For the next statement",
+  "reconcile_finding_title": "Finding the difference",
+  "reconcile_ask_ai": "Ask AI",
+  "reconcile_past": "Past reconciliations",
+  "reconcile_history_entries": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "1 entry",
+        "countPlural=other": "{count} entries"
+      }
+    }
+  ],
+  "reconcile_corrected_by": "corrected by {amount}",
+  "reconcile_figure_statement": "Statement",
+  "reconcile_figure_statement_owed": "Statement says owed",
+  "reconcile_figure_ticked": "Ticked in Kosha",
+  "reconcile_figure_ticked_owed": "Owed per ticked",
+  "reconcile_figure_difference": "Difference",
+  "reconcile_figure_none": "None",
+  "reconcile_finish_with_correction": "Finish with a {amount} correction",
+  "reconcile_enter_balance": "Enter the statement balance",
+  "reconcile_finish": "Finish reconciling",
+  "reconcile_show": "Show"
+}

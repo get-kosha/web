@@ -4,6 +4,8 @@ import { Toaster } from "@/components/ui/sonner"
 import { splashLinks } from "@/lib/splash"
 import { themeScript } from "@/lib/theme"
 import { SITE } from "@/lib/core"
+import { m } from "@/paraglide/messages"
+import { getLocale } from "@/paraglide/runtime"
 import appCss from "../styles.css?url"
 
 export const Route = createRootRoute({
@@ -19,18 +21,17 @@ export const Route = createRootRoute({
       { title: "Kosha" },
       {
         name: "description",
-        content:
-          "Add each payment in a few seconds, then see where the month went. A free, open-source personal finance tracker for every account, in any currency.",
+        content: m.site_description(),
       },
       { property: "og:type", content: "website" },
       { property: "og:site_name", content: "Kosha" },
       { property: "og:title", content: "Kosha" },
-      { property: "og:description", content: "Personal finance, a few seconds at a time." },
+      { property: "og:description", content: m.site_tagline() },
       { property: "og:url", content: SITE },
       { property: "og:image", content: `${SITE}/og.png` },
       { property: "og:image:width", content: "1200" },
       { property: "og:image:height", content: "630" },
-      { property: "og:image:alt", content: "Kosha: personal finance, a few seconds at a time" },
+      { property: "og:image:alt", content: m.site_og_image_alt() },
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
@@ -44,16 +45,16 @@ export const Route = createRootRoute({
   }),
   notFoundComponent: () => (
     <div className="p-8 text-sm text-muted-foreground">
-      <p>Page not found.</p>
+      <p>{m.common_page_not_found()}</p>
       <Link to="/" className="mt-2 inline-block text-foreground underline underline-offset-4">
-        Go to Overview
+        {m.common_go_to_overview()}
       </Link>
     </div>
   ),
   errorComponent: RouteError,
   component: Outlet,
   shellComponent: ({ children }) => (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={getLocale()} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         {/* Here, not in head(), which keeps one meta per name and would drop the light colour. */}
@@ -87,13 +88,9 @@ function RouteError({ error }: { error: unknown }) {
   }, [offline])
   return (
     <div className="p-8 text-sm">
-      <p className="font-medium">{offline ? "You're offline" : "Something went wrong"}</p>
+      <p className="font-medium">{offline ? m.common_offline_title() : m.common_something_went_wrong()}</p>
       <p className="mt-1 text-muted-foreground">
-        {offline
-          ? "This page wasn't saved on this device. Open it again once you're back online."
-          : error instanceof Error
-            ? error.message
-            : String(error)}
+        {offline ? m.common_offline_body() : error instanceof Error ? error.message : String(error)}
       </p>
     </div>
   )

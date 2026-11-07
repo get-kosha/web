@@ -17,10 +17,11 @@ import { DatePicker, TimePicker, dayLabel } from "@/components/date-time"
 import { useMeta } from "@/components/shell"
 import { readEntry, suggestPayees, type AiEntry, type PayeeSuggestion } from "@/lib/api"
 import { addTransaction } from "@/lib/offline"
-import { WALLET_KEY, startWallet } from "@/lib/add-defaults"
+import { WALLET_KEY, decimalMark, startWallet } from "@/lib/add-defaults"
 import { addDays, dayOf, eventFor, fmt, guessCategory, inCurrency, isNeutral, parseAmount, timeOf } from "@/lib/core"
 import { needsAi, parseQuickAdd } from "@/lib/quick-add"
 import { cn } from "@/lib/utils"
+import { m } from "@/paraglide/messages"
 
 /**
  * Quick add parses one monospace line into a transaction as you type. It has no open or close
@@ -57,7 +58,7 @@ export function QuickAdd({
         overlayClassName="data-open:animate-none data-closed:animate-none"
         className="top-[12vh] max-h-[calc(100svh-14vh)] translate-y-0 gap-0 overflow-y-auto rounded-2xl border p-0 ring-0 sm:max-w-[640px] data-open:animate-none data-closed:animate-none"
       >
-        <DialogTitle className="sr-only">Quick add</DialogTitle>
+        <DialogTitle className="sr-only">{m.add_quick_title()}</DialogTitle>
         <Body
           key={`${initial}:${round}`}
           initial={initial}
@@ -218,22 +219,22 @@ function Body({
 
   const hint =
     reading === "receipt"
-      ? "Reading the receipt…"
+      ? m.add_hint_reading_receipt()
       : !cents
         ? reading === "line"
-          ? "Reading your line…"
+          ? m.add_hint_reading_line()
           : meta.ai.receipts
-            ? "Start with an amount, then a few words. Or paste a receipt."
-            : "Start with an amount, then a few words."
+            ? m.add_hint_start_receipt()
+            : m.add_hint_start()
         : !category
           ? aiCat.loading
-            ? "Finding a category…"
-            : "No category yet. Type one, or press Tab to pick."
+            ? m.add_hint_finding_category()
+            : m.add_hint_no_category()
           : suggested
-            ? `${category.name} is a suggestion. Enter accepts it, or press Tab to pick another.`
+            ? m.add_hint_suggested({ category: category.name })
             : ai || fromReceipt
-              ? "Grey values are guesses. Press Tab to change one."
-              : "Grey values are guesses from your history. Press Tab to change one."
+              ? m.add_hint_guesses()
+              : m.add_hint_guesses_history()
 
   // Receipt scanning: a photo fills every field it can, as if typed in by hand.
   async function scan(file: File) {
@@ -245,7 +246,9 @@ function Body({
       const fit = inCurrency(e, w?.currency ?? currency, meta.rates)
       setOver((o) => ({
         ...o,
-        ...(fit.amount && { amount: `${e.income ? "+" : ""}${(fit.amount / 100).toFixed(2)}` }),
+        ...(fit.amount && {
+          amount: `${e.income ? "+" : ""}${(fit.amount / 100).toFixed(2).replace(".", decimalMark())}`,
+        }),
         ...(e.payee && { payee: e.payee }),
         ...(guessing && fits(e.categoryId) && { categoryId: e.categoryId! }),
         ...(w && { walletId: w.id }),
@@ -256,7 +259,7 @@ function Body({
       }))
       setFromReceipt(true)
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Couldn't read that receipt")
+      toast.error(err instanceof Error ? err.message : m.add_error_receipt())
     } finally {
       setReading(null)
     }
@@ -270,9 +273,9 @@ function Body({
 
   async function add(again = false) {
     if (busy) return
-    if (!signed) return toast.error("Enter an amount")
-    if (!category) return toast.error("Pick a category")
-    if (!wallet) return toast.error("Add an account first")
+    if (!signed) return toast.error(m.add_error_amount())
+    if (!category) return toast.error(m.add_error_category())
+    if (!wallet) return toast.error(m.add_error_no_account())
     setBusy(true)
     try {
       const name = payee.value.trim()
@@ -292,9 +295,10 @@ function Body({
       } catch {}
       onDone(again)
       if (!queued) await router.invalidate()
-      toast(`${queued ? "Saved offline" : "Added"} ${fmt(signed, currency)}, ${name || category.name}`, {
+      const msg = queued ? m.add_toast_saved_offline : m.add_toast_added
+      toast(msg({ amount: fmt(signed, currency), name: name || category.name }), {
         action: {
-          label: "Undo",
+          label: m.common_undo(),
           onClick: async () => {
             await undo()
             if (!queued) await router.invalidate()
@@ -302,7 +306,7 @@ function Body({
         },
       })
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Couldn't add")
+      toast.error(e instanceof Error ? e.message : m.add_error_add())
       setBusy(false)
     }
   }
@@ -353,12 +357,12 @@ function Body({
     >
       <label className="flex items-center gap-3 border-b px-[18px] py-4 text-muted-foreground">
         <PlusIcon aria-hidden="true" className="size-[18px] shrink-0" />
-        <span className="sr-only">Type an amount, payee, category or account</span>
+        <span className="sr-only">{m.add_quick_input_label()}</span>
         <input
           autoFocus
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder={meta.ai.quick_add ? "lunch with sam at nando's 18.50 yesterday" : "24.90 pizza hut dining visa"}
+          placeholder={meta.ai.quick_add ? m.add_quick_placeholder_ai() : m.add_quick_placeholder()}
           autoComplete="off"
           spellCheck={false}
           className="w-full min-w-0 bg-transparent font-mono text-lg tracking-[-0.01em] text-foreground outline-none placeholder:text-muted-foreground"
@@ -381,8 +385,8 @@ function Body({
             />
             <button
               type="button"
-              aria-label="Scan a receipt"
-              title="Scan a receipt (or paste or drop one here)"
+              aria-label={m.add_scan_receipt()}
+              title={m.add_scan_receipt_hint()}
               disabled={reading === "receipt"}
               onClick={() => fileInput.current?.click()}
               className="-my-2 inline-flex size-9 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none max-md:size-11"
@@ -400,15 +404,15 @@ function Body({
 
       <div className="px-[18px] pt-4 pb-1.5">
         <div className="mb-2 flex items-center gap-1.5 text-xs text-muted-foreground">
-          Will add
+          {m.add_will_add()}
           {(ai || fromReceipt) && (
             <span className="inline-flex items-center gap-1 text-subtle-foreground">
-              · <AiMark className="size-3" /> {fromReceipt ? "read from your receipt" : "read by AI"}
+              · <AiMark className="size-3" /> {fromReceipt ? m.add_read_from_receipt() : m.add_read_by_ai()}
             </span>
           )}
         </div>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-[100px_minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1fr)_104px_72px]">
-          <Box label="Amount">
+          <Box label={m.add_amount()}>
             <span className="flex items-baseline">
               <span
                 aria-hidden="true"
@@ -418,9 +422,9 @@ function Body({
                 {fmt(0, currency).replace(/[\d.,\s]/g, "")}
               </span>
               <input
-                aria-label="Amount"
+                aria-label={m.add_amount()}
                 inputMode="decimal"
-                value={over.amount ?? (cents ? (cents / 100).toFixed(2) : "")}
+                value={over.amount ?? (cents ? (cents / 100).toFixed(2).replace(".", decimalMark()) : "")}
                 onChange={(e) => setOver((o) => ({ ...o, amount: e.target.value }))}
                 placeholder="—"
                 className={cn(
@@ -432,16 +436,22 @@ function Body({
               />
             </span>
           </Box>
-          <Box label="Payee">
+          <Box label={m.add_payee()}>
             <input
-              aria-label="Payee"
+              aria-label={m.add_payee()}
               value={payee.value}
               onChange={(e) => setOver((o) => ({ ...o, payee: e.target.value }))}
-              placeholder="Type a name"
+              placeholder={m.add_payee_placeholder()}
               className={cn(field, payee.state === "guess" && "text-subtle-foreground")}
             />
           </Box>
-          <Box label={<>Category {suggested && <AiMark className="size-2.5" />}</>}>
+          <Box
+            label={
+              <>
+                {m.add_category()} {suggested && <AiMark className="size-2.5" />}
+              </>
+            }
+          >
             <button
               ref={categoryButton}
               type="button"
@@ -456,17 +466,19 @@ function Body({
               )}
             >
               {category && <CategoryIcon icon={category.icon} className="size-4" />}
-              <span className="truncate">{category?.name ?? (aiCat.loading ? "Finding one…" : "Pick one")}</span>
+              <span className="truncate">
+                {category?.name ?? (aiCat.loading ? m.add_finding_one() : m.add_pick_one())}
+              </span>
             </button>
           </Box>
-          <Box label="Account">
+          <Box label={m.add_account()}>
             <Select
               items={wallets.map((w) => ({ value: w.id, label: w.name }))}
               value={walletId ?? ""}
               onValueChange={(v) => v && setOver((o) => ({ ...o, walletId: v as string }))}
             >
               <SelectTrigger
-                aria-label="Account"
+                aria-label={m.add_account()}
                 className={cn(
                   field,
                   "h-6 w-full border-0 p-0 dark:bg-transparent dark:hover:bg-transparent [&>svg]:hidden",
@@ -484,20 +496,20 @@ function Body({
               </SelectContent>
             </Select>
           </Box>
-          <Box label="Date">
+          <Box label={m.add_date()}>
             <DatePicker
-              aria-label="Date"
+              aria-label={m.add_date()}
               value={day}
               max={addDays(today, 366)}
               onChange={(d) => setOver((o) => ({ ...o, day: d }))}
               className={cn(field, "num text-left", states.day === "guess" && "text-subtle-foreground")}
             >
-              {day === today ? "Today" : dayLabel(day)}
+              {day === today ? m.add_today() : dayLabel(day)}
             </DatePicker>
           </Box>
-          <Box label="Time">
+          <Box label={m.add_time()}>
             <TimePicker
-              aria-label="Time"
+              aria-label={m.add_time()}
               value={time}
               onChange={(t) => setOver((o) => ({ ...o, time: t }))}
               className={cn(field, "num text-left", states.time === "guess" && "text-subtle-foreground")}
@@ -508,7 +520,11 @@ function Body({
         </div>
         {(note || tags.length > 0 || event) && (
           <p className="mt-2.5 text-xs text-muted-foreground">
-            {[note && `Note: ${note}`, tags.map((t) => `#${t}`).join(" "), event && `Goes to ${event.name}`]
+            {[
+              note && m.add_note_line({ note }),
+              tags.map((t) => `#${t}`).join(" "),
+              event && m.add_goes_to_event({ event: event.name }),
+            ]
               .filter(Boolean)
               .join(" · ")}
           </p>
@@ -524,11 +540,11 @@ function Body({
               className="gap-2.5 px-3"
               onClick={() => add(true)}
             >
-              Add another
+              {m.add_another()}
               <Kbd>⇧↵</Kbd>
             </Button>
             <Button type="submit" size="lg" disabled={busy} className="gap-2.5 px-4">
-              {income ? "Add income" : "Add expense"}
+              {income ? m.add_add_income() : m.add_add_expense()}
               {signed ? <span className="num font-normal opacity-80">{fmt(signed, currency)}</span> : null}
               <Kbd className="border-current bg-transparent text-current opacity-70">↵</Kbd>
             </Button>
@@ -547,7 +563,7 @@ function Body({
           />
         ) : (
           <>
-            {payees.length > 0 && <Section>Payees</Section>}
+            {payees.length > 0 && <Section>{m.add_section_payees()}</Section>}
             {payees.slice(0, 3).map((x) => {
               const c = meta.categories.find((c) => c.id === x.category_id)
               const w = meta.wallets.find((w) => w.id === x.wallet_id)
@@ -565,7 +581,7 @@ function Body({
                   end={
                     x.currency && (
                       <span className="num text-xs text-muted-foreground">
-                        usually {fmt(Math.abs(x.avg), x.currency)}
+                        {m.add_usually({ amount: fmt(Math.abs(x.avg), x.currency) })}
                       </span>
                     )
                   }
@@ -578,10 +594,10 @@ function Body({
                 </Option>
               )
             })}
-            <Section>Go to</Section>
+            <Section>{m.add_section_go_to()}</Section>
             <Option onClick={searchActivity} end={<Kbd>⌘↵</Kbd>}>
               <MagnifyingGlassIcon aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
-              <span className="truncate">Search activity for "{searchTerm || "…"}"</span>
+              <span className="truncate">{m.add_search_activity({ term: searchTerm || "…" })}</span>
             </Option>
             <Option
               onClick={() => {
@@ -590,7 +606,7 @@ function Body({
               }}
             >
               <ArrowsClockwiseIcon aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
-              <span>Make this recurring…</span>
+              <span>{m.add_make_recurring()}</span>
             </Option>
           </>
         )}
@@ -671,12 +687,12 @@ function CategoryList({
         aria-expanded="true"
         aria-controls="qa-categories"
         aria-activedescendant={current ? `qa-cat-${current.id}` : undefined}
-        aria-label="Find a category"
-        placeholder="Find a category"
+        aria-label={m.add_find_category()}
+        placeholder={m.add_find_category()}
         className="h-10 w-full rounded-md bg-transparent px-3 text-sm outline-none placeholder:text-muted-foreground"
       />
-      <div id="qa-categories" role="listbox" aria-label="Categories" className="max-h-56 overflow-y-auto">
-        {shown.length === 0 && <p className="px-3 py-2 text-sm text-muted-foreground">No category matches.</p>}
+      <div id="qa-categories" role="listbox" aria-label={m.add_categories()} className="max-h-56 overflow-y-auto">
+        {shown.length === 0 && <p className="px-3 py-2 text-sm text-muted-foreground">{m.add_no_category_match()}</p>}
         {shown.map((c) => (
           <div
             key={c.id}

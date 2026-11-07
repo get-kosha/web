@@ -1,10 +1,16 @@
 // Pure helpers shared by client and server: money, dates, categorising, subscriptions.
 
 import { z } from "zod"
+import { m } from "../paraglide/messages.js"
+import { getLocale, locales } from "../paraglide/runtime.js"
 
 export type Rates = Record<string, number> // units per 1 USD
 
-export const LOCALE = "en-GB"
+/** The Intl locale for numbers and dates in the active language. English formats as British English (day first, 24-hour). */
+export const intlLocale = () => {
+  const l = getLocale()
+  return l === "en" ? "en-GB" : l
+}
 /** Balance corrections and opening balances. */
 export const CORRECTION_CATEGORY = "0"
 /** Both halves of a transfer between your own accounts. */
@@ -44,8 +50,7 @@ export function publicHead(path: string, title: string, description: string) {
 export const MIN_PASSWORD = 10
 
 export const DEMO = { id: "demo", email: "demo@kosha.local", password: "kosha-demo-2026" } as const
-export const DEMO_READ_ONLY =
-  "This is the demo account, so changes are turned off. Create your own account to make changes."
+export const DEMO_READ_ONLY = () => m.common_demo_read_only()
 
 /** Allows only same-origin paths, never "//host". */
 export const safeReturn = (p: string | null | undefined) => (p && p.startsWith("/") && !p.startsWith("//") ? p : "/")
@@ -60,10 +65,11 @@ export function convert(cents: number, from: string, to: string, rates: Rates) {
 
 const moneyFormats = new Map<string, Intl.NumberFormat>()
 export function fmt(cents: number, currency: string, compact = false) {
-  const key = currency + compact
+  const locale = intlLocale()
+  const key = locale + currency + compact
   let f = moneyFormats.get(key)
   if (!f) {
-    f = new Intl.NumberFormat(LOCALE, {
+    f = new Intl.NumberFormat(locale, {
       style: "currency",
       currency: currency.toUpperCase(),
       notation: compact ? "compact" : "standard",
@@ -210,7 +216,7 @@ export const cleanTag = (t: string) =>
     .trim()
     .replace(/^#+/, "")
     .toLowerCase()
-    .replace(/[^\p{L}\p{N}_-]/gu, "")
+    .replace(/[^\p{L}\p{M}\p{N}_-]/gu, "")
     .slice(0, 32)
 
 /** Turns typed text ("#trip, food rome") into unique stored tags, in the order typed. */
@@ -586,6 +592,8 @@ const pref = <T extends z.ZodType<string | null>>(schema: T, fallback: z.infer<T
  * with parsePrefs and savePreferences validates against the same schemas, so a new key is one line here.
  */
 export const PREFS = {
+  /** The account's language. Null until chosen in Settings, so the browser's language applies. */
+  language: pref(z.enum(locales).nullable(), null),
   theme: pref(z.enum(["light", "dark", "system"]), "system"),
   layout: pref(z.enum(["boxed", "full"]), "boxed"),
   motion: pref(z.enum(["on", "reduced", "off"]), "on"),
@@ -663,18 +671,19 @@ export const AI_FEATURES = {
 } as const satisfies Record<string, { pref: keyof Prefs; needs: readonly (keyof Prefs)[] }>
 export type AiFeature = keyof typeof AI_FEATURES
 
-const AI_FEATURE_NAMES: Record<AiFeature, string> = {
-  categorise: "Auto-categorise",
-  quick_add: "Natural-language add",
-  receipts: "Receipt scanning",
-  recap: "Monthly recap",
-  ask: "Ask Kosha",
-  statements: "Statements",
+// Message functions, not strings, so each call reads the visitor's language.
+const AI_FEATURE_NAMES: Record<AiFeature, () => string> = {
+  categorise: m.core_ai_feature_categorise,
+  quick_add: m.core_ai_feature_quick_add,
+  receipts: m.core_ai_feature_receipts,
+  recap: m.core_ai_feature_recap,
+  ask: m.core_ai_feature_ask,
+  statements: m.core_ai_feature_statements,
 }
-const NEEDS: Partial<Record<keyof Prefs, string>> = {
-  ai_share_payee: "payee names shared, under Settings › AI › What AI can see",
-  ai_share_amount: "amounts shared, under Settings › AI › What AI can see",
-  suggest_category: "Suggest a category turned on, under Settings › General",
+const NEEDS: Partial<Record<keyof Prefs, (i: { feature: string }) => string>> = {
+  ai_share_payee: m.core_ai_needs_payee,
+  ai_share_amount: m.core_ai_needs_amount,
+  suggest_category: m.core_ai_needs_suggest_category,
 }
 
 /**
@@ -683,16 +692,14 @@ const NEEDS: Partial<Record<keyof Prefs, string>> = {
  */
 export function aiBlocker(p: Prefs, connected: boolean, feature: AiFeature): string | null {
   const on = p.ai_enabled === "1"
-  if (!connected && !on)
-    return "AI isn't set up. In Kosha, open Settings › AI, turn on Use AI features and connect a provider (Anthropic, OpenAI, Gemini, OpenRouter, Ollama or any OpenAI-compatible endpoint)."
-  if (!connected)
-    return "No AI provider is connected. In Kosha, open Settings › AI and connect one (Anthropic, OpenAI, Gemini, OpenRouter, Ollama or any OpenAI-compatible endpoint)."
-  if (!on) return "AI is turned off. In Kosha, open Settings › AI and turn on Use AI features."
+  if (!connected && !on) return m.core_ai_not_set_up()
+  if (!connected) return m.core_ai_no_provider()
+  if (!on) return m.core_ai_off()
   const f = AI_FEATURES[feature]
-  const name = AI_FEATURE_NAMES[feature]
-  if (p[f.pref] !== "1") return `${name} is turned off. Turn it on in Kosha under Settings › AI › Features.`
+  const name = AI_FEATURE_NAMES[feature]()
+  if (p[f.pref] !== "1") return m.core_ai_feature_off({ feature: name })
   const missing = f.needs.find((n: keyof Prefs) => p[n] !== "1")
-  return missing ? `${name} needs ${NEEDS[missing]}.` : null
+  return missing ? NEEDS[missing]!({ feature: name }) : null
 }
 
 /** Which AI features are live: AI on, a default provider connected, the feature on and what it needs turned on. */
@@ -712,11 +719,13 @@ export function inCurrency(
   rates: Rates
 ) {
   if (!e.amount || !e.currency || e.currency === currency) return { amount: e.amount, note: e.note }
-  const paid = `Paid ${fmt(e.amount, e.currency)}`
+  const paid = fmt(e.amount, e.currency)
   const known = rates[e.currency] && rates[currency]
   return {
     amount: known ? Math.round(convert(e.amount, e.currency, currency, rates)) : e.amount,
-    note: [e.note, known ? paid : `${paid}, not converted`].filter(Boolean).join(" · "),
+    note: [e.note, known ? m.core_paid({ amount: paid }) : m.core_paid_not_converted({ amount: paid })]
+      .filter(Boolean)
+      .join(" · "),
   }
 }
 

@@ -1,19 +1,20 @@
 import { Segmented, SettingGroup, SettingRow } from "@/components/settings/row"
 import { usePref } from "@/components/settings/saved"
 import { Switch } from "@/components/ui/switch"
+import { m } from "@/paraglide/messages"
 
 export function Recurring() {
   const [auto, saveAuto] = usePref("default_auto_pay")
   const [horizon, saveHorizon] = usePref("upcoming_horizon")
   return (
-    <SettingGroup label="Payments">
+    <SettingGroup label={m.settings_rec_group()}>
       <SettingRow
         id="auto-record"
-        title="Record payments automatically"
-        description="Sets the default for new bills. When on, Kosha records fixed amounts on their due date. Each bill keeps its own choice."
+        title={m.settings_rec_auto_title()}
+        description={m.settings_rec_auto_description()}
         control={
           <Switch
-            aria-label="Record payments automatically"
+            aria-label={m.settings_rec_auto_title()}
             checked={auto === "1"}
             onCheckedChange={(on) => saveAuto(on ? "1" : "0")}
           />
@@ -21,16 +22,16 @@ export function Recurring() {
       />
       <SettingRow
         id="coming-up"
-        title='"Coming up" shows'
-        description="What the Coming up card on Overview lists."
+        title={m.settings_rec_coming_up_title()}
+        description={m.settings_rec_coming_up_description()}
         control={
           <Segmented
-            label="Coming up shows"
+            label={m.settings_rec_coming_up_title()}
             value={horizon}
             onChange={saveHorizon}
             options={[
-              ["month", "Until month end"],
-              ["30d", "Next 30 days"],
+              ["month", m.settings_rec_until_month_end()],
+              ["30d", m.settings_rec_next_30_days()],
             ]}
           />
         }

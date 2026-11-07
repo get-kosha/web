@@ -1,0 +1,361 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "accounts_head_title": "口座 · Kosha",
+  "accounts_title": "口座",
+  "accounts_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{#num}{count}{/num}口座"
+      }
+    }
+  ],
+  "accounts_new": "新しい口座",
+  "accounts_group_bank_cash": "銀行・現金",
+  "accounts_group_credit": "クレジットカード",
+  "accounts_group_investment": "投資",
+  "accounts_type_bank_account": "銀行口座",
+  "accounts_type_bank": "銀行",
+  "accounts_type_cash": "現金",
+  "accounts_type_credit": "クレジットカード",
+  "accounts_type_investment": "投資",
+  "accounts_archived": "アーカイブ済み",
+  "accounts_archived_count": "アーカイブ済み（{count}）",
+  "accounts_archived_label": "アーカイブ済みの口座",
+  "accounts_archived_hint": "アーカイブ済みの口座も純資産に含まれます",
+  "accounts_details_label": "{name}の詳細",
+  "accounts_edit_title": "{name}を編集",
+  "accounts_rates_updated_today": "今日更新",
+  "accounts_rates_updated_yesterday": "昨日更新",
+  "accounts_rates_updated_on": "{date}更新",
+  "accounts_rate_shown": "{currency}は {rate} = {base} で表示",
+  "accounts_net_worth": "純資産",
+  "accounts_change_period": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "（{count}か月間）"
+      }
+    }
+  ],
+  "accounts_range_label": "期間",
+  "accounts_range_1y": "1年",
+  "accounts_range_2y": "2年",
+  "accounts_range_all": "全期間",
+  "accounts_worth_empty": "純資産のグラフは、記録を始めて1か月が過ぎると表示されます。",
+  "accounts_chart_other": "その他の口座",
+  "accounts_chart_gains": "含み損益",
+  "accounts_chart_key": "凡例",
+  "accounts_no_value": "評価額はまだ記録されていません",
+  "accounts_value_age": "評価額は{days}日前のものです",
+  "accounts_value_as_of": "{date}時点の評価額",
+  "accounts_available": "利用可能額 {amount}",
+  "accounts_last_entry": "最終取引 {date}",
+  "accounts_credit_used": "{limit}中 {percent}",
+  "accounts_balance": "残高",
+  "accounts_another_account": "別の口座",
+  "accounts_restored_toast": "{name}を元に戻しました",
+  "accounts_archived_toast": "{name}をアーカイブしました",
+  "accounts_save_failed": "保存できませんでした",
+  "accounts_delete_failed": "削除できませんでした",
+  "accounts_in_month": "入金 · {month}",
+  "accounts_out_month": "出金 · {month}",
+  "accounts_moved": "振替",
+  "accounts_recent": "最近の取引",
+  "accounts_all_count": "全{n}件 →",
+  "accounts_no_transactions": "まだ取引はありません。",
+  "accounts_untitled": "名称未設定",
+  "accounts_update_value_hint": "証券会社に表示されている今日の評価額を入力して、純資産を最新の状態に保ちましょう。",
+  "accounts_update_gains": "評価損益を更新",
+  "accounts_reconciled_to": "{date}まで照合済み",
+  "accounts_match_bank": "銀行の残高と一致していますか？",
+  "accounts_reconcile_hint": "明細と見比べて取引にチェックを付けるか、明細をインポートすると、足りない取引をKoshaが見つけます。",
+  "accounts_reconcile": "照合",
+  "accounts_fix_balance": "残高を修正",
+  "accounts_edit_account": "口座を編集",
+  "accounts_unarchive": "アーカイブを解除",
+  "accounts_archive": "アーカイブ",
+  "accounts_enter_balance": "残高を入力してください",
+  "accounts_corrected_by": "{amount}修正しました",
+  "accounts_balance_matches": "残高はすでに一致しています",
+  "accounts_fix_title": "{name}の残高を修正",
+  "accounts_fix_credit_description": "カードの明細に記載されている未払い残高を入力してください。",
+  "accounts_fix_description": "銀行に表示されている残高を入力してください。",
+  "accounts_currently_owed": "現在の未払い残高",
+  "accounts_fix_adds_correction": "{amount}の残高修正を追加します。",
+  "accounts_no_correction": "修正は必要ありません。",
+  "accounts_enter_credit_limit": "利用限度額を入力してください",
+  "accounts_updated": "口座を更新しました",
+  "accounts_added": "口座を追加しました",
+  "accounts_name": "名前",
+  "accounts_type": "種類",
+  "accounts_currency": "通貨",
+  "accounts_credit_limit": "利用限度額",
+  "accounts_credit_hint": "この口座の残高は、あといくら使えるかを表します。限度額との差額は負債として純資産に計上されます。",
+  "accounts_investment_hint": "残高は投入した金額です。ときどき「評価損益を更新」を使って、運用による損益を純資産に反映しましょう。",
+  "accounts_invested_so_far": "これまでの投資額",
+  "accounts_current_balance": "現在の残高",
+  "accounts_optional": "（任意）",
+  "accounts_save_adds_correction": "保存すると{amount}の残高修正が追加されます。",
+  "accounts_correct_hint": "修正するには、銀行に表示されている残高を入力してください。",
+  "accounts_archived_checkbox": "アーカイブ済み {#muted}（クイック入力には表示されず、純資産には含まれます）{/muted}",
+  "accounts_gains_history": "評価損益の履歴",
+  "accounts_delete_valuation": "{date}の記録を削除",
+  "accounts_add_account": "口座を追加",
+  "accounts_delete_title": "{name}を削除しますか？",
+  "accounts_delete_description": "この口座には取引がありません。削除すると評価損益の履歴も削除されます。",
+  "accounts_delete_account": "口座を削除",
+  "accounts_fx_title": "外貨両替",
+  "accounts_fx_sent": [
+    {
+      "declarations": ["input count", "input sent", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count}回の振替で{#num}{sent}{/num}を送金"
+      }
+    }
+  ],
+  "accounts_fx_cost": "市場レートとの差 {#num}{cost}{/num}",
+  "accounts_fx_year": "年",
+  "accounts_fx_date": "日付",
+  "accounts_fx_route": "経路",
+  "accounts_fx_sent_column": "送金額",
+  "accounts_fx_rate": "レート",
+  "accounts_fx_market": "市場",
+  "accounts_fx_received": "受取額",
+  "accounts_fx_cost_column": "コスト",
+  "accounts_fx_footer": "コストは、手数料に、その日の市場レートと比べて業者のレートで損した分を足したものです。マイナスなら市場レートより有利だったことを意味します。手数料や業者を追加するには、履歴から振替を編集してください。",
+
+  "subs_head_title": "定期 · Kosha",
+  "subs_title": "定期",
+  "subs_count_active": "有効 {#num}{count}{/num}件",
+  "subs_count_transfers": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "振替 {#num}{count}{/num}件"
+      }
+    }
+  ],
+  "subs_count_ended": "終了 {#num}{count}{/num}件",
+  "subs_new_button": "定期を追加",
+  "subs_new_title": "新しい定期支払い",
+  "subs_every_day": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": { "countPlural=other": "{count}日ごと" }
+    }
+  ],
+  "subs_every_week": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": { "countPlural=other": "{count}週間ごと" }
+    }
+  ],
+  "subs_every_month": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": { "countPlural=other": "{count}か月ごと" }
+    }
+  ],
+  "subs_every_year": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": { "countPlural=other": "{count}年ごと" }
+    }
+  ],
+  "subs_interval_day": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": { "countPlural=other": "{count}日" }
+    }
+  ],
+  "subs_interval_week": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": { "countPlural=other": "{count}週間" }
+    }
+  ],
+  "subs_interval_month": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": { "countPlural=other": "{count}か月" }
+    }
+  ],
+  "subs_interval_year": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": { "countPlural=other": "{count}年" }
+    }
+  ],
+  "subs_group_bills": "請求",
+  "subs_group_subscriptions": "サブスク",
+  "subs_group_income": "収入",
+  "subs_group_transfers": "振替",
+  "subs_kind_bill": "請求",
+  "subs_kind_subscription": "サブスク",
+  "subs_kind_income": "収入",
+  "subs_kind_transfer": "振替",
+  "subs_end_this_bill": "この請求を終了",
+  "subs_end_this_subscription": "このサブスクを終了",
+  "subs_end_this_income": "この収入を終了",
+  "subs_end_this_transfer": "この振替を終了",
+  "subs_end_bill": "請求を終了",
+  "subs_end_subscription": "サブスクを終了",
+  "subs_end_income": "収入を終了",
+  "subs_end_transfer": "振替を終了",
+  "subs_committed": "毎月の固定支出",
+  "subs_committed_hint": "請求 {bills} · サブスク {subscriptions}",
+  "subs_per_year": "年間",
+  "subs_share_of_income": "収入の{percent}",
+  "subs_no_income": "過去1年間の収入はありません",
+  "subs_due_soon": "7日以内に期日",
+  "subs_nothing_due": "期日のものはありません",
+  "subs_moved_to_savings": "貯蓄への振替",
+  "subs_moved_hint": "毎月 · 集計対象外",
+  "subs_list_label": "定期支払い",
+  "subs_empty": "定期支払いはまだありません。家賃やサブスク、定期的な振替を一度追加すれば、あとはKoshaが記録します。",
+  "subs_column_every": "間隔",
+  "subs_column_next": "次回",
+  "subs_column_amount": "金額",
+  "subs_column_per_month": "月額",
+  "subs_not_counted": "集計対象外",
+  "subs_ended_count": "終了（{count}）",
+  "subs_sorted_hint": "月額の多い順",
+  "subs_details_label": "{name}の詳細",
+  "subs_adopt_title": "{name}を定期にする",
+  "subs_adopt_description": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "過去{count}回の支払いもまとめられ、履歴に表示されます。"
+      }
+    }
+  ],
+  "subs_hide_failed": "非表示にできませんでした",
+  "subs_spotted_title": "定期支払いの候補",
+  "subs_spotted_hint": "一定の間隔で発生している支払いから見つけました",
+  "subs_about_amount": "約{amount}",
+  "subs_spotted_paid": [
+    {
+      "declarations": ["input count", "input day", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count}回支払い、最終は{day}"
+      }
+    }
+  ],
+  "subs_spotted_next": "次回は{day}ごろ",
+  "subs_make_recurring": "定期にする",
+  "subs_dismiss_label": "{name}は定期ではない",
+  "subs_not_recurring": "定期ではない",
+  "subs_varies_asks": "変動、毎回確認",
+  "subs_ended_on_short": "{date}に終了",
+  "subs_strip_label": "今後30日間の支払い：{list}",
+  "subs_strip_empty": "今後30日間の支払いはありません",
+  "subs_strip_title": "今後30日間",
+  "subs_strip_bills": "請求とサブスク",
+  "subs_update_payment_failed": "支払いを更新できませんでした",
+  "subs_ended_toast": "{name}を終了しました",
+  "subs_resumed_toast": "{name}を再開しました",
+  "subs_update_schedule_failed": "スケジュールを更新できませんでした",
+  "subs_deleted": "削除しました",
+  "subs_delete_failed": "削除できませんでした",
+  "subs_detail_meta": "{kind} · {every} · {date}から",
+  "subs_varies": "変動",
+  "subs_ended_on": "{date}に終了",
+  "subs_ended_hint": "今後の支払いはありません。過去の支払いは履歴に残ります。",
+  "subs_next_on": "次回：{date}",
+  "subs_will_ask": "金額はKoshaが確認します",
+  "subs_auto_recorded": "当日に自動で記録されます",
+  "subs_mark_when_out": "引き落とされたら支払い済みにしてください",
+  "subs_changed_once": "今回の支払いのみ変更",
+  "subs_ends_on": "{date}に終了予定",
+  "subs_enter_amount_button": "金額を入力",
+  "subs_marked_paid": "支払い済みにしました",
+  "subs_mark_done_now": "今すぐ完了にする",
+  "subs_mark_paid_now": "今すぐ支払い済みにする",
+  "subs_change_amount": "金額を変更",
+  "subs_skipped": "スキップしました",
+  "subs_skip_this": "今回はスキップ",
+  "subs_no_more_scheduled": "予定されている支払いはもうありません。",
+  "subs_moved_so_far": "これまでの振替額",
+  "subs_paid_so_far": "これまでの支払額",
+  "subs_payments": "支払い",
+  "subs_history": "履歴",
+  "subs_no_payments": "まだ支払いはありません。",
+  "subs_moved": "振替済み",
+  "subs_paid": "支払い済み",
+  "subs_all_payments": "全{count}件の支払い →",
+  "subs_resume": "再開",
+  "subs_delete_title": "{name}を削除しますか？",
+  "subs_end_title": "{name}を終了しますか？",
+  "subs_delete_description": "スケジュールを削除します。過去の支払いは通常の取引として履歴に残ります。",
+  "subs_end_description": "明日以降の支払いはなくなります。過去の支払いは履歴に残り、あとで再開することもできます。",
+  "subs_edit_title": "{name}を編集",
+  "subs_edit_transfer": "振替を編集",
+  "subs_edit_payment": "支払いを編集",
+  "subs_enter_amount": "金額を入力してください",
+  "subs_recorded": "記録しました",
+  "subs_payment_updated": "支払いを更新しました",
+  "subs_save_payment_failed": "支払いを保存できませんでした",
+  "subs_pay_transfer_description": "今回振り替えた金額を入力してください。",
+  "subs_pay_description": "今回支払った金額を入力してください。",
+  "subs_edit_once_description": "変更されるのは今回の支払いだけです。ほかの支払いは通常の金額と日付のままです。",
+  "subs_amount": "金額",
+  "subs_date": "日付",
+  "subs_received_in": "{name}での受取額",
+  "subs_leave_empty_rate": "空欄にすると為替レートで計算します。",
+  "subs_note": "メモ",
+  "subs_reset_regular": "通常に戻す",
+  "subs_record": "記録",
+  "subs_save_this_payment": "この支払いを保存",
+
+  "subs_unit_days": "日",
+  "subs_unit_weeks": "週間",
+  "subs_unit_months": "か月",
+  "subs_unit_years": "年",
+  "subs_enter_usual_amount": "通常の金額を入力してください",
+  "subs_pick_to_account": "入金先の口座を選んでください",
+  "subs_pick_category": "カテゴリを選んでください",
+  "subs_transfer_added": "定期振替を追加しました",
+  "subs_income_added": "定期収入を追加しました",
+  "subs_bill_added": "請求を追加しました",
+  "subs_subscription_added": "サブスクを追加しました",
+  "subs_type": "種類",
+  "subs_name": "名前",
+  "subs_from": "振替元",
+  "subs_to": "振替先",
+  "subs_account": "口座",
+  "subs_category": "カテゴリ",
+  "subs_usual_amount": "通常の金額",
+  "subs_repeats_every": "繰り返し",
+  "subs_interval": "間隔",
+  "subs_variable": "毎回金額が変わる",
+  "subs_variable_hint": "自動で記録する代わりに、期日になるとKoshaがお知らせして金額を確認します。",
+  "subs_amount_received": "受取額",
+  "subs_next_payment": "次回の支払い",
+  "subs_first_payment": "初回の支払い",
+  "subs_ends": "終了",
+  "subs_never": "なし",
+  "subs_backfill_hint": "{date}から今日までの支払いをKoshaが記録します。",
+  "subs_auto_pay": "支払いを自動で記録",
+  "subs_changes_hint": "変更は今後の支払いに適用されます。過去の支払いはそのままです。",
+  "subs_save_changes": "変更を保存",
+  "subs_add_transfer": "振替を追加",
+  "subs_add_income": "収入を追加",
+  "subs_add_bill": "請求を追加",
+  "subs_add_subscription": "サブスクを追加"
+}

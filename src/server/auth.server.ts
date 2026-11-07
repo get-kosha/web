@@ -6,7 +6,8 @@ import { jwt, twoFactor } from "better-auth/plugins"
 import { mcp } from "@better-auth/mcp"
 import { getRequest } from "@tanstack/react-start/server"
 import { DEFAULT_CATEGORIES } from "@/lib/defaults"
-import { DEMO, MIN_PASSWORD } from "@/lib/core"
+import { DEMO, MIN_PASSWORD, intlLocale } from "@/lib/core"
+import { m } from "@/paraglide/messages"
 import { deleteAllAttachments } from "@/server/attachments.server"
 import { sendEmail } from "@/server/email.server"
 
@@ -112,7 +113,8 @@ async function sendResetEmail(user: { id: string; email: string }, token: string
   const tz = await env.DB.prepare("SELECT value FROM settings WHERE user_id = ? AND key = 'timezone'")
     .bind(user.id)
     .first<string>("value")
-  const requestedAt = new Intl.DateTimeFormat("en-GB", {
+  // The email renders inside the request that asked for it, so it's in the visitor's language.
+  const requestedAt = new Intl.DateTimeFormat(intlLocale(), {
     timeZone: tz ?? "UTC",
     day: "numeric",
     month: "long",
@@ -134,7 +136,7 @@ async function sendResetEmail(user: { id: string; email: string }, token: string
   })
   await sendEmail({
     to: user.email,
-    subject: "Reset your Kosha password",
+    subject: m.email_reset_subject(),
     html: await render(email),
     text: await render(email, { plainText: true }),
   })
@@ -212,7 +214,7 @@ export async function demoAvailable() {
 /** The signed-in user's id. Every data query is scoped by it. */
 export async function userId() {
   const user = await getUser()
-  if (!user) throw new Error("Not signed in")
+  if (!user) throw new Error(m.server_not_signed_in())
   return user.id
 }
 
@@ -229,12 +231,12 @@ export const getAvatar = (uid: string) => avatars()?.get(avatarKey(uid)) ?? null
  */
 export async function setAvatar(uid: string, file: Blob | null) {
   const bucket = avatars()
-  if (!bucket) throw new Error("Profile pictures aren't set up on this server")
+  if (!bucket) throw new Error(m.server_avatars_off())
   let image: string | null = null
   if (file) {
     const bytes = new Uint8Array(await file.arrayBuffer())
     // Every JPEG starts FF D8 FF. The route serves it as image/jpeg, so nothing else may get in.
-    if (bytes[0] !== 0xff || bytes[1] !== 0xd8 || bytes[2] !== 0xff) throw new Error("That image couldn't be read")
+    if (bytes[0] !== 0xff || bytes[1] !== 0xd8 || bytes[2] !== 0xff) throw new Error(m.server_avatar_unreadable())
     await bucket.put(avatarKey(uid), bytes, { httpMetadata: { contentType: "image/jpeg" } })
     image = `/api/avatar?v=${Date.now().toString(36)}`
   } else await bucket.delete(avatarKey(uid))

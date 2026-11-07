@@ -1,0 +1,175 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "reconcile_hint_an_entry": "um lançamento",
+  "reconcile_hint_exact_unticked": "{name} ({amount}) é exatamente a diferença. Ele está no extrato?",
+  "reconcile_hint_exact_ticked": "{name} ({amount}) é exatamente a diferença. Ele está mesmo no extrato?",
+  "reconcile_hint_wrong_way_in": "{name} é metade da diferença. Será que está invertido, como entrada em vez de saída?",
+  "reconcile_hint_wrong_way_out": "{name} é metade da diferença. Será que está invertido, como saída em vez de entrada?",
+  "reconcile_hint_swapped": "{name} era {meant} em vez de {amount}? Dígitos trocados são um erro comum.",
+  "reconcile_hint_decimal": "{name} era {meant} em vez de {amount}? A vírgula decimal pode estar no lugar errado.",
+  "reconcile_hint_pair": "{first} e {second} juntos formam a diferença.",
+  "reconcile_hint_duplicate": "{name} aparece duas vezes. Um deles é duplicado?",
+  "reconcile_hint_late": "Lançamentos dos últimos dias do período podem aparecer no próximo extrato.",
+  "reconcile_hint_look_out": "Procure no extrato uma tarifa, cobrança ou juros de {amount} que ainda não esteja no Kosha.",
+  "reconcile_hint_look_in": "Procure no extrato juros, um reembolso ou um depósito de {amount} que ainda não esteja no Kosha.",
+  "reconcile_gap_uncovered": "Nenhum extrato cobre de {from} a {to}.",
+  "reconcile_gap_opening": "{next} abre com {opening}, mas {previous} fecha com {closing}. Pode estar faltando um extrato.",
+  "reconcile_head_title": "Conciliar · Kosha",
+  "reconcile_title": "Conciliar",
+  "reconcile_picker_sub": "Confira uma conta com o extrato do seu banco ou importe o extrato.",
+  "reconcile_picker_empty": "Adicione uma conta bancária ou um cartão primeiro.",
+  "reconcile_reconciled_to": "Conciliada até {day}",
+  "reconcile_never_reconciled": "Nunca conciliada",
+  "reconcile_transfer_to_name": "Para {account}",
+  "reconcile_transfer_from_name": "De {account}",
+  "reconcile_transfer_to_other": "Para outra conta",
+  "reconcile_transfer_from_other": "De outra conta",
+  "reconcile_no_payee": "Sem favorecido",
+  "reconcile_pdf_unsupported": "O Kosha lê arquivos CSV, OFX e QFX. Exporte um desses formatos do seu banco.",
+  "reconcile_currency_mismatch": "Este extrato está em {statementCurrency}, e {account} está em {currency}.",
+  "reconcile_ofx_empty": "Esse arquivo OFX não tem transações",
+  "reconcile_csv_empty": "Esse arquivo não tem linhas que o Kosha consiga ler",
+  "reconcile_read_failed": "Não foi possível ler esse arquivo",
+  "reconcile_pick_category_first": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Escolha uma categoria para {count} linha primeiro",
+        "countPlural=*": "Escolha uma categoria para {count} linhas primeiro"
+      }
+    }
+  ],
+  "reconcile_added": [
+    {
+      "declarations": ["input count", "input account", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} lançamento adicionado a {account}",
+        "countPlural=*": "{count} lançamentos adicionados a {account}"
+      }
+    }
+  ],
+  "reconcile_add_failed": "Não foi possível adicioná-los",
+  "reconcile_change_failed": "Não foi possível alterar",
+  "reconcile_finish_failed": "Não foi possível concluir",
+  "reconcile_undone": "Conciliação desfeita",
+  "reconcile_undo_failed": "Não foi possível desfazer",
+  "reconcile_ask_failed": "Não foi possível perguntar",
+  "reconcile_hint_opening_gap": "Este extrato abre com {opening}, mas o último que você conciliou fechou com {closing}. Pode estar faltando um extrato entre eles.",
+  "reconcile_hint_single_missing": "{payee} ({amount}) no extrato é exatamente a diferença. Adicione-o ao Kosha.",
+  "reconcile_hint_missing_closes": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Adicionar a linha que falta no Kosha fecha a diferença exatamente.",
+        "countPlural=*": "Adicionar as {count} linhas que faltam no Kosha fecha a diferença exatamente."
+      }
+    }
+  ],
+  "reconcile_hint_missing_count": [
+    {
+      "declarations": ["input count", "input amount", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} linha do extrato ainda não está no Kosha ({amount}).",
+        "countPlural=*": "{count} linhas do extrato ainda não estão no Kosha ({amount})."
+      }
+    }
+  ],
+  "reconcile_hint_close": "{name}: o Kosha tem {kosha}, o extrato {statement}.",
+  "reconcile_balance_label": "Saldo final ({currency})",
+  "reconcile_owed_label": "Devido segundo o extrato ({currency})",
+  "reconcile_account_title": "Conciliar {account}",
+  "reconcile_done_title": "{account} confere com o seu extrato",
+  "reconcile_done_checked": [
+    {
+      "declarations": ["input count", "input n", "input day", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{n} lançamento conferido até {day}.",
+        "countPlural=*": "{n} lançamentos conferidos até {day}."
+      }
+    }
+  ],
+  "reconcile_done_correction": "Um ajuste de {amount} fechou a diferença.",
+  "reconcile_done_marked": "O Kosha os marca como conciliados e avisa você antes de alterar algum.",
+  "reconcile_back_to_accounts": "Voltar para Contas",
+  "reconcile_last_reconciled": "Última conciliação até {day}",
+  "reconcile_check_each": "Confira cada lançamento com o extrato do seu banco.",
+  "reconcile_other_account": "Outra conta",
+  "reconcile_drift": "Os lançamentos conciliados em {day} mudaram {amount} desde então, e não batem mais com aquele extrato. Um deles foi editado ou excluído; desfaça essa conciliação para conferi-los de novo.",
+  "reconcile_pdf_off": "As linhas lidas deste PDF ficam {amount} distantes do saldo final dele. Uma linha pode ter sido lida errado; confira-as com o PDF antes de adicionar qualquer uma.",
+  "reconcile_reading": "Lendo {file}…",
+  "reconcile_file_lines": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} linha",
+        "countPlural=*": "{count} linhas"
+      }
+    }
+  ],
+  "reconcile_read_by_ai": "lido pela IA",
+  "reconcile_another_file": "Outro arquivo",
+  "reconcile_drop": "Solte seu extrato aqui ou {#choose}escolha um arquivo{/choose}",
+  "reconcile_drop_formats": "CSV, OFX ou QFX do seu banco. O Kosha marca o que confere e lista o que está faltando.",
+  "reconcile_drop_formats_pdf": "CSV, OFX ou QFX do seu banco, ou um extrato em PDF. O Kosha marca o que confere e lista o que está faltando.",
+  "reconcile_statement_date": "Data do extrato",
+  "reconcile_quick_balance": "O Kosha mostra {#amount}{amount}{/amount} hoje. Compare com o saldo atual do seu banco, não com o disponível.",
+  "reconcile_quick_owed": "O Kosha mostra que você deve {#amount}{amount}{/amount} hoje. Compare com o saldo atual do seu banco, não com o disponível.",
+  "reconcile_same_as_bank": "Meu banco mostra o mesmo",
+  "reconcile_missing_title": "No extrato, mas não no Kosha ({count})",
+  "reconcile_naming_payees": "Nomeando favorecidos…",
+  "reconcile_payee": "Favorecido",
+  "reconcile_category_for": "Categoria de {name}",
+  "reconcile_pick_category": "Escolha uma categoria",
+  "reconcile_transfer_to": "Transferência para {account}",
+  "reconcile_transfer_from": "Transferência de {account}",
+  "reconcile_include_line": "Adicionar esta linha",
+  "reconcile_leave_out_line": "Deixar esta linha de fora",
+  "reconcile_saving_teaches": "Ao salvar, o Kosha aprende esses nomes de favorecidos para o seu próximo extrato.",
+  "reconcile_add_to_kosha": "Adicionar {count} ao Kosha",
+  "reconcile_close_title": "Parecidos, mas com valor diferente ({count})",
+  "reconcile_close_detail": "Kosha {kosha} em {koshaDay} · extrato {statement} em {statementDay}",
+  "reconcile_use_amount": "Usar {amount}",
+  "reconcile_not_same": "Não é o mesmo",
+  "reconcile_in_kosha": "No Kosha",
+  "reconcile_tick_title": "Marque o que está no extrato",
+  "reconcile_ticked_count": "{count} marcados",
+  "reconcile_before_group": "Antes deste extrato ({count})",
+  "reconcile_before_hint": "Marcados, pois estavam em extratos anteriores",
+  "reconcile_nothing": "Nada a conciliar até {day}.",
+  "reconcile_note_amount_differs": "Valor diferente",
+  "reconcile_note_next_statement": "Provavelmente no próximo extrato",
+  "reconcile_note_not_on_statement": "Não está no extrato",
+  "reconcile_note_still_due": "Ainda a vencer",
+  "reconcile_after_group": "Depois de {day} ({count})",
+  "reconcile_after_hint": "Para o próximo extrato",
+  "reconcile_finding_title": "Encontrando a diferença",
+  "reconcile_ask_ai": "Perguntar à IA",
+  "reconcile_past": "Conciliações anteriores",
+  "reconcile_history_entries": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} lançamento",
+        "countPlural=*": "{count} lançamentos"
+      }
+    }
+  ],
+  "reconcile_corrected_by": "ajustado em {amount}",
+  "reconcile_figure_statement": "Extrato",
+  "reconcile_figure_statement_owed": "Devido segundo o extrato",
+  "reconcile_figure_ticked": "Marcado no Kosha",
+  "reconcile_figure_ticked_owed": "Devido pelos marcados",
+  "reconcile_figure_difference": "Diferença",
+  "reconcile_figure_none": "Nenhuma",
+  "reconcile_finish_with_correction": "Concluir com um ajuste de {amount}",
+  "reconcile_enter_balance": "Informe o saldo do extrato",
+  "reconcile_finish": "Concluir conciliação",
+  "reconcile_show": "Mostrar"
+}

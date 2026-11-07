@@ -12,6 +12,7 @@ import {
   XIcon,
 } from "@phosphor-icons/react/ssr"
 import { toast } from "sonner"
+import { ParaglideMessage } from "@inlang/paraglide-js-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -33,7 +34,7 @@ import {
   saveAccount,
   tidyStatementLines,
 } from "@/lib/api"
-import { dayOf, fmt, guessCategory, isNeutral, parseAmount } from "@/lib/core"
+import { dayOf, fmt, guessCategory, intlLocale, isNeutral, parseAmount } from "@/lib/core"
 import {
   csvAccountHint,
   descriptorKey,
@@ -54,10 +55,11 @@ import {
   type Line,
 } from "@/lib/statement"
 import { cn } from "@/lib/utils"
+import { m } from "@/paraglide/messages"
 
 export const Route = createFileRoute("/_app/import")({
   loader: () => getImportMemory(),
-  head: () => ({ meta: [{ title: "Import statements · Kosha" }] }),
+  head: () => ({ meta: [{ title: m.import_head_title() }] }),
   pendingComponent: PageSkeleton,
   component: Import,
 })
@@ -111,7 +113,8 @@ const span = (lines: { day: string }[]) =>
         to: lines[0].day,
       })
     : null
-const plural = (n: number, one: string, many = `${one}s`) => `${n.toLocaleString()} ${n === 1 ? one : many}`
+/** A count for a plural message: the number to pick the form, and how it shows. */
+const num = (count: number) => ({ count, n: count.toLocaleString(intlLocale()) })
 const fileTitle = (name: string) =>
   name
     .replace(/\.[a-z0-9]+$/i, "")
@@ -181,7 +184,12 @@ function Import() {
     const w = wallets.find((x) => x.id === a.target)
     return w
       ? { name: w.name, type: w.type, currency: w.currency, limit: w.credit_limit ?? 0, wallet: w }
-      : { name: a.name.trim() || "New account", type: a.type, currency: a.currency, limit: parseAmount(a.limit) ?? 0 }
+      : {
+          name: a.name.trim() || m.import_new_account(),
+          type: a.type,
+          currency: a.currency,
+          limit: parseAmount(a.limit) ?? 0,
+        }
   }
 
   // ---------- reading files ----------
@@ -190,8 +198,7 @@ function Import() {
     const id = crypto.randomUUID()
     const base = { id, file: file.name, off: null, currency: null, opening: null, closing: null, closingDay: null }
     if (file.type === "application/pdf" || /\.pdf$/i.test(file.name)) {
-      if (!meta.ai.statements)
-        throw new Error("Kosha reads CSV, OFX and QFX files. Export one of those from your bank.")
+      if (!meta.ai.statements) throw new Error(m.import_error_pdf())
       const r = await readStatementPdf({ data: { name: file.name, data: await fileBase64(file) } })
       const credit = r.account.type === "credit"
       return {
@@ -213,13 +220,13 @@ function Import() {
             : `file:${id}`,
         title:
           r.account.name ??
-          `${credit ? "Credit card" : "Bank account"}${r.account.last4 ? ` ••${r.account.last4}` : ""}`,
+          `${credit ? m.import_type_card() : m.import_type_bank()}${r.account.last4 ? ` ••${r.account.last4}` : ""}`,
       }
     }
     const text = await fileText(file)
     if (isOfx(text)) {
       const r = parseOfx(text)
-      if (!r.lines.length) throw new Error("That file has no transactions")
+      if (!r.lines.length) throw new Error(m.import_error_no_transactions())
       const credit = r.account.type === "credit"
       const last4 = r.account.id?.slice(-4) ?? null
       return {
@@ -233,11 +240,11 @@ function Import() {
         type: r.account.type,
         last4,
         key: r.account.id ? `ofx:${r.account.id}` : `file:${id}`,
-        title: `${credit ? "Credit card" : "Bank account"}${last4 ? ` ••${last4}` : ""}`,
+        title: `${credit ? m.import_type_card() : m.import_type_bank()}${last4 ? ` ••${last4}` : ""}`,
       }
     }
     const rows = parseCsv(text)
-    if (rows.length < 2) throw new Error("That file has no rows Kosha can read")
+    if (rows.length < 2) throw new Error(m.import_error_no_rows())
     const card = /card|credit|visa|amex|master/i.test(file.name)
     const guess = guessLayout(rows, card)
     const signature = layoutSignature(rows, guess.layout)
@@ -272,7 +279,7 @@ function Import() {
       type: card ? "credit" : null,
       last4,
       key: last4 ? `last4:${last4}` : `sig:${signature}`,
-      title: `${fileTitle(file.name) || (card ? "Credit card" : "Bank account")}${last4 ? ` ••${last4}` : ""}`,
+      title: `${fileTitle(file.name) || (card ? m.import_type_card() : m.import_type_bank())}${last4 ? ` ••${last4}` : ""}`,
     }
   }
 
@@ -313,7 +320,7 @@ function Import() {
         } catch (e) {
           setFailed((f) => [
             ...f,
-            { id: q.id, name: q.file.name, error: e instanceof Error ? e.message : "Couldn't read it" },
+            { id: q.id, name: q.file.name, error: e instanceof Error ? e.message : m.import_error_unreadable() },
           ])
         } finally {
           setReading((r) => r.filter((x) => x.id !== q.id))
@@ -400,7 +407,7 @@ function Import() {
       setStep("review")
       window.scrollTo({ top: 0 })
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Couldn't check your accounts")
+      toast.error(e instanceof Error ? e.message : m.import_error_check())
     } finally {
       setBusy(false)
     }
@@ -576,7 +583,7 @@ function Import() {
     }
     try {
       for (const a of live) {
-        tick(0, `Setting up ${info(a).name}`)
+        tick(0, m.import_progress_setup({ name: info(a).name }))
         if (!r.ids[a.id])
           r.ids[a.id] =
             a.target !== "new"
@@ -593,7 +600,7 @@ function Import() {
                     },
                   })
                 ).id
-        tick(1, `Setting up ${info(a).name}`)
+        tick(1, m.import_progress_setup({ name: info(a).name }))
       }
       // Kosha remembers each bank's columns and the payee names, so the next statement reads straight away.
       const layouts = [
@@ -618,7 +625,7 @@ function Import() {
       for (const a of live) {
         const list = payload(a)
         for (let i = r.lines[a.id] ?? 0; i < list.length; i += 500) {
-          tick(0, `Adding ${plural(list.length, "transaction")} to ${info(a).name}`)
+          tick(0, m.import_progress_adding({ ...num(list.length), name: info(a).name }))
           await importLines({
             data: {
               walletId: r.ids[a.id],
@@ -629,11 +636,11 @@ function Import() {
           })
           r.remembered = true
           r.lines[a.id] = i + 500
-          tick(Math.min(500, list.length - i), `Adding ${plural(list.length, "transaction")} to ${info(a).name}`)
+          tick(Math.min(500, list.length - i), m.import_progress_adding({ ...num(list.length), name: info(a).name }))
         }
       }
       for (let i = r.pairs; i < plan.pairs.length; i += 200) {
-        tick(0, "Linking transfers between your accounts")
+        tick(0, m.import_progress_transfers())
         await importTransferPairs({
           data: {
             pairs: plan.pairs.slice(i, i + 200).map(([o, n]) => ({
@@ -648,10 +655,10 @@ function Import() {
           },
         })
         r.pairs = i + 200
-        tick(Math.min(200, plan.pairs.length - i), "Linking transfers between your accounts")
+        tick(Math.min(200, plan.pairs.length - i), m.import_progress_transfers())
       }
       for (const a of live) {
-        tick(0, `Checking ${info(a).name} against its statement`)
+        tick(0, m.import_progress_checking({ name: info(a).name }))
         if (!r.finished[a.id]) {
           const own = plan.rows.filter((l) => l.acct === a.id)
           const c = closingOf(a)
@@ -667,13 +674,13 @@ function Import() {
             },
           })
         }
-        tick(1, `Checking ${info(a).name} against its statement`)
+        tick(1, m.import_progress_checking({ name: info(a).name }))
       }
       await router.invalidate()
       const spotted = await recurringSuggestions()
         .then((s) => s.length)
         .catch(() => 0)
-      tick(1, "Done")
+      tick(1, m.common_done())
       setResult({
         accounts: live.map((a) => ({
           name: info(a).name,
@@ -686,7 +693,7 @@ function Import() {
       })
       setStep("done")
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Something went wrong")
+      setError(e instanceof Error ? e.message : m.common_something_went_wrong())
     }
   }
 
@@ -695,19 +702,19 @@ function Import() {
   if (step === "saving")
     return (
       <div className="pb-8">
-        <PageHeader title="Importing" />
+        <PageHeader title={m.import_importing()} />
         <div className="px-4 md:px-8">
           <Card className="max-w-xl gap-4 px-6 max-md:px-4" aria-live="polite">
             {error ? (
               <>
                 <p className="flex items-start gap-2 text-sm">
                   <WarningIcon className="mt-0.5 size-4 shrink-0 text-warning" />
-                  {error}. What was saved stays saved; trying again carries on from there.
+                  {m.import_failed({ error })}
                 </p>
                 <div className="flex gap-2">
-                  <Button onClick={save}>Try again</Button>
+                  <Button onClick={save}>{m.common_try_again()}</Button>
                   <Button variant="outline" className="bg-card" onClick={() => setStep("review")}>
-                    Back to the review
+                    {m.import_back_to_review()}
                   </Button>
                 </div>
               </>
@@ -736,10 +743,21 @@ function Import() {
           <Card className="rise-in max-w-xl gap-5 px-7 py-8 max-md:px-5">
             <CheckCircleIcon weight="fill" className="size-10 text-positive" />
             <div>
-              <h1 className="text-[22px] font-semibold tracking-[-0.02em]">Your statements are in</h1>
+              <h1 className="text-[22px] font-semibold tracking-[-0.02em]">{m.import_done_title()}</h1>
               <p className="mt-1.5 text-[15px] text-subtle-foreground">
-                {plural(result.lines, "transaction")} in {plural(result.accounts.length, "account")}
-                {result.transfers ? `, with ${plural(result.transfers, "transfer")} between them linked` : ""}.
+                {result.transfers
+                  ? m.import_done_summary_transfers({
+                      ...num(result.lines),
+                      accounts: result.accounts.length,
+                      a: num(result.accounts.length).n,
+                      transfers: result.transfers,
+                      t: num(result.transfers).n,
+                    })
+                  : m.import_done_summary({
+                      ...num(result.lines),
+                      accounts: result.accounts.length,
+                      a: num(result.accounts.length).n,
+                    })}
               </p>
             </div>
             <ul className="grid gap-2 text-sm">
@@ -748,8 +766,8 @@ function Import() {
                   <span className="min-w-0 truncate font-medium">{a.name}</span>
                   <span className="shrink-0 text-xs text-muted-foreground">
                     {a.reconciled
-                      ? `Matches the statement to ${dayLabel(a.reconciled)}`
-                      : plural(a.lines, "transaction")}
+                      ? m.import_done_matches({ day: dayLabel(a.reconciled) })
+                      : m.import_transactions(num(a.lines))}
                   </span>
                 </li>
               ))}
@@ -759,13 +777,13 @@ function Import() {
                 to="/subscriptions"
                 className="flex items-center justify-between gap-3 rounded-xl bg-brand-soft/60 px-4 py-3 text-sm transition-colors hover:bg-brand-soft"
               >
-                Kosha spotted {plural(result.spotted, "payment")} that repeat. Set them up as recurring.
+                {m.import_done_recurring(num(result.spotted))}
                 <ArrowRightIcon className="size-4 shrink-0" />
               </Link>
             )}
             <div className="flex flex-wrap gap-2">
               <Button nativeButton={false} render={<Link to="/" />} size="lg" className="h-11 px-5">
-                See your overview
+                {m.import_done_overview()}
               </Button>
               <Button
                 nativeButton={false}
@@ -774,7 +792,7 @@ function Import() {
                 size="lg"
                 className="h-11 bg-card px-5"
               >
-                See the transactions
+                {m.import_done_transactions()}
               </Button>
             </div>
           </Card>
@@ -825,19 +843,25 @@ function Import() {
     >
       {empty && <FileArrowUpIcon className="size-7 text-muted-foreground" />}
       <p className="text-sm">
-        {empty ? "Drop your statements here, or " : "Drop more statements here, or "}
-        <button
-          type="button"
-          className="font-medium underline underline-offset-2"
-          onClick={() => input.current?.click()}
-        >
-          choose files
-        </button>
+        <ParaglideMessage
+          message={empty ? m.import_drop : m.import_drop_more}
+          inputs={{}}
+          markup={{
+            choose: ({ children }) => (
+              <button
+                type="button"
+                className="font-medium underline underline-offset-2"
+                onClick={() => input.current?.click()}
+              >
+                {children}
+              </button>
+            ),
+          }}
+        />
       </p>
       {empty && (
         <p className="max-w-[46ch] text-xs text-muted-foreground">
-          CSV, OFX or QFX from your online banking{meta.ai.statements ? ", or PDF statements" : ""}. Add every month you
-          have, from every bank and card, all at once.
+          {meta.ai.statements ? m.import_drop_hint_pdf() : m.import_drop_hint()}
         </p>
       )}
       <input
@@ -858,14 +882,11 @@ function Import() {
   return (
     <div className="pb-28">
       <div className="relative">
-        <PageHeader
-          title="Import statements"
-          sub="Kosha sorts your statements into accounts. Check each one, then the payees."
-        />
+        <PageHeader title={m.import_title()} sub={m.import_sub()} />
         {/* Phones show this page without the tab bar, so it needs its own way out. */}
         <Link
           to="/"
-          aria-label="Close"
+          aria-label={m.common_close()}
           className="absolute top-3 right-2 inline-flex size-11 items-center justify-center rounded-md text-subtle-foreground transition-colors active:bg-muted md:hidden"
         >
           <XIcon className="size-5" />
@@ -878,7 +899,7 @@ function Import() {
             {reading.map((r) => (
               <p key={r.id} className="flex min-h-11 items-center gap-2.5 border-t px-5 text-sm first:border-t-0">
                 <SpinnerGapIcon className="size-4 shrink-0 animate-spin text-brand" />
-                <span className="min-w-0 truncate">Reading {r.name}</span>
+                <span className="min-w-0 truncate">{m.import_reading({ name: r.name })}</span>
               </p>
             ))}
             {failed.map((f) => (
@@ -891,7 +912,7 @@ function Import() {
                   variant="ghost"
                   size="icon"
                   className="max-md:size-11"
-                  aria-label={`Dismiss ${f.name}`}
+                  aria-label={m.import_dismiss({ name: f.name })}
                   onClick={() => setFailed((list) => list.filter((x) => x.id !== f.id))}
                 >
                   <XIcon />
@@ -930,8 +951,8 @@ function Import() {
         <Bar>
           <span className="text-sm text-muted-foreground">
             {reading.length
-              ? `Reading ${plural(reading.length, "file")}…`
-              : `${plural(totalLines, "transaction")} in ${plural(live.length, "account")}`}
+              ? m.import_reading_files(num(reading.length))
+              : m.import_summary({ ...num(totalLines), accounts: live.length, a: num(live.length).n })}
           </span>
           <Button
             size="lg"
@@ -940,7 +961,7 @@ function Import() {
             onClick={toReview}
           >
             {busy && <SpinnerGapIcon className="animate-spin" />}
-            Check payees <ArrowRightIcon />
+            {m.import_check_payees()} <ArrowRightIcon />
           </Button>
         </Bar>
       )}
@@ -1008,16 +1029,16 @@ function AccountCard({
       <div className="grid gap-4 px-6 py-5 max-md:px-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="min-w-0 truncate text-[15px] font-semibold">
-            {wallet?.name ?? (a.name.trim() || "New account")}
+            {wallet?.name ?? (a.name.trim() || m.import_new_account())}
           </h2>
           <Pick
             value={a.target}
             onChange={(v) => v && onPatch({ target: v })}
-            aria-label="Import into"
-            placeholder="Import into"
+            aria-label={m.import_into()}
+            placeholder={m.import_into()}
             options={[
-              { value: "new", label: "A new account" },
-              ...wallets.map((w) => ({ value: w.id, label: `Into ${w.name}` })),
+              { value: "new", label: m.import_new_account_option() },
+              ...wallets.map((w) => ({ value: w.id, label: m.import_into_wallet({ name: w.name }) })),
             ]}
             className="h-9 bg-background max-md:h-11"
           />
@@ -1025,7 +1046,7 @@ function AccountCard({
         {!wallet && (
           <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto_7rem]">
             <label className="grid gap-1.5 text-xs text-muted-foreground">
-              Name
+              {m.import_field_name()}
               <Input
                 value={a.name}
                 onChange={(e) => onPatch({ name: e.target.value })}
@@ -1033,12 +1054,12 @@ function AccountCard({
               />
             </label>
             <div className="grid gap-1.5 text-xs text-muted-foreground">
-              Type
-              <div className="flex rounded-lg bg-muted p-1" role="group" aria-label="Type">
+              {m.import_field_type()}
+              <div className="flex rounded-lg bg-muted p-1" role="group" aria-label={m.import_field_type()}>
                 {(
                   [
-                    ["bank", "Bank account"],
-                    ["credit", "Credit card"],
+                    ["bank", m.import_type_bank()],
+                    ["credit", m.import_type_card()],
                   ] as const
                 ).map(([t, label]) => (
                   <button
@@ -1059,12 +1080,12 @@ function AccountCard({
               </div>
             </div>
             <label className="grid gap-1.5 text-xs text-muted-foreground">
-              Currency
+              {m.import_field_currency()}
               <Pick
                 value={a.currency}
                 onChange={(v) => v && onPatch({ currency: v })}
-                aria-label="Currency"
-                placeholder="Currency"
+                aria-label={m.import_field_currency()}
+                placeholder={m.import_field_currency()}
                 options={currencies.map((c) => ({ value: c, label: c.toUpperCase() }))}
                 className="h-10 w-full bg-background text-foreground"
               />
@@ -1073,28 +1094,27 @@ function AccountCard({
         )}
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="grid gap-1.5 text-xs text-muted-foreground">
-            {credit ? "Owed" : "Balance"} on {dayLabel(closing.day)} ({currency.toUpperCase()})
+            {(credit ? m.import_owed_on : m.import_balance_on)({
+              day: dayLabel(closing.day),
+              currency: currency.toUpperCase(),
+            })}
             <Input
               value={closing.text}
               onChange={(e) => onPatch({ closing: e.target.value })}
               inputMode="decimal"
-              placeholder="From your latest statement"
+              placeholder={m.import_closing_placeholder()}
               className={cn("h-10 bg-background text-foreground", closing.text && "num")}
             />
-            <span>
-              {closing.fromFile
-                ? "From the statement."
-                : "Kosha works out the opening balance from it. Leave it empty if you don't know it."}
-            </span>
+            <span>{closing.fromFile ? m.import_closing_from_file() : m.import_closing_hint()}</span>
           </label>
           {!wallet && a.type === "credit" && (
             <label className="grid content-start gap-1.5 text-xs text-muted-foreground">
-              Credit limit ({currency.toUpperCase()})
+              {m.import_credit_limit({ currency: currency.toUpperCase() })}
               <Input
                 value={a.limit}
                 onChange={(e) => onPatch({ limit: e.target.value })}
                 inputMode="decimal"
-                placeholder="Optional"
+                placeholder={m.import_optional()}
                 className={cn("h-10 bg-background text-foreground", a.limit && "num")}
               />
             </label>
@@ -1104,15 +1124,16 @@ function AccountCard({
           ...gaps,
           ...(foreign
             ? [
-                `${foreign.file} is in ${foreign.currency!.toUpperCase()}, and this account is in ${currency.toUpperCase()}.`,
+                m.import_foreign({
+                  file: foreign.file,
+                  from: foreign.currency!.toUpperCase(),
+                  to: currency.toUpperCase(),
+                }),
               ]
             : []),
           ...stmts
             .filter((s) => s.off)
-            .map(
-              (s) =>
-                `The lines read from ${s.file} miss its closing balance by ${fmt(Math.abs(s.off!), currency)}. Check them against the PDF.`
-            ),
+            .map((s) => m.import_off({ file: s.file, amount: fmt(Math.abs(s.off!), currency) })),
         ].map((w) => (
           <p key={w} role="status" className="flex items-start gap-2 rounded-xl bg-warning/10 px-4 py-3 text-[13px]">
             <WarningIcon className="mt-0.5 size-4 shrink-0 text-warning" />
@@ -1133,23 +1154,23 @@ function AccountCard({
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {r
-                      ? `${plural(s.lines.length, "line")}, ${dayLabel(r.from)} to ${dayLabel(r.to)}`
-                      : "No lines read"}
+                      ? m.import_stmt_lines({ ...num(s.lines.length), from: dayLabel(r.from), to: dayLabel(r.to) })
+                      : m.import_stmt_no_lines()}
                   </p>
                 </div>
                 <Pick
                   value=""
                   onChange={(v) => v && onMove(s, v)}
-                  aria-label={`Move ${s.file} to another account`}
-                  placeholder="Move to…"
-                  options={[...others, { value: "new", label: "A new account" }]}
+                  aria-label={m.import_move_label({ file: s.file })}
+                  placeholder={m.import_move_placeholder()}
+                  options={[...others, { value: "new", label: m.import_new_account_option() }]}
                   className="h-9 bg-background text-xs max-md:h-11"
                 />
                 <Button
                   variant="ghost"
                   size="icon"
                   className="text-muted-foreground max-md:size-11"
-                  aria-label={`Remove ${s.file}`}
+                  aria-label={m.import_remove({ file: s.file })}
                   onClick={() => onRemove(s)}
                 >
                   <XIcon />
@@ -1174,10 +1195,8 @@ function AccountCard({
       </ul>
       {range && (
         <p className="border-t px-6 py-3 text-xs text-muted-foreground max-md:px-4">
-          {plural(lines.length, "transaction")} from {dayLabel(range.from)} to {dayLabel(range.to)}
-          {read > lines.length
-            ? `. ${plural(read - lines.length, "line")} in more than one statement counted once.`
-            : "."}
+          {m.import_account_range({ ...num(lines.length), from: dayLabel(range.from), to: dayLabel(range.to) })}
+          {read > lines.length && ` ${m.import_account_dupes(num(read - lines.length))}`}
         </p>
       )}
     </Card>
@@ -1234,25 +1253,33 @@ function ReviewStep({
   return (
     <div className="pb-8">
       <PageHeader
-        title="Check payees and categories"
+        title={m.import_review_title()}
         sub={
-          total
-            ? `${plural(total, "transaction")}: ${plural(list.length, "payee")}${pairs.length ? ` and ${plural(pairs.length, "transfer")} between your accounts` : ""}. A change to a payee applies to all of its transactions.`
-            : "Everything in these statements is already in Kosha, so there's nothing to add."
+          !total
+            ? m.import_review_nothing()
+            : pairs.length
+              ? m.import_review_sub_transfers({
+                  ...num(total),
+                  payees: list.length,
+                  p: num(list.length).n,
+                  transfers: pairs.length,
+                  t: num(pairs.length).n,
+                })
+              : m.import_review_sub({ ...num(total), payees: list.length, p: num(list.length).n })
         }
       >
         <Button variant="outline" className="bg-card max-md:h-11" onClick={onBack}>
-          <ArrowLeftIcon /> Accounts
+          <ArrowLeftIcon /> {m.import_review_back()}
         </Button>
       </PageHeader>
       <div className={cn("grid max-w-3xl gap-4 px-4 md:px-8", !total && "hidden")}>
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex rounded-lg bg-muted p-1" role="group" aria-label="Show">
+          <div className="flex rounded-lg bg-muted p-1" role="group" aria-label={m.import_review_show()}>
             {(
               [
-                ["check", `To check (${open.length})`],
-                ["all", `All payees (${list.length})`],
-                ...(pairs.length ? [["transfers", `Transfers (${pairs.length})`] as const] : []),
+                ["check", m.import_tab_check({ n: open.length })],
+                ["all", m.import_tab_all({ n: list.length })],
+                ...(pairs.length ? [["transfers", m.import_tab_transfers({ n: pairs.length })] as const] : []),
               ] as const
             ).map(([t, label]) => (
               <button
@@ -1271,22 +1298,22 @@ function ReviewStep({
           </div>
           {naming && (
             <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-              <SpinnerGapIcon className="size-3.5 animate-spin" /> Naming payees…
+              <SpinnerGapIcon className="size-3.5 animate-spin" /> {m.import_naming()}
             </span>
           )}
         </div>
 
         {tab === "check" && open.length > 0 && (
           <div className="flex flex-wrap items-center gap-2 text-[13px] text-subtle-foreground">
-            Put the rest in
+            {m.import_rest()}
             <Pick
               value={rest}
               onChange={setRest}
-              aria-label="Category for the rest"
-              placeholder="a category"
+              aria-label={m.import_rest_label()}
+              placeholder={m.import_rest_placeholder()}
               options={[
                 ...categories.map((c) => ({ value: c.id, label: c.name })),
-                { value: "skip", label: "Leave them out" },
+                { value: "skip", label: m.import_leave_them_out() },
               ]}
               className="h-9 bg-background max-md:h-11"
             />
@@ -1300,7 +1327,7 @@ function ReviewStep({
                 setRest("")
               }}
             >
-              Apply
+              {m.import_apply()}
             </Button>
           </div>
         )}
@@ -1316,7 +1343,7 @@ function ReviewStep({
                   <ArrowsLeftRightIcon className="size-4 shrink-0 text-muted-foreground" />
                   <div className="min-w-0">
                     <p className="truncate text-sm">
-                      {name(o.acct)} to {name(i.acct)}
+                      {m.import_transfer_pair({ from: name(o.acct), to: name(i.acct) })}
                     </p>
                     <p className="text-xs text-muted-foreground">{dayLabel(o.day)}</p>
                   </div>
@@ -1324,7 +1351,7 @@ function ReviewStep({
                 <div className="flex items-center gap-2">
                   <span className="num text-sm">{money(-o.amount, o.acct)}</span>
                   <Button variant="ghost" size="sm" className="max-md:h-11" onClick={() => onUnpair(o.key)}>
-                    Not a transfer
+                    {m.import_not_transfer()}
                   </Button>
                 </div>
               </div>
@@ -1344,13 +1371,13 @@ function ReviewStep({
                     .filter((a) => !g.lines.some((l) => l.acct === a.id))
                     .map((a) => ({
                       value: `t:${a.id}`,
-                      label: `${g.income ? "Transfer from" : "Transfer to"} ${a.name}`,
+                      label: (g.income ? m.import_transfer_from : m.import_transfer_to)({ name: a.name }),
                     })),
                   ...others.map((w) => ({
                     value: `w:${w.id}`,
-                    label: `${g.income ? "Transfer from" : "Transfer to"} ${w.name}`,
+                    label: (g.income ? m.import_transfer_from : m.import_transfer_to)({ name: w.name }),
                   })),
-                  { value: "skip", label: "Leave out" },
+                  { value: "skip", label: m.import_leave_out() },
                 ]}
                 onPayee={(payee) => onEdit(g, { payee })}
                 onCategory={(c) => choose(g, c)}
@@ -1362,26 +1389,26 @@ function ReviewStep({
                 onClick={() => setShown((n) => n + PAGE)}
                 className="min-h-11 border-t text-sm text-subtle-foreground transition-colors hover:bg-muted/60"
               >
-                Show {Math.min(PAGE, rows.length - shown)} more
+                {m.import_show_more({ n: Math.min(PAGE, rows.length - shown) })}
               </button>
             )}
           </Card>
         ) : (
           <p className="flex items-center gap-2 px-1 text-sm text-muted-foreground">
-            <CheckCircleIcon className="size-4 text-positive" /> Every payee has a category.
+            <CheckCircleIcon className="size-4 text-positive" /> {m.import_all_sorted()}
           </p>
         )}
       </div>
       <Bar>
         <span className="text-sm text-muted-foreground">
           {!total
-            ? "Nothing new to import"
+            ? m.import_nothing_new()
             : open.length
-              ? `${plural(open.length, "payee")} without a category`
-              : "Ready when you are"}
+              ? m.import_without_category(num(open.length))
+              : m.import_ready()}
         </span>
         <Button size="lg" className="h-11 px-5" disabled={open.length > 0 || !counted} onClick={onImport}>
-          Import {plural(counted, "transaction")}
+          {m.import_button(num(counted))}
         </Button>
       </Bar>
     </div>
@@ -1415,7 +1442,7 @@ function PayeeRow({
             {/* Committed on blur, so a name that matches another payee merges once, not on every keystroke. */}
             <Input
               key={g.payee}
-              aria-label={`Payee for ${sample}`}
+              aria-label={m.import_payee_for({ text: sample })}
               defaultValue={g.payee}
               onBlur={(e) => {
                 const v = e.target.value.trim()
@@ -1429,7 +1456,7 @@ function PayeeRow({
           <p className="mt-1 flex min-w-0 gap-3 text-xs text-muted-foreground">
             <span className="shrink-0">
               {g.lines.length > 1
-                ? `${plural(g.lines.length, "payment")}, ${dayLabel(r.from)} to ${dayLabel(r.to)}`
+                ? m.import_payments_range({ ...num(g.lines.length), from: dayLabel(r.from), to: dayLabel(r.to) })
                 : dayLabel(r.from)}
             </span>
             {sample.toLowerCase() !== g.payee.toLowerCase() && (
@@ -1443,8 +1470,8 @@ function PayeeRow({
           <Pick
             value={g.category}
             onChange={onCategory}
-            aria-label={`Category for ${g.payee}`}
-            placeholder="Pick a category"
+            aria-label={m.import_category_for({ payee: g.payee })}
+            placeholder={m.import_pick_category()}
             options={options}
             className={cn("h-9 w-full bg-background max-md:h-11", !g.category && "text-muted-foreground")}
           />
@@ -1457,7 +1484,7 @@ function PayeeRow({
           variant="ghost"
           size="icon"
           className="justify-self-end text-muted-foreground max-md:hidden"
-          aria-label={open ? "Hide the transactions" : "Show the transactions"}
+          aria-label={open ? m.import_hide_lines() : m.import_show_lines()}
           aria-expanded={open}
           onClick={() => setOpen((o) => !o)}
         >

@@ -1,0 +1,48 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "site_description": "Voeg elke betaling in een paar seconden toe en zie waar je maand gebleven is. Een gratis, open-source app om je financiën bij te houden, voor elke rekening en in elke valuta.",
+  "site_tagline": "Je financiën, een paar seconden per keer.",
+  "site_landing_title": "Kosha · Je financiën, een paar seconden per keer",
+  "site_og_image_alt": "Kosha: je financiën, een paar seconden per keer",
+  "pwa_synced": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} offline toegevoegde transactie gesynchroniseerd",
+        "countPlural=other": "{count} offline toegevoegde transacties gesynchroniseerd"
+      }
+    }
+  ],
+  "pwa_rejected": "Een offline toegevoegde transactie is niet opgeslagen: {reason}",
+  "pwa_syncing_title": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} transactie synchroniseren",
+        "countPlural=other": "{count} transacties synchroniseren"
+      }
+    }
+  ],
+  "pwa_syncing_body": "We versturen wat je offline hebt toegevoegd.",
+  "pwa_offline_waiting": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Je ziet gegevens van je vorige bezoek. {count} transactie wordt gesynchroniseerd zodra je weer online bent.",
+        "countPlural=other": "Je ziet gegevens van je vorige bezoek. {count} transacties worden gesynchroniseerd zodra je weer online bent."
+      }
+    }
+  ],
+  "pwa_offline_body": "Je ziet gegevens van je vorige bezoek. Nieuwe transacties worden gesynchroniseerd zodra je weer online bent.",
+  "pwa_update_title": "Er staat een nieuwe versie van Kosha klaar",
+  "pwa_update_body": "Laad opnieuw om hem te gebruiken.",
+  "pwa_reload": "Opnieuw laden",
+  "pwa_install_title": "Kosha installeren",
+  "pwa_install_ios": "Tik op Deel en dan op Zet op beginscherm om Kosha als een app te openen.",
+  "pwa_install_body": "Open hem vanaf je beginscherm of dock, zelfs offline.",
+  "pwa_install": "Installeren",
+  "pwa_dismiss": "Sluiten"
+}

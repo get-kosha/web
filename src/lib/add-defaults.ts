@@ -1,3 +1,5 @@
+import { intlLocale } from "./core.ts"
+
 /** localStorage key for the last account a transaction was added to (quick add, phone add, the form). */
 export const WALLET_KEY = "kosha:wallet"
 
@@ -14,3 +16,7 @@ export function startWallet(pref: string, wallets: { id: string }[], skip?: stri
     return undefined
   }
 }
+
+/** The language's decimal mark ("," in German), for showing amounts that are kept with "." while typed. */
+export const decimalMark = () =>
+  new Intl.NumberFormat(intlLocale()).formatToParts(1.5).find((p) => p.type === "decimal")?.value ?? "."

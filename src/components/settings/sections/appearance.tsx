@@ -5,19 +5,21 @@ import { Switch } from "@/components/ui/switch"
 import { fmt } from "@/lib/core"
 import { setDevicePref, setTheme, type Theme } from "@/lib/theme"
 import { cn } from "@/lib/utils"
+import { m } from "@/paraglide/messages"
 
+// Labels are message functions, called while rendering so they follow the visitor's language.
 const THEMES = [
-  ["light", "Light"],
-  ["dark", "Dark"],
-  ["system", "System"],
+  ["light", m.settings_appearance_light],
+  ["dark", m.settings_appearance_dark],
+  ["system", m.settings_appearance_system],
 ] as const
 
 const ACCENTS = [
-  ["teal", "Teal", "#0f766e"],
-  ["blue", "Blue", "#2563eb"],
-  ["amber", "Amber", "#b45309"],
-  ["rose", "Rose", "#be123c"],
-  ["graphite", "Graphite", "#3f3f46"],
+  ["teal", m.settings_appearance_teal, "#0f766e"],
+  ["blue", m.settings_appearance_blue, "#2563eb"],
+  ["amber", m.settings_appearance_amber, "#b45309"],
+  ["rose", m.settings_appearance_rose, "#be123c"],
+  ["graphite", m.settings_appearance_graphite, "#3f3f46"],
 ] as const
 
 export function Appearance() {
@@ -31,26 +33,26 @@ export function Appearance() {
   return (
     <>
       <SettingGroup
-        label="Preview"
-        actions={<span className="text-xs text-muted-foreground">updates as you change things below</span>}
+        label={m.settings_appearance_preview()}
+        actions={<span className="text-xs text-muted-foreground">{m.settings_appearance_preview_hint()}</span>}
       >
         <Preview />
       </SettingGroup>
-      <SettingGroup label="Look">
-        <SettingRow id="theme" title="Theme" description="System follows your device's light or dark setting.">
+      <SettingGroup label={m.settings_appearance_look()}>
+        <SettingRow id="theme" title={m.settings_row_theme()} description={m.settings_appearance_theme_desc()}>
           <ThemeCards value={theme} onChange={saveTheme} />
         </SettingRow>
         <SettingRow
           id="accent"
-          title="Accent colour"
-          description="Switches, selections, charts and your avatar."
+          title={m.settings_row_accent()}
+          description={m.settings_appearance_accent_desc()}
           control={
-            <div role="group" aria-label="Accent colour" className="flex flex-wrap gap-2.5">
+            <div role="group" aria-label={m.settings_row_accent()} className="flex flex-wrap gap-2.5">
               {ACCENTS.map(([v, label, color]) => (
                 <button
                   key={v}
                   type="button"
-                  aria-label={label}
+                  aria-label={label()}
                   aria-pressed={accent === v}
                   onClick={() => saveAccent(v)}
                   style={{ background: color }}
@@ -62,61 +64,61 @@ export function Appearance() {
         />
         <SettingRow
           id="density"
-          title="Density"
-          description="Compact fits more rows on screen."
+          title={m.settings_row_density()}
+          description={m.settings_appearance_density_desc()}
           control={
             <Segmented
-              label="Density"
+              label={m.settings_row_density()}
               value={density}
               onChange={saveDensity}
               options={[
-                ["comfortable", "Comfortable"],
-                ["compact", "Compact"],
+                ["comfortable", m.settings_appearance_comfortable()],
+                ["compact", m.settings_appearance_compact()],
               ]}
             />
           }
         />
         <SettingRow
           id="page-width"
-          title="Page width"
-          description="Boxed keeps pages centred up to 1240px."
+          title={m.settings_row_page_width()}
+          description={m.settings_appearance_width_desc()}
           control={
             <Segmented
-              label="Page width"
+              label={m.settings_row_page_width()}
               value={layout}
               onChange={saveLayout}
               options={[
-                ["boxed", "Boxed"],
-                ["full", "Full width"],
+                ["boxed", m.settings_appearance_boxed()],
+                ["full", m.settings_appearance_full()],
               ]}
             />
           }
         />
       </SettingGroup>
-      <SettingGroup label="Behaviour">
+      <SettingGroup label={m.settings_appearance_behaviour()}>
         <SettingRow
           id="number-font"
-          title="Number font"
-          description="Monospace lines amounts up in columns."
+          title={m.settings_row_number_font()}
+          description={m.settings_appearance_figures_desc()}
           control={
             <Segmented
-              label="Number font"
+              label={m.settings_row_number_font()}
               value={figures}
               onChange={saveFigures}
               options={[
-                ["mono", "Monospace"],
-                ["proportional", "Proportional"],
+                ["mono", m.settings_appearance_mono()],
+                ["proportional", m.settings_appearance_proportional()],
               ]}
             />
           }
         />
         <SettingRow
           id="hide-amounts"
-          title="Hide amounts"
-          description="Blur money until you hover. The account menu has this switch too."
+          title={m.settings_row_hide_amounts()}
+          description={m.settings_appearance_hide_desc()}
           control={
             <Switch
-              aria-label="Hide amounts"
+              aria-label={m.settings_row_hide_amounts()}
               checked={hidden === "1"}
               onCheckedChange={(on) => saveHidden(on ? "1" : "0")}
             />
@@ -124,17 +126,17 @@ export function Appearance() {
         />
         <SettingRow
           id="animations"
-          title="Animations"
-          description="Charts draw in, numbers roll and pages slide. Reduced keeps only fades."
+          title={m.settings_row_animations()}
+          description={m.settings_appearance_motion_desc()}
           control={
             <Segmented
-              label="Animations"
+              label={m.settings_row_animations()}
               value={motion}
               onChange={saveMotion}
               options={[
-                ["on", "On"],
-                ["reduced", "Reduced"],
-                ["off", "Off"],
+                ["on", m.settings_appearance_on()],
+                ["reduced", m.settings_appearance_reduced()],
+                ["off", m.settings_appearance_off()],
               ]}
             />
           }
@@ -146,9 +148,9 @@ export function Appearance() {
 
 // ponytail: a static sample, not the user's own figures; Settings has no transactions loaded.
 const SAMPLE = [
-  [ForkKnifeIcon, "McDonald's", -2957],
-  [ShoppingCartIcon, "Walmart", -4112],
-  [CoinsIcon, "Salary", 420000],
+  [ForkKnifeIcon, () => "McDonald's", -2957],
+  [ShoppingCartIcon, () => "Walmart", -4112],
+  [CoinsIcon, m.settings_appearance_salary, 420000],
 ] as const
 
 /** A tiny Overview that follows every setting below: theme, accent, density, number font, hidden amounts. */
@@ -160,12 +162,12 @@ function Preview() {
           <span className="size-1.5 rounded-[1.5px] bg-card" />
         </span>
         Kosha
-        <span className="ml-auto font-normal text-muted-foreground">Sample</span>
+        <span className="ml-auto font-normal text-muted-foreground">{m.settings_appearance_sample()}</span>
       </div>
       <div className="flex items-end justify-between gap-3 rounded-xl bg-card p-3.5">
         <div>
-          <div className="text-[11px] text-muted-foreground">Net worth</div>
-          <div className="num mt-1 text-[26px] font-semibold tracking-[-0.03em]">€108,982.23</div>
+          <div className="text-[11px] text-muted-foreground">{m.settings_appearance_net_worth()}</div>
+          <div className="num mt-1 text-[26px] font-semibold tracking-[-0.03em]">{fmt(10898223, "eur")}</div>
         </div>
         <svg viewBox="0 0 160 40" className="h-10 w-40 max-sm:w-24" aria-hidden="true">
           <polyline
@@ -179,14 +181,14 @@ function Preview() {
           />
         </svg>
       </div>
-      {SAMPLE.map(([Icon, name, cents]) => (
+      {SAMPLE.map(([Icon, name, cents], i) => (
         <div
-          key={name}
+          key={i}
           className="flex items-center justify-between gap-2.5 rounded-[10px] bg-card px-3 py-2.5 text-[13px] transition-[padding] duration-300 ease-out [:root[data-density=compact]_&]:py-[5px]"
         >
           <span className="flex min-w-0 items-center gap-2">
             <Icon className="size-[15px] shrink-0 text-subtle-foreground" />
-            <span className="truncate">{name}</span>
+            <span className="truncate">{name()}</span>
           </span>
           <span className={cn("num", cents > 0 && "text-positive")}>{(cents > 0 ? "+" : "") + fmt(cents, "eur")}</span>
         </div>
@@ -198,7 +200,11 @@ function Preview() {
 /** Three cards with a tiny page drawn in each theme. Picking one re-themes the page at once. */
 function ThemeCards({ value, onChange }: { value: Theme; onChange: (t: Theme) => void }) {
   return (
-    <div role="group" aria-label="Theme" className="mt-1 flex flex-wrap gap-3.5 max-md:grid max-md:grid-cols-3">
+    <div
+      role="group"
+      aria-label={m.settings_row_theme()}
+      className="mt-1 flex flex-wrap gap-3.5 max-md:grid max-md:grid-cols-3"
+    >
       {THEMES.map(([v, label]) => (
         <button
           key={v}
@@ -240,7 +246,7 @@ function ThemeCards({ value, onChange }: { value: Theme; onChange: (t: Theme) =>
               )}
             />
           </span>
-          {label}
+          {label()}
         </button>
       ))}
     </div>

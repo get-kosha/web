@@ -1,0 +1,367 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "accounts_head_title": "खाते · Kosha",
+  "accounts_title": "खाते",
+  "accounts_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{#num}{count}{/num} खाता",
+        "countPlural=other": "{#num}{count}{/num} खाते"
+      }
+    }
+  ],
+  "accounts_new": "नया खाता",
+  "accounts_group_bank_cash": "बैंक और नकद",
+  "accounts_group_credit": "क्रेडिट कार्ड",
+  "accounts_group_investment": "निवेश",
+  "accounts_type_bank_account": "बैंक खाता",
+  "accounts_type_bank": "बैंक",
+  "accounts_type_cash": "नकद",
+  "accounts_type_credit": "क्रेडिट कार्ड",
+  "accounts_type_investment": "निवेश",
+  "accounts_archived": "आर्काइव किया गया",
+  "accounts_archived_count": "आर्काइव ({count})",
+  "accounts_archived_label": "आर्काइव किए गए खाते",
+  "accounts_archived_hint": "आर्काइव किए गए खाते भी नेट वर्थ में गिने जाते हैं",
+  "accounts_details_label": "{name} का विवरण",
+  "accounts_edit_title": "{name} बदलें",
+  "accounts_rates_updated_today": "आज अपडेट हुआ",
+  "accounts_rates_updated_yesterday": "कल अपडेट हुआ",
+  "accounts_rates_updated_on": "{date} को अपडेट हुआ",
+  "accounts_rate_shown": "{currency} को {rate} = {base} के रेट पर दिखाया गया",
+  "accounts_net_worth": "नेट वर्थ",
+  "accounts_change_period": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} महीने में",
+        "countPlural=other": "{count} महीनों में"
+      }
+    }
+  ],
+  "accounts_range_label": "अवधि",
+  "accounts_range_1y": "1 साल",
+  "accounts_range_2y": "2 साल",
+  "accounts_range_all": "सभी",
+  "accounts_worth_empty": "आपकी नेट वर्थ की लाइन पहले महीने की गतिविधि के बाद शुरू होती है।",
+  "accounts_chart_other": "अन्य खाते",
+  "accounts_chart_gains": "अप्राप्त लाभ",
+  "accounts_chart_key": "चार्ट की कुंजी",
+  "accounts_no_value": "अभी कोई वैल्यू दर्ज नहीं",
+  "accounts_value_age": "वैल्यू {days} दिन पुरानी है",
+  "accounts_value_as_of": "{date} की वैल्यू",
+  "accounts_available": "{amount} उपलब्ध",
+  "accounts_last_entry": "आखिरी एंट्री {date}",
+  "accounts_credit_used": "{limit} में से {percent}",
+  "accounts_balance": "बैलेंस",
+  "accounts_another_account": "दूसरा खाता",
+  "accounts_restored_toast": "{name} वापस लाया गया",
+  "accounts_archived_toast": "{name} आर्काइव किया गया",
+  "accounts_save_failed": "सेव नहीं हो सका",
+  "accounts_delete_failed": "हटाया नहीं जा सका",
+  "accounts_in_month": "जमा · {month}",
+  "accounts_out_month": "निकासी · {month}",
+  "accounts_moved": "भेजा गया",
+  "accounts_recent": "हाल के",
+  "accounts_all_count": "सभी {n} →",
+  "accounts_no_transactions": "अभी कोई लेन-देन नहीं।",
+  "accounts_untitled": "बिना नाम",
+  "accounts_update_value_hint": "नेट वर्थ को ताज़ा रखने के लिए अपने ब्रोकर से आज की वैल्यू लिखें।",
+  "accounts_update_gains": "रिटर्न अपडेट करें",
+  "accounts_reconciled_to": "{date} तक मिलान हुआ",
+  "accounts_match_bank": "क्या यह आपके बैंक से मेल खाता है?",
+  "accounts_reconcile_hint": "अपने स्टेटमेंट से एंट्रियाँ टिक करें, या उसे इम्पोर्ट करें, और Kosha बताएगा कि क्या छूटा है।",
+  "accounts_reconcile": "मिलान करें",
+  "accounts_fix_balance": "बैलेंस ठीक करें",
+  "accounts_edit_account": "खाता बदलें",
+  "accounts_unarchive": "आर्काइव से निकालें",
+  "accounts_archive": "आर्काइव करें",
+  "accounts_enter_balance": "बैलेंस लिखें",
+  "accounts_corrected_by": "{amount} का सुधार किया गया",
+  "accounts_balance_matches": "बैलेंस पहले से मेल खाता है",
+  "accounts_fix_title": "{name} ठीक करें",
+  "accounts_fix_credit_description": "आपके कार्ड स्टेटमेंट के अनुसार जितना बकाया है, वह लिखें।",
+  "accounts_fix_description": "आपका बैंक जो बैलेंस दिखाता है, वह लिखें।",
+  "accounts_currently_owed": "अभी बकाया",
+  "accounts_fix_adds_correction": "{amount} का बैलेंस सुधार जोड़ता है।",
+  "accounts_no_correction": "किसी सुधार की ज़रूरत नहीं।",
+  "accounts_enter_credit_limit": "क्रेडिट लिमिट लिखें",
+  "accounts_updated": "खाता अपडेट हुआ",
+  "accounts_added": "खाता जोड़ा गया",
+  "accounts_name": "नाम",
+  "accounts_type": "प्रकार",
+  "accounts_currency": "मुद्रा",
+  "accounts_credit_limit": "क्रेडिट लिमिट",
+  "accounts_credit_hint": "इस खाते का बैलेंस वह रकम है जो अभी खर्च की जा सकती है। नेट वर्थ बाकी अंतर को कर्ज़ के रूप में गिनती है।",
+  "accounts_investment_hint": "बैलेंस वह पैसा है जो आपने लगाया है। बाज़ार से हुए लाभ को नेट वर्थ में जोड़ने के लिए समय-समय पर \"रिटर्न अपडेट करें\" इस्तेमाल करें।",
+  "accounts_invested_so_far": "अब तक निवेश किया",
+  "accounts_current_balance": "मौजूदा बैलेंस",
+  "accounts_optional": "(वैकल्पिक)",
+  "accounts_save_adds_correction": "सेव करने पर {amount} का बैलेंस सुधार जुड़ जाएगा।",
+  "accounts_correct_hint": "इसे ठीक करने के लिए आपका बैंक जो बैलेंस दिखाता है, वह लिखें।",
+  "accounts_archived_checkbox": "आर्काइव किया गया {#muted}(झटपट एंट्री में नहीं दिखेगा, पर नेट वर्थ में गिना जाएगा){/muted}",
+  "accounts_gains_history": "रिटर्न की हिस्ट्री",
+  "accounts_delete_valuation": "{date} की एंट्री हटाएँ",
+  "accounts_add_account": "खाता जोड़ें",
+  "accounts_delete_title": "{name} हटाएँ?",
+  "accounts_delete_description": "इस खाते में कोई लेन-देन नहीं है। इसे हटाने से इसकी रिटर्न हिस्ट्री भी हट जाएगी।",
+  "accounts_delete_account": "खाता हटाएँ",
+  "accounts_fx_title": "करेंसी एक्सचेंज",
+  "accounts_fx_sent": [
+    {
+      "declarations": ["input count", "input sent", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} ट्रांसफ़र में {#num}{sent}{/num} भेजे",
+        "countPlural=other": "{count} ट्रांसफ़र में {#num}{sent}{/num} भेजे"
+      }
+    }
+  ],
+  "accounts_fx_cost": "बाज़ार दर की तुलना में लागत {#num}{cost}{/num}",
+  "accounts_fx_year": "साल",
+  "accounts_fx_date": "तारीख",
+  "accounts_fx_route": "रूट",
+  "accounts_fx_sent_column": "भेजे",
+  "accounts_fx_rate": "रेट",
+  "accounts_fx_market": "बाज़ार",
+  "accounts_fx_received": "मिले",
+  "accounts_fx_cost_column": "लागत",
+  "accounts_fx_footer": "लागत यानी शुल्क, और उस दिन बाज़ार दर की तुलना में प्रोवाइडर के रेट से हुआ नुकसान। माइनस का मतलब है कि आपको बाज़ार से बेहतर रेट मिला। किसी ट्रांसफ़र का शुल्क या प्रोवाइडर जोड़ने के लिए उसे गतिविधि से बदलें।",
+
+  "subs_head_title": "नियमित · Kosha",
+  "subs_title": "नियमित भुगतान",
+  "subs_count_active": "{#num}{count}{/num} चालू",
+  "subs_count_transfers": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{#num}{count}{/num} ट्रांसफ़र",
+        "countPlural=other": "{#num}{count}{/num} ट्रांसफ़र"
+      }
+    }
+  ],
+  "subs_count_ended": "{#num}{count}{/num} बंद",
+  "subs_new_button": "नया नियमित भुगतान",
+  "subs_new_title": "नया नियमित भुगतान",
+  "subs_every_day": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": { "countPlural=one": "हर दिन", "countPlural=other": "हर {count} दिन" }
+    }
+  ],
+  "subs_every_week": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": { "countPlural=one": "हर हफ़्ते", "countPlural=other": "हर {count} हफ़्ते" }
+    }
+  ],
+  "subs_every_month": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": { "countPlural=one": "हर महीने", "countPlural=other": "हर {count} महीने" }
+    }
+  ],
+  "subs_every_year": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": { "countPlural=one": "हर साल", "countPlural=other": "हर {count} साल" }
+    }
+  ],
+  "subs_interval_day": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": { "countPlural=one": "दिन", "countPlural=other": "{count} दिन" }
+    }
+  ],
+  "subs_interval_week": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": { "countPlural=one": "हफ़्ता", "countPlural=other": "{count} हफ़्ते" }
+    }
+  ],
+  "subs_interval_month": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": { "countPlural=one": "महीना", "countPlural=other": "{count} महीने" }
+    }
+  ],
+  "subs_interval_year": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": { "countPlural=one": "साल", "countPlural=other": "{count} साल" }
+    }
+  ],
+  "subs_group_bills": "बिल",
+  "subs_group_subscriptions": "सब्सक्रिप्शन",
+  "subs_group_income": "आय",
+  "subs_group_transfers": "ट्रांसफ़र",
+  "subs_kind_bill": "बिल",
+  "subs_kind_subscription": "सब्सक्रिप्शन",
+  "subs_kind_income": "आय",
+  "subs_kind_transfer": "ट्रांसफ़र",
+  "subs_end_this_bill": "यह बिल बंद करें",
+  "subs_end_this_subscription": "यह सब्सक्रिप्शन बंद करें",
+  "subs_end_this_income": "यह आय बंद करें",
+  "subs_end_this_transfer": "यह ट्रांसफ़र बंद करें",
+  "subs_end_bill": "बिल बंद करें",
+  "subs_end_subscription": "सब्सक्रिप्शन बंद करें",
+  "subs_end_income": "आय बंद करें",
+  "subs_end_transfer": "ट्रांसफ़र बंद करें",
+  "subs_committed": "हर महीने तय खर्च",
+  "subs_committed_hint": "बिल {bills} · सब्सक्रिप्शन {subscriptions}",
+  "subs_per_year": "हर साल",
+  "subs_share_of_income": "आय का {percent}",
+  "subs_no_income": "पिछले एक साल में कोई आय नहीं",
+  "subs_due_soon": "अगले 7 दिनों में देय",
+  "subs_nothing_due": "कुछ देय नहीं",
+  "subs_moved_to_savings": "बचत में भेजा गया",
+  "subs_moved_hint": "हर महीने · गिना नहीं गया",
+  "subs_list_label": "नियमित भुगतान",
+  "subs_empty": "अभी कोई नियमित भुगतान नहीं। किराया, कोई सब्सक्रिप्शन या नियमित ट्रांसफ़र एक बार जोड़ें, और Kosha उसका हिसाब रखेगा।",
+  "subs_column_every": "कितने समय में",
+  "subs_column_next": "अगला",
+  "subs_column_amount": "रकम",
+  "subs_column_per_month": "हर महीने",
+  "subs_not_counted": "गिना नहीं गया",
+  "subs_ended_count": "बंद ({count})",
+  "subs_sorted_hint": "हर महीने की लागत के हिसाब से क्रम में",
+  "subs_details_label": "{name} का विवरण",
+  "subs_adopt_title": "{name} को नियमित बनाएँ",
+  "subs_adopt_description": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "इसका पिछला {count} भुगतान इसके तहत दर्ज होगा, ताकि वह इसकी हिस्ट्री में दिखे।",
+        "countPlural=other": "इसके पिछले {count} भुगतान इसके तहत दर्ज होंगे, ताकि वे इसकी हिस्ट्री में दिखें।"
+      }
+    }
+  ],
+  "subs_hide_failed": "छिपाया नहीं जा सका",
+  "subs_spotted_title": "नियमित लगता है",
+  "subs_spotted_hint": "एक तय अंतराल पर हुए भुगतानों से पहचाना गया",
+  "subs_about_amount": "लगभग {amount}",
+  "subs_spotted_paid": [
+    {
+      "declarations": ["input count", "input day", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} बार भुगतान हुआ, आखिरी बार {day} को",
+        "countPlural=other": "{count} बार भुगतान हुआ, आखिरी बार {day} को"
+      }
+    }
+  ],
+  "subs_spotted_next": "अगला लगभग {day} को",
+  "subs_make_recurring": "नियमित बनाएँ",
+  "subs_dismiss_label": "{name} नियमित नहीं है",
+  "subs_not_recurring": "नियमित नहीं है",
+  "subs_varies_asks": "बदलता रहता है, हर बार पूछा जाता है",
+  "subs_ended_on_short": "{date} को बंद हुआ",
+  "subs_strip_label": "अगले 30 दिनों के भुगतान: {list}",
+  "subs_strip_empty": "अगले 30 दिनों में कोई भुगतान नहीं",
+  "subs_strip_title": "अगले 30 दिन",
+  "subs_strip_bills": "बिल और सब्सक्रिप्शन",
+  "subs_update_payment_failed": "भुगतान अपडेट नहीं हो सका",
+  "subs_ended_toast": "{name} बंद किया गया",
+  "subs_resumed_toast": "{name} फिर से शुरू किया गया",
+  "subs_update_schedule_failed": "शेड्यूल अपडेट नहीं हो सका",
+  "subs_deleted": "हटा दिया गया",
+  "subs_delete_failed": "उसे हटाया नहीं जा सका",
+  "subs_detail_meta": "{kind} · {every} · {date} से",
+  "subs_varies": "बदलता रहता है",
+  "subs_ended_on": "{date} को बंद हुआ",
+  "subs_ended_hint": "आगे कोई भुगतान नहीं। पिछले भुगतान गतिविधि में बने रहेंगे।",
+  "subs_next_on": "अगला: {date}",
+  "subs_will_ask": "Kosha रकम पूछेगा",
+  "subs_auto_recorded": "उसी दिन अपने-आप दर्ज होता है",
+  "subs_mark_when_out": "पैसा जाने पर भुगतान हुआ मार्क करें",
+  "subs_changed_once": "सिर्फ़ इस भुगतान के लिए बदला गया",
+  "subs_ends_on": "{date} को खत्म",
+  "subs_enter_amount_button": "रकम लिखें",
+  "subs_marked_paid": "भुगतान हुआ मार्क किया गया",
+  "subs_mark_done_now": "अभी हो गया मार्क करें",
+  "subs_mark_paid_now": "अभी भुगतान हुआ मार्क करें",
+  "subs_change_amount": "रकम बदलें",
+  "subs_skipped": "छोड़ा गया",
+  "subs_skip_this": "इसे छोड़ें",
+  "subs_no_more_scheduled": "आगे कोई भुगतान तय नहीं है।",
+  "subs_moved_so_far": "अब तक भेजा",
+  "subs_paid_so_far": "अब तक चुकाया",
+  "subs_payments": "भुगतान",
+  "subs_history": "हिस्ट्री",
+  "subs_no_payments": "अभी कोई भुगतान नहीं।",
+  "subs_moved": "भेजा गया",
+  "subs_paid": "चुकाया गया",
+  "subs_all_payments": "सभी {count} भुगतान →",
+  "subs_resume": "फिर से शुरू करें",
+  "subs_delete_title": "{name} हटाएँ?",
+  "subs_end_title": "{name} बंद करें?",
+  "subs_delete_description": "इससे शेड्यूल हट जाएगा। पिछले भुगतान गतिविधि में सामान्य लेन-देन के रूप में बने रहेंगे।",
+  "subs_end_description": "आज के बाद कोई भुगतान नहीं होगा। पिछले भुगतान गतिविधि में बने रहेंगे, और आप इसे बाद में फिर से शुरू कर सकते हैं।",
+  "subs_edit_title": "{name} बदलें",
+  "subs_edit_transfer": "ट्रांसफ़र बदलें",
+  "subs_edit_payment": "भुगतान बदलें",
+  "subs_enter_amount": "रकम लिखें",
+  "subs_recorded": "दर्ज हो गया",
+  "subs_payment_updated": "भुगतान अपडेट हुआ",
+  "subs_save_payment_failed": "भुगतान सेव नहीं हो सका",
+  "subs_pay_transfer_description": "इस बार जितना ट्रांसफ़र हुआ, वह लिखें।",
+  "subs_pay_description": "इस बार जितना भुगतान हुआ, वह लिखें।",
+  "subs_edit_once_description": "सिर्फ़ यह भुगतान बदलेगा। बाकी भुगतानों की रकम और तारीख पहले जैसी रहेगी।",
+  "subs_amount": "रकम",
+  "subs_date": "तारीख",
+  "subs_received_in": "{name} में मिला",
+  "subs_leave_empty_rate": "एक्सचेंज रेट इस्तेमाल करने के लिए खाली छोड़ें।",
+  "subs_note": "नोट",
+  "subs_reset_regular": "पहले जैसा करें",
+  "subs_record": "दर्ज करें",
+  "subs_save_this_payment": "यह भुगतान सेव करें",
+
+  "subs_unit_days": "दिन",
+  "subs_unit_weeks": "हफ़्ते",
+  "subs_unit_months": "महीने",
+  "subs_unit_years": "साल",
+  "subs_enter_usual_amount": "आम तौर पर लगने वाली रकम लिखें",
+  "subs_pick_to_account": "वह खाता चुनें जिसमें पैसा जाएगा",
+  "subs_pick_category": "श्रेणी चुनें",
+  "subs_transfer_added": "नियमित ट्रांसफ़र जोड़ा गया",
+  "subs_income_added": "नियमित आय जोड़ी गई",
+  "subs_bill_added": "बिल जोड़ा गया",
+  "subs_subscription_added": "सब्सक्रिप्शन जोड़ा गया",
+  "subs_type": "प्रकार",
+  "subs_name": "नाम",
+  "subs_from": "से",
+  "subs_to": "को",
+  "subs_account": "खाता",
+  "subs_category": "श्रेणी",
+  "subs_usual_amount": "आम रकम",
+  "subs_repeats_every": "कितने समय में दोहराएँ",
+  "subs_interval": "अंतराल",
+  "subs_variable": "रकम हर बार बदलती है",
+  "subs_variable_hint": "अपने-आप दर्ज करने के बजाय, देय होने पर Kosha आपको याद दिलाता है और रकम पूछता है।",
+  "subs_amount_received": "मिली रकम",
+  "subs_next_payment": "अगला भुगतान",
+  "subs_first_payment": "पहला भुगतान",
+  "subs_ends": "खत्म होगा",
+  "subs_never": "कभी नहीं",
+  "subs_backfill_hint": "Kosha {date} से आज तक के भुगतान दर्ज करेगा।",
+  "subs_auto_pay": "भुगतान अपने-आप दर्ज करें",
+  "subs_changes_hint": "बदलाव आने वाले भुगतानों पर लागू होंगे। पिछले भुगतान जैसे हैं वैसे रहेंगे।",
+  "subs_save_changes": "बदलाव सेव करें",
+  "subs_add_transfer": "ट्रांसफ़र जोड़ें",
+  "subs_add_income": "आय जोड़ें",
+  "subs_add_bill": "बिल जोड़ें",
+  "subs_add_subscription": "सब्सक्रिप्शन जोड़ें"
+}

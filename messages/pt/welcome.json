@@ -1,0 +1,131 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "welcome_page_title": "Boas-vindas · Kosha",
+  "welcome_type_bank": "Banco",
+  "welcome_type_cash": "Dinheiro",
+  "welcome_type_card": "Cartão",
+  "welcome_type_investment": "Investimento",
+  "welcome_type_bank_account": "Conta bancária",
+  "welcome_type_credit_card": "Cartão de crédito",
+  "welcome_type_investment_long": "Investimento",
+  "welcome_suggest_current": "Conta corrente",
+  "welcome_suggest_savings": "Poupança",
+  "welcome_suggest_investments": "Investimentos",
+  "welcome_suggest_pension": "Previdência",
+  "welcome_field_balance": "Saldo",
+  "welcome_field_owed": "Devido",
+  "welcome_field_credit_limit": "Limite de crédito",
+  "welcome_field_put_in": "Aplicado",
+  "welcome_field_value_today": "Valor hoje",
+  "welcome_name_save_failed": "Não foi possível salvar seu nome",
+  "welcome_title": "Boas-vindas ao Kosha",
+  "welcome_sub": "Confira estes três dados e depois adicione suas contas. Leva só um ou dois minutos.",
+  "welcome_name_title": "Seu nome",
+  "welcome_name_description": "Aparece no menu.",
+  "welcome_name_error": "Informe o nome a ser exibido no Kosha.",
+  "welcome_currency_title": "Moeda principal",
+  "welcome_currency_description": "O patrimônio e os totais são somados nela.",
+  "welcome_tz_title": "Fuso horário",
+  "welcome_tz_description": "Os dias e os meses seguem esse fuso.",
+  "welcome_change_later": "Você pode alterar os três depois em Configurações.",
+  "welcome_saving": "Salvando…",
+  "welcome_accounts_title": "Adicione suas contas",
+  "welcome_accounts_sub": "Informe quanto cada uma tem hoje. Remova as que você não tem e adicione as que faltam.",
+  "welcome_net_worth": "Patrimônio",
+  "welcome_adding": "Adicionando…",
+  "welcome_add_accounts": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Adicionar {count} conta",
+        "countPlural=*": "Adicionar {count} contas"
+      }
+    }
+  ],
+  "welcome_add_an_account": "Adicionar uma conta",
+  "welcome_progress_label": "Configuração",
+  "welcome_progress_step": "Etapa {at} de 2",
+  "welcome_skip": "Pular por enquanto",
+  "welcome_rows_label": "Novas contas",
+  "welcome_rows_empty": "Nenhuma conta ainda. Adicione a primeira abaixo.",
+  "welcome_another_account": "Outra conta",
+  "welcome_credit_left_hint": "Adicione o limite para ver o crédito disponível.",
+  "welcome_credit_left": "{#num}{amount}{/num} de limite disponível",
+  "welcome_gain_hint": "Adicione o valor de hoje para contar o rendimento.",
+  "welcome_gain": "Ganho de {#num}{amount}{/num}",
+  "welcome_loss": "Perda de {#num}{amount}{/num}",
+  "welcome_account_name_label": "Nome da conta",
+  "welcome_account_name_placeholder": "Nubank, Itaú, Wise…",
+  "welcome_type_of": "Tipo de {name}",
+  "welcome_type_of_account": "Tipo de conta",
+  "welcome_remove": "Remover {name}",
+  "welcome_remove_this_account": "Remover esta conta",
+  "welcome_currency_label": "Moeda",
+  "welcome_currency_of": "Moeda de {name}",
+  "welcome_currency_of_this_account": "Moeda desta conta",
+  "welcome_error_name": "Dê um nome a esta conta.",
+  "welcome_error_amount": "Informe os valores como números, por exemplo 1.250,00.",
+  "welcome_amount_placeholder": "0,00",
+  "welcome_currency_search_placeholder": "Buscar uma moeda",
+  "welcome_currency_search_label": "Buscar moedas",
+  "welcome_currency_empty": "Nenhuma moeda corresponde.",
+  "welcome_done_title": "Tudo pronto",
+  "welcome_done_added": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} conta adicionada.",
+        "countPlural=*": "{count} contas adicionadas."
+      }
+    }
+  ],
+  "welcome_done_added_currencies": [
+    {
+      "declarations": ["input count", "input currencies", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} conta adicionada, em {currencies} moedas.",
+        "countPlural=*": "{count} contas adicionadas, em {currencies} moedas."
+      }
+    }
+  ],
+  "welcome_accounts_added": "Contas adicionadas",
+  "welcome_owed": "devido",
+  "welcome_history_title": "Complete seu histórico",
+  "welcome_history_body": "Importe os extratos do seu banco, e o Kosha adiciona as transações anteriores a estas contas.",
+  "welcome_import": "Importar extratos",
+  "welcome_add_transaction": "Adicionar uma transação",
+  "ask_page_title": "Pergunte ao Kosha · Kosha",
+  "ask_title": "Pergunte ao Kosha",
+  "ask_subtitle": "Perguntas sobre o seu dinheiro, respondidas com os seus dados.",
+  "ask_new_chat": "Nova conversa",
+  "ask_input_label": "Faça uma pergunta sobre o seu dinheiro",
+  "ask_placeholder": "Pergunte sobre o seu dinheiro",
+  "ask_placeholder_follow_up": "Faça outra pergunta",
+  "ask_submit": "Perguntar",
+  "ask_your_endpoint": "seu endpoint",
+  "ask_answered_by": "Respondido por {provider} ({model}).",
+  "ask_privacy": "O Kosha envia só o que {#link}O que a IA pode ver{/link} permite. Confira os números importantes em Atividade.",
+  "ask_error": "Não foi possível perguntar",
+  "ask_suggest_category": "Quanto gastei com {category} este mês?",
+  "ask_suggest_spent": "Quanto gastei este mês?",
+  "ask_suggest_biggest": "Quais foram minhas maiores despesas no mês passado?",
+  "ask_suggest_compare": "Como este mês se compara a um mês normal?",
+  "ask_suggest_event": "Quanto custou {event} no total?",
+  "ask_suggest_subscriptions": "Quanto minhas assinaturas custam por mês?",
+  "ask_empty_title": "Pergunte qualquer coisa sobre o seu dinheiro",
+  "ask_empty_body": "O Kosha consulta suas contas, transações e pagamentos recorrentes e mostra de onde vem cada resposta.",
+  "ask_thinking": "Pensando",
+  "ask_how_found": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Como o Kosha encontrou isto ({count} consulta)",
+        "countPlural=*": "Como o Kosha encontrou isto ({count} consultas)"
+      }
+    }
+  ]
+}

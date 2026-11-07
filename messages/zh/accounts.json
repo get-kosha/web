@@ -1,0 +1,361 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "accounts_head_title": "账户 · Kosha",
+  "accounts_title": "账户",
+  "accounts_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{#num}{count}{/num} 个账户"
+      }
+    }
+  ],
+  "accounts_new": "新建账户",
+  "accounts_group_bank_cash": "银行与现金",
+  "accounts_group_credit": "信用卡",
+  "accounts_group_investment": "投资",
+  "accounts_type_bank_account": "银行账户",
+  "accounts_type_bank": "银行",
+  "accounts_type_cash": "现金",
+  "accounts_type_credit": "信用卡",
+  "accounts_type_investment": "投资",
+  "accounts_archived": "已归档",
+  "accounts_archived_count": "已归档（{count}）",
+  "accounts_archived_label": "已归档的账户",
+  "accounts_archived_hint": "已归档的账户仍计入净资产",
+  "accounts_details_label": "{name} 详情",
+  "accounts_edit_title": "编辑 {name}",
+  "accounts_rates_updated_today": "今天更新",
+  "accounts_rates_updated_yesterday": "昨天更新",
+  "accounts_rates_updated_on": "{date} 更新",
+  "accounts_rate_shown": "{currency} 按 {rate} = {base} 显示",
+  "accounts_net_worth": "净资产",
+  "accounts_change_period": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count} 个月内"
+      }
+    }
+  ],
+  "accounts_range_label": "范围",
+  "accounts_range_1y": "1 年",
+  "accounts_range_2y": "2 年",
+  "accounts_range_all": "全部",
+  "accounts_worth_empty": "记账满一个月后，这里会开始显示你的净资产曲线。",
+  "accounts_chart_other": "其他账户",
+  "accounts_chart_gains": "未实现收益",
+  "accounts_chart_key": "图例",
+  "accounts_no_value": "尚未记录市值",
+  "accounts_value_age": "市值已有 {days} 天未更新",
+  "accounts_value_as_of": "截至 {date} 的市值",
+  "accounts_available": "可用 {amount}",
+  "accounts_last_entry": "最近一笔 {date}",
+  "accounts_credit_used": "已用 {percent}，额度 {limit}",
+  "accounts_balance": "余额",
+  "accounts_another_account": "另一个账户",
+  "accounts_restored_toast": "已恢复 {name}",
+  "accounts_archived_toast": "已归档 {name}",
+  "accounts_save_failed": "保存失败",
+  "accounts_delete_failed": "删除失败",
+  "accounts_in_month": "收入 · {month}",
+  "accounts_out_month": "支出 · {month}",
+  "accounts_moved": "转账",
+  "accounts_recent": "最近",
+  "accounts_all_count": "全部 {n} 笔 →",
+  "accounts_no_transactions": "还没有交易。",
+  "accounts_untitled": "未命名",
+  "accounts_update_value_hint": "输入券商显示的今日市值，让净资产保持最新。",
+  "accounts_update_gains": "更新收益",
+  "accounts_reconciled_to": "已对账至 {date}",
+  "accounts_match_bank": "和银行显示的一致吗？",
+  "accounts_reconcile_hint": "对照对账单逐笔勾选，或直接导入对账单，Kosha 会找出缺少的交易。",
+  "accounts_reconcile": "对账",
+  "accounts_fix_balance": "更正余额",
+  "accounts_edit_account": "编辑账户",
+  "accounts_unarchive": "取消归档",
+  "accounts_archive": "归档",
+  "accounts_enter_balance": "请输入余额",
+  "accounts_corrected_by": "已更正 {amount}",
+  "accounts_balance_matches": "余额已经一致",
+  "accounts_fix_title": "更正 {name}",
+  "accounts_fix_credit_description": "输入信用卡账单上显示的欠款。",
+  "accounts_fix_description": "输入银行显示的余额。",
+  "accounts_currently_owed": "当前欠款",
+  "accounts_fix_adds_correction": "将添加一笔 {amount} 的余额更正。",
+  "accounts_no_correction": "无需更正。",
+  "accounts_enter_credit_limit": "请输入信用额度",
+  "accounts_updated": "账户已更新",
+  "accounts_added": "账户已添加",
+  "accounts_name": "名称",
+  "accounts_type": "类型",
+  "accounts_currency": "货币",
+  "accounts_credit_limit": "信用额度",
+  "accounts_credit_hint": "此账户的余额是剩余可用的额度。净资产会把差额计为负债。",
+  "accounts_investment_hint": "余额是你投入的本金。不时使用“更新收益”，把市场收益计入净资产。",
+  "accounts_invested_so_far": "累计投入",
+  "accounts_current_balance": "当前余额",
+  "accounts_optional": "（可选）",
+  "accounts_save_adds_correction": "保存后将添加一笔 {amount} 的余额更正。",
+  "accounts_correct_hint": "输入银行显示的余额即可更正。",
+  "accounts_archived_checkbox": "已归档 {#muted}（不在快速添加中显示，仍计入净资产）{/muted}",
+  "accounts_gains_history": "收益记录",
+  "accounts_delete_valuation": "删除 {date} 的记录",
+  "accounts_add_account": "添加账户",
+  "accounts_delete_title": "删除 {name}？",
+  "accounts_delete_description": "此账户没有交易。删除后，它的收益记录也会一并删除。",
+  "accounts_delete_account": "删除账户",
+  "accounts_fx_title": "货币兑换",
+  "accounts_fx_sent": [
+    {
+      "declarations": ["input count", "input sent", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "通过 {count} 笔转账转出 {#num}{sent}{/num}"
+      }
+    }
+  ],
+  "accounts_fx_cost": "相对市场汇率的成本 {#num}{cost}{/num}",
+  "accounts_fx_year": "年份",
+  "accounts_fx_date": "日期",
+  "accounts_fx_route": "路径",
+  "accounts_fx_sent_column": "转出",
+  "accounts_fx_rate": "汇率",
+  "accounts_fx_market": "市场汇率",
+  "accounts_fx_received": "到账",
+  "accounts_fx_cost_column": "成本",
+  "accounts_fx_footer": "成本 = 手续费 + 服务商汇率相对当天市场汇率的损失。负数表示你的汇率优于市场。在明细中编辑转账，可添加手续费或服务商。",
+
+  "subs_head_title": "定期 · Kosha",
+  "subs_title": "定期",
+  "subs_count_active": "{#num}{count}{/num} 项进行中",
+  "subs_count_transfers": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{#num}{count}{/num} 笔转账"
+      }
+    }
+  ],
+  "subs_count_ended": "{#num}{count}{/num} 项已结束",
+  "subs_new_button": "新建定期",
+  "subs_new_title": "新建定期付款",
+  "subs_every_day": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": { "countPlural=other": "每 {count} 天" }
+    }
+  ],
+  "subs_every_week": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": { "countPlural=other": "每 {count} 周" }
+    }
+  ],
+  "subs_every_month": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": { "countPlural=other": "每 {count} 个月" }
+    }
+  ],
+  "subs_every_year": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": { "countPlural=other": "每 {count} 年" }
+    }
+  ],
+  "subs_interval_day": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": { "countPlural=other": "{count} 天" }
+    }
+  ],
+  "subs_interval_week": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": { "countPlural=other": "{count} 周" }
+    }
+  ],
+  "subs_interval_month": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": { "countPlural=other": "{count} 个月" }
+    }
+  ],
+  "subs_interval_year": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": { "countPlural=other": "{count} 年" }
+    }
+  ],
+  "subs_group_bills": "账单",
+  "subs_group_subscriptions": "订阅",
+  "subs_group_income": "收入",
+  "subs_group_transfers": "转账",
+  "subs_kind_bill": "账单",
+  "subs_kind_subscription": "订阅",
+  "subs_kind_income": "收入",
+  "subs_kind_transfer": "转账",
+  "subs_end_this_bill": "结束此账单",
+  "subs_end_this_subscription": "结束此订阅",
+  "subs_end_this_income": "结束此收入",
+  "subs_end_this_transfer": "结束此转账",
+  "subs_end_bill": "结束账单",
+  "subs_end_subscription": "结束订阅",
+  "subs_end_income": "结束收入",
+  "subs_end_transfer": "结束转账",
+  "subs_committed": "每月固定支出",
+  "subs_committed_hint": "账单 {bills} · 订阅 {subscriptions}",
+  "subs_per_year": "每年",
+  "subs_share_of_income": "占收入的 {percent}",
+  "subs_no_income": "过去一年没有收入",
+  "subs_due_soon": "未来 7 天到期",
+  "subs_nothing_due": "没有到期项",
+  "subs_moved_to_savings": "转入储蓄",
+  "subs_moved_hint": "每月 · 不计入",
+  "subs_list_label": "定期付款",
+  "subs_empty": "还没有定期付款。房租、订阅或定期转账只需添加一次，Kosha 就会持续跟踪。",
+  "subs_column_every": "周期",
+  "subs_column_next": "下次",
+  "subs_column_amount": "金额",
+  "subs_column_per_month": "每月",
+  "subs_not_counted": "不计入",
+  "subs_ended_count": "已结束（{count}）",
+  "subs_sorted_hint": "按每月费用排序",
+  "subs_details_label": "{name} 详情",
+  "subs_adopt_title": "将 {name} 设为定期",
+  "subs_adopt_description": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "它过去的 {count} 笔付款会归入其中，并显示在它的历史记录里。"
+      }
+    }
+  ],
+  "subs_hide_failed": "无法隐藏",
+  "subs_spotted_title": "疑似定期付款",
+  "subs_spotted_hint": "根据有固定规律的付款识别",
+  "subs_about_amount": "约 {amount}",
+  "subs_spotted_paid": [
+    {
+      "declarations": ["input count", "input day", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "已支付 {count} 次，最近一次在 {day}"
+      }
+    }
+  ],
+  "subs_spotted_next": "下次约在 {day}",
+  "subs_make_recurring": "设为定期",
+  "subs_dismiss_label": "{name} 不是定期付款",
+  "subs_not_recurring": "不是定期",
+  "subs_varies_asks": "金额不定，每次询问",
+  "subs_ended_on_short": "{date} 结束",
+  "subs_strip_label": "未来 30 天的付款：{list}",
+  "subs_strip_empty": "未来 30 天没有付款",
+  "subs_strip_title": "未来 30 天",
+  "subs_strip_bills": "账单与订阅",
+  "subs_update_payment_failed": "无法更新这笔付款",
+  "subs_ended_toast": "已结束 {name}",
+  "subs_resumed_toast": "已恢复 {name}",
+  "subs_update_schedule_failed": "无法更新付款计划",
+  "subs_deleted": "已删除",
+  "subs_delete_failed": "删除失败",
+  "subs_detail_meta": "{kind} · {every} · 自 {date} 起",
+  "subs_varies": "不定",
+  "subs_ended_on": "已于 {date} 结束",
+  "subs_ended_hint": "不会再有付款。过去的付款仍保留在明细中。",
+  "subs_next_on": "下次：{date}",
+  "subs_will_ask": "Kosha 会询问金额",
+  "subs_auto_recorded": "到期当天自动记账",
+  "subs_mark_when_out": "扣款后请标记为已支付",
+  "subs_changed_once": "仅本次付款已修改",
+  "subs_ends_on": "{date} 结束",
+  "subs_enter_amount_button": "输入金额",
+  "subs_marked_paid": "已标记为已支付",
+  "subs_mark_done_now": "立即标记完成",
+  "subs_mark_paid_now": "立即标记已支付",
+  "subs_change_amount": "修改金额",
+  "subs_skipped": "已跳过",
+  "subs_skip_this": "跳过本次",
+  "subs_no_more_scheduled": "没有更多计划中的付款。",
+  "subs_moved_so_far": "累计转出",
+  "subs_paid_so_far": "累计支付",
+  "subs_payments": "付款",
+  "subs_history": "历史记录",
+  "subs_no_payments": "还没有付款。",
+  "subs_moved": "已转出",
+  "subs_paid": "已支付",
+  "subs_all_payments": "全部 {count} 笔付款 →",
+  "subs_resume": "恢复",
+  "subs_delete_title": "删除 {name}？",
+  "subs_end_title": "结束 {name}？",
+  "subs_delete_description": "这会移除付款计划。过去的付款将作为普通交易保留在明细中。",
+  "subs_end_description": "今天之后不再付款。过去的付款仍保留在明细中，之后你也可以恢复。",
+  "subs_edit_title": "编辑 {name}",
+  "subs_edit_transfer": "编辑转账",
+  "subs_edit_payment": "编辑付款",
+  "subs_enter_amount": "请输入金额",
+  "subs_recorded": "已记录",
+  "subs_payment_updated": "付款已更新",
+  "subs_save_payment_failed": "无法保存这笔付款",
+  "subs_pay_transfer_description": "输入本次转账的金额。",
+  "subs_pay_description": "输入本次支付的金额。",
+  "subs_edit_once_description": "只修改这一笔付款。其他付款保持常规金额和日期。",
+  "subs_amount": "金额",
+  "subs_date": "日期",
+  "subs_received_in": "{name} 到账",
+  "subs_leave_empty_rate": "留空则按汇率换算。",
+  "subs_note": "备注",
+  "subs_reset_regular": "恢复常规",
+  "subs_record": "记录",
+  "subs_save_this_payment": "保存这笔付款",
+
+  "subs_unit_days": "天",
+  "subs_unit_weeks": "周",
+  "subs_unit_months": "个月",
+  "subs_unit_years": "年",
+  "subs_enter_usual_amount": "请输入常规金额",
+  "subs_pick_to_account": "请选择转入账户",
+  "subs_pick_category": "请选择分类",
+  "subs_transfer_added": "已添加定期转账",
+  "subs_income_added": "已添加定期收入",
+  "subs_bill_added": "已添加账单",
+  "subs_subscription_added": "已添加订阅",
+  "subs_type": "类型",
+  "subs_name": "名称",
+  "subs_from": "转出",
+  "subs_to": "转入",
+  "subs_account": "账户",
+  "subs_category": "分类",
+  "subs_usual_amount": "常规金额",
+  "subs_repeats_every": "重复周期",
+  "subs_interval": "间隔",
+  "subs_variable": "每次金额不同",
+  "subs_variable_hint": "到期时 Kosha 会提醒你并询问金额，而不是自动记账。",
+  "subs_amount_received": "到账金额",
+  "subs_next_payment": "下次付款",
+  "subs_first_payment": "首次付款",
+  "subs_ends": "结束",
+  "subs_never": "永不",
+  "subs_backfill_hint": "Kosha 将记录从 {date} 到今天的付款。",
+  "subs_auto_pay": "自动记账",
+  "subs_changes_hint": "修改将应用于之后的付款。过去的付款保持不变。",
+  "subs_save_changes": "保存修改",
+  "subs_add_transfer": "添加转账",
+  "subs_add_income": "添加收入",
+  "subs_add_bill": "添加账单",
+  "subs_add_subscription": "添加订阅"
+}

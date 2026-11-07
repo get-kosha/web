@@ -4,6 +4,7 @@ import { getMeta, guestVisit, type Meta } from "@/lib/api"
 import { AppShell } from "@/components/shell"
 import { Landing } from "@/components/landing"
 import { SITE, publicHead } from "@/lib/core"
+import { m } from "@/paraglide/messages"
 
 // Month and display currency are app-wide. The shell's stepper and switch set them, and every page reads them.
 // A malformed value is dropped rather than failing the page, which the public landing page shares.
@@ -32,18 +33,16 @@ export const Route = createFileRoute("/_app")({
   component: AppLayout,
 })
 
-const DESCRIPTION =
-  "Add each payment in a few seconds, then see where the month went. A free, open-source personal finance tracker for every account, in any currency."
-
 /** The landing page's title, canonical URL and structured data for search engines. */
 function landingHead() {
-  const head = publicHead("/", "Kosha · Personal finance, a few seconds at a time", DESCRIPTION)
+  const description = m.site_description()
+  const head = publicHead("/", m.site_landing_title(), description)
   const app = {
     "@context": "https://schema.org",
     "@type": "WebApplication",
     name: "Kosha",
     url: SITE,
-    description: DESCRIPTION,
+    description,
     image: `${SITE}/og.png`,
     applicationCategory: "FinanceApplication",
     operatingSystem: "Any",

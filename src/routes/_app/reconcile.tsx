@@ -13,6 +13,7 @@ import {
 } from "@phosphor-icons/react/ssr"
 import { z } from "zod"
 import { toast } from "sonner"
+import { ParaglideMessage } from "@inlang/paraglide-js-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -35,7 +36,7 @@ import {
   type ReconcileData,
   type ReconcileEntry,
 } from "@/lib/api"
-import { addDays, dayOf, fmt, guessCategory, isNeutral, parseAmount } from "@/lib/core"
+import { addDays, dayOf, fmt, guessCategory, intlLocale, isNeutral, parseAmount } from "@/lib/core"
 import {
   descriptorKey,
   differenceHints,
@@ -52,12 +53,13 @@ import {
   type Line,
 } from "@/lib/statement"
 import { cn } from "@/lib/utils"
+import { m } from "@/paraglide/messages"
 
 export const Route = createFileRoute("/_app/reconcile")({
   validateSearch: z.object({ account: z.coerce.string().optional().catch(undefined) }),
   loaderDeps: ({ search }) => ({ account: search.account }),
   loader: ({ deps }) => (deps.account ? getReconcile({ data: { walletId: deps.account } }) : null),
-  head: () => ({ meta: [{ title: "Reconcile · Kosha" }] }),
+  head: () => ({ meta: [{ title: m.reconcile_head_title() }] }),
   pendingComponent: PageSkeleton,
   component: Reconcile,
 })
@@ -75,10 +77,10 @@ function AccountPicker() {
   const list = meta.wallets.filter((w) => !w.archived && reconcilable(w.type))
   return (
     <div className="pb-8">
-      <PageHeader title="Reconcile" sub="Check an account against your bank's statement, or import the statement." />
+      <PageHeader title={m.reconcile_title()} sub={m.reconcile_picker_sub()} />
       <div className="px-4 md:px-8">
         <Card className="max-w-xl gap-0 py-1">
-          {list.length === 0 && <p className="p-6 text-sm text-muted-foreground">Add a bank account or card first.</p>}
+          {list.length === 0 && <p className="p-6 text-sm text-muted-foreground">{m.reconcile_picker_empty()}</p>}
           {list.map((w) => (
             <Link
               key={w.id}
@@ -89,7 +91,9 @@ function AccountPicker() {
               <span className="min-w-0">
                 <span className="block truncate text-sm font-medium">{w.name}</span>
                 <span className="block text-xs text-muted-foreground">
-                  {w.reconciled_day ? `Reconciled to ${dayLabel(w.reconciled_day)}` : "Never reconciled"}
+                  {w.reconciled_day
+                    ? m.reconcile_reconciled_to({ day: dayLabel(w.reconciled_day) })
+                    : m.reconcile_never_reconciled()}
                 </span>
               </span>
               <CaretRightIcon className="size-4 shrink-0 text-muted-foreground" />
@@ -183,10 +187,13 @@ function Session({ data }: { data: ReconcileData }) {
 
   // ---------- matching an imported statement ----------
 
-  const name = (e: ReconcileEntry) =>
-    e.transfer_id
-      ? `${e.amount < 0 ? "To" : "From"} ${meta.wallets.find((w) => w.id === e.counter_wallet_id)?.name ?? "another account"}`
-      : e.name || meta.categories.find((c) => c.id === e.category_id)?.name || "No payee"
+  const name = (e: ReconcileEntry) => {
+    if (!e.transfer_id)
+      return e.name || meta.categories.find((c) => c.id === e.category_id)?.name || m.reconcile_no_payee()
+    const account = meta.wallets.find((w) => w.id === e.counter_wallet_id)?.name
+    if (account) return (e.amount < 0 ? m.reconcile_transfer_to_name : m.reconcile_transfer_from_name)({ account })
+    return e.amount < 0 ? m.reconcile_transfer_to_other() : m.reconcile_transfer_from_other()
+  }
   const lines = loaded?.lines ?? []
   // What matches, what's missing and what counts as ticked: the same plan the public API uses.
   const plan = useMemo(() => {
@@ -277,11 +284,16 @@ function Session({ data }: { data: ReconcileData }) {
     try {
       const pdf = file.type === "application/pdf" || /\.pdf$/i.test(file.name)
       if (pdf) {
-        if (!meta.ai.statements)
-          throw new Error("Kosha reads CSV, OFX and QFX files. Export one of those from your bank.")
+        if (!meta.ai.statements) throw new Error(m.reconcile_pdf_unsupported())
         const r = await readStatementPdf({ data: { walletId: a.id, name: file.name, data: await fileBase64(file) } })
         if (r.currency && r.currency !== cur)
-          toast.warning(`This statement is in ${r.currency.toUpperCase()}, and ${a.name} is in ${cur.toUpperCase()}.`)
+          toast.warning(
+            m.reconcile_currency_mismatch({
+              statementCurrency: r.currency.toUpperCase(),
+              account: a.name,
+              currency: cur.toUpperCase(),
+            })
+          )
         setLoaded({ source: "pdf", name: file.name, lines: r.lines, byAi: true, opening: r.opening, off: r.off })
         if (r.to) setDay(r.to)
         if (r.closing !== null) setBalanceText((r.closing / 100).toFixed(2))
@@ -290,7 +302,7 @@ function Session({ data }: { data: ReconcileData }) {
       const text = await fileText(file)
       if (isOfx(text)) {
         const r = parseOfx(text)
-        if (!r.lines.length) throw new Error("That OFX file has no transactions")
+        if (!r.lines.length) throw new Error(m.reconcile_ofx_empty())
         setLoaded({ source: "ofx", name: file.name, lines: r.lines })
         if (r.closingDay) setDay(r.closingDay)
         // Cards report what's owed as a negative balance.
@@ -298,7 +310,7 @@ function Session({ data }: { data: ReconcileData }) {
         return
       }
       const rows = parseCsv(text)
-      if (rows.length < 2) throw new Error("That file has no rows Kosha can read")
+      if (rows.length < 2) throw new Error(m.reconcile_csv_empty())
       const guess = guessLayout(rows, credit)
       const signature = layoutSignature(rows, guess.layout)
       let layout = data.layouts[signature] ?? guess.layout
@@ -327,7 +339,7 @@ function Session({ data }: { data: ReconcileData }) {
         confident: guess.confident || byAi,
       })
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Couldn't read that file")
+      toast.error(e instanceof Error ? e.message : m.reconcile_read_failed())
     } finally {
       setReading(null)
     }
@@ -353,8 +365,7 @@ function Session({ data }: { data: ReconcileData }) {
   async function addMissing() {
     const chosen = missing.filter(({ l }) => !row(l).skip)
     const unsorted = chosen.filter(({ l }) => !row(l).category)
-    if (unsorted.length)
-      return toast.error(`Pick a category for ${unsorted.length === 1 ? "1 line" : `${unsorted.length} lines`} first`)
+    if (unsorted.length) return toast.error(m.reconcile_pick_category_first({ count: unsorted.length }))
     setBusy("add")
     try {
       await importLines({
@@ -379,9 +390,9 @@ function Session({ data }: { data: ReconcileData }) {
         },
       })
       await router.invalidate()
-      toast.success(`Added ${chosen.length === 1 ? "1 entry" : `${chosen.length} entries`} to ${a.name}`)
+      toast.success(m.reconcile_added({ count: chosen.length, account: a.name }))
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Couldn't add them")
+      toast.error(e instanceof Error ? e.message : m.reconcile_add_failed())
     } finally {
       setBusy(null)
     }
@@ -405,7 +416,7 @@ function Session({ data }: { data: ReconcileData }) {
       })
       await router.invalidate()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Couldn't change it")
+      toast.error(err instanceof Error ? err.message : m.reconcile_change_failed())
     } finally {
       setBusy(null)
     }
@@ -423,7 +434,7 @@ function Session({ data }: { data: ReconcileData }) {
       setLoaded(null)
       await router.invalidate()
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Couldn't finish")
+      toast.error(e instanceof Error ? e.message : m.reconcile_finish_failed())
     } finally {
       setBusy(null)
     }
@@ -439,9 +450,9 @@ function Session({ data }: { data: ReconcileData }) {
       await undoReconcile({ data: { id } })
       setDone(null)
       await router.invalidate()
-      toast.success("Reconciliation undone")
+      toast.success(m.reconcile_undone())
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Couldn't undo it")
+      toast.error(e instanceof Error ? e.message : m.reconcile_undo_failed())
     } finally {
       setBusy(null)
     }
@@ -463,7 +474,10 @@ function Session({ data }: { data: ReconcileData }) {
           ...(openingGap
             ? [
                 {
-                  text: `This statement opens at ${money(loaded!.opening!)}, but the last one you reconciled closed at ${money(last!.printed)}. A statement in between may be missing.`,
+                  text: m.reconcile_hint_opening_gap({
+                    opening: money(loaded!.opening!),
+                    closing: money(last!.printed),
+                  }),
                   ids: [],
                 },
               ]
@@ -471,7 +485,7 @@ function Session({ data }: { data: ReconcileData }) {
           ...(single && missing.length > 1
             ? [
                 {
-                  text: `${row(single.l).payee} (${money(single.l.amount)}) on the statement is exactly the difference. Add it to Kosha.`,
+                  text: m.reconcile_hint_single_missing({ payee: row(single.l).payee, amount: money(single.l.amount) }),
                   ids: [],
                 },
               ]
@@ -479,14 +493,14 @@ function Session({ data }: { data: ReconcileData }) {
           ...(missing.length && missingTotal === diff
             ? [
                 {
-                  text: `Adding the ${missing.length === 1 ? "line" : `${missing.length} lines`} missing from Kosha closes the difference exactly.`,
+                  text: m.reconcile_hint_missing_closes({ count: missing.length }),
                   ids: [],
                 },
               ]
             : missing.length
               ? [
                   {
-                    text: `${missing.length === 1 ? "1 line" : `${missing.length} lines`} on the statement ${missing.length === 1 ? "isn't" : "aren't"} in Kosha yet (${money(missingTotal)}).`,
+                    text: m.reconcile_hint_missing_count({ count: missing.length, amount: money(missingTotal) }),
                     ids: [],
                   },
                 ]
@@ -494,7 +508,11 @@ function Session({ data }: { data: ReconcileData }) {
           ...close.map((p) => {
             const e = data.open.find((x) => x.id === p.entry)!
             return {
-              text: `${name(e)}: Kosha has ${money(e.amount)}, the statement ${money(lines[p.line].amount)}.`,
+              text: m.reconcile_hint_close({
+                name: name(e),
+                kosha: money(e.amount),
+                statement: money(lines[p.line].amount),
+              }),
               ids: [e.id],
             }
           }),
@@ -531,7 +549,7 @@ function Session({ data }: { data: ReconcileData }) {
         })
       )
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Couldn't ask")
+      toast.error(e instanceof Error ? e.message : m.reconcile_ask_failed())
     } finally {
       setBusy(null)
     }
@@ -562,27 +580,30 @@ function Session({ data }: { data: ReconcileData }) {
 
   // ---------- page ----------
 
-  const statementLabel = credit ? "Owed on the statement" : "Closing balance"
+  const statementLabel = (credit ? m.reconcile_owed_label : m.reconcile_balance_label)({ currency: cur.toUpperCase() })
   const accept = `.csv,.ofx,.qfx,.txt,text/csv${meta.ai.statements ? ",.pdf,application/pdf" : ""}`
 
   if (done)
     return (
       <div className="pb-8">
-        <PageHeader title={`Reconcile ${a.name}`} />
+        <PageHeader title={m.reconcile_account_title({ account: a.name })} />
         <div className="px-4 md:px-8">
           <Card className="rise-in max-w-xl items-start gap-3 px-6">
             <CheckCircleIcon weight="fill" className="size-8 text-positive" />
-            <h2 className="text-lg font-semibold">{a.name} matches your statement</h2>
+            <h2 className="text-lg font-semibold">{m.reconcile_done_title({ account: a.name })}</h2>
             <p className="text-sm text-muted-foreground">
-              {done.entries === 1 ? "1 entry" : `${done.entries.toLocaleString()} entries`} checked to{" "}
-              {dayLabel(done.day)}.
-              {done.adjustment ? ` A correction of ${money(done.adjustment)} closed the difference.` : ""} Kosha marks
-              them reconciled and tells you before you change one.
+              {m.reconcile_done_checked({
+                count: done.entries,
+                n: done.entries.toLocaleString(intlLocale()),
+                day: dayLabel(done.day),
+              })}
+              {done.adjustment ? ` ${m.reconcile_done_correction({ amount: money(done.adjustment) })}` : ""}{" "}
+              {m.reconcile_done_marked()}
             </p>
             <div className="flex flex-wrap gap-2 pt-1">
-              <Button onClick={() => navigate({ to: "/accounts" })}>Back to accounts</Button>
+              <Button onClick={() => navigate({ to: "/accounts" })}>{m.reconcile_back_to_accounts()}</Button>
               <Button variant="outline" className="bg-card" disabled={busy === "undo"} onClick={() => undo(done.id)}>
-                <ArrowCounterClockwiseIcon /> Undo
+                <ArrowCounterClockwiseIcon /> {m.common_undo()}
               </Button>
             </div>
           </Card>
@@ -593,15 +614,12 @@ function Session({ data }: { data: ReconcileData }) {
   return (
     <div className="pb-8 md:max-w-[60rem]">
       <PageHeader
-        title={`Reconcile ${a.name}`}
+        title={m.reconcile_account_title({ account: a.name })}
         sub={
           <>
-            {last
-              ? `Last reconciled to ${dayLabel(last.statement_day)}`
-              : "Check each entry against your bank's statement."}{" "}
-            ·{" "}
+            {last ? m.reconcile_last_reconciled({ day: dayLabel(last.statement_day) }) : m.reconcile_check_each()} ·{" "}
             <Link to="/reconcile" className="underline-offset-2 hover:text-foreground hover:underline">
-              Other account
+              {m.reconcile_other_account()}
             </Link>
           </>
         }
@@ -611,16 +629,13 @@ function Session({ data }: { data: ReconcileData }) {
         {drift !== 0 && last && (
           <p role="status" className="flex items-start gap-2 rounded-xl bg-warning/10 px-4 py-3 text-[13px]">
             <WarningIcon className="mt-0.5 size-4 shrink-0 text-warning" />
-            Entries reconciled on {dayLabel(last.statement_day)} have changed by {money(credit ? -drift : drift)} since,
-            so they no longer add up to that statement. One was edited or deleted; undo that reconciliation to check
-            them again.
+            {m.reconcile_drift({ day: dayLabel(last.statement_day), amount: money(credit ? -drift : drift) })}
           </p>
         )}
         {loaded?.off != null && loaded.off !== 0 && (
           <p role="status" className="flex items-start gap-2 rounded-xl bg-warning/10 px-4 py-3 text-[13px]">
             <WarningIcon className="mt-0.5 size-4 shrink-0 text-warning" />
-            The lines read from this PDF miss its closing balance by {money(Math.abs(loaded.off))}. A line may have been
-            misread; check them against the PDF before adding any.
+            {m.reconcile_pdf_off({ amount: money(Math.abs(loaded.off)) })}
           </p>
         )}
         <Card className="gap-4 px-6 max-md:px-4">
@@ -639,24 +654,25 @@ function Session({ data }: { data: ReconcileData }) {
             {reading ? (
               <>
                 <SpinnerGapIcon className="size-6 animate-spin text-brand" />
-                <p className="text-sm">Reading {reading}…</p>
+                <p className="text-sm">{m.reconcile_reading({ file: reading })}</p>
               </>
             ) : loaded ? (
               <>
                 <p className="text-sm">
-                  <span className="font-medium">{loaded.name}</span> · {loaded.lines.length} lines
+                  <span className="font-medium">{loaded.name}</span> ·{" "}
+                  {m.reconcile_file_lines({ count: loaded.lines.length })}
                   {loaded.byAi && (
                     <span className="ml-1.5 inline-flex items-center gap-1 text-xs text-muted-foreground">
-                      <AiMark className="size-3" /> read by AI
+                      <AiMark className="size-3" /> {m.reconcile_read_by_ai()}
                     </span>
                   )}
                 </p>
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm" className="bg-card" onClick={() => fileInput.current?.click()}>
-                    Another file
+                    {m.reconcile_another_file()}
                   </Button>
                   <Button variant="ghost" size="sm" onClick={() => setLoaded(null)}>
-                    Remove
+                    {m.common_remove()}
                   </Button>
                 </div>
               </>
@@ -664,18 +680,23 @@ function Session({ data }: { data: ReconcileData }) {
               <>
                 <FileArrowUpIcon className="size-6 text-muted-foreground" />
                 <p className="text-sm">
-                  Drop your statement here, or{" "}
-                  <button
-                    type="button"
-                    className="font-medium underline underline-offset-2"
-                    onClick={() => fileInput.current?.click()}
-                  >
-                    choose a file
-                  </button>
+                  <ParaglideMessage
+                    message={m.reconcile_drop}
+                    markup={{
+                      choose: ({ children }) => (
+                        <button
+                          type="button"
+                          className="font-medium underline underline-offset-2"
+                          onClick={() => fileInput.current?.click()}
+                        >
+                          {children}
+                        </button>
+                      ),
+                    }}
+                  />
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  CSV, OFX or QFX from your bank{meta.ai.statements ? ", or a PDF statement" : ""}. Kosha ticks what
-                  matches and lists what's missing.
+                  {meta.ai.statements ? m.reconcile_drop_formats_pdf() : m.reconcile_drop_formats()}
                 </p>
               </>
             )}
@@ -706,7 +727,7 @@ function Session({ data }: { data: ReconcileData }) {
 
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="grid gap-1.5 text-xs text-muted-foreground">
-              Statement date
+              {m.reconcile_statement_date()}
               <DatePicker
                 value={day}
                 max={addDays(today, 31)}
@@ -715,7 +736,7 @@ function Session({ data }: { data: ReconcileData }) {
               />
             </label>
             <label className="grid gap-1.5 text-xs text-muted-foreground">
-              {statementLabel} ({cur.toUpperCase()})
+              {statementLabel}
               <Input
                 value={balanceText}
                 onChange={(e) => setBalanceText(e.target.value)}
@@ -727,9 +748,13 @@ function Session({ data }: { data: ReconcileData }) {
           </div>
           {!loaded && statement === null && (
             <p className="flex flex-wrap items-center gap-x-3 gap-y-2 text-[13px] text-muted-foreground">
-              Kosha shows {credit ? "you owe " : ""}
-              <span className="num font-medium text-foreground">{money(fromKosha(quickBalance))}</span> today. Compare
-              it with your bank's current balance, not the available one.
+              <ParaglideMessage
+                message={credit ? m.reconcile_quick_owed : m.reconcile_quick_balance}
+                inputs={{ amount: money(fromKosha(quickBalance)) }}
+                markup={{
+                  amount: ({ children }) => <span className="num font-medium text-foreground">{children}</span>,
+                }}
+              />
               <Button
                 variant="outline"
                 size="sm"
@@ -737,7 +762,7 @@ function Session({ data }: { data: ReconcileData }) {
                 disabled={busy !== null}
                 onClick={() => finish(false, { balance: quickBalance, ids: upToToday.map((e) => e.id), day: today })}
               >
-                <CheckIcon /> My bank shows the same
+                <CheckIcon /> {m.reconcile_same_as_bank()}
               </Button>
             </p>
           )}
@@ -745,11 +770,11 @@ function Session({ data }: { data: ReconcileData }) {
 
         {missing.length > 0 && (
           <Section
-            title={`On the statement, not in Kosha (${missing.length})`}
+            title={m.reconcile_missing_title({ count: missing.length })}
             aside={
               busy === "tidy" ? (
                 <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <SpinnerGapIcon className="size-3.5 animate-spin" /> Naming payees…
+                  <SpinnerGapIcon className="size-3.5 animate-spin" /> {m.reconcile_naming_payees()}
                 </span>
               ) : undefined
             }
@@ -768,7 +793,7 @@ function Session({ data }: { data: ReconcileData }) {
                   <div className="min-w-0">
                     <div className="relative">
                       <Input
-                        aria-label="Payee"
+                        aria-label={m.reconcile_payee()}
                         value={r.payee}
                         onChange={(e) => pick(l.ref!, { payee: e.target.value })}
                         className="h-9 bg-background pr-7"
@@ -783,15 +808,17 @@ function Session({ data }: { data: ReconcileData }) {
                     <Pick
                       value={r.category}
                       onChange={(v) => pick(l.ref!, { category: v })}
-                      aria-label={`Category for ${r.payee || l.description}`}
-                      placeholder="Pick a category"
+                      aria-label={m.reconcile_category_for({ name: r.payee || l.description })}
+                      placeholder={m.reconcile_pick_category()}
                       options={[
                         ...categories
                           .filter((c) => !!c.income === l.amount > 0)
                           .map((c) => ({ value: c.id, label: c.name })),
                         ...others.map((w) => ({
                           value: `transfer:${w.id}`,
-                          label: `${l.amount < 0 ? "Transfer to" : "Transfer from"} ${w.name}`,
+                          label: (l.amount < 0 ? m.reconcile_transfer_to : m.reconcile_transfer_from)({
+                            account: w.name,
+                          }),
                         })),
                       ]}
                       className={cn("h-9 w-full bg-background", !r.category && "text-muted-foreground")}
@@ -807,7 +834,7 @@ function Session({ data }: { data: ReconcileData }) {
                     variant="ghost"
                     size="icon"
                     className="justify-self-end text-muted-foreground max-md:size-11"
-                    aria-label={r.skip ? "Add this line" : "Leave this line out"}
+                    aria-label={r.skip ? m.reconcile_include_line() : m.reconcile_leave_out_line()}
                     aria-pressed={!r.skip}
                     onClick={() => pick(l.ref!, { skip: !r.skip })}
                   >
@@ -817,19 +844,17 @@ function Session({ data }: { data: ReconcileData }) {
               )
             })}
             <div className="flex flex-wrap items-center justify-between gap-3 border-t px-5 py-3 max-md:px-4">
-              <span className="text-xs text-muted-foreground">
-                Saving teaches Kosha these payee names for your next statement.
-              </span>
+              <span className="text-xs text-muted-foreground">{m.reconcile_saving_teaches()}</span>
               <Button disabled={busy !== null || missing.every(({ l }) => row(l).skip)} onClick={addMissing}>
                 {busy === "add" && <SpinnerGapIcon className="animate-spin" />}
-                Add {missing.filter(({ l }) => !row(l).skip).length} to Kosha
+                {m.reconcile_add_to_kosha({ count: missing.filter(({ l }) => !row(l).skip).length })}
               </Button>
             </div>
           </Section>
         )}
 
         {close.length > 0 && (
-          <Section title={`Close, but not the same amount (${close.length})`}>
+          <Section title={m.reconcile_close_title({ count: close.length })}>
             {close.map((p) => {
               const e = data.open.find((x) => x.id === p.entry)!
               const l = lines[p.line]
@@ -841,7 +866,12 @@ function Session({ data }: { data: ReconcileData }) {
                   <div className="min-w-0 text-sm">
                     <div className="truncate font-medium">{name(e)}</div>
                     <div className="num text-xs text-muted-foreground">
-                      Kosha {money(e.amount)} on {dayLabel(e.day)} · statement {money(l.amount)} on {dayLabel(l.day)}
+                      {m.reconcile_close_detail({
+                        kosha: money(e.amount),
+                        koshaDay: dayLabel(e.day),
+                        statement: money(l.amount),
+                        statementDay: dayLabel(l.day),
+                      })}
                     </div>
                   </div>
                   <div className="flex gap-2">
@@ -853,11 +883,11 @@ function Session({ data }: { data: ReconcileData }) {
                         disabled={busy !== null}
                         onClick={() => takeAmount(e, l.amount)}
                       >
-                        Use {money(l.amount)}
+                        {m.reconcile_use_amount({ amount: money(l.amount) })}
                       </Button>
                     )}
                     <Button size="sm" variant="ghost" onClick={() => setNotSame((s) => new Set(s).add(l.ref ?? ""))}>
-                      Not the same
+                      {m.reconcile_not_same()}
                     </Button>
                   </div>
                 </div>
@@ -867,13 +897,15 @@ function Session({ data }: { data: ReconcileData }) {
         )}
 
         <Section
-          title={loaded ? "In Kosha" : `Tick what's on the statement`}
-          aside={<span className="text-xs text-muted-foreground">{ticked.length} ticked</span>}
+          title={loaded ? m.reconcile_in_kosha() : m.reconcile_tick_title()}
+          aside={
+            <span className="text-xs text-muted-foreground">{m.reconcile_ticked_count({ count: ticked.length })}</span>
+          }
         >
           {earlier.length > 0 && (
             <Group
-              label={`Before this statement (${earlier.length})`}
-              hint="Ticked, as they were on earlier statements"
+              label={m.reconcile_before_group({ count: earlier.length })}
+              hint={m.reconcile_before_hint()}
               open={openGroups.has("earlier")}
               onToggle={() => toggleGroup("earlier")}
             >
@@ -891,7 +923,7 @@ function Session({ data }: { data: ReconcileData }) {
             </Group>
           )}
           {period.length === 0 && earlier.length === 0 && (
-            <p className="px-5 py-4 text-sm text-muted-foreground">Nothing to reconcile up to {dayLabel(day)}.</p>
+            <p className="px-5 py-4 text-sm text-muted-foreground">{m.reconcile_nothing({ day: dayLabel(day) })}</p>
           )}
           {period.map((e) => (
             <EntryRow
@@ -903,13 +935,13 @@ function Session({ data }: { data: ReconcileData }) {
               focus={focus.includes(e.id)}
               note={
                 closeIds.has(e.id)
-                  ? "Amount differs"
+                  ? m.reconcile_note_amount_differs()
                   : loaded && !matchedOpen.has(e.id)
                     ? e.day > addDays(day, -3)
-                      ? "Likely on the next statement"
-                      : "Not on the statement"
+                      ? m.reconcile_note_next_statement()
+                      : m.reconcile_note_not_on_statement()
                     : !e.paid
-                      ? "Still due"
+                      ? m.reconcile_note_still_due()
                       : undefined
               }
               onToggle={() => toggle(e)}
@@ -917,8 +949,8 @@ function Session({ data }: { data: ReconcileData }) {
           ))}
           {after.length > 0 && (
             <Group
-              label={`After ${dayLabel(day)} (${after.length})`}
-              hint="For the next statement"
+              label={m.reconcile_after_group({ day: dayLabel(day), count: after.length })}
+              hint={m.reconcile_after_hint()}
               open={openGroups.has("after")}
               onToggle={() => toggleGroup("after")}
             >
@@ -939,11 +971,12 @@ function Session({ data }: { data: ReconcileData }) {
 
         {diff !== null && diff !== 0 && (hints.length > 0 || canAskAi) && (
           <Section
-            title="Finding the difference"
+            title={m.reconcile_finding_title()}
             aside={
               canAskAi ? (
                 <Button variant="outline" size="sm" className="bg-card" disabled={busy !== null} onClick={askAi}>
-                  {busy === "ai" ? <SpinnerGapIcon className="animate-spin" /> : <AiMark className="size-3" />} Ask AI
+                  {busy === "ai" ? <SpinnerGapIcon className="animate-spin" /> : <AiMark className="size-3" />}{" "}
+                  {m.reconcile_ask_ai()}
                 </Button>
               ) : undefined
             }
@@ -966,7 +999,7 @@ function Session({ data }: { data: ReconcileData }) {
         )}
 
         {data.history.length > 0 && (
-          <Section title="Past reconciliations">
+          <Section title={m.reconcile_past()}>
             {data.history.map((h, i) => (
               <div
                 key={h.id}
@@ -976,12 +1009,13 @@ function Session({ data }: { data: ReconcileData }) {
                   {dayLabel(h.statement_day)} · <span className="num">{money(h.printed)}</span>
                   <span className="text-muted-foreground">
                     {" "}
-                    · {h.entries} entries{h.adjustment ? ` · corrected by ${money(h.adjustment)}` : ""}
+                    · {m.reconcile_history_entries({ count: h.entries })}
+                    {h.adjustment ? ` · ${m.reconcile_corrected_by({ amount: money(h.adjustment) })}` : ""}
                   </span>
                 </span>
                 {i === 0 && (
                   <Button size="sm" variant="ghost" disabled={busy !== null} onClick={() => undo(h.id)}>
-                    <ArrowCounterClockwiseIcon /> Undo
+                    <ArrowCounterClockwiseIcon /> {m.common_undo()}
                   </Button>
                 )}
               </div>
@@ -994,25 +1028,28 @@ function Session({ data }: { data: ReconcileData }) {
           <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 rounded-2xl border bg-card px-5 py-3.5 shadow-[0_12px_32px_rgba(17,17,19,0.12)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.55)]">
             <dl className="flex flex-wrap gap-x-6 gap-y-1 text-sm">
               <Figure
-                label={credit ? "Statement says owed" : "Statement"}
+                label={credit ? m.reconcile_figure_statement_owed() : m.reconcile_figure_statement()}
                 value={statement === null ? "—" : money(fromKosha(statement))}
               />
-              <Figure label={credit ? "Owed per ticked" : "Ticked in Kosha"} value={money(fromKosha(cleared))} />
               <Figure
-                label="Difference"
-                value={diff === null ? "—" : diff === 0 ? "None" : money(credit ? -diff : diff)}
+                label={credit ? m.reconcile_figure_ticked_owed() : m.reconcile_figure_ticked()}
+                value={money(fromKosha(cleared))}
+              />
+              <Figure
+                label={m.reconcile_figure_difference()}
+                value={diff === null ? "—" : diff === 0 ? m.reconcile_figure_none() : money(credit ? -diff : diff)}
                 tone={diff === null ? undefined : diff === 0 ? "good" : "bad"}
               />
             </dl>
             <div className="flex flex-wrap gap-2">
               {diff !== null && diff !== 0 && (
                 <Button variant="outline" className="bg-card" disabled={busy !== null} onClick={() => finish(true)}>
-                  Finish with a {money(Math.abs(diff))} correction
+                  {m.reconcile_finish_with_correction({ amount: money(Math.abs(diff)) })}
                 </Button>
               )}
               <Button disabled={busy !== null || diff !== 0} onClick={() => finish(false)}>
                 {busy === "finish" && <SpinnerGapIcon className="animate-spin" />}
-                {statement === null ? "Enter the statement balance" : "Finish reconciling"}
+                {statement === null ? m.reconcile_enter_balance() : m.reconcile_finish()}
               </Button>
             </div>
           </div>
@@ -1134,7 +1171,7 @@ function Hint({
       </p>
       {ids.length > 0 && (
         <Button size="sm" variant="ghost" className="shrink-0" onClick={() => onShow(ids)}>
-          Show
+          {m.reconcile_show()}
         </Button>
       )}
     </div>

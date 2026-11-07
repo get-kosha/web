@@ -1,0 +1,45 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "site_description": "支払いは数秒で記録、月末にはお金の行き先がひと目でわかります。すべての口座、あらゆる通貨に対応した、無料でオープンソースの家計管理アプリです。",
+  "site_tagline": "家計管理を、数秒ずつ。",
+  "site_landing_title": "Kosha · 家計管理を、数秒ずつ。",
+  "site_og_image_alt": "Kosha：家計管理を、数秒ずつ。",
+  "pwa_synced": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "オフライン中に追加した{count}件の取引を同期しました"
+      }
+    }
+  ],
+  "pwa_rejected": "オフライン中に追加した取引を保存できませんでした：{reason}",
+  "pwa_syncing_title": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count}件の取引を同期中"
+      }
+    }
+  ],
+  "pwa_syncing_body": "オフライン中に追加した内容を送信しています。",
+  "pwa_offline_waiting": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "前回表示したときのデータを表示しています。{count}件の取引はオンラインに戻ると同期されます。"
+      }
+    }
+  ],
+  "pwa_offline_body": "前回表示したときのデータを表示しています。新しい取引はオンラインに戻ると同期されます。",
+  "pwa_update_title": "Koshaの新しいバージョンがあります",
+  "pwa_update_body": "再読み込みすると使えるようになります。",
+  "pwa_reload": "再読み込み",
+  "pwa_install_title": "Koshaをインストール",
+  "pwa_install_ios": "共有をタップし、「ホーム画面に追加」を選ぶと、Koshaをアプリのように開けます。",
+  "pwa_install_body": "ホーム画面やDockから開けます。オフラインでも使えます。",
+  "pwa_install": "インストール",
+  "pwa_dismiss": "閉じる"
+}

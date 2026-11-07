@@ -3,6 +3,8 @@ import { Link, createFileRoute, useRouter } from "@tanstack/react-router"
 import { Area, CartesianGrid, ComposedChart, Line, LineChart, XAxis, YAxis } from "recharts"
 import { CaretRightIcon, PlusIcon, XIcon } from "@phosphor-icons/react/ssr"
 import { toast } from "sonner"
+import { ParaglideMessage } from "@inlang/paraglide-js-react"
+import { m } from "@/paraglide/messages"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -33,7 +35,17 @@ import {
   type Exchange,
   type Wallet,
 } from "@/lib/api"
-import { LOCALE, accountWorth, convert, dayOf, exchange, fmt, fmtRate, parseAmount, type AccountType } from "@/lib/core"
+import {
+  intlLocale,
+  accountWorth,
+  convert,
+  dayOf,
+  exchange,
+  fmt,
+  fmtRate,
+  parseAmount,
+  type AccountType,
+} from "@/lib/core"
 import { cn } from "@/lib/utils"
 
 export const Route = createFileRoute("/_app/accounts")({
@@ -46,50 +58,58 @@ export const Route = createFileRoute("/_app/accounts")({
     ])
     return { valuations, exchanges, overview }
   },
-  head: () => ({ meta: [{ title: "Accounts · Kosha" }] }),
+  head: () => ({ meta: [{ title: m.accounts_head_title() }] }),
   pendingComponent: PageSkeleton,
   component: Accounts,
 })
 
 type Valuation = Awaited<ReturnType<typeof listValuations>>[number]
 
-const GROUPS: { types: AccountType[]; title: string }[] = [
-  { types: ["bank", "cash"], title: "Bank & cash" },
-  { types: ["credit"], title: "Credit cards" },
-  { types: ["investment"], title: "Investments" },
+// Labels are message functions, called at render time so they follow the language.
+const GROUPS: { types: AccountType[]; title: () => string }[] = [
+  { types: ["bank", "cash"], title: m.accounts_group_bank_cash },
+  { types: ["credit"], title: m.accounts_group_credit },
+  { types: ["investment"], title: m.accounts_group_investment },
 ]
-const TYPE_OPTIONS = [
-  { value: "bank", label: "Bank account" },
-  { value: "cash", label: "Cash" },
-  { value: "credit", label: "Credit card" },
-  { value: "investment", label: "Investment" },
+const typeOptions = () => [
+  { value: "bank", label: m.accounts_type_bank_account() },
+  { value: "cash", label: m.accounts_type_cash() },
+  { value: "credit", label: m.accounts_type_credit() },
+  { value: "investment", label: m.accounts_type_investment() },
 ]
-const TYPE_LABEL: Record<AccountType, string> = {
-  bank: "Bank",
-  cash: "Cash",
-  credit: "Credit card",
-  investment: "Investment",
+const TYPE_LABEL: Record<AccountType, () => string> = {
+  bank: m.accounts_type_bank,
+  cash: m.accounts_type_cash,
+  credit: m.accounts_type_credit,
+  investment: m.accounts_type_investment,
 }
 const STALE_DAYS = 60
 
 const long = (day: string) =>
-  new Date(`${day}T12:00:00Z`).toLocaleDateString(LOCALE, {
+  new Date(`${day}T12:00:00Z`).toLocaleDateString(intlLocale(), {
     day: "numeric",
     month: "short",
     year: "numeric",
     timeZone: "UTC",
   })
 const short = (day: string) =>
-  new Date(`${day}T12:00:00Z`).toLocaleDateString(LOCALE, { day: "numeric", month: "short", timeZone: "UTC" })
+  new Date(`${day}T12:00:00Z`).toLocaleDateString(intlLocale(), { day: "numeric", month: "short", timeZone: "UTC" })
 const monthShort = (m: string, year = false) =>
-  new Date(`${m.slice(0, 7)}-01T12:00:00Z`).toLocaleDateString(LOCALE, {
+  new Date(`${m.slice(0, 7)}-01T12:00:00Z`).toLocaleDateString(intlLocale(), {
     month: "short",
     year: year ? "2-digit" : undefined,
     timeZone: "UTC",
   })
 const signed = (v: number, cur: string) => `${v > 0 ? "+" : ""}${fmt(v, cur)}`
-const pct = (part: number, whole: number) =>
-  whole ? `${part >= 0 ? "+" : ""}${((part / whole) * 100).toFixed(1)}%` : ""
+/** A ratio as a percentage in the active language, e.g. 0.032 → "3.2%" or "3,2 %". */
+const percent = (ratio: number, digits = 0, sign = false) =>
+  new Intl.NumberFormat(intlLocale(), {
+    style: "percent",
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+    signDisplay: sign ? "always" : "auto",
+  }).format(ratio)
+const pct = (part: number, whole: number) => (whole ? percent(part / whole, 1, true) : "")
 const daysBetween = (a: string, b: string) => Math.round((Date.parse(b) - Date.parse(a)) / 86_400_000)
 /** What an account is worth in lists. A card shows what's owed. */
 const shownWorth = (w: Wallet) =>
@@ -148,12 +168,16 @@ function Accounts() {
   return (
     <div className="pb-8">
       <PageHeader
-        title="Accounts"
+        title={m.accounts_title()}
         sub={
           open.length ? (
             <>
-              <span className="num">{open.length}</span> account{open.length === 1 ? "" : "s"} ·{" "}
-              {new Intl.ListFormat(LOCALE).format(currencies)}
+              <ParaglideMessage
+                message={m.accounts_count}
+                inputs={{ count: open.length }}
+                markup={{ num: ({ children }) => <span className="num">{children}</span> }}
+              />{" "}
+              · {new Intl.ListFormat(intlLocale()).format(currencies)}
             </>
           ) : undefined
         }
@@ -164,7 +188,7 @@ function Accounts() {
           className="gap-2 bg-card px-3 text-[13px] font-normal"
           onClick={() => setEditing("new")}
         >
-          <PlusIcon /> New account
+          <PlusIcon /> {m.accounts_new()}
         </Button>
       </PageHeader>
 
@@ -180,9 +204,9 @@ function Accounts() {
                 if (!list.length) return null
                 const total = list.reduce((t, w) => t + convert(shownWorth(w), w.currency, cur, meta.rates), 0)
                 return (
-                  <section key={g.title} aria-label={g.title} className="border-t first:border-t-0">
+                  <section key={g.types[0]} aria-label={g.title()} className="border-t first:border-t-0">
                     <div className="flex items-baseline justify-between px-4 pt-4 pb-1.5 md:px-5">
-                      <h2 className="text-[13px] font-medium">{g.title}</h2>
+                      <h2 className="text-[13px] font-medium">{g.title()}</h2>
                       <span className="num text-xs text-muted-foreground">{fmt(total, cur)}</span>
                     </div>
                     {list.map((w) => (
@@ -200,7 +224,7 @@ function Accounts() {
                 )
               })}
               {archived.length > 0 && (
-                <section aria-label="Archived accounts" className="border-t">
+                <section aria-label={m.accounts_archived_label()} className="border-t">
                   <div className="flex flex-wrap items-center justify-between gap-2 px-2 py-2 md:px-3">
                     <Button
                       variant="ghost"
@@ -211,11 +235,9 @@ function Accounts() {
                       <CaretRightIcon
                         className={cn("transition-transform duration-150 ease-out", showArchived && "rotate-90")}
                       />{" "}
-                      Archived ({archived.length})
+                      {m.accounts_archived_count({ count: archived.length })}
                     </Button>
-                    <span className="px-2 text-xs text-muted-foreground">
-                      Archived accounts still count in net worth
-                    </span>
+                    <span className="px-2 text-xs text-muted-foreground">{m.accounts_archived_hint()}</span>
                   </div>
                   {showArchived &&
                     archived.map((w) => (
@@ -234,7 +256,7 @@ function Accounts() {
 
             {wide && selected && (
               <Card
-                aria-label={`${selected.name} details`}
+                aria-label={m.accounts_details_label({ name: selected.name })}
                 className="sticky top-5 max-w-[400px] min-w-0 flex-[1_1_320px] gap-0 px-5 py-5"
               >
                 {detail}
@@ -256,7 +278,9 @@ function Accounts() {
       <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>{editing === "new" ? "New account" : `Edit ${editing?.name}`}</DialogTitle>
+            <DialogTitle>
+              {editing === "new" ? m.accounts_new() : m.accounts_edit_title({ name: editing?.name ?? "" })}
+            </DialogTitle>
           </DialogHeader>
           {editing && (
             <AccountForm
@@ -283,9 +307,9 @@ function Accounts() {
 // ---------- net worth hero ----------
 
 const RANGES = [
-  ["1Y", 13],
-  ["2Y", 25],
-  ["All", Infinity],
+  ["1Y", 13, m.accounts_range_1y],
+  ["2Y", 25, m.accounts_range_2y],
+  ["All", Infinity, m.accounts_range_all],
 ] as const
 
 function Hero({ overview }: { overview: AccountsOverview }) {
@@ -303,10 +327,10 @@ function Hero({ overview }: { overview: AccountsOverview }) {
   const updated = !overview.ratesUpdated
     ? null
     : age <= 0
-      ? "updated today"
+      ? m.accounts_rates_updated_today()
       : age === 1
-        ? "updated yesterday"
-        : `updated ${long(dayOf(overview.ratesUpdated, meta.tz))}`
+        ? m.accounts_rates_updated_yesterday()
+        : m.accounts_rates_updated_on({ date: long(dayOf(overview.ratesUpdated, meta.tz)) })
 
   return (
     <Card aria-labelledby="nw-h" className="flex-row flex-wrap gap-x-10 gap-y-6 px-6 max-md:px-4">
@@ -314,7 +338,7 @@ function Hero({ overview }: { overview: AccountsOverview }) {
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h2 id="nw-h" className="text-xs text-muted-foreground">
-              Net worth
+              {m.accounts_net_worth()}
             </h2>
             <BigMoney value={now} currency={cur} className="mt-2" />
             <div className="mt-2.5">
@@ -325,13 +349,15 @@ function Hero({ overview }: { overview: AccountsOverview }) {
                 <span className={cn("font-medium", change >= 0 ? "text-positive" : "text-destructive")}>
                   {signed(change, cur)} ({pct(change, yearAgo! || 1)})
                 </span>{" "}
-                <span className="text-muted-foreground">in {Math.min(12, all.length - 1)} months</span>
+                <span className="text-muted-foreground">
+                  {m.accounts_change_period({ count: Math.min(12, all.length - 1) })}
+                </span>
               </p>
             )}
           </div>
           {all.length > 13 && (
-            <div role="group" aria-label="Range" className={segment}>
-              {RANGES.map(([r]) => (
+            <div role="group" aria-label={m.accounts_range_label()} className={segment}>
+              {RANGES.map(([r, , label]) => (
                 <button
                   key={r}
                   type="button"
@@ -339,7 +365,7 @@ function Hero({ overview }: { overview: AccountsOverview }) {
                   onClick={() => setRange(r)}
                   className={segmentButton}
                 >
-                  {r}
+                  {label()}
                 </button>
               ))}
             </div>
@@ -350,9 +376,7 @@ function Hero({ overview }: { overview: AccountsOverview }) {
             <WorthChart points={points} currency={cur} />
           </Reveal>
         ) : (
-          <p className="py-10 text-sm text-muted-foreground">
-            Your net worth line starts after your first month of activity.
-          </p>
+          <p className="py-10 text-sm text-muted-foreground">{m.accounts_worth_empty()}</p>
         )}
       </div>
       <div className="flex min-w-0 flex-[1_1_280px] flex-col justify-center gap-3.5">
@@ -360,9 +384,12 @@ function Hero({ overview }: { overview: AccountsOverview }) {
         {others.length > 0 && (
           <p className="num border-t pt-3 text-xs text-muted-foreground">
             {others
-              .map(
-                (c) =>
-                  `${c.toUpperCase()} shown at ${fmt(convert(100, cur, c, meta.rates), c)} = ${fmt(100, cur).replace(/\.00$/, "")}`
+              .map((c) =>
+                m.accounts_rate_shown({
+                  currency: c.toUpperCase(),
+                  rate: fmt(convert(100, cur, c, meta.rates), c),
+                  base: fmt(100, cur).replace(/\.00$/, ""),
+                })
               )
               .join(" · ")}
             {updated && ` · ${updated}`}
@@ -403,12 +430,12 @@ function WorthChart({ points, currency }: { points: AccountsOverview["series"]; 
     ...keys.map((k) => [
       k,
       {
-        label: names.get(k) ?? "Other accounts",
+        label: names.get(k) ?? m.accounts_chart_other(),
         color: k === "other" ? "var(--chart-3)" : `var(${SERIES[+k.slice(1)]})`,
       },
     ]),
-    ["gains", { label: "Unrealized gains", color: "var(--chart-2)" }],
-    ["netWorth", { label: "Net worth", color: "var(--chart-2)" }],
+    ["gains", { label: m.accounts_chart_gains(), color: "var(--chart-2)" }],
+    ["netWorth", { label: m.accounts_net_worth(), color: "var(--chart-2)" }],
   ])
 
   return (
@@ -497,7 +524,10 @@ function WorthChart({ points, currency }: { points: AccountsOverview["series"]; 
           />
         </ComposedChart>
       </ChartContainer>
-      <ul aria-label="Chart key" className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
+      <ul
+        aria-label={m.accounts_chart_key()}
+        className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-muted-foreground"
+      >
         {keys.map((k) => (
           <li key={k} className="inline-flex min-w-0 items-center gap-1.5">
             <span
@@ -511,12 +541,12 @@ function WorthChart({ points, currency }: { points: AccountsOverview["series"]; 
         {hasGains && (
           <li className="inline-flex items-center gap-1.5">
             <span className="size-2.5 shrink-0 rounded-[3px] hatch" aria-hidden="true" />
-            Unrealized gains
+            {m.accounts_chart_gains()}
           </li>
         )}
         <li className="inline-flex items-center gap-1.5">
           <span className="h-0.5 w-3 rounded-full bg-chart-2" aria-hidden="true" />
-          Net worth
+          {m.accounts_net_worth()}
         </li>
       </ul>
     </div>
@@ -550,13 +580,13 @@ function AccountRow({
   const stale = w.type === "investment" && (age === null || age > STALE_DAYS)
 
   const sub = stale ? (
-    <span className="text-warning">{age === null ? "No value recorded yet" : `Value is ${age} days old`}</span>
+    <span className="text-warning">{age === null ? m.accounts_no_value() : m.accounts_value_age({ days: age })}</span>
   ) : (
-    `${TYPE_LABEL[w.type]} · ${w.currency.toUpperCase()}`
+    `${TYPE_LABEL[w.type]()} · ${w.currency.toUpperCase()}`
   )
   const amountSub =
     w.type === "credit" && w.credit_limit ? (
-      `${fmt(w.balance, w.currency)} available`
+      m.accounts_available({ amount: fmt(w.balance, w.currency) })
     ) : w.type === "investment" && w.gain_day && w.gain !== null ? (
       <span className={w.gain >= 0 ? "text-positive" : "text-destructive"}>
         {signed(w.gain, w.currency)} · {pct(w.gain, w.balance).replace("+", "")}
@@ -564,7 +594,7 @@ function AccountRow({
     ) : foreign ? (
       `≈ ${fmt(convert(accountWorth(w), w.currency, display, meta.rates), display)}`
     ) : data?.lastEntry ? (
-      `last entry ${short(data.lastEntry)}`
+      m.accounts_last_entry({ date: short(data.lastEntry) })
     ) : null
 
   // Months after the last valuation are a guess, so draw them dashed.
@@ -613,7 +643,10 @@ function AccountRow({
                 />
               </span>
               <span className="num text-[11px] text-muted-foreground">
-                {Math.round((owed / w.credit_limit) * 100)}% of {fmt(w.credit_limit, w.currency).replace(/\.00$/, "")}
+                {m.accounts_credit_used({
+                  percent: percent(owed / w.credit_limit),
+                  limit: fmt(w.credit_limit, w.currency).replace(/\.00$/, ""),
+                })}
               </span>
             </span>
           ) : null
@@ -673,8 +706,6 @@ function Spark({ values, dashFrom, tone }: { values: number[]; dashFrom?: number
 
 // ---------- detail panel ----------
 
-const lineConfig = { worth: { label: "Balance", color: "var(--chart-2)" } } satisfies ChartConfig
-
 function AccountDetail({
   w,
   overview,
@@ -691,11 +722,12 @@ function AccountDetail({
   const meta = useMeta()
   const router = useRouter()
   const data = overview.accounts[w.id]
-  const name = (id: string | null) => meta.wallets.find((x) => x.id === id)?.name ?? "another account"
+  const lineConfig = { worth: { label: m.accounts_balance(), color: "var(--chart-2)" } } satisfies ChartConfig
+  const name = (id: string | null) => meta.wallets.find((x) => x.id === id)?.name ?? m.accounts_another_account()
   const recent = overview.recent.filter((r) => r.wallet_id === w.id)
   const line = (data?.days ?? []).map((worth, i) => ({ day: overview.days[i], worth }))
   const monthTicks = overview.days.filter((d) => d.endsWith("-01"))
-  const m = monthShort(overview.month)
+  const month = monthShort(overview.month)
   const age = w.gain_day ? daysBetween(w.gain_day, overview.today) : null
 
   async function toggleArchive() {
@@ -712,9 +744,11 @@ function AccountDetail({
         },
       })
       await router.invalidate()
-      toast.success(w.archived ? `${w.name} restored` : `${w.name} archived`)
+      toast.success(
+        w.archived ? m.accounts_restored_toast({ name: w.name }) : m.accounts_archived_toast({ name: w.name })
+      )
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Couldn't save")
+      toast.error(err instanceof Error ? err.message : m.accounts_save_failed())
     }
   }
 
@@ -722,8 +756,8 @@ function AccountDetail({
     <div className="flex flex-col gap-5">
       <div>
         <div className="text-xs text-muted-foreground">
-          {TYPE_LABEL[w.type]} · {w.currency.toUpperCase()}
-          {w.archived ? " · Archived" : ""}
+          {TYPE_LABEL[w.type]()} · {w.currency.toUpperCase()}
+          {w.archived ? ` · ${m.accounts_archived()}` : ""}
         </div>
         <div className="mt-1.5 flex items-baseline justify-between gap-3">
           <h2 className="truncate text-xl font-semibold tracking-[-0.02em]">{w.name}</h2>
@@ -767,15 +801,15 @@ function AccountDetail({
       {data && w.type !== "investment" && (
         <dl className="grid grid-cols-3 gap-2">
           <div>
-            <dt className="text-xs text-muted-foreground">In · {m}</dt>
+            <dt className="text-xs text-muted-foreground">{m.accounts_in_month({ month })}</dt>
             <dd className={cn("num mt-0.5 text-sm", data.in > 0 && "text-positive")}>{signed(data.in, w.currency)}</dd>
           </div>
           <div>
-            <dt className="text-xs text-muted-foreground">Out · {m}</dt>
+            <dt className="text-xs text-muted-foreground">{m.accounts_out_month({ month })}</dt>
             <dd className="num mt-0.5 text-sm">{fmt(data.out, w.currency)}</dd>
           </div>
           <div>
-            <dt className="text-xs text-muted-foreground">Moved</dt>
+            <dt className="text-xs text-muted-foreground">{m.accounts_moved()}</dt>
             <dd className="num mt-0.5 text-sm text-subtle-foreground">{fmt(data.moved, w.currency)}</dd>
           </div>
         </dl>
@@ -783,18 +817,18 @@ function AccountDetail({
 
       <div>
         <div className="mb-1 flex items-baseline justify-between">
-          <h3 className="text-[13px] font-medium">Recent</h3>
+          <h3 className="text-[13px] font-medium">{m.accounts_recent()}</h3>
           {w.tx_count > 0 && (
             <Link
               to="/transactions"
               search={{ wallet: w.id }}
               className="text-xs text-muted-foreground hover:text-foreground"
             >
-              All {w.tx_count.toLocaleString(LOCALE)} →
+              {m.accounts_all_count({ n: w.tx_count.toLocaleString(intlLocale()) })}
             </Link>
           )}
         </div>
-        {recent.length === 0 && <p className="py-2 text-sm text-muted-foreground">No transactions yet.</p>}
+        {recent.length === 0 && <p className="py-2 text-sm text-muted-foreground">{m.accounts_no_transactions()}</p>}
         {recent.map((r) => (
           <div
             key={r.id}
@@ -805,7 +839,9 @@ function AccountDetail({
           >
             <span className="num text-xs text-muted-foreground">{short(r.day)}</span>
             <span className="truncate">
-              {r.transfer_id ? `${r.amount < 0 ? "→" : "←"} ${name(r.counter_wallet_id)}` : r.name || "Untitled"}
+              {r.transfer_id
+                ? `${r.amount < 0 ? "→" : "←"} ${name(r.counter_wallet_id)}`
+                : r.name || m.accounts_untitled()}
             </span>
             <span className={cn("num", !r.transfer_id && r.amount > 0 && "text-positive")}>
               {r.transfer_id ? fmt(Math.abs(r.amount), w.currency) : fmt(r.amount, w.currency)}
@@ -818,41 +854,37 @@ function AccountDetail({
         <div className="rounded-xl bg-muted px-4 py-3.5">
           <div className="text-[13px] font-medium">
             {age === null
-              ? "No value recorded yet"
+              ? m.accounts_no_value()
               : age > STALE_DAYS
-                ? `Value is ${age} days old`
-                : `Value as of ${long(w.gain_day!)}`}
+                ? m.accounts_value_age({ days: age })
+                : m.accounts_value_as_of({ date: long(w.gain_day!) })}
           </div>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            Enter today's value from your broker to keep net worth current.
-          </p>
+          <p className="mt-0.5 text-xs text-muted-foreground">{m.accounts_update_value_hint()}</p>
           <Button
             variant={age === null || age > STALE_DAYS ? "default" : "outline"}
             size="sm"
             className={cn("mt-2.5", age !== null && age <= STALE_DAYS && "bg-card")}
             onClick={onGain}
           >
-            Update gains
+            {m.accounts_update_gains()}
           </Button>
         </div>
       ) : (
         <div className="rounded-xl bg-muted px-4 py-3.5">
           <div className="text-[13px] font-medium">
-            {w.reconciled_day ? `Reconciled to ${long(w.reconciled_day)}` : "Does this match your bank?"}
+            {w.reconciled_day ? m.accounts_reconciled_to({ date: long(w.reconciled_day) }) : m.accounts_match_bank()}
           </div>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            Tick entries off your statement, or import it, and Kosha finds what's missing.
-          </p>
+          <p className="mt-0.5 text-xs text-muted-foreground">{m.accounts_reconcile_hint()}</p>
           <div className="mt-2.5 flex flex-wrap gap-2">
             <Link
               to="/reconcile"
               search={{ account: w.id }}
               className="inline-flex h-8 items-center rounded-md border bg-card px-3 text-[13px] transition-colors hover:bg-muted max-md:h-11"
             >
-              Reconcile
+              {m.accounts_reconcile()}
             </Link>
             <Button variant="ghost" size="sm" className="max-md:h-11" onClick={onFix}>
-              Fix balance
+              {m.accounts_fix_balance()}
             </Button>
           </div>
         </div>
@@ -860,10 +892,10 @@ function AccountDetail({
 
       <div className="flex items-center justify-between border-t pt-3">
         <Button variant="ghost" onClick={onEdit}>
-          Edit account
+          {m.accounts_edit_account()}
         </Button>
         <Button variant="ghost" onClick={toggleArchive}>
-          {w.archived ? "Unarchive" : "Archive"}
+          {w.archived ? m.accounts_unarchive() : m.accounts_archive()}
         </Button>
       </div>
     </div>
@@ -882,7 +914,7 @@ function FixBalanceForm({ w, onDone }: { w: Wallet; onDone: () => void }) {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
-    if (target === null) return toast.error("Enter the balance")
+    if (target === null) return toast.error(m.accounts_enter_balance())
     try {
       await saveAccount({
         data: {
@@ -896,24 +928,26 @@ function FixBalanceForm({ w, onDone }: { w: Wallet; onDone: () => void }) {
         },
       })
       await router.invalidate()
-      toast.success(correction ? `Corrected by ${signed(correction, w.currency)}` : "Balance already matches")
+      toast.success(
+        correction ? m.accounts_corrected_by({ amount: signed(correction, w.currency) }) : m.accounts_balance_matches()
+      )
       onDone()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Couldn't save")
+      toast.error(err instanceof Error ? err.message : m.accounts_save_failed())
     }
   }
 
   return (
     <form onSubmit={submit} className="grid gap-4">
       <DialogHeader>
-        <DialogTitle>Fix {w.name}</DialogTitle>
+        <DialogTitle>{m.accounts_fix_title({ name: w.name })}</DialogTitle>
         <DialogDescription>
-          {credit ? "Enter what your card statement says you owe." : "Enter the balance your bank shows."}
+          {credit ? m.accounts_fix_credit_description() : m.accounts_fix_description()}
         </DialogDescription>
       </DialogHeader>
       <div className="grid gap-1.5">
         <Label htmlFor="fix-balance">
-          {credit ? "Currently owed" : "Balance"}{" "}
+          {credit ? m.accounts_currently_owed() : m.accounts_balance()}{" "}
           <span className="text-muted-foreground uppercase">({w.currency})</span>
         </Label>
         <Input
@@ -926,10 +960,12 @@ function FixBalanceForm({ w, onDone }: { w: Wallet; onDone: () => void }) {
           onFocus={(e) => e.target.select()}
         />
         <p className="num text-xs text-muted-foreground">
-          {correction ? `Adds a balance correction of ${signed(correction, w.currency)}.` : "No correction needed."}
+          {correction
+            ? m.accounts_fix_adds_correction({ amount: signed(correction, w.currency) })
+            : m.accounts_no_correction()}
         </p>
       </div>
-      <Button type="submit">Save</Button>
+      <Button type="submit">{m.common_save()}</Button>
     </form>
   )
 }
@@ -968,7 +1004,7 @@ function AccountForm({
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
-    if (type === "credit" && !limitCents) return toast.error("Enter the credit limit")
+    if (type === "credit" && !limitCents) return toast.error(m.accounts_enter_credit_limit())
     try {
       // An empty field leaves an existing account's balance alone.
       await saveAccount({
@@ -983,10 +1019,10 @@ function AccountForm({
         },
       })
       await router.invalidate()
-      toast.success(initial ? "Account updated" : "Account added")
+      toast.success(initial ? m.accounts_updated() : m.accounts_added())
       onDone()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Couldn't save")
+      toast.error(err instanceof Error ? err.message : m.accounts_save_failed())
     }
   }
 
@@ -998,7 +1034,7 @@ function AccountForm({
       setConfirming(false)
       onDone()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Couldn't delete")
+      toast.error(err instanceof Error ? err.message : m.accounts_delete_failed())
     }
   }
 
@@ -1010,29 +1046,29 @@ function AccountForm({
   return (
     <form onSubmit={submit} className="grid gap-4">
       <div className="grid gap-1.5">
-        <Label htmlFor="acc-name">Name</Label>
+        <Label htmlFor="acc-name">{m.accounts_name()}</Label>
         <Input id="acc-name" value={name} onChange={(e) => setName(e.target.value)} autoFocus={!initial} />
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div className="grid gap-1.5">
-          <Label>Type</Label>
+          <Label>{m.accounts_type()}</Label>
           <Pick
             value={type}
             onChange={(v) => v && setType(v as AccountType)}
-            placeholder="Type"
-            options={TYPE_OPTIONS}
+            placeholder={m.accounts_type()}
+            options={typeOptions()}
             className="w-full"
           />
         </div>
         <div className="grid gap-1.5">
-          <Label>Currency</Label>
+          <Label>{m.accounts_currency()}</Label>
           {locked ? (
             <div className="flex h-8 items-center text-sm text-muted-foreground uppercase">{currency}</div>
           ) : (
             <Pick
               value={currency}
               onChange={(v) => v && setCurrency(v)}
-              placeholder="Currency"
+              placeholder={m.accounts_currency()}
               options={currencies.map((c) => ({ value: c, label: c.toUpperCase() }))}
               className="w-full"
             />
@@ -1043,7 +1079,7 @@ function AccountForm({
       {type === "credit" && (
         <div className="grid gap-1.5">
           <Label htmlFor="acc-limit">
-            Credit limit <span className="text-muted-foreground uppercase">({currency})</span>
+            {m.accounts_credit_limit()} <span className="text-muted-foreground uppercase">({currency})</span>
           </Label>
           <Input
             id="acc-limit"
@@ -1052,22 +1088,19 @@ function AccountForm({
             inputMode="decimal"
             className="num"
           />
-          <p className="text-xs text-muted-foreground">
-            The balance of this account is what's left to spend. Net worth counts the difference as debt.
-          </p>
+          <p className="text-xs text-muted-foreground">{m.accounts_credit_hint()}</p>
         </div>
       )}
-      {type === "investment" && (
-        <p className="text-xs text-muted-foreground">
-          The balance is the money you put in. Use "Update gains" from time to time to add market gains to your net
-          worth.
-        </p>
-      )}
+      {type === "investment" && <p className="text-xs text-muted-foreground">{m.accounts_investment_hint()}</p>}
 
       <div className="grid gap-1.5">
         <Label htmlFor="acc-balance">
-          {type === "credit" ? "Currently owed" : type === "investment" ? "Invested so far" : "Current balance"}{" "}
-          {!initial && <span className="text-muted-foreground">(optional)</span>}
+          {type === "credit"
+            ? m.accounts_currently_owed()
+            : type === "investment"
+              ? m.accounts_invested_so_far()
+              : m.accounts_current_balance()}{" "}
+          {!initial && <span className="text-muted-foreground">{m.accounts_optional()}</span>}
         </Label>
         <Input
           id="acc-balance"
@@ -1080,8 +1113,8 @@ function AccountForm({
         {initial && (
           <p className="num text-xs text-muted-foreground">
             {correction
-              ? `Saving adds a balance correction of ${signed(correction, currency)}.`
-              : "Enter the balance your bank shows to correct it."}
+              ? m.accounts_save_adds_correction({ amount: signed(correction, currency) })
+              : m.accounts_correct_hint()}
           </p>
         )}
       </div>
@@ -1089,13 +1122,18 @@ function AccountForm({
       {initial && (
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" checked={archived} onChange={(e) => setArchived(e.target.checked)} />
-          Archived <span className="text-muted-foreground">(hidden from quick entry, still counted in net worth)</span>
+          <span>
+            <ParaglideMessage
+              message={m.accounts_archived_checkbox}
+              markup={{ muted: ({ children }) => <span className="text-muted-foreground">{children}</span> }}
+            />
+          </span>
         </label>
       )}
 
       {valuations.length > 0 && (
         <div className="grid gap-1.5">
-          <Label>Gains history</Label>
+          <Label>{m.accounts_gains_history()}</Label>
           <div className="max-h-48 divide-y overflow-y-auto rounded-lg border">
             {valuations.map((v) => (
               <div key={v.id} className="num flex items-center justify-between gap-3 px-3 py-1.5 text-sm">
@@ -1111,7 +1149,7 @@ function AccountForm({
                   size="icon-xs"
                   onClick={() => removeValuation(v.id)}
                   className="text-muted-foreground hover:text-destructive"
-                  aria-label={`Delete entry from ${long(v.day)}`}
+                  aria-label={m.accounts_delete_valuation({ date: long(v.day) })}
                 >
                   <XIcon />
                 </Button>
@@ -1124,28 +1162,26 @@ function AccountForm({
       <div className="flex gap-2">
         {initial && !initial.tx_count && (
           <Button type="button" variant="ghost" className="text-destructive" onClick={() => setConfirming(true)}>
-            Delete
+            {m.common_delete()}
           </Button>
         )}
         <Button type="submit" className="flex-1">
-          {initial ? "Save" : "Add account"}
+          {initial ? m.common_save() : m.accounts_add_account()}
         </Button>
       </div>
 
       <Dialog open={confirming} onOpenChange={setConfirming}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>Delete {initial?.name}?</DialogTitle>
-            <DialogDescription>
-              This account has no transactions. Deleting it also deletes its gains history.
-            </DialogDescription>
+            <DialogTitle>{m.accounts_delete_title({ name: initial?.name ?? "" })}</DialogTitle>
+            <DialogDescription>{m.accounts_delete_description()}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setConfirming(false)}>
-              Cancel
+              {m.common_cancel()}
             </Button>
             <Button type="button" variant="destructive" onClick={remove}>
-              Delete account
+              {m.accounts_delete_account()}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1174,17 +1210,25 @@ function Exchanges({ list, display }: { list: Exchange[]; display: string }) {
       <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
         <div className="flex flex-wrap items-baseline gap-x-6 gap-y-1">
           <h2 id="fx-h" className="text-sm font-medium">
-            Currency exchange
+            {m.accounts_fx_title()}
           </h2>
           <p className="text-xs text-muted-foreground">
-            Sent <span className="num text-foreground">{fmt(sent, display)}</span> in {rows.length} transfer
-            {rows.length === 1 ? "" : "s"} · cost vs market{" "}
-            <span className="num text-foreground">{fmt(cost, display)}</span>
-            {sent ? ` (${((cost / sent) * 100).toFixed(2)}%)` : ""}
+            <ParaglideMessage
+              message={m.accounts_fx_sent}
+              inputs={{ count: rows.length, sent: fmt(sent, display) }}
+              markup={{ num: ({ children }) => <span className="num text-foreground">{children}</span> }}
+            />{" "}
+            ·{" "}
+            <ParaglideMessage
+              message={m.accounts_fx_cost}
+              inputs={{ cost: fmt(cost, display) }}
+              markup={{ num: ({ children }) => <span className="num text-foreground">{children}</span> }}
+            />
+            {sent ? ` (${percent(cost / sent, 2)})` : ""}
           </p>
         </div>
         {years.length > 1 && (
-          <div role="group" aria-label="Year" className={segment}>
+          <div role="group" aria-label={m.accounts_fx_year()} className={segment}>
             {years.map((y) => (
               <button
                 key={y}
@@ -1203,13 +1247,13 @@ function Exchanges({ list, display }: { list: Exchange[]; display: string }) {
         <table className="num w-full min-w-[640px] text-[13px]">
           <thead className="text-xs text-muted-foreground">
             <tr className="border-b text-left [&>th]:px-3 [&>th]:py-2 [&>th]:font-normal">
-              <th>Date</th>
-              <th>Route</th>
-              <th className="text-right">Sent</th>
-              <th className="text-right">Rate</th>
-              <th className="text-right">Market</th>
-              <th className="text-right">Received</th>
-              <th className="text-right">Cost</th>
+              <th>{m.accounts_fx_date()}</th>
+              <th>{m.accounts_fx_route()}</th>
+              <th className="text-right">{m.accounts_fx_sent_column()}</th>
+              <th className="text-right">{m.accounts_fx_rate()}</th>
+              <th className="text-right">{m.accounts_fx_market()}</th>
+              <th className="text-right">{m.accounts_fx_received()}</th>
+              <th className="text-right">{m.accounts_fx_cost_column()}</th>
             </tr>
           </thead>
           <tbody className="divide-y">
@@ -1225,17 +1269,16 @@ function Exchanges({ list, display }: { list: Exchange[]; display: string }) {
                 <td className="text-right text-muted-foreground">{x.market_rate ? fmtRate(x.market_rate) : "—"}</td>
                 <td className="text-right">{fmt(x.received, x.to_currency)}</td>
                 <td className={cn("text-right", fx.totalCost < -0.5 && "text-positive")}>
-                  {x.market_rate || x.fee ? `${fmt(fx.totalCost, x.from_currency)} · ${fx.costPct.toFixed(2)}%` : "—"}
+                  {x.market_rate || x.fee
+                    ? `${fmt(fx.totalCost, x.from_currency)} · ${percent(fx.costPct / 100, 2)}`
+                    : "—"}
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-      <p className="text-xs text-muted-foreground">
-        Cost is the fee plus what the provider's rate lost against the market rate that day. Negative means you beat the
-        market. Edit a transfer from Activity to add its fee or provider.
-      </p>
+      <p className="text-xs text-muted-foreground">{m.accounts_fx_footer()}</p>
     </Card>
   )
 }

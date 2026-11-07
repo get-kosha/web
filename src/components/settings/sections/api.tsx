@@ -16,18 +16,19 @@ import {
 import { Expand, Pill, Segmented, SettingGroup, SettingRow } from "@/components/settings/row"
 import { errorOf } from "@/components/settings/saved"
 import { addApiKey, removeApiKey, removeConnectedApp } from "@/lib/api"
-import { LOCALE } from "@/lib/core"
+import { intlLocale } from "@/lib/core"
+import { m } from "@/paraglide/messages"
 
 const useAccess = () => getRouteApi("/_app/settings/$section").useLoaderData({ select: (d) => d.api! })
 type Access = ReturnType<typeof useAccess>
 
 const date = (ms: number) =>
-  new Date(ms).toLocaleDateString(LOCALE, { day: "numeric", month: "short", year: "numeric" })
+  new Date(ms).toLocaleDateString(intlLocale(), { day: "numeric", month: "short", year: "numeric" })
 
-function copy(text: string, what: string) {
+function copy(text: string, done: string) {
   navigator.clipboard.writeText(text).then(
-    () => toast.success(`${what} copied`),
-    () => toast.error("Couldn’t copy. Select it and copy it yourself.")
+    () => toast.success(done),
+    () => toast.error(m.settings_api_copy_failed())
   )
 }
 
@@ -36,22 +37,19 @@ export function ApiAccess() {
   const access = useAccess()
   return (
     <>
-      <SettingGroup
-        label="AI assistants"
-        note="In Claude, ChatGPT or Cursor, add a custom connector with this URL. You’ll sign in to Kosha and choose whether it can make changes."
-      >
+      <SettingGroup label={m.settings_api_assistants()} note={m.settings_api_assistants_note()}>
         <SettingRow
           id="mcp-url"
-          title="MCP server URL"
-          description="Gives an assistant the same tools the API has: search, add, recategorise, reports."
+          title={m.settings_api_mcp_title()}
+          description={m.settings_api_mcp_description()}
           control={
             <>
               <code className="num rounded-md bg-muted px-2 py-1 text-xs break-all">{access.mcpUrl}</code>
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => copy(access.mcpUrl, "URL")}
-                aria-label="Copy MCP server URL"
+                onClick={() => copy(access.mcpUrl, m.settings_api_url_copied())}
+                aria-label={m.settings_api_copy_mcp()}
               >
                 <CopyIcon />
               </Button>
@@ -61,18 +59,18 @@ export function ApiAccess() {
         <ConnectedApps apps={access.apps} />
       </SettingGroup>
       <ApiKeys keys={access.keys} />
-      <SettingGroup label="Reference">
+      <SettingGroup label={m.settings_api_reference()}>
         <SettingRow
           id="api-docs"
-          title="API reference"
-          description="Every operation with its fields and examples, from the same list the MCP tools use."
+          title={m.settings_api_docs_title()}
+          description={m.settings_api_docs_description()}
           control={
             <Button
               variant="outline"
               nativeButton={false}
               render={<a href={access.docsUrl} target="_blank" rel="noreferrer" />}
             >
-              Open <ArrowSquareOutIcon />
+              {m.settings_api_open()} <ArrowSquareOutIcon />
             </Button>
           }
         />
@@ -90,7 +88,7 @@ function ConnectedApps({ apps }: { apps: Access["apps"] }) {
     try {
       await removeConnectedApp({ data: { clientId: removing.clientId } })
       await router.invalidate()
-      toast.success(`${removing.name} disconnected`)
+      toast.success(m.settings_api_app_disconnected({ name: removing.name }))
     } catch (e) {
       toast.error(errorOf(e))
     }
@@ -99,40 +97,46 @@ function ConnectedApps({ apps }: { apps: Access["apps"] }) {
 
   return (
     <div id="connected-apps" className="border-t">
-      <div className="px-5 pt-4 pb-1 text-sm font-medium max-md:px-4">Connected apps</div>
-      {apps.length === 0 && <p className="px-5 pb-4 text-[13px] text-muted-foreground max-md:px-4">None yet.</p>}
+      <div className="px-5 pt-4 pb-1 text-sm font-medium max-md:px-4">{m.settings_api_connected_apps()}</div>
+      {apps.length === 0 && (
+        <p className="px-5 pb-4 text-[13px] text-muted-foreground max-md:px-4">{m.settings_api_none()}</p>
+      )}
       {apps.map((a) => (
         <div key={a.clientId} className="flex min-h-[60px] items-center gap-3 px-5 py-3 max-md:px-4">
           <span className="min-w-0 flex-1">
             <span className="flex items-center gap-2 text-sm">
               <span className="truncate">{a.name}</span>
-              <Pill tone={a.write ? "warning" : "muted"}>{a.write ? "Can make changes" : "Read-only"}</Pill>
+              <Pill tone={a.write ? "warning" : "muted"}>
+                {a.write ? m.settings_api_can_write() : m.settings_api_app_read_only()}
+              </Pill>
             </span>
             <span className="block truncate text-xs text-muted-foreground">
-              {[a.host, `connected ${date(a.connectedAt)}`, a.lastUsedAt && `signed in ${date(a.lastUsedAt)}`]
+              {[
+                a.host,
+                m.settings_api_connected_on({ date: date(a.connectedAt) }),
+                a.lastUsedAt && m.settings_api_signed_in_on({ date: date(a.lastUsedAt) }),
+              ]
                 .filter(Boolean)
                 .join(" · ")}
             </span>
           </span>
           <Button variant="ghost" size="sm" onClick={() => setRemoving(a)}>
-            Disconnect
+            {m.settings_api_disconnect()}
           </Button>
         </div>
       ))}
       <Dialog open={!!removing} onOpenChange={(o) => !o && setRemoving(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Disconnect {removing?.name}?</DialogTitle>
-            <DialogDescription>
-              It loses access straight away. To use it again, connect it from the app and sign in.
-            </DialogDescription>
+            <DialogTitle>{m.settings_api_disconnect_title({ name: removing?.name ?? "" })}</DialogTitle>
+            <DialogDescription>{m.settings_api_disconnect_body()}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setRemoving(null)}>
-              Cancel
+              {m.common_cancel()}
             </Button>
             <Button variant="destructive" onClick={disconnect}>
-              Disconnect
+              {m.settings_api_disconnect()}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -171,7 +175,7 @@ function ApiKeys({ keys }: { keys: Access["keys"] }) {
     try {
       await removeApiKey({ data: { id: deleting.id } })
       await router.invalidate()
-      toast.success(`${deleting.name} deleted`)
+      toast.success(m.settings_api_key_deleted({ name: deleting.name }))
     } catch (e) {
       toast.error(errorOf(e))
     }
@@ -180,8 +184,8 @@ function ApiKeys({ keys }: { keys: Access["keys"] }) {
 
   return (
     <SettingGroup
-      label="API keys"
-      note="For your own scripts and shortcuts. Send a key as Authorization: Bearer kosha_…. Anyone with a key can use it, so keep it secret."
+      label={m.settings_api_keys()}
+      note={m.settings_api_keys_note()}
       actions={
         <Button
           variant="outline"
@@ -190,7 +194,7 @@ function ApiKeys({ keys }: { keys: Access["keys"] }) {
           onClick={() => setAdding((a) => !a)}
           aria-expanded={adding}
         >
-          <PlusIcon /> New key
+          <PlusIcon /> {m.settings_api_new_key()}
         </Button>
       }
     >
@@ -198,53 +202,58 @@ function ApiKeys({ keys }: { keys: Access["keys"] }) {
         <Expand open={adding}>
           <form onSubmit={create} className="grid gap-3 p-4">
             <div className="grid gap-1.5">
-              <Label htmlFor="key-name">Name</Label>
+              <Label htmlFor="key-name">{m.settings_api_name()}</Label>
               <Input
                 id="key-name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Bank import script"
+                placeholder={m.settings_api_name_placeholder()}
                 maxLength={60}
                 required
               />
             </div>
             <Segmented
-              label="What the key can do"
+              label={m.settings_api_scope()}
               value={scope}
               onChange={setScope}
               options={[
-                ["read", "Read only"],
-                ["write", "Read & write"],
+                ["read", m.settings_api_read_only()],
+                ["write", m.settings_api_read_write()],
               ]}
             />
             <div className="flex justify-end gap-2">
               <Button type="button" variant="ghost" onClick={() => setAdding(false)}>
-                Cancel
+                {m.common_cancel()}
               </Button>
               <Button type="submit" disabled={busy || !name.trim()}>
-                Create key
+                {m.settings_api_create()}
               </Button>
             </div>
           </form>
         </Expand>
         {created && (
           <div className="grid gap-2 border-b bg-brand-soft/40 p-4" role="status">
-            <p className="text-sm font-medium">Copy {created.name} now. You won’t see it again.</p>
+            <p className="text-sm font-medium">{m.settings_api_created({ name: created.name })}</p>
             <div className="flex items-center gap-2">
               <code className="num min-w-0 flex-1 rounded-md border bg-card px-2 py-1.5 text-xs break-all">
                 {created.key}
               </code>
-              <Button variant="outline" size="sm" onClick={() => copy(created.key, "Key")} aria-label="Copy API key">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => copy(created.key, m.settings_api_key_copied())}
+                aria-label={m.settings_api_copy_key()}
+              >
                 <CopyIcon />
               </Button>
             </div>
             <Button variant="ghost" size="sm" className="justify-self-end" onClick={() => setCreated(null)}>
-              Done
+              {m.common_done()}
             </Button>
           </div>
         )}
         {keys.length === 0 && !adding && (
-          <p className="px-5 py-4 text-sm text-muted-foreground max-md:px-4">No keys yet.</p>
+          <p className="px-5 py-4 text-sm text-muted-foreground max-md:px-4">{m.settings_api_no_keys()}</p>
         )}
         {keys.map((k) => (
           <div
@@ -256,18 +265,25 @@ function ApiKeys({ keys }: { keys: Access["keys"] }) {
               <span className="flex items-center gap-2 text-sm">
                 <span className="truncate">{k.name}</span>
                 <Pill tone={k.scope === "write" ? "warning" : "muted"}>
-                  {k.scope === "write" ? "Read & write" : "Read only"}
+                  {k.scope === "write" ? m.settings_api_read_write() : m.settings_api_read_only()}
                 </Pill>
               </span>
               <span className="num block truncate text-xs text-muted-foreground">
                 {[
                   `kosha_…${k.hint}`,
-                  `made ${date(k.created_at * 1000)}`,
-                  k.last_used_at ? `used ${date(k.last_used_at * 1000)}` : "never used",
+                  m.settings_api_made_on({ date: date(k.created_at * 1000) }),
+                  k.last_used_at
+                    ? m.settings_api_used_on({ date: date(k.last_used_at * 1000) })
+                    : m.settings_api_never_used(),
                 ].join(" · ")}
               </span>
             </span>
-            <Button variant="ghost" size="sm" onClick={() => setDeleting(k)} aria-label={`Delete ${k.name}`}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setDeleting(k)}
+              aria-label={m.settings_api_delete_key({ name: k.name })}
+            >
               <TrashIcon />
             </Button>
           </div>
@@ -276,15 +292,15 @@ function ApiKeys({ keys }: { keys: Access["keys"] }) {
       <Dialog open={!!deleting} onOpenChange={(o) => !o && setDeleting(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete {deleting?.name}?</DialogTitle>
-            <DialogDescription>Anything using this key stops working straight away.</DialogDescription>
+            <DialogTitle>{m.settings_api_delete_title({ name: deleting?.name ?? "" })}</DialogTitle>
+            <DialogDescription>{m.settings_api_delete_body()}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleting(null)}>
-              Cancel
+              {m.common_cancel()}
             </Button>
             <Button variant="destructive" onClick={remove}>
-              Delete
+              {m.common_delete()}
             </Button>
           </DialogFooter>
         </DialogContent>

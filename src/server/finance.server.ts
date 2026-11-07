@@ -3,6 +3,7 @@
 // Every query is scoped by user_id, joins included.
 
 import { z } from "zod"
+import { m } from "@/paraglide/messages"
 import {
   CORRECTION_CATEGORY,
   NEUTRAL_SQL,
@@ -111,7 +112,7 @@ export type Event = {
 
 const day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/)
 /** "HH:MM", 24-hour, in the user's time zone. Left out, the time follows `entryDate`. */
-const time = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Use a 24-hour time like 09:30")
+const time = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, { error: () => m.server_time_format() })
 const month = z.string().regex(/^\d{4}-\d{2}$/)
 const currency = z.string().regex(/^[a-z]{3,6}$/)
 const tags = z
@@ -119,7 +120,7 @@ const tags = z
   .max(MAX_TAGS)
   .transform((t) => [...new Set(t.filter(Boolean))])
 const ids = (list: string[]) => JSON.stringify(list)
-const notFound = (what: string) => new HttpError(404, `${what} not found`)
+const notFound = (message: string) => new HttpError(404, message)
 
 // ---------- meta: everything most screens need ----------
 
@@ -550,11 +551,15 @@ export async function payeeHistory(uid: string, name: string) {
 export const eventInput = z
   .object({
     id: z.string().optional(),
-    name: z.string().trim().min(1, "Give the event a name").max(80),
+    name: z
+      .string()
+      .trim()
+      .min(1, { error: () => m.server_event_name_required() })
+      .max(80),
     startDay: day.nullable(),
     endDay: day.nullable(),
   })
-  .refine((e) => !e.startDay || !e.endDay || e.endDay >= e.startDay, "The end is before the start")
+  .refine((e) => !e.startDay || !e.endDay || e.endDay >= e.startDay, { error: () => m.server_event_end_before_start() })
 
 export async function saveEvent(uid: string, data: z.infer<typeof eventInput>) {
   const DB = db()
@@ -566,7 +571,7 @@ export async function saveEvent(uid: string, data: z.infer<typeof eventInput>) {
     : await DB.prepare("INSERT INTO events (user_id, id, name, start_day, end_day) VALUES (?, ?, ?, ?, ?)")
         .bind(uid, id, data.name, data.startDay, data.endDay)
         .run()
-  if (!res.meta.changes) throw notFound("Event")
+  if (!res.meta.changes) throw notFound(m.server_event_not_found())
   return id
 }
 
@@ -589,7 +594,7 @@ export const saveInput = z.object({
   amount: z
     .number()
     .int()
-    .refine((n) => n !== 0, "Amount is required"),
+    .refine((n) => n !== 0, { error: () => m.server_amount_required() }),
   day,
   time: time.optional(),
   paid: z.boolean().default(true),
@@ -619,14 +624,20 @@ export async function saveTransactions(uid: string, items: SaveTx[]) {
       .all<{ id: string; date: number }>()
     for (const r of results) existing.set(r.id, r.date)
     const missing = editIds.find((id) => !existing.has(id))
-    if (missing) throw notFound(items.length > 1 ? `Transaction ${missing}` : "Transaction")
+    if (missing)
+      throw notFound(
+        items.length > 1 ? m.server_transaction_id_not_found({ id: missing }) : m.server_transaction_not_found()
+      )
   }
   // An event id must be one of this user's; a new entry without one gets the event covering its day.
   const { results: events } = await DB.prepare("SELECT id, start_day, end_day FROM events WHERE user_id = ?")
     .bind(uid)
     .all<{ id: string; start_day: string | null; end_day: string | null }>()
   const badEvent = items.find((t) => t.eventId && !events.some((e) => e.id === t.eventId))
-  if (badEvent) throw notFound(items.length > 1 ? `Event ${badEvent.eventId}` : "Event")
+  if (badEvent)
+    throw notFound(
+      items.length > 1 ? m.server_event_id_not_found({ id: badEvent.eventId! }) : m.server_event_not_found()
+    )
   const update = DB.prepare(`UPDATE transactions SET wallet_id = ?1, category_id = ?2,
     subcategory_id = CASE WHEN ?10 = 1 THEN ?11 WHEN category_id = ?2 THEN subcategory_id ELSE NULL END,
     tags = COALESCE(?12, tags), event_id = CASE WHEN ?13 = 1 THEN ?14 ELSE event_id END,
@@ -753,8 +764,8 @@ export const transferInput = z
     time: time.optional(),
     note: z.string().max(2000).default(""),
   })
-  .refine((d) => d.fromWalletId !== d.toWalletId, "Pick two different accounts")
-  .refine((d) => d.fee < d.sent, "The fee must be less than the amount sent")
+  .refine((d) => d.fromWalletId !== d.toWalletId, { error: () => m.server_pick_two_accounts() })
+  .refine((d) => d.fee < d.sent, { error: () => m.server_fee_too_high() })
 type SaveTransfer = z.infer<typeof transferInput>
 
 /** Creates or edits transfers, both halves and the fee, in one atomic batch. Returns their transfer ids. */
@@ -781,7 +792,7 @@ export async function saveTransfers(uid: string, items: SaveTransfer[]) {
           .bind(uid, data.transferId)
           .all<Tx>()
       : { results: [] as Tx[] }
-    if (data.transferId && !legs.length) throw notFound("Transfer")
+    if (data.transferId && !legs.length) throw notFound(m.server_transfer_not_found())
     const outLeg = legs.find((l) => l.amount < 0)
     const inLeg = legs.find((l) => l.amount > 0)
     const date = entryDate(data.day, tz, now, data.time, outLeg?.date)
@@ -898,9 +909,9 @@ export async function saveSettings(uid: string, data: z.infer<typeof settingsInp
   try {
     new Intl.DateTimeFormat("en", { timeZone: data.tz })
   } catch {
-    throw new HttpError(400, `Unknown time zone: ${data.tz}`)
+    throw new HttpError(400, m.server_unknown_time_zone({ tz: data.tz }))
   }
-  if (!(await getRates())[data.primary]) throw new HttpError(400, `No exchange rate for ${data.primary}`)
+  if (!(await getRates())[data.primary]) throw new HttpError(400, m.server_no_exchange_rate({ currency: data.primary }))
   const DB = db()
   const set = DB.prepare(
     "INSERT INTO settings (user_id, key, value) VALUES (?, ?, ?) ON CONFLICT(user_id, key) DO UPDATE SET value = excluded.value"
@@ -965,7 +976,7 @@ export const subInput = z.object({
   amount: z
     .number()
     .int()
-    .refine((n) => n !== 0, "Amount is required"),
+    .refine((n) => n !== 0, { error: () => m.server_amount_required() }),
   note: z.string().max(2000).default(""),
   every: z.number().int().min(1).max(365),
   unit: z.enum(["day", "week", "month", "year"]),
@@ -987,9 +998,9 @@ export async function saveSubscription(uid: string, data: z.infer<typeof subInpu
   const old = data.id
     ? await DB.prepare("SELECT * FROM subscriptions WHERE user_id = ? AND id = ?").bind(uid, id).first<Schedule>()
     : null
-  if (data.id && !old) throw notFound("Subscription")
+  if (data.id && !old) throw notFound(m.server_subscription_not_found())
   const transfer = !!data.toWalletId
-  if (transfer && data.toWalletId === data.walletId) throw new HttpError(400, "Pick two different accounts")
+  if (transfer && data.toWalletId === data.walletId) throw new HttpError(400, m.server_pick_two_accounts())
   const values = [
     data.name,
     data.walletId,
@@ -1098,14 +1109,13 @@ export async function updateOccurrence(uid: string, data: z.infer<typeof occurre
         to_currency: string | null
       }
     >()
-  if (!sub) throw notFound("Subscription")
+  if (!sub) throw notFound(m.server_subscription_not_found())
   const existing = await DB.prepare(
     "SELECT * FROM transactions WHERE user_id = ? AND subscription_id = ? AND due_day = ?"
   )
     .bind(uid, data.id, data.dueDay)
     .first<Tx>()
-  if (existing?.paid && data.action !== "edit")
-    throw new HttpError(409, "Already paid. Edit it from the history instead")
+  if (existing?.paid && data.action !== "edit") throw new HttpError(409, m.server_already_paid())
 
   const otherHalf = existing?.transfer_id
     ? await DB.prepare("SELECT * FROM transactions WHERE user_id = ? AND transfer_id = ? AND id <> ?")
@@ -1201,7 +1211,8 @@ export const saveAccount = async (uid: string, data: z.infer<typeof accountInput
 /** Creates or edits accounts in one batch, so the list saves whole or not at all. Returns their ids in order. */
 export async function saveAccounts(uid: string, items: z.infer<typeof accountInput>[]) {
   const DB = db()
-  const label = (i: number) => (items.length > 1 ? `Account ${i + 1}` : "Account")
+  const notFoundAt = (i: number) =>
+    notFound(items.length > 1 ? m.server_account_id_not_found({ id: i + 1 }) : m.server_account_not_found())
   const editIds = items.flatMap((a) => (a.id ? [a.id] : []))
   const { results: old } = editIds.length
     ? await DB.prepare(`SELECT id, currency, (SELECT COUNT(*) FROM transactions WHERE user_id = wallets.user_id AND wallet_id = wallets.id) AS n
@@ -1215,12 +1226,11 @@ export async function saveAccounts(uid: string, items: z.infer<typeof accountInp
     const limit = data.type === "credit" ? data.creditLimit : null
     const id = data.id ?? crypto.randomUUID()
     if (data.gain !== undefined && data.type !== "investment")
-      throw new HttpError(400, "Gains can only be recorded for investment accounts")
+      throw new HttpError(400, m.server_gains_investment_only())
     if (data.id) {
       const was = old.find((w) => w.id === data.id)
-      if (!was) throw notFound(label(i))
-      if (was.currency !== data.currency && was.n > 0)
-        throw new HttpError(409, "Currency can't change once an account has transactions")
+      if (!was) throw notFoundAt(i)
+      if (was.currency !== data.currency && was.n > 0) throw new HttpError(409, m.server_currency_locked())
       writes.push(
         DB.prepare(
           "UPDATE wallets SET name = ?, type = ?, currency = ?, credit_limit = ?, archived = ? WHERE user_id = ? AND id = ?"
@@ -1249,7 +1259,7 @@ export async function saveAccounts(uid: string, items: z.infer<typeof accountInp
           uid,
           crypto.randomUUID(),
           id,
-          data.id ? "Balance correction" : "Opening balance",
+          data.id ? m.server_balance_correction() : m.server_opening_balance(),
           data.balance
         )
       )
@@ -1279,8 +1289,8 @@ export async function deleteAccount(uid: string, id: string) {
     (SELECT COUNT(*) FROM wallets WHERE user_id = ?1 AND id = ?2) AS found`)
     .bind(uid, id)
     .first<{ n: number; found: number }>()
-  if (!used?.found) throw notFound("Account")
-  if (used.n) throw new HttpError(409, "This account has transactions. Archive it instead.")
+  if (!used?.found) throw notFound(m.server_account_not_found())
+  if (used.n) throw new HttpError(409, m.server_account_has_transactions())
   await DB.batch([
     DB.prepare("DELETE FROM valuations WHERE user_id = ? AND wallet_id = ?").bind(uid, id),
     DB.prepare("DELETE FROM reconciliations WHERE user_id = ? AND wallet_id = ?").bind(uid, id),
@@ -1313,8 +1323,11 @@ export async function recordGains(uid: string, items: z.infer<typeof gainInput>[
     ON CONFLICT(user_id, wallet_id, day) DO UPDATE SET gain = excluded.gain, invested = excluded.invested, note = excluded.note`)
   const writes = items.map((g) => {
     const w = results.find((r) => r.id === g.walletId)
-    if (!w) throw notFound(items.length > 1 ? `Account ${g.walletId}` : "Account")
-    if (w.type !== "investment") throw new HttpError(400, "Gains can only be recorded for investment accounts")
+    if (!w)
+      throw notFound(
+        items.length > 1 ? m.server_account_id_not_found({ id: g.walletId }) : m.server_account_not_found()
+      )
+    if (w.type !== "investment") throw new HttpError(400, m.server_gains_investment_only())
     return upsert.bind(uid, crypto.randomUUID(), g.walletId, g.day, g.gain, w.invested, g.note.trim())
   })
   if (writes.length) await DB.batch(writes)
@@ -1509,7 +1522,7 @@ async function loadCategory(uid: string, id: string) {
     .prepare("SELECT id, income, parent_id, archived FROM categories WHERE user_id = ? AND id = ?")
     .bind(uid, id)
     .first<CatRow>()
-  if (!c) throw notFound("Category")
+  if (!c) throw notFound(m.server_category_not_found())
   return c
 }
 const hasChildren = async (uid: string, id: string) =>
@@ -1517,7 +1530,11 @@ const hasChildren = async (uid: string, id: string) =>
 
 export const categoryInput = z.object({
   id: z.string().optional(),
-  name: z.string().trim().min(1, "Name is required").max(60),
+  name: z
+    .string()
+    .trim()
+    .min(1, { error: () => m.server_category_name_required() })
+    .max(60),
   icon: z.string().max(40).nullable(),
   income: z.boolean(),
   parentId: z.string().nullable(),
@@ -1533,11 +1550,11 @@ export async function saveCategory(uid: string, data: z.infer<typeof categoryInp
     return old.id
   }
   if (data.parentId) {
-    if (data.parentId === data.id || isNeutral(data.parentId)) throw new HttpError(400, "Pick another parent")
+    if (data.parentId === data.id || isNeutral(data.parentId)) throw new HttpError(400, m.server_pick_another_parent())
     const parent = await loadCategory(uid, data.parentId)
-    if (parent.parent_id) throw new HttpError(400, "Subcategories can't have their own subcategories")
-    if (!!parent.income !== data.income) throw new HttpError(400, "A subcategory must be the same type as its parent")
-    if (old && (await hasChildren(uid, old.id))) throw new HttpError(409, "Move this category's subcategories first")
+    if (parent.parent_id) throw new HttpError(400, m.server_no_nested_subcategories())
+    if (!!parent.income !== data.income) throw new HttpError(400, m.server_subcategory_same_type())
+    if (old && (await hasChildren(uid, old.id))) throw new HttpError(409, m.server_move_subcategories_first())
   }
   const id = old?.id ?? crypto.randomUUID()
   const income = data.income ? 1 : 0
@@ -1590,7 +1607,7 @@ export async function saveCategory(uid: string, data: z.infer<typeof categoryInp
 /** Archived categories leave every picker but keep their history. Archiving a parent archives its subcategories;
  *  restoring a subcategory restores its parent. */
 export async function archiveCategory(uid: string, data: { id: string; archived: boolean }) {
-  if (isSystemCategory(data.id)) throw new HttpError(400, "This category is used by Kosha and can't be archived")
+  if (isSystemCategory(data.id)) throw new HttpError(400, m.server_system_category_archive())
   const c = await loadCategory(uid, data.id)
   await db()
     .prepare("UPDATE categories SET archived = ? WHERE user_id = ? AND (id = ? OR parent_id = ? OR id = ?)")
@@ -1601,14 +1618,13 @@ export async function archiveCategory(uid: string, data: { id: string; archived:
 /** Moves everything that uses a category (transactions, recurring, title rules, subcategories) into another, then deletes it. */
 export async function mergeCategory(uid: string, data: { id: string; into: string }) {
   const DB = db()
-  if (isSystemCategory(data.id)) throw new HttpError(400, "This category is used by Kosha and can't be merged")
-  if (data.id === data.into || isNeutral(data.into)) throw new HttpError(400, "Pick another category")
+  if (isSystemCategory(data.id)) throw new HttpError(400, m.server_system_category_merge())
+  if (data.id === data.into || isNeutral(data.into)) throw new HttpError(400, m.server_pick_another_category())
   const [from, into] = await Promise.all([loadCategory(uid, data.id), loadCategory(uid, data.into)])
-  if (!!from.income !== !!into.income) throw new HttpError(400, "Merge into a category of the same type")
-  if (into.parent_id === from.id) throw new HttpError(400, "Can't merge a category into its own subcategory")
+  if (!!from.income !== !!into.income) throw new HttpError(400, m.server_merge_same_type())
+  if (into.parent_id === from.id) throw new HttpError(400, m.server_merge_into_own_subcategory())
   const fromHasChildren = await hasChildren(uid, from.id)
-  if (into.parent_id && fromHasChildren)
-    throw new HttpError(400, "This category has subcategories, so it can only merge into a top-level category")
+  if (into.parent_id && fromHasChildren) throw new HttpError(400, m.server_merge_top_level_only())
   const top = into.parent_id ?? into.id
   const sub = into.parent_id ? into.id : null
   await DB.batch([
@@ -1638,7 +1654,7 @@ export async function mergeCategory(uid: string, data: { id: string; into: strin
 /** Deletes a category nothing uses. Anything in use is merged or archived instead. */
 export async function deleteCategory(uid: string, id: string) {
   const DB = db()
-  if (isSystemCategory(id)) throw new HttpError(400, "This category is used by Kosha and can't be deleted")
+  if (isSystemCategory(id)) throw new HttpError(400, m.server_system_category_delete())
   await loadCategory(uid, id)
   const used = await DB.prepare(`SELECT
       (SELECT COUNT(*) FROM transactions WHERE user_id = ?1 AND (category_id = ?2 OR subcategory_id = ?2))
@@ -1646,7 +1662,7 @@ export async function deleteCategory(uid: string, id: string) {
     + (SELECT COUNT(*) FROM categories WHERE user_id = ?1 AND parent_id = ?2) AS n`)
     .bind(uid, id)
     .first<{ n: number }>()
-  if (used?.n) throw new HttpError(409, "This category is in use. Merge it into another instead")
+  if (used?.n) throw new HttpError(409, m.server_category_in_use())
   await DB.batch([
     DB.prepare("DELETE FROM title_rules WHERE user_id = ? AND category_id = ?").bind(uid, id),
     DB.prepare("DELETE FROM categories WHERE user_id = ? AND id = ?").bind(uid, id),
@@ -1698,7 +1714,11 @@ export async function listTitleRules(uid: string, data: z.infer<typeof rulesInpu
 
 export const ruleInput = z.object({
   old: z.string().max(100).optional(),
-  title: z.string().trim().min(1, "Type a payee").max(100),
+  title: z
+    .string()
+    .trim()
+    .min(1, { error: () => m.server_payee_required() })
+    .max(100),
   exact: z.boolean(),
   categoryId: z.string(),
 })
@@ -1713,9 +1733,11 @@ export async function saveTitleRules(uid: string, items: z.infer<typeof ruleInpu
     .bind(uid, ids(cats))
     .all<{ id: string }>()
   const writes = items.flatMap((data) => {
-    if (isNeutral(data.categoryId)) throw new HttpError(400, "Pick a spending or income category")
+    if (isNeutral(data.categoryId)) throw new HttpError(400, m.server_rule_pick_category())
     if (!results.some((c) => c.id === data.categoryId))
-      throw notFound(items.length > 1 ? `Category ${data.categoryId}` : "Category")
+      throw notFound(
+        items.length > 1 ? m.server_category_id_not_found({ id: data.categoryId }) : m.server_category_not_found()
+      )
     return [
       ...(data.old && data.old.toLowerCase() !== data.title.toLowerCase()
         ? [DB.prepare("DELETE FROM title_rules WHERE user_id = ? AND title = ?").bind(uid, data.old)]

@@ -1,0 +1,361 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "accounts_head_title": "계좌 · Kosha",
+  "accounts_title": "계좌",
+  "accounts_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "계좌 {#num}{count}{/num}개"
+      }
+    }
+  ],
+  "accounts_new": "새 계좌",
+  "accounts_group_bank_cash": "은행 및 현금",
+  "accounts_group_credit": "신용카드",
+  "accounts_group_investment": "투자",
+  "accounts_type_bank_account": "은행 계좌",
+  "accounts_type_bank": "은행",
+  "accounts_type_cash": "현금",
+  "accounts_type_credit": "신용카드",
+  "accounts_type_investment": "투자",
+  "accounts_archived": "보관됨",
+  "accounts_archived_count": "보관됨 ({count})",
+  "accounts_archived_label": "보관된 계좌",
+  "accounts_archived_hint": "보관된 계좌도 순자산에 포함돼요",
+  "accounts_details_label": "{name} 상세 정보",
+  "accounts_edit_title": "{name} 편집",
+  "accounts_rates_updated_today": "오늘 업데이트됨",
+  "accounts_rates_updated_yesterday": "어제 업데이트됨",
+  "accounts_rates_updated_on": "{date} 업데이트됨",
+  "accounts_rate_shown": "{currency} 환산: {rate} = {base}",
+  "accounts_net_worth": "순자산",
+  "accounts_change_period": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count}개월 동안"
+      }
+    }
+  ],
+  "accounts_range_label": "기간",
+  "accounts_range_1y": "1년",
+  "accounts_range_2y": "2년",
+  "accounts_range_all": "전체",
+  "accounts_worth_empty": "순자산 그래프는 첫 한 달의 기록이 쌓인 뒤부터 그려져요.",
+  "accounts_chart_other": "기타 계좌",
+  "accounts_chart_gains": "평가 손익",
+  "accounts_chart_key": "범례",
+  "accounts_no_value": "아직 기록된 평가액이 없어요",
+  "accounts_value_age": "{days}일 전 평가액이에요",
+  "accounts_value_as_of": "{date} 기준 평가액",
+  "accounts_available": "{amount} 사용 가능",
+  "accounts_last_entry": "마지막 거래 {date}",
+  "accounts_credit_used": "{limit} 중 {percent}",
+  "accounts_balance": "잔액",
+  "accounts_another_account": "다른 계좌",
+  "accounts_restored_toast": "{name} 복원됨",
+  "accounts_archived_toast": "{name} 보관됨",
+  "accounts_save_failed": "저장하지 못했어요",
+  "accounts_delete_failed": "삭제하지 못했어요",
+  "accounts_in_month": "수입 · {month}",
+  "accounts_out_month": "지출 · {month}",
+  "accounts_moved": "이체",
+  "accounts_recent": "최근",
+  "accounts_all_count": "전체 {n}건 →",
+  "accounts_no_transactions": "아직 거래가 없어요.",
+  "accounts_untitled": "이름 없음",
+  "accounts_update_value_hint": "증권사에서 확인한 오늘의 평가액을 입력하면 순자산이 최신으로 유지돼요.",
+  "accounts_update_gains": "손익 업데이트",
+  "accounts_reconciled_to": "{date}까지 대조 완료",
+  "accounts_match_bank": "은행 잔액과 일치하나요?",
+  "accounts_reconcile_hint": "명세서와 거래를 하나씩 체크하거나 명세서를 가져오면, 빠진 거래를 Kosha가 찾아 줘요.",
+  "accounts_reconcile": "대조",
+  "accounts_fix_balance": "잔액 보정",
+  "accounts_edit_account": "계좌 편집",
+  "accounts_unarchive": "보관 해제",
+  "accounts_archive": "보관",
+  "accounts_enter_balance": "잔액을 입력해 주세요",
+  "accounts_corrected_by": "{amount} 보정했어요",
+  "accounts_balance_matches": "잔액이 이미 일치해요",
+  "accounts_fix_title": "{name} 잔액 보정",
+  "accounts_fix_credit_description": "카드 명세서에 적힌 결제할 금액을 입력하세요.",
+  "accounts_fix_description": "은행에 표시된 잔액을 입력하세요.",
+  "accounts_currently_owed": "현재 미결제 금액",
+  "accounts_fix_adds_correction": "{amount}의 잔액 보정이 추가돼요.",
+  "accounts_no_correction": "보정할 필요가 없어요.",
+  "accounts_enter_credit_limit": "신용 한도를 입력해 주세요",
+  "accounts_updated": "계좌를 업데이트했어요",
+  "accounts_added": "계좌를 추가했어요",
+  "accounts_name": "이름",
+  "accounts_type": "유형",
+  "accounts_currency": "통화",
+  "accounts_credit_limit": "신용 한도",
+  "accounts_credit_hint": "이 계좌의 잔액은 남은 사용 가능 한도예요. 순자산에서는 한도와의 차이를 부채로 계산해요.",
+  "accounts_investment_hint": "잔액은 투자한 원금이에요. 가끔 \"손익 업데이트\"로 시장 손익을 순자산에 반영하세요.",
+  "accounts_invested_so_far": "지금까지 투자한 금액",
+  "accounts_current_balance": "현재 잔액",
+  "accounts_optional": "(선택)",
+  "accounts_save_adds_correction": "저장하면 {amount}의 잔액 보정이 추가돼요.",
+  "accounts_correct_hint": "은행에 표시된 잔액을 입력하면 보정돼요.",
+  "accounts_archived_checkbox": "보관 {#muted}(빠른 추가에서 숨겨지지만 순자산에는 포함돼요){/muted}",
+  "accounts_gains_history": "손익 기록",
+  "accounts_delete_valuation": "{date} 기록 삭제",
+  "accounts_add_account": "계좌 추가",
+  "accounts_delete_title": "{name}을(를) 삭제할까요?",
+  "accounts_delete_description": "이 계좌에는 거래가 없어요. 삭제하면 손익 기록도 함께 삭제돼요.",
+  "accounts_delete_account": "계좌 삭제",
+  "accounts_fx_title": "환전",
+  "accounts_fx_sent": [
+    {
+      "declarations": ["input count", "input sent", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "이체 {count}건으로 {#num}{sent}{/num} 보냄"
+      }
+    }
+  ],
+  "accounts_fx_cost": "시장 환율 대비 비용 {#num}{cost}{/num}",
+  "accounts_fx_year": "연도",
+  "accounts_fx_date": "날짜",
+  "accounts_fx_route": "경로",
+  "accounts_fx_sent_column": "보낸 금액",
+  "accounts_fx_rate": "환율",
+  "accounts_fx_market": "시장 환율",
+  "accounts_fx_received": "받은 금액",
+  "accounts_fx_cost_column": "비용",
+  "accounts_fx_footer": "비용은 수수료에 그날 시장 환율 대비 업체 환율로 손해 본 금액을 더한 값이에요. 음수라면 시장 환율보다 유리했다는 뜻이에요. 수수료나 업체를 추가하려면 내역에서 이체를 편집하세요.",
+
+  "subs_head_title": "정기 거래 · Kosha",
+  "subs_title": "정기 거래",
+  "subs_count_active": "진행 중 {#num}{count}{/num}개",
+  "subs_count_transfers": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "이체 {#num}{count}{/num}개"
+      }
+    }
+  ],
+  "subs_count_ended": "종료 {#num}{count}{/num}개",
+  "subs_new_button": "새 정기 거래",
+  "subs_new_title": "새 정기 거래",
+  "subs_every_day": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": { "countPlural=other": "{count}일마다" }
+    }
+  ],
+  "subs_every_week": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": { "countPlural=other": "{count}주마다" }
+    }
+  ],
+  "subs_every_month": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": { "countPlural=other": "{count}개월마다" }
+    }
+  ],
+  "subs_every_year": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": { "countPlural=other": "{count}년마다" }
+    }
+  ],
+  "subs_interval_day": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": { "countPlural=other": "{count}일" }
+    }
+  ],
+  "subs_interval_week": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": { "countPlural=other": "{count}주" }
+    }
+  ],
+  "subs_interval_month": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": { "countPlural=other": "{count}개월" }
+    }
+  ],
+  "subs_interval_year": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": { "countPlural=other": "{count}년" }
+    }
+  ],
+  "subs_group_bills": "고정비",
+  "subs_group_subscriptions": "구독",
+  "subs_group_income": "수입",
+  "subs_group_transfers": "이체",
+  "subs_kind_bill": "고정비",
+  "subs_kind_subscription": "구독",
+  "subs_kind_income": "수입",
+  "subs_kind_transfer": "이체",
+  "subs_end_this_bill": "이 고정비 종료",
+  "subs_end_this_subscription": "이 구독 종료",
+  "subs_end_this_income": "이 수입 종료",
+  "subs_end_this_transfer": "이 이체 종료",
+  "subs_end_bill": "고정비 종료",
+  "subs_end_subscription": "구독 종료",
+  "subs_end_income": "수입 종료",
+  "subs_end_transfer": "이체 종료",
+  "subs_committed": "월 고정 지출",
+  "subs_committed_hint": "고정비 {bills} · 구독 {subscriptions}",
+  "subs_per_year": "연간",
+  "subs_share_of_income": "수입의 {percent}",
+  "subs_no_income": "지난 1년간 수입이 없어요",
+  "subs_due_soon": "7일 안에 예정",
+  "subs_nothing_due": "예정된 결제 없음",
+  "subs_moved_to_savings": "저축으로 이체",
+  "subs_moved_hint": "월 기준 · 지출에 포함 안 됨",
+  "subs_list_label": "정기 거래",
+  "subs_empty": "아직 정기 거래가 없어요. 월세, 구독, 정기 이체를 한 번만 추가하면 Kosha가 계속 챙겨 줘요.",
+  "subs_column_every": "주기",
+  "subs_column_next": "다음",
+  "subs_column_amount": "금액",
+  "subs_column_per_month": "월 환산",
+  "subs_not_counted": "포함 안 됨",
+  "subs_ended_count": "종료됨 ({count})",
+  "subs_sorted_hint": "월 비용순으로 정렬",
+  "subs_details_label": "{name} 상세 정보",
+  "subs_adopt_title": "{name}을(를) 정기 거래로 만들기",
+  "subs_adopt_description": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "지난 결제 {count}건이 이 정기 거래로 묶여 기록에 표시돼요."
+      }
+    }
+  ],
+  "subs_hide_failed": "숨기지 못했어요",
+  "subs_spotted_title": "정기 거래로 보여요",
+  "subs_spotted_hint": "일정한 주기로 반복된 결제에서 찾았어요",
+  "subs_about_amount": "약 {amount}",
+  "subs_spotted_paid": [
+    {
+      "declarations": ["input count", "input day", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count}회 결제, 마지막 {day}"
+      }
+    }
+  ],
+  "subs_spotted_next": "다음 예정 {day}쯤",
+  "subs_make_recurring": "정기 거래로 만들기",
+  "subs_dismiss_label": "{name}은(는) 정기 거래가 아님",
+  "subs_not_recurring": "정기 거래 아님",
+  "subs_varies_asks": "금액 변동, 매번 확인",
+  "subs_ended_on_short": "{date} 종료",
+  "subs_strip_label": "30일 안에 예정된 결제: {list}",
+  "subs_strip_empty": "30일 안에 예정된 결제가 없어요",
+  "subs_strip_title": "앞으로 30일",
+  "subs_strip_bills": "고정비 및 구독",
+  "subs_update_payment_failed": "결제를 업데이트하지 못했어요",
+  "subs_ended_toast": "{name} 종료됨",
+  "subs_resumed_toast": "{name} 다시 시작됨",
+  "subs_update_schedule_failed": "일정을 업데이트하지 못했어요",
+  "subs_deleted": "삭제됨",
+  "subs_delete_failed": "삭제하지 못했어요",
+  "subs_detail_meta": "{kind} · {every} · {date}부터",
+  "subs_varies": "변동",
+  "subs_ended_on": "{date} 종료",
+  "subs_ended_hint": "더 이상 결제가 없어요. 지난 결제는 내역에 남아 있어요.",
+  "subs_next_on": "다음: {date}",
+  "subs_will_ask": "Kosha가 금액을 물어볼 거예요",
+  "subs_auto_recorded": "당일 자동으로 기록돼요",
+  "subs_mark_when_out": "돈이 나가면 결제 완료로 표시하세요",
+  "subs_changed_once": "이번 결제만 변경됨",
+  "subs_ends_on": "{date} 종료",
+  "subs_enter_amount_button": "금액 입력",
+  "subs_marked_paid": "결제 완료로 표시했어요",
+  "subs_mark_done_now": "지금 완료로 표시",
+  "subs_mark_paid_now": "지금 결제 완료로 표시",
+  "subs_change_amount": "금액 변경",
+  "subs_skipped": "건너뜀",
+  "subs_skip_this": "이번 건 건너뛰기",
+  "subs_no_more_scheduled": "더 이상 예정된 결제가 없어요.",
+  "subs_moved_so_far": "지금까지 이체한 금액",
+  "subs_paid_so_far": "지금까지 결제한 금액",
+  "subs_payments": "결제",
+  "subs_history": "기록",
+  "subs_no_payments": "아직 결제가 없어요.",
+  "subs_moved": "이체함",
+  "subs_paid": "결제함",
+  "subs_all_payments": "결제 {count}건 모두 보기 →",
+  "subs_resume": "다시 시작",
+  "subs_delete_title": "{name}을(를) 삭제할까요?",
+  "subs_end_title": "{name}을(를) 종료할까요?",
+  "subs_delete_description": "일정이 삭제돼요. 지난 결제는 일반 거래로 내역에 남아 있어요.",
+  "subs_end_description": "오늘 이후로는 결제가 없어요. 지난 결제는 내역에 남고, 나중에 다시 시작할 수 있어요.",
+  "subs_edit_title": "{name} 편집",
+  "subs_edit_transfer": "이체 편집",
+  "subs_edit_payment": "결제 편집",
+  "subs_enter_amount": "금액을 입력해 주세요",
+  "subs_recorded": "기록했어요",
+  "subs_payment_updated": "결제를 업데이트했어요",
+  "subs_save_payment_failed": "결제를 저장하지 못했어요",
+  "subs_pay_transfer_description": "이번에 이체한 금액을 입력하세요.",
+  "subs_pay_description": "이번에 결제한 금액을 입력하세요.",
+  "subs_edit_once_description": "이번 결제만 바뀌어요. 다른 결제는 평소 금액과 날짜를 그대로 유지해요.",
+  "subs_amount": "금액",
+  "subs_date": "날짜",
+  "subs_received_in": "{name}에 입금된 금액",
+  "subs_leave_empty_rate": "비워 두면 환율을 적용해요.",
+  "subs_note": "메모",
+  "subs_reset_regular": "평소대로 되돌리기",
+  "subs_record": "기록",
+  "subs_save_this_payment": "이 결제 저장",
+
+  "subs_unit_days": "일",
+  "subs_unit_weeks": "주",
+  "subs_unit_months": "개월",
+  "subs_unit_years": "년",
+  "subs_enter_usual_amount": "평소 금액을 입력해 주세요",
+  "subs_pick_to_account": "돈을 받을 계좌를 선택해 주세요",
+  "subs_pick_category": "카테고리를 선택해 주세요",
+  "subs_transfer_added": "정기 이체를 추가했어요",
+  "subs_income_added": "정기 수입을 추가했어요",
+  "subs_bill_added": "고정비를 추가했어요",
+  "subs_subscription_added": "구독을 추가했어요",
+  "subs_type": "유형",
+  "subs_name": "이름",
+  "subs_from": "보내는 곳",
+  "subs_to": "받는 곳",
+  "subs_account": "계좌",
+  "subs_category": "카테고리",
+  "subs_usual_amount": "평소 금액",
+  "subs_repeats_every": "반복 주기",
+  "subs_interval": "주기",
+  "subs_variable": "매번 금액이 달라요",
+  "subs_variable_hint": "자동으로 기록하는 대신, 예정일이 되면 Kosha가 알려 주고 금액을 물어봐요.",
+  "subs_amount_received": "받은 금액",
+  "subs_next_payment": "다음 결제",
+  "subs_first_payment": "첫 결제",
+  "subs_ends": "종료",
+  "subs_never": "없음",
+  "subs_backfill_hint": "Kosha가 {date}부터 오늘까지의 결제를 기록할 거예요.",
+  "subs_auto_pay": "결제 자동 기록",
+  "subs_changes_hint": "변경 사항은 앞으로의 결제에 적용돼요. 지난 결제는 그대로예요.",
+  "subs_save_changes": "변경 사항 저장",
+  "subs_add_transfer": "이체 추가",
+  "subs_add_income": "수입 추가",
+  "subs_add_bill": "고정비 추가",
+  "subs_add_subscription": "구독 추가"
+}

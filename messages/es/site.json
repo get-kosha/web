@@ -1,0 +1,48 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "site_description": "Anota cada pago en unos segundos y luego mira en qué se fue el mes. Una herramienta de finanzas personales gratuita y de código abierto para todas tus cuentas, en cualquier moneda.",
+  "site_tagline": "Tus finanzas, en unos segundos cada vez.",
+  "site_landing_title": "Kosha · Tus finanzas, en unos segundos cada vez",
+  "site_og_image_alt": "Kosha: tus finanzas, en unos segundos cada vez",
+  "pwa_synced": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Se sincronizó {count} movimiento añadido sin conexión",
+        "countPlural=*": "Se sincronizaron {count} movimientos añadidos sin conexión"
+      }
+    }
+  ],
+  "pwa_rejected": "Un movimiento añadido sin conexión no se guardó: {reason}",
+  "pwa_syncing_title": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Sincronizando {count} movimiento",
+        "countPlural=*": "Sincronizando {count} movimientos"
+      }
+    }
+  ],
+  "pwa_syncing_body": "Enviando lo que añadiste sin conexión.",
+  "pwa_offline_waiting": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Mostrando los datos de tu última visita. {count} movimiento se sincronizará cuando vuelvas a tener conexión.",
+        "countPlural=*": "Mostrando los datos de tu última visita. {count} movimientos se sincronizarán cuando vuelvas a tener conexión."
+      }
+    }
+  ],
+  "pwa_offline_body": "Mostrando los datos de tu última visita. Los movimientos nuevos se sincronizan cuando vuelvas a tener conexión.",
+  "pwa_update_title": "Hay una nueva versión de Kosha lista",
+  "pwa_update_body": "Recarga para empezar a usarla.",
+  "pwa_reload": "Recargar",
+  "pwa_install_title": "Instala Kosha",
+  "pwa_install_ios": "Toca Compartir y luego Añadir a pantalla de inicio para abrir Kosha como una app.",
+  "pwa_install_body": "Ábrelo desde tu pantalla de inicio o el Dock, incluso sin conexión.",
+  "pwa_install": "Instalar",
+  "pwa_dismiss": "Descartar"
+}

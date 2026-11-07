@@ -8,6 +8,7 @@ import { Avatar } from "@/components/account-menu"
 import { securitySteps, useAccount } from "@/components/settings/sections/security"
 import { Pill } from "@/components/settings/row"
 import { cn } from "@/lib/utils"
+import { m } from "@/paraglide/messages"
 
 const LABEL_H = 30
 const ITEM_H = 36
@@ -72,13 +73,13 @@ export function SettingsLayout({ children }: { children: ReactNode }) {
       <aside className={cn("min-w-0 flex-[1_1_236px] md:sticky md:top-6 md:max-w-[260px]", section && "max-md:hidden")}>
         <Link
           to="/"
-          aria-label="Close settings"
+          aria-label={m.settings_close()}
           className="mb-3 -ml-2.5 flex size-11 items-center justify-center rounded-full text-subtle-foreground md:hidden"
         >
           <XIcon className="size-[22px]" />
         </Link>
         <h1 className="text-[22px] font-semibold tracking-[-0.02em] max-md:text-[34px] max-md:tracking-[-0.03em]">
-          Settings
+          {m.settings_title()}
         </h1>
         <label className="mt-4 flex h-[38px] items-center gap-2 rounded-[10px] border bg-card pr-2.5 pl-3 text-muted-foreground transition-[border-color,box-shadow] duration-200 focus-within:border-brand focus-within:shadow-[0_0_0_3px_var(--brand-soft)] max-md:h-12 max-md:rounded-xl max-md:border-transparent max-md:bg-muted max-md:text-base">
           <MagnifyingGlassIcon className="size-4 shrink-0" />
@@ -102,8 +103,8 @@ export function SettingsLayout({ children }: { children: ReactNode }) {
                 setQuery("")
               }
             }}
-            placeholder="Search settings"
-            aria-label="Search settings"
+            placeholder={m.settings_search_placeholder()}
+            aria-label={m.settings_search_placeholder()}
             aria-controls="settings-results"
             aria-activedescendant={query && results[active] ? `sr-${active}` : undefined}
             className="w-full min-w-0 bg-transparent text-[13.5px] text-foreground outline-none placeholder:text-muted-foreground"
@@ -112,7 +113,7 @@ export function SettingsLayout({ children }: { children: ReactNode }) {
             /
           </kbd>
         </label>
-        <nav aria-label="Settings" className="relative mt-2.5 max-md:hidden">
+        <nav aria-label={m.settings_title()} className="relative mt-2.5 max-md:hidden">
           {indicator >= 0 && (
             <span
               aria-hidden="true"
@@ -121,9 +122,9 @@ export function SettingsLayout({ children }: { children: ReactNode }) {
             />
           )}
           {groups.map((g) => (
-            <div key={g.label}>
+            <div key={g.id}>
               <div className="flex h-[30px] items-end px-2.5 pb-[7px] text-[11px] font-medium tracking-[0.06em] text-muted-foreground uppercase">
-                {g.label}
+                {g.label()}
               </div>
               {g.sections.map((s) => (
                 <RailItem key={s.id} section={s} current={!query && s.id === current} />
@@ -137,7 +138,7 @@ export function SettingsLayout({ children }: { children: ReactNode }) {
             onClick={shortcuts}
             className="flex w-full items-center justify-between transition-colors hover:text-foreground"
           >
-            Keyboard shortcuts <Kbd>?</Kbd>
+            {m.settings_shortcuts()} <Kbd>?</Kbd>
           </button>
         </div>
       </aside>
@@ -161,7 +162,7 @@ function RailItem({ section: s, current }: { section: Section; current: boolean 
       className="group/ri relative flex h-9 items-center gap-2.5 rounded-lg px-2.5 text-sm text-subtle-foreground transition-colors duration-200 hover:text-foreground data-current:font-medium data-current:text-foreground"
     >
       <Icon className="size-[18px] text-muted-foreground transition-colors duration-200 group-data-current/ri:text-brand" />
-      {s.title}
+      {s.title()}
       {badge && (
         <span className="ml-auto">
           <Pill tone={badge.tone}>{badge.label}</Pill>
@@ -185,12 +186,12 @@ function Results({
   return (
     <div className="settings-enter">
       <header>
-        <p className="text-xs text-muted-foreground">Search</p>
+        <p className="text-xs text-muted-foreground">{m.settings_search_label()}</p>
         <h2 className="mt-1.5 text-[26px] font-semibold tracking-[-0.025em]">
-          {results.length ? `${results.length} ${results.length === 1 ? "result" : "results"}` : "No results"}
+          {results.length ? m.settings_results({ count: results.length }) : m.settings_no_results()}
         </h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          {results.length ? "Pick a result to jump straight to the setting." : `Nothing matches "${query.trim()}".`}
+          {results.length ? m.settings_results_hint() : m.settings_no_match({ query: query.trim() })}
         </p>
       </header>
       {results.length > 0 && (
@@ -212,11 +213,11 @@ function Results({
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block text-xs text-muted-foreground">
-                      {r.section.group} › {r.section.title}
+                      {r.section.group()} › {r.section.title()}
                     </span>
-                    <span className="block text-sm font-medium">{r.row?.title ?? r.section.title}</span>
+                    <span className="block text-sm font-medium">{(r.row?.title ?? r.section.title)()}</span>
                     <span className="block truncate text-xs text-muted-foreground">
-                      {r.row?.description ?? r.section.description}
+                      {(r.row?.description ?? r.section.description)()}
                     </span>
                   </span>
                   <CaretRightIcon className="size-4 text-muted-foreground" />
@@ -231,7 +232,7 @@ function Results({
 }
 
 /** A section: eyebrow, title, one sentence, then its groups, fading up as it opens. */
-export function SectionView({ section: s }: { section: Section & { group: string } }) {
+export function SectionView({ section: s }: { section: Section & { group: () => string } }) {
   const Body = s.component
   const badge = useBadge(s)
   return (
@@ -242,14 +243,16 @@ export function SectionView({ section: s }: { section: Section & { group: string
           viewTransition={slide("back")}
           className="-ml-2 inline-flex h-11 items-center gap-1 pr-2 text-[15px] text-subtle-foreground md:hidden"
         >
-          <CaretLeftIcon className="size-5" /> Settings
+          <CaretLeftIcon className="size-5" /> {m.settings_title()}
         </Link>
-        <p className="text-xs text-muted-foreground max-md:hidden">{s.group}</p>
+        <p className="text-xs text-muted-foreground max-md:hidden">{s.group()}</p>
         <h2 className="mt-1.5 flex items-center gap-2.5 text-[26px] font-semibold tracking-[-0.025em] max-md:mt-3 max-md:text-[30px]">
-          {s.title}
+          {s.title()}
           {badge?.tone === "brand" && <Pill>{badge.label}</Pill>}
         </h2>
-        <p className="mt-2 max-w-[60ch] text-sm leading-normal text-muted-foreground max-md:hidden">{s.description}</p>
+        <p className="mt-2 max-w-[60ch] text-sm leading-normal text-muted-foreground max-md:hidden">
+          {s.description()}
+        </p>
       </header>
       <Body />
     </div>
@@ -298,14 +301,14 @@ const slide = (dir: "forward" | "back") => ({
 })
 
 // On phone, the You group comes after the money and AI groups, under the profile card.
-const PHONE_ORDER = ["Preferences", "Money", "Intelligence", "You", "Data"]
+const PHONE_ORDER = ["preferences", "money", "intelligence", "you", "data"]
 
 /** The phone settings list: profile card, then each group as a card of rows that push into a section. */
 export function PhoneList() {
   const meta = useMeta()
   const account = useAccount()
   const open = securitySteps(account, meta.prefs.backup_codes_saved_at).filter((x) => !x.done).length
-  const ordered = [...groups].sort((a, b) => PHONE_ORDER.indexOf(a.label) - PHONE_ORDER.indexOf(b.label))
+  const ordered = [...groups].sort((a, b) => PHONE_ORDER.indexOf(a.id) - PHONE_ORDER.indexOf(b.id))
   return (
     <div className="settings-enter md:hidden">
       <Link
@@ -329,9 +332,7 @@ export function PhoneList() {
           className="mt-3 flex min-h-[52px] items-center gap-3 rounded-2xl bg-warning/12 px-4 text-[15px] transition-colors active:bg-warning/20"
         >
           <ShieldCheckIcon className="size-5 shrink-0 text-warning" />
-          <span className="flex-1">
-            {open} {open === 1 ? "step" : "steps"} left to secure your account
-          </span>
+          <span className="flex-1">{m.settings_steps_left({ count: open })}</span>
           <CaretRightIcon className="size-[18px] text-muted-foreground" />
         </Link>
       )}
@@ -339,9 +340,9 @@ export function PhoneList() {
         const rows = g.sections.filter((x) => x.id !== "profile")
         if (!rows.length) return null
         return (
-          <section key={g.label} className="mt-6">
+          <section key={g.id} className="mt-6">
             <h2 className="mx-1 mb-2 text-xs font-medium tracking-[0.06em] text-muted-foreground uppercase">
-              {g.label}
+              {g.label()}
             </h2>
             <ul className="overflow-hidden rounded-2xl border bg-card">
               {rows.map((x) => {
@@ -357,7 +358,7 @@ export function PhoneList() {
                       <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-subtle-foreground">
                         <Icon className="size-[18px]" />
                       </span>
-                      <span className="min-w-0 flex-1 truncate text-base">{x.title}</span>
+                      <span className="min-w-0 flex-1 truncate text-base">{x.title()}</span>
                       <span className="max-w-[45%] truncate text-[15px] text-muted-foreground">
                         {x.badge?.({ meta, account }) ? (
                           <Pill tone={x.badge({ meta, account })!.tone}>{x.badge({ meta, account })!.label}</Pill>

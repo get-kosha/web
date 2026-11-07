@@ -1,0 +1,419 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "accounts_head_title": "Счета · Kosha",
+  "accounts_title": "Счета",
+  "accounts_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{#num}{count}{/num} счёт",
+        "countPlural=few": "{#num}{count}{/num} счёта",
+        "countPlural=many": "{#num}{count}{/num} счетов",
+        "countPlural=other": "{#num}{count}{/num} счёта"
+      }
+    }
+  ],
+  "accounts_new": "Новый счёт",
+  "accounts_group_bank_cash": "Банк и наличные",
+  "accounts_group_credit": "Кредитные карты",
+  "accounts_group_investment": "Инвестиции",
+  "accounts_type_bank_account": "Банковский счёт",
+  "accounts_type_bank": "Банк",
+  "accounts_type_cash": "Наличные",
+  "accounts_type_credit": "Кредитная карта",
+  "accounts_type_investment": "Инвестиции",
+  "accounts_archived": "В архиве",
+  "accounts_archived_count": "В архиве ({count})",
+  "accounts_archived_label": "Счета в архиве",
+  "accounts_archived_hint": "Счета в архиве по-прежнему учитываются в капитале",
+  "accounts_details_label": "{name}: подробности",
+  "accounts_edit_title": "Изменить {name}",
+  "accounts_rates_updated_today": "обновлено сегодня",
+  "accounts_rates_updated_yesterday": "обновлено вчера",
+  "accounts_rates_updated_on": "обновлено {date}",
+  "accounts_rate_shown": "{currency} по курсу {rate} = {base}",
+  "accounts_net_worth": "Капитал",
+  "accounts_change_period": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "за {count} месяц",
+        "countPlural=few": "за {count} месяца",
+        "countPlural=many": "за {count} месяцев",
+        "countPlural=other": "за {count} месяца"
+      }
+    }
+  ],
+  "accounts_range_label": "Период",
+  "accounts_range_1y": "1 год",
+  "accounts_range_2y": "2 года",
+  "accounts_range_all": "Всё",
+  "accounts_worth_empty": "График капитала появится после первого месяца операций.",
+  "accounts_chart_other": "Другие счета",
+  "accounts_chart_gains": "Нереализованная прибыль",
+  "accounts_chart_key": "Легенда графика",
+  "accounts_no_value": "Стоимость ещё не записана",
+  "accounts_value_age": "Стоимость обновлена {days} дн. назад",
+  "accounts_value_as_of": "Стоимость на {date}",
+  "accounts_available": "доступно {amount}",
+  "accounts_last_entry": "последняя операция {date}",
+  "accounts_credit_used": "{percent} из {limit}",
+  "accounts_balance": "Баланс",
+  "accounts_another_account": "другой счёт",
+  "accounts_restored_toast": "{name}: возвращён из архива",
+  "accounts_archived_toast": "{name}: отправлен в архив",
+  "accounts_save_failed": "Не удалось сохранить",
+  "accounts_delete_failed": "Не удалось удалить",
+  "accounts_in_month": "Поступления · {month}",
+  "accounts_out_month": "Списания · {month}",
+  "accounts_moved": "Переведено",
+  "accounts_recent": "Последние",
+  "accounts_all_count": "Все {n} →",
+  "accounts_no_transactions": "Операций пока нет.",
+  "accounts_untitled": "Без названия",
+  "accounts_update_value_hint": "Введите сегодняшнюю стоимость из приложения брокера, чтобы капитал оставался актуальным.",
+  "accounts_update_gains": "Обновить прирост",
+  "accounts_reconciled_to": "Сверено по {date}",
+  "accounts_match_bank": "Совпадает с банком?",
+  "accounts_reconcile_hint": "Отметьте операции по выписке или импортируйте её — Kosha найдёт, чего не хватает.",
+  "accounts_reconcile": "Сверить",
+  "accounts_fix_balance": "Исправить баланс",
+  "accounts_edit_account": "Изменить счёт",
+  "accounts_unarchive": "Вернуть из архива",
+  "accounts_archive": "В архив",
+  "accounts_enter_balance": "Введите баланс",
+  "accounts_corrected_by": "Скорректировано на {amount}",
+  "accounts_balance_matches": "Баланс уже совпадает",
+  "accounts_fix_title": "Исправить {name}",
+  "accounts_fix_credit_description": "Введите задолженность, указанную в выписке по карте.",
+  "accounts_fix_description": "Введите баланс, который показывает банк.",
+  "accounts_currently_owed": "Текущая задолженность",
+  "accounts_fix_adds_correction": "Будет добавлена корректировка баланса на {amount}.",
+  "accounts_no_correction": "Корректировка не нужна.",
+  "accounts_enter_credit_limit": "Введите кредитный лимит",
+  "accounts_updated": "Счёт обновлён",
+  "accounts_added": "Счёт добавлен",
+  "accounts_name": "Название",
+  "accounts_type": "Тип",
+  "accounts_currency": "Валюта",
+  "accounts_credit_limit": "Кредитный лимит",
+  "accounts_credit_hint": "Баланс этого счёта — это сумма, которую ещё можно потратить. В капитале разница учитывается как долг.",
+  "accounts_investment_hint": "Баланс — это вложенные вами деньги. Время от времени нажимайте «Обновить прирост», чтобы добавить рыночный прирост к капиталу.",
+  "accounts_invested_so_far": "Вложено всего",
+  "accounts_current_balance": "Текущий баланс",
+  "accounts_optional": "(необязательно)",
+  "accounts_save_adds_correction": "При сохранении будет добавлена корректировка баланса на {amount}.",
+  "accounts_correct_hint": "Введите баланс, который показывает банк, чтобы исправить его.",
+  "accounts_archived_checkbox": "В архиве {#muted}(скрыт из быстрого ввода, но учитывается в капитале){/muted}",
+  "accounts_gains_history": "История прироста",
+  "accounts_delete_valuation": "Удалить запись от {date}",
+  "accounts_add_account": "Добавить счёт",
+  "accounts_delete_title": "Удалить {name}?",
+  "accounts_delete_description": "На этом счёте нет операций. Вместе с ним удалится и история прироста.",
+  "accounts_delete_account": "Удалить счёт",
+  "accounts_fx_title": "Обмен валюты",
+  "accounts_fx_sent": [
+    {
+      "declarations": ["input count", "input sent", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Отправлено {#num}{sent}{/num} за {count} перевод",
+        "countPlural=few": "Отправлено {#num}{sent}{/num} за {count} перевода",
+        "countPlural=many": "Отправлено {#num}{sent}{/num} за {count} переводов",
+        "countPlural=other": "Отправлено {#num}{sent}{/num} за {count} перевода"
+      }
+    }
+  ],
+  "accounts_fx_cost": "издержки к рынку {#num}{cost}{/num}",
+  "accounts_fx_year": "Год",
+  "accounts_fx_date": "Дата",
+  "accounts_fx_route": "Направление",
+  "accounts_fx_sent_column": "Отправлено",
+  "accounts_fx_rate": "Курс",
+  "accounts_fx_market": "Рынок",
+  "accounts_fx_received": "Получено",
+  "accounts_fx_cost_column": "Издержки",
+  "accounts_fx_footer": "Издержки — это комиссия плюс то, что вы потеряли на курсе провайдера по сравнению с рыночным курсом в тот день. Отрицательное значение значит, что вы обменяли выгоднее рынка. Чтобы указать комиссию или провайдера, измените перевод в разделе «Операции».",
+
+  "subs_head_title": "Регулярные · Kosha",
+  "subs_title": "Регулярные",
+  "subs_count_active": "активных: {#num}{count}{/num}",
+  "subs_count_transfers": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{#num}{count}{/num} перевод",
+        "countPlural=few": "{#num}{count}{/num} перевода",
+        "countPlural=many": "{#num}{count}{/num} переводов",
+        "countPlural=other": "{#num}{count}{/num} перевода"
+      }
+    }
+  ],
+  "subs_count_ended": "завершённых: {#num}{count}{/num}",
+  "subs_new_button": "Новый платёж",
+  "subs_new_title": "Новый регулярный платёж",
+  "subs_every_day": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "раз в {count} день",
+        "countPlural=few": "раз в {count} дня",
+        "countPlural=many": "раз в {count} дней",
+        "countPlural=other": "раз в {count} дня"
+      }
+    }
+  ],
+  "subs_every_week": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "раз в {count} неделю",
+        "countPlural=few": "раз в {count} недели",
+        "countPlural=many": "раз в {count} недель",
+        "countPlural=other": "раз в {count} недели"
+      }
+    }
+  ],
+  "subs_every_month": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "раз в {count} месяц",
+        "countPlural=few": "раз в {count} месяца",
+        "countPlural=many": "раз в {count} месяцев",
+        "countPlural=other": "раз в {count} месяца"
+      }
+    }
+  ],
+  "subs_every_year": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "раз в {count} год",
+        "countPlural=few": "раз в {count} года",
+        "countPlural=many": "раз в {count} лет",
+        "countPlural=other": "раз в {count} года"
+      }
+    }
+  ],
+  "subs_interval_day": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} день",
+        "countPlural=few": "{count} дня",
+        "countPlural=many": "{count} дней",
+        "countPlural=other": "{count} дня"
+      }
+    }
+  ],
+  "subs_interval_week": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} неделя",
+        "countPlural=few": "{count} недели",
+        "countPlural=many": "{count} недель",
+        "countPlural=other": "{count} недели"
+      }
+    }
+  ],
+  "subs_interval_month": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} месяц",
+        "countPlural=few": "{count} месяца",
+        "countPlural=many": "{count} месяцев",
+        "countPlural=other": "{count} месяца"
+      }
+    }
+  ],
+  "subs_interval_year": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} год",
+        "countPlural=few": "{count} года",
+        "countPlural=many": "{count} лет",
+        "countPlural=other": "{count} года"
+      }
+    }
+  ],
+  "subs_group_bills": "Обязательные платежи",
+  "subs_group_subscriptions": "Подписки",
+  "subs_group_income": "Доходы",
+  "subs_group_transfers": "Переводы",
+  "subs_kind_bill": "Обязательный платёж",
+  "subs_kind_subscription": "Подписка",
+  "subs_kind_income": "Доход",
+  "subs_kind_transfer": "Перевод",
+  "subs_end_this_bill": "Завершить этот платёж",
+  "subs_end_this_subscription": "Завершить эту подписку",
+  "subs_end_this_income": "Завершить этот доход",
+  "subs_end_this_transfer": "Завершить этот перевод",
+  "subs_end_bill": "Завершить платёж",
+  "subs_end_subscription": "Завершить подписку",
+  "subs_end_income": "Завершить доход",
+  "subs_end_transfer": "Завершить перевод",
+  "subs_committed": "Обязательства в месяц",
+  "subs_committed_hint": "Платежи {bills} · подписки {subscriptions}",
+  "subs_per_year": "В год",
+  "subs_share_of_income": "{percent} дохода",
+  "subs_no_income": "За последний год доходов не было",
+  "subs_due_soon": "К оплате в ближайшие 7 дней",
+  "subs_nothing_due": "Ничего не нужно оплачивать",
+  "subs_moved_to_savings": "Переведено в сбережения",
+  "subs_moved_hint": "в месяц · не учитывается",
+  "subs_list_label": "Регулярные платежи",
+  "subs_empty": "Регулярных платежей пока нет. Добавьте один раз аренду, подписку или регулярный перевод, и Kosha будет их отслеживать.",
+  "subs_column_every": "Период",
+  "subs_column_next": "Следующий",
+  "subs_column_amount": "Сумма",
+  "subs_column_per_month": "В месяц",
+  "subs_not_counted": "не учитывается",
+  "subs_ended_count": "Завершённые ({count})",
+  "subs_sorted_hint": "По стоимости в месяц",
+  "subs_details_label": "{name}: подробности",
+  "subs_adopt_title": "Сделать {name} регулярным",
+  "subs_adopt_description": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} прошлый платёж будет привязан к нему и появится в его истории.",
+        "countPlural=few": "{count} прошлых платежа будут привязаны к нему и появятся в его истории.",
+        "countPlural=many": "{count} прошлых платежей будут привязаны к нему и появятся в его истории.",
+        "countPlural=other": "{count} прошлого платежа будут привязаны к нему и появятся в его истории."
+      }
+    }
+  ],
+  "subs_hide_failed": "Не удалось скрыть",
+  "subs_spotted_title": "Похоже на регулярный",
+  "subs_spotted_hint": "Найдено по платежам с постоянным ритмом",
+  "subs_about_amount": "около {amount}",
+  "subs_spotted_paid": [
+    {
+      "declarations": ["input count", "input day", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "оплачено {count} раз, последний — {day}",
+        "countPlural=few": "оплачено {count} раза, последний — {day}",
+        "countPlural=many": "оплачено {count} раз, последний — {day}",
+        "countPlural=other": "оплачено {count} раза, последний — {day}"
+      }
+    }
+  ],
+  "subs_spotted_next": "следующий примерно {day}",
+  "subs_make_recurring": "Сделать регулярным",
+  "subs_dismiss_label": "{name} — не регулярный платёж",
+  "subs_not_recurring": "Не регулярный",
+  "subs_varies_asks": "сумма меняется, спросим каждый раз",
+  "subs_ended_on_short": "завершён {date}",
+  "subs_strip_label": "Платежи в ближайшие 30 дней: {list}",
+  "subs_strip_empty": "В ближайшие 30 дней платежей нет",
+  "subs_strip_title": "Ближайшие 30 дней",
+  "subs_strip_bills": "Платежи и подписки",
+  "subs_update_payment_failed": "Не удалось обновить платёж",
+  "subs_ended_toast": "{name}: завершён",
+  "subs_resumed_toast": "{name}: возобновлён",
+  "subs_update_schedule_failed": "Не удалось обновить расписание",
+  "subs_deleted": "Удалено",
+  "subs_delete_failed": "Не удалось удалить",
+  "subs_detail_meta": "{kind} · {every} · с {date}",
+  "subs_varies": "меняется",
+  "subs_ended_on": "Завершён {date}",
+  "subs_ended_hint": "Новых платежей не будет. Прошлые платежи остаются в разделе «Операции».",
+  "subs_next_on": "Следующий: {date}",
+  "subs_will_ask": "Kosha спросит сумму",
+  "subs_auto_recorded": "Записывается автоматически в день платежа",
+  "subs_mark_when_out": "Отметьте как оплаченный, когда деньги спишутся",
+  "subs_changed_once": "изменено только для этого платежа",
+  "subs_ends_on": "до {date}",
+  "subs_enter_amount_button": "Ввести сумму",
+  "subs_marked_paid": "Отмечено как оплаченное",
+  "subs_mark_done_now": "Отметить выполненным",
+  "subs_mark_paid_now": "Отметить оплаченным",
+  "subs_change_amount": "Изменить сумму",
+  "subs_skipped": "Пропущено",
+  "subs_skip_this": "Пропустить этот",
+  "subs_no_more_scheduled": "Запланированных платежей больше нет.",
+  "subs_moved_so_far": "Переведено всего",
+  "subs_paid_so_far": "Оплачено всего",
+  "subs_payments": "Платежи",
+  "subs_history": "История",
+  "subs_no_payments": "Платежей пока нет.",
+  "subs_moved": "Переведено",
+  "subs_paid": "Оплачено",
+  "subs_all_payments": "Все платежи ({count}) →",
+  "subs_resume": "Возобновить",
+  "subs_delete_title": "Удалить {name}?",
+  "subs_end_title": "Завершить {name}?",
+  "subs_delete_description": "Расписание будет удалено. Прошлые платежи останутся в разделе «Операции» как обычные операции.",
+  "subs_end_description": "После сегодняшнего дня платежей не будет. Прошлые платежи останутся в разделе «Операции», а возобновить можно позже.",
+  "subs_edit_title": "Изменить {name}",
+  "subs_edit_transfer": "Изменить перевод",
+  "subs_edit_payment": "Изменить платёж",
+  "subs_enter_amount": "Введите сумму",
+  "subs_recorded": "Записано",
+  "subs_payment_updated": "Платёж обновлён",
+  "subs_save_payment_failed": "Не удалось сохранить платёж",
+  "subs_pay_transfer_description": "Введите сумму, переведённую в этот раз.",
+  "subs_pay_description": "Введите сумму, оплаченную в этот раз.",
+  "subs_edit_once_description": "Изменится только этот платёж. Остальные сохранят обычную сумму и дату.",
+  "subs_amount": "Сумма",
+  "subs_date": "Дата",
+  "subs_received_in": "Получено на {name}",
+  "subs_leave_empty_rate": "Оставьте пустым, чтобы использовать курс.",
+  "subs_note": "Заметка",
+  "subs_reset_regular": "Вернуть обычные",
+  "subs_record": "Записать",
+  "subs_save_this_payment": "Сохранить этот платёж",
+
+  "subs_unit_days": "дни",
+  "subs_unit_weeks": "недели",
+  "subs_unit_months": "месяцы",
+  "subs_unit_years": "годы",
+  "subs_enter_usual_amount": "Введите обычную сумму",
+  "subs_pick_to_account": "Выберите счёт, на который поступают деньги",
+  "subs_pick_category": "Выберите категорию",
+  "subs_transfer_added": "Регулярный перевод добавлен",
+  "subs_income_added": "Регулярный доход добавлен",
+  "subs_bill_added": "Обязательный платёж добавлен",
+  "subs_subscription_added": "Подписка добавлена",
+  "subs_type": "Тип",
+  "subs_name": "Название",
+  "subs_from": "Откуда",
+  "subs_to": "Куда",
+  "subs_account": "Счёт",
+  "subs_category": "Категория",
+  "subs_usual_amount": "Обычная сумма",
+  "subs_repeats_every": "Период повтора",
+  "subs_interval": "Интервал",
+  "subs_variable": "Сумма каждый раз разная",
+  "subs_variable_hint": "Kosha напомнит, когда подойдёт срок, и спросит сумму, вместо того чтобы записывать платёж автоматически.",
+  "subs_amount_received": "Полученная сумма",
+  "subs_next_payment": "Следующий платёж",
+  "subs_first_payment": "Первый платёж",
+  "subs_ends": "Окончание",
+  "subs_never": "Никогда",
+  "subs_backfill_hint": "Kosha запишет платежи с {date} по сегодняшний день.",
+  "subs_auto_pay": "Записывать платежи автоматически",
+  "subs_changes_hint": "Изменения касаются будущих платежей. Прошлые останутся как есть.",
+  "subs_save_changes": "Сохранить изменения",
+  "subs_add_transfer": "Добавить перевод",
+  "subs_add_income": "Добавить доход",
+  "subs_add_bill": "Добавить платёж",
+  "subs_add_subscription": "Добавить подписку"
+}

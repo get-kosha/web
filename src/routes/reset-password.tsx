@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react"
 import { createFileRoute } from "@tanstack/react-router"
 import { InfoIcon } from "@phosphor-icons/react/ssr"
+import { ParaglideMessage } from "@inlang/paraglide-js-react"
 import { z } from "zod"
 import { AuthField, AuthHeader, AuthShell } from "@/components/auth"
 import { ResetRequest } from "@/components/password-reset"
@@ -8,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { getResetLink } from "@/lib/api"
 import { authClient } from "@/lib/auth-client"
 import { MIN_PASSWORD } from "@/lib/core"
+import { m } from "@/paraglide/messages"
 
 // The link in the reset email opens this with ?token=. Better Auth's own callback lands here with
 // ?error=INVALID_TOKEN instead when a link is bad; both, and a missing token, show the expired screen.
@@ -19,7 +21,7 @@ export const Route = createFileRoute("/reset-password")({
   loaderDeps: ({ search }) => ({ token: search.token }),
   loader: ({ deps }) =>
     deps.token ? getResetLink({ data: { token: deps.token } }) : { valid: false, email: null as string | null },
-  head: () => ({ meta: [{ title: "Set a new password · Kosha" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: m.auth_reset_page_title() }, { name: "robots", content: "noindex" }] }),
   component: ResetPassword,
 })
 
@@ -46,22 +48,26 @@ function ResetPassword() {
     if (res.error.code === "INVALID_TOKEN" || res.error.code === "USER_NOT_FOUND") return setExpired(true)
     setError(
       res.error.status === 429
-        ? "Too many tries. Wait a minute, then try again."
+        ? m.auth_error_rate_limited()
         : res.error.status === 0
-          ? "Kosha couldn't be reached. Check your connection, then try again."
+          ? m.auth_error_offline()
           : res.error.code === "PASSWORD_TOO_SHORT"
-            ? `Use at least ${MIN_PASSWORD} characters.`
-            : res.error.message || "Something went wrong. Try again."
+            ? m.auth_error_password_short({ min: MIN_PASSWORD })
+            : res.error.code === "PASSWORD_TOO_LONG"
+              ? m.auth_error_password_long()
+              : m.auth_error_generic()
     )
   }
 
   return (
     <AuthShell phone="focused">
-      <AuthHeader title="Set a new password">
+      <AuthHeader title={m.auth_set_new_password()}>
         {link.email && (
-          <>
-            For <strong>{link.email}</strong>.
-          </>
+          <ParaglideMessage
+            message={m.auth_for_email}
+            inputs={{ email: link.email }}
+            markup={{ strong: ({ children }) => <strong>{children}</strong> }}
+          />
         )}
       </AuthHeader>
       <form onSubmit={submit} className="flex flex-1 flex-col gap-[18px] md:flex-none">
@@ -73,7 +79,7 @@ function ResetPassword() {
           id="new-password"
           name="password"
           type="password"
-          label="New password"
+          label={m.auth_new_password()}
           required
           minLength={MIN_PASSWORD}
           autoComplete="new-password"
@@ -88,10 +94,10 @@ function ResetPassword() {
         />
         <div className="flex gap-2.5 rounded-xl bg-muted px-3.5 py-3 text-[13px] leading-[19px] text-subtle-foreground">
           <InfoIcon aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
-          <p>Saving signs Kosha out on your other devices. Passkeys and two-factor stay as they are.</p>
+          <p>{m.auth_reset_signs_out()}</p>
         </div>
         <Button type="submit" size="auth" disabled={busy || password.length < MIN_PASSWORD} className="max-md:mt-auto">
-          Save new password
+          {m.auth_save_new_password()}
         </Button>
       </form>
     </AuthShell>

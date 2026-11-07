@@ -7,11 +7,12 @@ import { SettingGroup, SettingRow } from "@/components/settings/row"
 import { useSave } from "@/components/settings/saved"
 import { authClient, signOut } from "@/lib/auth-client"
 import { removeAvatar, uploadAvatar } from "@/lib/api"
+import { m } from "@/paraglide/messages"
 
 /** Crops an image to its centre square and shrinks it to a 256px JPEG, so uploads stay small. */
 async function squareJpeg(file: File) {
   const img = await createImageBitmap(file).catch(() => {
-    throw new Error("That image couldn't be read")
+    throw new Error(m.settings_profile_unreadable())
   })
   const side = Math.min(img.width, img.height)
   const canvas = document.createElement("canvas")
@@ -22,7 +23,7 @@ async function squareJpeg(file: File) {
   ctx.fillRect(0, 0, 256, 256)
   ctx.drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, 256, 256)
   return new Promise<Blob>((done, fail) =>
-    canvas.toBlob((b) => (b ? done(b) : fail(new Error("That image couldn't be read"))), "image/jpeg", 0.85)
+    canvas.toBlob((b) => (b ? done(b) : fail(new Error(m.settings_profile_unreadable()))), "image/jpeg", 0.85)
   )
 }
 
@@ -37,19 +38,13 @@ function Photo() {
     setBusy(false)
   }
   if (!avatars)
-    return (
-      <SettingRow
-        id="photo"
-        title="Profile picture"
-        description="This server has no storage for photos. It needs Cloudflare R2, which the README explains how to turn on."
-      />
-    )
+    return <SettingRow id="photo" title={m.settings_row_photo()} description={m.settings_profile_no_storage()} />
   const button = "h-9 bg-card px-3 text-[13px] font-normal"
   return (
     <SettingRow
       id="photo"
-      title="Profile picture"
-      description="Shown instead of your initials. It's cropped to a square."
+      title={m.settings_row_photo()}
+      description={m.settings_profile_photo_desc()}
       control={
         <>
           <input
@@ -70,11 +65,15 @@ function Photo() {
           />
           {user.image && (
             <Button variant="outline" className={button} disabled={busy} onClick={() => run(() => removeAvatar())}>
-              Remove
+              {m.common_remove()}
             </Button>
           )}
           <Button variant="outline" className={button} disabled={busy} onClick={() => input.current?.click()}>
-            {busy ? "Saving…" : user.image ? "Change" : "Upload"}
+            {busy
+              ? m.settings_profile_saving()
+              : user.image
+                ? m.settings_profile_change()
+                : m.settings_profile_upload()}
           </Button>
         </>
       }
@@ -94,18 +93,18 @@ export function Profile() {
           <div className="min-w-0">
             <div className="truncate text-sm font-medium">{user.name || user.email}</div>
             <p className="mt-0.5 text-[13px] text-muted-foreground">
-              {user.image ? user.email : "Your avatar takes your accent colour."}
+              {user.image ? user.email : m.settings_profile_avatar_hint()}
             </p>
           </div>
         </div>
         <Photo />
         <SettingRow
           id="name"
-          title="Name"
-          description="Shown in the menu and on anything you export."
+          title={m.settings_row_name()}
+          description={m.settings_profile_name_desc()}
           control={
             <Input
-              aria-label="Name"
+              aria-label={m.settings_row_name()}
               value={name}
               onChange={(e) => setName(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
@@ -125,11 +124,11 @@ export function Profile() {
         />
         <SettingRow
           id="email"
-          title="Email"
-          description="You sign in with it."
+          title={m.settings_row_email()}
+          description={m.settings_profile_email_desc()}
           control={
             <Input
-              aria-label="Email"
+              aria-label={m.settings_row_email()}
               value={user.email}
               readOnly
               data-full
@@ -144,7 +143,7 @@ export function Profile() {
           onClick={signOut}
           className="flex min-h-[52px] w-full items-center px-4 text-left text-sm font-medium text-destructive"
         >
-          Sign out
+          {m.settings_profile_sign_out()}
         </button>
       </SettingGroup>
     </>

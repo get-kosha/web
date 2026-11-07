@@ -3,12 +3,13 @@ import { CalendarBlankIcon, ClockIcon } from "@phosphor-icons/react/ssr"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { LOCALE, dateOfDay, dayOfDate } from "@/lib/core"
+import { intlLocale, dateOfDay, dayOfDate } from "@/lib/core"
 import { cn } from "@/lib/utils"
+import { m } from "@/paraglide/messages"
 
 /** "6 Nov 2026" */
 export const dayLabel = (day: string) =>
-  new Date(`${day}T12:00:00Z`).toLocaleDateString(LOCALE, {
+  new Date(`${day}T12:00:00Z`).toLocaleDateString(intlLocale(), {
     day: "numeric",
     month: "short",
     year: "numeric",
@@ -34,7 +35,7 @@ export function DatePicker({
   min,
   max,
   clearable,
-  placeholder = "Pick a date",
+  placeholder,
   className,
   children,
   ...aria
@@ -56,7 +57,7 @@ export function DatePicker({
           <>
             <CalendarBlankIcon />
             <span className={cn("num truncate", !value && "text-muted-foreground")}>
-              {value ? dayLabel(value) : placeholder}
+              {value ? dayLabel(value) : (placeholder ?? m.tx_pick_date())}
             </span>
           </>
         )}
@@ -88,7 +89,7 @@ export function DatePicker({
                 setOpen(false)
               }}
             >
-              Clear
+              {m.tx_clear()}
             </Button>
           </div>
         )}
@@ -109,7 +110,7 @@ export function TimePicker({
   ...aria
 }: Trigger & { value: string; onChange: (time: string) => void }) {
   const [open, setOpen] = useState(false)
-  const [h = "00", m = "00"] = value.split(":")
+  const [h = "00", min = "00"] = value.split(":")
   const popup = useRef<HTMLDivElement>(null)
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -128,12 +129,12 @@ export function TimePicker({
         align="start"
         className="w-auto flex-row gap-1 p-1"
       >
-        <Column label="Hour" values={HOURS} current={h} onPick={(x) => onChange(`${x}:${m}`)} />
+        <Column label={m.tx_hour()} values={HOURS} current={h} onPick={(x) => onChange(`${x}:${min}`)} />
         <div className="w-px bg-border" />
         <Column
-          label="Minute"
+          label={m.tx_minute()}
           values={MINUTES}
-          current={m}
+          current={min}
           onPick={(x) => {
             onChange(`${h}:${x}`)
             setOpen(false)

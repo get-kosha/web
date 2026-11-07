@@ -1,0 +1,54 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "site_description": "Добавляйте каждый платёж за пару секунд и смотрите, куда ушли деньги за месяц. Бесплатный трекер личных финансов с открытым исходным кодом — для любых счетов и в любой валюте.",
+  "site_tagline": "Личные финансы — по паре секунд за раз.",
+  "site_landing_title": "Kosha · Личные финансы — по паре секунд за раз",
+  "site_og_image_alt": "Kosha: личные финансы — по паре секунд за раз",
+  "pwa_synced": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Синхронизирована {count} операция, добавленная офлайн",
+        "countPlural=few": "Синхронизированы {count} операции, добавленные офлайн",
+        "countPlural=many": "Синхронизировано {count} операций, добавленных офлайн",
+        "countPlural=other": "Синхронизировано {count} операции, добавленной офлайн"
+      }
+    }
+  ],
+  "pwa_rejected": "Операция, добавленная офлайн, не сохранена: {reason}",
+  "pwa_syncing_title": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Синхронизация: {count} операция",
+        "countPlural=few": "Синхронизация: {count} операции",
+        "countPlural=many": "Синхронизация: {count} операций",
+        "countPlural=other": "Синхронизация: {count} операции"
+      }
+    }
+  ],
+  "pwa_syncing_body": "Отправляем то, что вы добавили офлайн.",
+  "pwa_offline_waiting": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Показаны данные с прошлого визита. {count} операция синхронизируется, когда появится интернет.",
+        "countPlural=few": "Показаны данные с прошлого визита. {count} операции синхронизируются, когда появится интернет.",
+        "countPlural=many": "Показаны данные с прошлого визита. {count} операций синхронизируются, когда появится интернет.",
+        "countPlural=other": "Показаны данные с прошлого визита. {count} операции синхронизируются, когда появится интернет."
+      }
+    }
+  ],
+  "pwa_offline_body": "Показаны данные с прошлого визита. Новые операции синхронизируются, когда появится интернет.",
+  "pwa_update_title": "Доступна новая версия Kosha",
+  "pwa_update_body": "Перезагрузите страницу, чтобы начать ею пользоваться.",
+  "pwa_reload": "Перезагрузить",
+  "pwa_install_title": "Установить Kosha",
+  "pwa_install_ios": "Нажмите «Поделиться», затем «На экран „Домой“», чтобы открывать Kosha как приложение.",
+  "pwa_install_body": "Открывайте с главного экрана или из дока, даже без интернета.",
+  "pwa_install": "Установить",
+  "pwa_dismiss": "Скрыть"
+}

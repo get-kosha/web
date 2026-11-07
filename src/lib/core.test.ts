@@ -1,6 +1,7 @@
 // node src/lib/core.test.ts
 import assert from "node:assert/strict"
 import {
+  cleanTag,
   convert,
   cumulative,
   daysInMonth,
@@ -188,6 +189,11 @@ assert.equal(qi.walletId, "n")
 assert.equal(qi.categoryId, null) // "di" is under 3 letters
 assert.equal(qi.payee, "salary di")
 assert.equal(parseQuickAdd("tesco", qw, qc).amount, null)
+// date words in other languages, and two-character CJK categories
+assert.equal(parseQuickAdd("12,50 tesco ayer", qw, qc).date, "yesterday")
+assert.equal(parseQuickAdd("12.50 tesco 昨天", qw, qc).payee, "tesco")
+assert.equal(parseQuickAdd("9000 외식", qw, [{ id: "d", name: "외식" }]).categoryId, "d")
+assert.equal(cleanTag("#काम"), "काम") // Devanagari vowel signs are marks, not letters
 // Only sentences go to AI; lines the parser explains stay local.
 const ai = (q: string) => needsAi(q, parseQuickAdd(q, qw, qc))
 assert.equal(ai("24.90 pizza hut yesterday visa"), false)
@@ -199,6 +205,18 @@ assert.equal(ai("€12 coffee"), true)
 assert.equal(ai("uber 23 eur"), true)
 assert.equal(ai("rent 1200 on the 3rd"), true)
 assert.equal(ai("twelve fifty nandos"), true)
+// German date words work whatever the UI language is.
+const qg = parseQuickAdd("12,50 Lebensmittel gestern", qw, [{ id: "food", name: "Lebensmittel" }])
+assert.equal(qg.amount, 1250)
+assert.equal(qg.date, "yesterday")
+assert.equal(qg.categoryId, "food")
+assert.equal(qg.payee, "")
+assert.equal(parseQuickAdd("Bäcker 3 heute", qw, qc).date, "today")
+assert.equal(parseQuickAdd("constructor 3", qw, qc).date, null)
+assert.equal(ai("Bäcker 4,20 gestern visa"), false)
+assert.equal(ai("Miete 1200 am 3."), true)
+assert.equal(ai("Essen mit Sam 18,50 letzten Freitag"), true)
+assert.equal(ai("Kino 12 vorgestern"), true)
 console.log("quick add ok")
 
 // tags and events
@@ -224,6 +242,7 @@ console.log("tags and events ok")
 // preferences
 import { parsePrefs } from "./core.ts"
 assert.deepEqual(parsePrefs({}), {
+  language: null,
   theme: "system",
   layout: "boxed",
   motion: "on",
@@ -765,3 +784,45 @@ console.log("getting started ok")
   )
   console.log("attachments ok")
 }
+
+// languages: every message exists in every locale, and formats follow the language
+import { m as messages } from "../paraglide/messages.js"
+import { locales } from "../paraglide/runtime.js"
+import { fmt } from "./core.ts"
+import { readdirSync, readFileSync } from "node:fs"
+const keysOf = (l: string) =>
+  readdirSync(`messages/${l}`).flatMap((f) =>
+    Object.keys(JSON.parse(readFileSync(`messages/${l}/${f}`, "utf8"))).filter((k) => k !== "$schema")
+  )
+const english = new Set(keysOf("en"))
+for (const l of locales) {
+  const keys = new Set(keysOf(l))
+  assert.deepEqual(
+    [...english].filter((k) => !keys.has(k)),
+    [],
+    `missing in messages/${l}`
+  )
+  assert.deepEqual(
+    [...keys].filter((k) => !english.has(k)),
+    [],
+    `not in English, in messages/${l}`
+  )
+}
+assert.equal(messages.common_save({}, { locale: "de" }), "Speichern")
+// every plural message has a variant for every count in every language (a miss shows the key)
+const plurals = readdirSync("messages/en").flatMap((f) =>
+  Object.entries(JSON.parse(readFileSync(`messages/en/${f}`, "utf8"))).filter(([, v]) => Array.isArray(v))
+) as [string, [{ declarations: string[] }]][]
+for (const [key, [{ declarations }]] of plurals) {
+  const inputs = declarations.filter((d) => d.startsWith("input ")).map((d) => d.slice(6))
+  for (const locale of locales)
+    for (const n of [0, 1, 2, 3, 5, 11, 21, 22, 101, 1000000]) {
+      const out = (messages as unknown as Record<string, (i: object, o: object) => string>)[key](
+        Object.fromEntries(inputs.map((i) => [i, n])),
+        { locale }
+      )
+      assert.notEqual(out, key, `${key} has no ${locale} variant for ${n}`)
+    }
+}
+assert.equal(fmt(123456, "eur"), "€1,234.56")
+console.log("languages ok")

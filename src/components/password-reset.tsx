@@ -1,11 +1,13 @@
 // Asking for a reset link: /forgot-password, and /reset-password when its link has expired.
 // Both end on "Check your email", which says the same thing whether or not the address has an account.
-import { useEffect, useState, type FormEvent } from "react"
+import { useEffect, useState, type FormEvent, type ReactNode } from "react"
 import { ClockCountdownIcon, EnvelopeSimpleIcon, KeyIcon } from "@phosphor-icons/react/ssr"
+import { ParaglideMessage } from "@inlang/paraglide-js-react"
 import { cn } from "cn"
 import { AuthError, AuthField, AuthHeader, AuthShell, IconTile, linkClass, optionClass } from "@/components/auth"
 import { Button } from "@/components/ui/button"
 import { authClient } from "@/lib/auth-client"
+import { m } from "@/paraglide/messages"
 
 const RESEND_AFTER = 60
 
@@ -15,8 +17,8 @@ async function requestLink(email: string) {
     .requestPasswordReset({ email, redirectTo: "/reset-password" })
     .catch(() => ({ error: { status: 0 } }))
   if (!res.error) return null
-  if (res.error.status === 429) return "Too many requests. Wait a minute, then try again."
-  if (res.error.status === 0) return "Kosha couldn't be reached. Check your connection, then try again."
+  if (res.error.status === 429) return m.auth_reset_rate_limited()
+  if (res.error.status === 0) return m.auth_error_offline()
   return null
 }
 
@@ -56,19 +58,18 @@ export function ResetRequest({ variant, email: initial }: { variant: "forgot" | 
       {expired ? (
         <AuthHeader
           focus
-          title="This link has expired"
+          title={m.auth_expired_title()}
           icon={
             <IconTile>
               <ClockCountdownIcon className="text-warning" />
             </IconTile>
           }
         >
-          Reset links work once, for one hour. Your password hasn't changed. Ask for a new link and use the newest
-          email.
+          {m.auth_expired_body()}
         </AuthHeader>
       ) : (
-        <AuthHeader focus={moved} title="Reset your password">
-          Enter the email you use for Kosha. We'll send a link to set a new password.
+        <AuthHeader focus={moved} title={m.auth_reset_title()}>
+          {m.auth_reset_body()}
         </AuthHeader>
       )}
 
@@ -77,10 +78,10 @@ export function ResetRequest({ variant, email: initial }: { variant: "forgot" | 
           id="email"
           name="email"
           type="email"
-          label="Email"
+          label={m.auth_email()}
           required
           autoComplete="username"
-          placeholder="you@example.com"
+          placeholder={m.auth_email_placeholder()}
           autoFocus={!expired}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -88,14 +89,20 @@ export function ResetRequest({ variant, email: initial }: { variant: "forgot" | 
         {error && <AuthError>{error}</AuthError>}
         {/* Phones pin the action to the bottom of the screen. */}
         <Button type="submit" size="auth" disabled={busy} className="mt-1 max-md:order-last max-md:mt-auto">
-          {expired ? "Send a new link" : "Send reset link"}
+          {expired ? m.auth_send_new_link() : m.auth_send_reset_link()}
         </Button>
         {expired ? (
           <p className="text-sm text-muted-foreground md:mt-3">
-            Remembered it?{" "}
-            <a href="/login" className={linkClass}>
-              Sign in
-            </a>
+            <ParaglideMessage
+              message={m.auth_remembered}
+              markup={{
+                link: ({ children }) => (
+                  <a href="/login" className={linkClass}>
+                    {children}
+                  </a>
+                ),
+              }}
+            />
           </p>
         ) : (
           <PasskeyOffer />
@@ -112,8 +119,7 @@ function PasskeyOffer() {
     setError("")
     const res = await authClient.signIn.passkey({ autoFill: false }).catch(() => null)
     if (res && !res.error) return window.location.assign("/")
-    if ((res?.error as { code?: string } | undefined)?.code !== "AUTH_CANCELLED")
-      setError("That passkey didn't work. Try again, or reset your password.")
+    if ((res?.error as { code?: string } | undefined)?.code !== "AUTH_CANCELLED") setError(m.auth_passkey_failed())
   }
   return (
     <div className="mt-4 grid grid-cols-[36px_minmax(0,1fr)] items-start gap-3.5 rounded-[14px] border bg-card p-4 max-md:mt-1 max-md:rounded-2xl">
@@ -123,25 +129,25 @@ function PasskeyOffer() {
       <div className="flex flex-col gap-2.5">
         <div className="flex flex-col gap-0.5">
           <span className="text-sm font-medium">
-            Have a passkey on this <span className="max-md:hidden">device</span>
-            <span className="md:hidden">phone</span>?
+            <span className="max-md:hidden">{m.auth_passkey_offer_device()}</span>
+            <span className="md:hidden">{m.auth_passkey_offer_phone()}</span>
           </span>
-          <span className="text-[13px] leading-[19px] text-muted-foreground">
-            Sign in with it instead. No password needed.
-          </span>
+          <span className="text-[13px] leading-[19px] text-muted-foreground">{m.auth_passkey_offer_body()}</span>
         </div>
         <Button
           variant="outline"
           className={cn(optionClass, "h-8 self-start rounded-lg px-3 text-[13px] max-md:h-10 max-md:rounded-[10px]")}
           onClick={() => void signIn()}
         >
-          Sign in with a passkey
+          {m.auth_sign_in_passkey()}
         </Button>
         {error && <AuthError>{error}</AuthError>}
       </div>
     </div>
   )
 }
+
+const bold = ({ children }: { children?: ReactNode }) => <span className="font-medium">{children}</span>
 
 function CheckEmail({ email, onChange }: { email: string; onChange: () => void }) {
   const [left, setLeft] = useState(RESEND_AFTER)
@@ -175,14 +181,13 @@ function CheckEmail({ email, onChange }: { email: string; onChange: () => void }
       )}
     >
       {left > 0 ? (
-        <>
-          Send again in{" "}
-          <span className="num text-subtle-foreground">
-            {Math.floor(left / 60)}:{String(left % 60).padStart(2, "0")}
-          </span>
-        </>
+        <ParaglideMessage
+          message={m.auth_send_again_in}
+          inputs={{ time: `${Math.floor(left / 60)}:${String(left % 60).padStart(2, "0")}` }}
+          markup={{ num: ({ children }) => <span className="num text-subtle-foreground">{children}</span> }}
+        />
       ) : (
-        "Send again"
+        m.auth_send_again()
       )}
     </Button>
   )
@@ -191,25 +196,34 @@ function CheckEmail({ email, onChange }: { email: string; onChange: () => void }
     <AuthShell key="sent" phone="focused" back="/login">
       <AuthHeader
         focus
-        title="Check your email"
+        title={m.auth_check_email_title()}
         icon={
           <IconTile badge>
             <EnvelopeSimpleIcon />
           </IconTile>
         }
       >
-        If <strong>{email}</strong> has a Kosha account, a link to reset its password is on its way. The link works for
-        one hour.
+        <ParaglideMessage
+          message={m.auth_check_email_body}
+          inputs={{ email }}
+          markup={{ strong: ({ children }) => <strong>{children}</strong> }}
+        />
       </AuthHeader>
 
       <ol className="overflow-hidden rounded-[14px] border bg-card max-md:rounded-2xl">
         {[
-          <>
-            Open the email from Kosha with the subject <span className="font-medium">Reset your Kosha password</span>.
-          </>,
-          <>
-            Choose <span className="font-medium">Set a new password</span>. It opens Kosha in this browser or any other.
-          </>,
+          <ParaglideMessage
+            key="open"
+            message={m.auth_check_step_open}
+            inputs={{ subject: m.email_reset_subject() }}
+            markup={{ b: bold }}
+          />,
+          <ParaglideMessage
+            key="choose"
+            message={m.auth_check_step_choose}
+            inputs={{ button: m.email_reset_button() }}
+            markup={{ b: bold }}
+          />,
         ].map((step, i) => (
           <li
             key={i}
@@ -224,21 +238,25 @@ function CheckEmail({ email, onChange }: { email: string; onChange: () => void }
       </ol>
 
       <div className="flex flex-1 flex-col gap-3 md:flex-none">
-        <p className="text-[13px] leading-[19px] text-muted-foreground">
-          Nothing after a minute? Look in spam, then send it again.
-        </p>
+        <p className="text-[13px] leading-[19px] text-muted-foreground">{m.auth_check_spam()}</p>
         {error && <AuthError>{error}</AuthError>}
         {/* Phones pin both actions to the bottom. */}
         <div className="flex flex-col gap-3 max-md:mt-auto max-md:gap-1.5">
           {resendButton}
           <p className="mt-1 text-sm text-muted-foreground max-md:hidden">
-            Wrong address?{" "}
-            <button type="button" className={linkClass} onClick={onChange}>
-              Use a different email
-            </button>
+            <ParaglideMessage
+              message={m.auth_wrong_address}
+              markup={{
+                link: ({ children }) => (
+                  <button type="button" className={linkClass} onClick={onChange}>
+                    {children}
+                  </button>
+                ),
+              }}
+            />
           </p>
           <Button variant="link" className="h-11 text-[15px] text-foreground underline md:hidden" onClick={onChange}>
-            Use a different email
+            {m.auth_use_different_email()}
           </Button>
         </div>
       </div>

@@ -5,6 +5,7 @@ import { cloudflare } from "@cloudflare/vite-plugin"
 import { tanstackStart } from "@tanstack/react-start/plugin/vite"
 import viteReact from "@vitejs/plugin-react"
 import tailwindcss from "@tailwindcss/vite"
+import { paraglideVitePlugin } from "@inlang/paraglide-js"
 
 // Builds /sw.js from src/sw.js with this build's asset list. The version hashes that list and the
 // worker's own source, so a deploy that changes anything gives browsers a new worker to install.
@@ -29,6 +30,8 @@ const serviceWorker = (): Plugin => ({
 export default defineConfig({
   resolve: { tsconfigPaths: true },
   plugins: [
+    // Compiles messages/ into typed functions in src/paraglide (options in project.inlang/paraglide.config.ts).
+    paraglideVitePlugin({ project: "./project.inlang", outdir: "./src/paraglide" }),
     cloudflare({ viteEnvironment: { name: "ssr" } }),
     tailwindcss(),
     tanstackStart(),

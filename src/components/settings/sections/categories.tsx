@@ -17,20 +17,20 @@ import { Pick } from "@/components/pick"
 import { Expand, Pill, Segmented, SettingGroup } from "@/components/settings/row"
 import { errorOf, useSave } from "@/components/settings/saved"
 import { archiveCategory, deleteCategory, mergeCategory, saveCategory, type ManagedCategory as Cat } from "@/lib/api"
-import { isSystemCategory } from "@/lib/core"
+import { intlLocale, isSystemCategory } from "@/lib/core"
 import { cn } from "@/lib/utils"
+import { m } from "@/paraglide/messages"
 
 const useCategories = () => getRouteApi("/_app/settings/$section").useLoaderData({ select: (d) => d.categories })
 
-const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`
 const usage = (c: Cat) =>
   [
-    c.tx && plural(c.tx, "transaction"),
-    c.subs && plural(c.subs, "recurring", "recurring"),
-    c.rules && plural(c.rules, "rule"),
+    c.tx && m.settings_cat_count_tx({ count: c.tx }),
+    c.subs && m.settings_cat_count_recurring({ count: c.subs }),
+    c.rules && m.settings_cat_count_rules({ count: c.rules }),
   ]
     .filter(Boolean)
-    .join(" · ") || "Not used yet"
+    .join(" · ") || m.settings_cat_unused()
 
 /** Top-level categories, each followed by its subcategories. */
 function tree(cats: Cat[]) {
@@ -88,10 +88,12 @@ function CategoryGroup({
   const isNew = open === `new:${income}`
   return (
     <SettingGroup
-      label={income ? "Income" : "Spending"}
+      label={income ? m.settings_cat_income() : m.settings_cat_spending()}
       actions={
         <>
-          <span className="text-xs text-muted-foreground">{plural(cats.length, "category", "categories")}</span>
+          <span className="text-xs text-muted-foreground">
+            {m.settings_cat_count_categories({ count: cats.length })}
+          </span>
           <Button
             variant="outline"
             size="sm"
@@ -99,7 +101,7 @@ function CategoryGroup({
             onClick={() => onToggle(`new:${income}`)}
             aria-expanded={isNew}
           >
-            <PlusIcon /> New category
+            <PlusIcon /> {m.settings_cat_new()}
           </Button>
         </>
       }
@@ -116,7 +118,9 @@ function CategoryGroup({
           />
         </Expand>
         {cats.length === 0 && !isNew && (
-          <p className="px-5 py-4 text-sm text-muted-foreground">No {income ? "income" : "spending"} categories yet.</p>
+          <p className="px-5 py-4 text-sm text-muted-foreground">
+            {income ? m.settings_cat_empty_income() : m.settings_cat_empty_spending()}
+          </p>
         )}
         {visible.map((c) => {
           const sub = !!c.parent_id && cats.some((p) => p.id === c.parent_id)
@@ -136,7 +140,7 @@ function CategoryGroup({
                 <span className="min-w-0 flex-1">
                   <span className="flex items-center gap-2 truncate text-sm">
                     {c.name}
-                    {isSystemCategory(c.id) && <Pill tone="muted">used by Kosha</Pill>}
+                    {isSystemCategory(c.id) && <Pill tone="muted">{m.settings_cat_system()}</Pill>}
                   </span>
                   <span data-plain className="num block truncate text-xs text-muted-foreground">
                     {usage(c)}
@@ -161,7 +165,7 @@ function CategoryGroup({
             onClick={() => setShowAll(true)}
             className="flex min-h-12 w-full items-center justify-center border-t text-[13px] text-subtle-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
-            Show all {rows.length}
+            {m.settings_cat_show_all({ count: rows.length })}
           </button>
         )}
       </div>
@@ -212,7 +216,7 @@ function Editor({
       try {
         const { id } = await saveCategory({ data: next })
         await router.invalidate()
-        toast.success(`${next.name} added`)
+        toast.success(m.settings_cat_added({ name: next.name }))
         onCreated(id)
       } catch (e) {
         toast.error(errorOf(e))
@@ -243,12 +247,12 @@ function Editor({
     <div className="grid gap-3.5 border-t bg-muted px-5 pt-4 pb-[18px] max-md:px-4">
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="grid gap-1.5 text-xs text-muted-foreground">
-          Name
+          {m.settings_cat_name()}
           <Input
             value={name}
             autoFocus={!c}
             maxLength={60}
-            placeholder={c ? undefined : "Name it to add it"}
+            placeholder={c ? undefined : m.settings_cat_name_placeholder()}
             onChange={(e) => setName(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
             onBlur={() => {
@@ -261,7 +265,7 @@ function Editor({
         </label>
         {!system && (
           <div className="grid gap-1.5 text-xs text-muted-foreground">
-            Inside
+            {m.settings_cat_inside()}
             <Pick
               value={parentId ?? ""}
               onChange={(v) => {
@@ -269,7 +273,7 @@ function Editor({
                 setParentId(v || null)
                 void commit({ parentId: v || null }, () => setParentId(old))
               }}
-              placeholder="Nothing (top level)"
+              placeholder={m.settings_cat_top_level()}
               options={hasChildren ? [] : parents.map((p) => ({ value: p.id, label: p.name }))}
               className="h-9 w-full bg-background text-sm text-foreground"
             />
@@ -279,9 +283,9 @@ function Editor({
 
       {!system && !parentId && (
         <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-          Type
+          {m.settings_cat_type()}
           <Segmented
-            label="Type"
+            label={m.settings_cat_type()}
             className="bg-foreground/[0.06]"
             value={income ? "income" : "spending"}
             onChange={(v) => {
@@ -290,13 +294,13 @@ function Editor({
               void commit({ income: v === "income", parentId: null }, () => setIncome(old))
             }}
             options={[
-              ["spending", "Spending"],
-              ["income", "Income"],
+              ["spending", m.settings_cat_spending()],
+              ["income", m.settings_cat_income()],
             ]}
           />
           {!!c && !!c.income !== income && c.tx > 0 && (
             <span className="text-warning">
-              Its {plural(c.tx, "transaction")} now count as {income ? "income" : "spending"}.
+              {income ? m.settings_cat_now_income({ count: c.tx }) : m.settings_cat_now_spending({ count: c.tx })}
             </span>
           )}
         </div>
@@ -305,7 +309,7 @@ function Editor({
       <div className="grid gap-1.5">
         <div className="flex items-center justify-between gap-3">
           <span id={`${key}-icons`} className="text-xs text-muted-foreground">
-            Icon
+            {m.settings_cat_icon()}
           </span>
           <label className="relative w-40">
             <MagnifyingGlassIcon
@@ -315,8 +319,8 @@ function Editor({
             <Input
               value={iconQuery}
               onChange={(e) => setIconQuery(e.target.value)}
-              placeholder="Find an icon"
-              aria-label="Find an icon"
+              placeholder={m.settings_cat_find_icon()}
+              aria-label={m.settings_cat_find_icon()}
               className="h-8 bg-background pl-8 text-[13px]"
             />
           </label>
@@ -344,7 +348,9 @@ function Editor({
             </button>
           ))}
           {icons.length === 0 && (
-            <p className="col-span-full px-1 py-2 text-[13px] text-muted-foreground">No icon called "{iconQuery}".</p>
+            <p className="col-span-full px-1 py-2 text-[13px] text-muted-foreground">
+              {m.settings_cat_no_icon({ query: iconQuery })}
+            </p>
           )}
         </div>
       </div>
@@ -360,11 +366,11 @@ function Editor({
             >
               {c.tx || c.subs || hasChildren ? (
                 <>
-                  <ArrowsMergeIcon /> Merge into…
+                  <ArrowsMergeIcon /> {m.settings_cat_merge_into_ellipsis()}
                 </>
               ) : (
                 <>
-                  <TrashIcon /> Delete
+                  <TrashIcon /> {m.common_delete()}
                 </>
               )}
             </Button>
@@ -372,25 +378,30 @@ function Editor({
               variant="ghost"
               className="h-9 px-3 text-[13px] font-normal text-subtle-foreground"
               disabled={busy}
-              onClick={() => run(() => archiveCategory({ data: { id: c.id, archived: true } }), `${c.name} archived`)}
+              onClick={() =>
+                run(
+                  () => archiveCategory({ data: { id: c.id, archived: true } }),
+                  m.settings_cat_archived_toast({ name: c.name })
+                )
+              }
             >
-              Archive
+              {m.settings_cat_archive()}
             </Button>
           </>
         )}
         <span className="ml-auto text-xs text-muted-foreground">
-          {c ? "Changes save as you go" : "Saved once it has a name"}
+          {c ? m.settings_cat_autosave() : m.settings_cat_new_hint()}
         </span>
       </div>
 
       {c && confirm === "delete" && (
         <Confirm
-          title={`Delete ${c.name}?`}
-          body="Nothing uses it, so nothing else changes."
-          action="Delete"
+          title={m.settings_cat_delete_title({ name: c.name })}
+          body={m.settings_cat_delete_body()}
+          action={m.common_delete()}
           busy={busy}
           onCancel={() => setConfirm(null)}
-          onConfirm={() => run(() => deleteCategory({ data: { id: c.id } }), `${c.name} deleted`)}
+          onConfirm={() => run(() => deleteCategory({ data: { id: c.id } }), m.settings_cat_deleted({ name: c.name }))}
         />
       )}
       {c && confirm === "merge" && (
@@ -401,7 +412,10 @@ function Editor({
           busy={busy}
           onCancel={() => setConfirm(null)}
           onMerge={(into) =>
-            run(() => mergeCategory({ data: { id: c.id, into: into.id } }), `${c.name} merged into ${into.name}`)
+            run(
+              () => mergeCategory({ data: { id: c.id, into: into.id } }),
+              m.settings_cat_merged({ name: c.name, into: into.name })
+            )
           }
         />
       )}
@@ -425,10 +439,8 @@ function Archived({ cats }: { cats: Cat[] }) {
             open && "rotate-90"
           )}
         />
-        Archived ({cats.length})
-        <span className="ml-auto text-xs text-muted-foreground max-sm:hidden">
-          Hidden from pickers; past transactions keep them
-        </span>
+        {m.settings_cat_archived_count({ count: cats.length })}
+        <span className="ml-auto text-xs text-muted-foreground max-sm:hidden">{m.settings_cat_archived_hint()}</span>
       </button>
       <Expand open={open}>
         <div className="border-t">
@@ -462,7 +474,7 @@ function ArchivedRow({ c, sub }: { c: Cat; sub: boolean }) {
           try {
             await archiveCategory({ data: { id: c.id, archived: false } })
             await router.invalidate()
-            toast.success(`${c.name} restored`)
+            toast.success(m.settings_cat_restored({ name: c.name }))
           } catch (e) {
             toast.error(errorOf(e))
           } finally {
@@ -470,7 +482,7 @@ function ArchivedRow({ c, sub }: { c: Cat; sub: boolean }) {
           }
         }}
       >
-        Restore
+        {m.settings_cat_restore()}
       </Button>
     </div>
   )
@@ -505,38 +517,36 @@ function MergeDialog({
     )
   )
   const target = all.find((x) => x.id === into)
+  // Everything the merge moves, as one list in the reader's language: "3 transactions, 1 recurring payment and …".
+  const items = new Intl.ListFormat(intlLocale(), { type: "conjunction" }).format(
+    [
+      c.tx && m.settings_cat_count_tx({ count: c.tx }),
+      c.subs && m.settings_cat_merge_item_recurring({ count: c.subs }),
+      c.rules && m.settings_cat_merge_item_rules({ count: c.rules }),
+      hasChildren && m.settings_cat_merge_item_subcategories(),
+    ].filter((x) => typeof x === "string")
+  )
   const label = (x: Cat) => (x.parent_id ? `${all.find((p) => p.id === x.parent_id)?.name ?? ""} › ${x.name}` : x.name)
   return (
     <Dialog open onOpenChange={(o) => !o && onCancel()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Merge {c.name}</DialogTitle>
-          <DialogDescription>
-            Its{" "}
-            {[
-              c.tx && plural(c.tx, "transaction"),
-              c.subs && plural(c.subs, "recurring payment"),
-              c.rules && plural(c.rules, "payee rule"),
-              hasChildren && "subcategories",
-            ]
-              .filter(Boolean)
-              .join(", ")}{" "}
-            move to the category you pick. Then Kosha deletes {c.name}. This can't be undone.
-          </DialogDescription>
+          <DialogTitle>{m.settings_cat_merge_title({ name: c.name })}</DialogTitle>
+          <DialogDescription>{m.settings_cat_merge_body({ items, name: c.name })}</DialogDescription>
         </DialogHeader>
         <Pick
           value={into}
           onChange={setInto}
-          placeholder="Merge into…"
+          placeholder={m.settings_cat_merge_into_ellipsis()}
           options={targets.map((x) => ({ value: x.id, label: label(x) }))}
           className="w-full"
         />
         <DialogFooter>
           <Button variant="outline" onClick={onCancel}>
-            Cancel
+            {m.common_cancel()}
           </Button>
           <Button variant="destructive" disabled={!target || busy} onClick={() => target && onMerge(target)}>
-            {target ? `Merge into ${target.name}` : "Merge"}
+            {target ? m.settings_cat_merge_into({ name: target.name }) : m.settings_cat_merge()}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -568,7 +578,7 @@ function Confirm({
         </DialogHeader>
         <DialogFooter>
           <Button variant="outline" onClick={onCancel}>
-            Cancel
+            {m.common_cancel()}
           </Button>
           <Button variant="destructive" disabled={busy} onClick={onConfirm}>
             {action}

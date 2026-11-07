@@ -1,0 +1,48 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "site_description": "Erfasse jede Zahlung in wenigen Sekunden und sieh dann, wo der Monat geblieben ist. Ein kostenloser Open-Source-Finanztracker für alle deine Konten, in jeder Währung.",
+  "site_tagline": "Deine Finanzen, Sekunde für Sekunde.",
+  "site_landing_title": "Kosha · Deine Finanzen, Sekunde für Sekunde",
+  "site_og_image_alt": "Kosha: deine Finanzen, Sekunde für Sekunde",
+  "pwa_synced": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} offline hinzugefügte Buchung synchronisiert",
+        "countPlural=other": "{count} offline hinzugefügte Buchungen synchronisiert"
+      }
+    }
+  ],
+  "pwa_rejected": "Eine offline hinzugefügte Buchung wurde nicht gespeichert: {reason}",
+  "pwa_syncing_title": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} Buchung wird synchronisiert",
+        "countPlural=other": "{count} Buchungen werden synchronisiert"
+      }
+    }
+  ],
+  "pwa_syncing_body": "Was du offline hinzugefügt hast, wird gesendet.",
+  "pwa_offline_waiting": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Du siehst die Daten deines letzten Besuchs. {count} Buchung wird synchronisiert, sobald du wieder online bist.",
+        "countPlural=other": "Du siehst die Daten deines letzten Besuchs. {count} Buchungen werden synchronisiert, sobald du wieder online bist."
+      }
+    }
+  ],
+  "pwa_offline_body": "Du siehst die Daten deines letzten Besuchs. Neue Buchungen werden synchronisiert, sobald du wieder online bist.",
+  "pwa_update_title": "Eine neue Version von Kosha ist bereit",
+  "pwa_update_body": "Lade die Seite neu, um sie zu nutzen.",
+  "pwa_reload": "Neu laden",
+  "pwa_install_title": "Kosha installieren",
+  "pwa_install_ios": "Tippe auf „Teilen“ und dann auf „Zum Home-Bildschirm“, um Kosha wie eine App zu öffnen.",
+  "pwa_install_body": "Öffne Kosha über deinen Home-Bildschirm oder dein Dock, auch offline.",
+  "pwa_install": "Installieren",
+  "pwa_dismiss": "Ausblenden"
+}

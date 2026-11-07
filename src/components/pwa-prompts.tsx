@@ -5,6 +5,7 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { OUTBOX_EVENT, queued, sendQueued } from "@/lib/offline"
 import { cn } from "@/lib/utils"
+import { m } from "@/paraglide/messages"
 
 type InstallEvent = Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: "accepted" | "dismissed" }> }
 
@@ -80,10 +81,10 @@ export function PwaPrompts({ uid, bare, away }: { uid: string; bare: boolean; aw
       if (navigator.onLine && queued(uid).length) {
         const { sent, rejected } = await sendQueued(uid)
         if (sent) {
-          toast.success(`Synced ${sent} ${sent === 1 ? "entry" : "entries"} added offline`)
+          toast.success(m.pwa_synced({ count: sent }))
           await router.invalidate()
         }
-        for (const reason of rejected) toast.error(`An entry added offline wasn't saved: ${reason}`)
+        for (const reason of rejected) toast.error(m.pwa_rejected({ reason }))
       }
       count()
     }
@@ -105,8 +106,6 @@ export function PwaPrompts({ uid, bare, away }: { uid: string; bare: boolean; aw
     setInstall(null)
   }
 
-  const entries = `${waiting} ${waiting === 1 ? "entry" : "entries"}`
-
   return (
     <div
       className={cn(
@@ -120,21 +119,17 @@ export function PwaPrompts({ uid, bare, away }: { uid: string; bare: boolean; aw
         <Prompt
           role="status"
           icon={<WifiSlashIcon />}
-          title={online ? `Syncing ${entries}` : "You're offline"}
+          title={online ? m.pwa_syncing_title({ count: waiting }) : m.common_offline_title()}
           body={
-            online
-              ? "Sending what you added while offline."
-              : waiting
-                ? `Showing data from your last visit. ${entries} will sync when you're back online.`
-                : "Showing data from your last visit. New entries sync when you're back online."
+            online ? m.pwa_syncing_body() : waiting ? m.pwa_offline_waiting({ count: waiting }) : m.pwa_offline_body()
           }
         />
       )}
       {update && (
         <Prompt
           icon={<ArrowClockwiseIcon />}
-          title="A new version of Kosha is ready"
-          body="Reload to start using it."
+          title={m.pwa_update_title()}
+          body={m.pwa_update_body()}
           onClose={() => setUpdate(null)}
         >
           <Button
@@ -146,19 +141,15 @@ export function PwaPrompts({ uid, bare, away }: { uid: string; bare: boolean; aw
               update.postMessage("skip-waiting")
             }}
           >
-            Reload
+            {m.pwa_reload()}
           </Button>
         </Prompt>
       )}
       {install && !update && (
         <Prompt
           icon={install === "ios" ? <ExportIcon /> : <DownloadSimpleIcon />}
-          title="Install Kosha"
-          body={
-            install === "ios"
-              ? "Tap Share, then Add to Home Screen, to open Kosha like an app."
-              : "Open it from your home screen or dock, even offline."
-          }
+          title={m.pwa_install_title()}
+          body={install === "ios" ? m.pwa_install_ios() : m.pwa_install_body()}
           onClose={dismissInstall}
         >
           {install !== "ios" && (
@@ -171,7 +162,7 @@ export function PwaPrompts({ uid, bare, away }: { uid: string; bare: boolean; aw
                 else setInstall(null)
               }}
             >
-              Install
+              {m.pwa_install()}
             </Button>
           )}
         </Prompt>
@@ -208,7 +199,7 @@ function Prompt({
       </div>
       {children}
       {onClose && (
-        <Button variant="ghost" size="icon-sm" aria-label="Dismiss" onClick={onClose}>
+        <Button variant="ghost" size="icon-sm" aria-label={m.pwa_dismiss()} onClick={onClose}>
           <XIcon />
         </Button>
       )}

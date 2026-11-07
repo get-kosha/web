@@ -34,8 +34,10 @@ import {
   type Upcoming,
   type Wallet,
 } from "@/lib/api"
-import { LOCALE, addDays, convert, dayOf, fmt, netWorth, shiftMonth } from "@/lib/core"
+import { intlLocale, addDays, convert, dayOf, fmt, netWorth, shiftMonth } from "@/lib/core"
 import { cn } from "@/lib/utils"
+import { ParaglideMessage } from "@inlang/paraglide-js-react"
+import { m } from "@/paraglide/messages"
 
 export const Route = createFileRoute("/_app/")({
   loaderDeps: ({ search }) => ({ month: search.month, currency: search.currency }),
@@ -57,10 +59,18 @@ type Dash = Awaited<ReturnType<typeof getDashboard>>
 type RecapView = NonNullable<Awaited<ReturnType<typeof getRecap>>>
 
 const short = (day: string) =>
-  new Date(`${day}T12:00:00Z`).toLocaleDateString(LOCALE, { day: "numeric", month: "short", timeZone: "UTC" })
+  new Date(`${day}T12:00:00Z`).toLocaleDateString(intlLocale(), { day: "numeric", month: "short", timeZone: "UTC" })
 const monthName = (m: string, style: "long" | "short" = "long") =>
-  new Date(`${m}-01T12:00:00Z`).toLocaleDateString(LOCALE, { month: style, timeZone: "UTC" })
-const pct = (v: number) => `${v > 0 ? "+" : ""}${Math.round(v * 100)}%`
+  new Date(`${m}-01T12:00:00Z`).toLocaleDateString(intlLocale(), { month: style, timeZone: "UTC" })
+/** A share as a percentage in the app's language, signed unless `signDisplay` says otherwise. */
+const pct = (v: number, digits = 0, signDisplay: "exceptZero" | "auto" = "exceptZero") =>
+  new Intl.NumberFormat(intlLocale(), {
+    style: "percent",
+    signDisplay,
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+  }).format(v)
+const num = ({ children }: { children?: ReactNode }) => <span className="num">{children}</span>
 const STALE_DAYS = 60
 
 function Overview() {
@@ -81,7 +91,7 @@ function Overview() {
 
   return (
     <div className="flex flex-col gap-3 px-4 pt-4 md:gap-5 md:px-8 md:pt-7">
-      <h1 className="sr-only">Overview</h1>
+      <h1 className="sr-only">{m.shell_nav_overview()}</h1>
       {starting && <GetStarted />}
       {d.recap && <RecapCard key={d.recap.month} view={d.recap} />}
       <div className="flex flex-wrap gap-5">
@@ -91,11 +101,11 @@ function Overview() {
 
       <div className="grid grid-cols-2 gap-3 md:hidden">
         <MiniStat
-          label="Saved"
+          label={m.overview_saved()}
           value={<RollingMoney value={d.current.income - d.current.expense} currency={p} />}
           positive={d.current.income > d.current.expense}
         />
-        <MiniStat label="Still to pay" value={<RollingMoney value={stillToPay} currency={p} />} />
+        <MiniStat label={m.overview_still_to_pay()} value={<RollingMoney value={stillToPay} currency={p} />} />
       </div>
 
       <div className="flex flex-col-reverse gap-3 md:flex-row md:flex-wrap md:gap-5">
@@ -108,7 +118,11 @@ function Overview() {
 
       <LastTwelveMonths d={d} />
 
-      <TransactionSheet open={!!paying} title={`Pay ${paying?.card.name ?? ""}`} onClose={() => setPaying(null)}>
+      <TransactionSheet
+        open={!!paying}
+        title={m.overview_pay_card({ name: paying?.card.name ?? "" })}
+        onClose={() => setPaying(null)}
+      >
         {paying && (
           <TransactionForm
             preset={{ transferTo: paying.card.id, amount: paying.owed }}
@@ -139,7 +153,7 @@ function RecapCard({ view }: { view: RecapView }) {
     try {
       setRecap(await writeRecap({ data: { month: view.month } }))
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Couldn't write it")
+      setError(e instanceof Error ? e.message : m.overview_recap_write_failed())
     } finally {
       setWriting(false)
     }
@@ -158,7 +172,7 @@ function RecapCard({ view }: { view: RecapView }) {
       await router.invalidate()
     } catch (e) {
       setHidden(false)
-      toast.error(e instanceof Error ? e.message : "Couldn't hide it")
+      toast.error(e instanceof Error ? e.message : m.overview_recap_hide_failed())
     }
   }
   if (hidden) return null
@@ -168,9 +182,9 @@ function RecapCard({ view }: { view: RecapView }) {
     return (
       <Card className="flex-row items-center gap-3 px-6 py-3.5 max-md:px-4">
         <AiMark className="size-4" />
-        <p className="min-w-0 flex-1 text-[13px] text-muted-foreground">How {name} went, in a few lines.</p>
+        <p className="min-w-0 flex-1 text-[13px] text-muted-foreground">{m.overview_recap_offer({ month: name })}</p>
         <Button variant="outline" size="sm" className="h-8 bg-card text-[13px] font-normal" onClick={write}>
-          Write a recap
+          {m.overview_recap_write()}
         </Button>
       </Card>
     )
@@ -180,11 +194,13 @@ function RecapCard({ view }: { view: RecapView }) {
     <Card className="rise-in gap-3 px-6 max-md:px-[18px]" aria-busy={writing}>
       <div className="flex items-center justify-between gap-3">
         <h2 className="flex items-center gap-1.5 text-sm font-medium">
-          <AiMark /> {name} in brief
+          <AiMark /> {m.overview_recap_title({ month: name })}
         </h2>
         <div className="-my-1.5 -mr-2 flex items-center gap-0.5">
           {recap && !writing && (
-            <span className="mr-1 text-xs text-muted-foreground max-sm:hidden">Written {short(recap.writtenDay)}</span>
+            <span className="mr-1 text-xs text-muted-foreground max-sm:hidden">
+              {m.overview_recap_written({ day: short(recap.writtenDay) })}
+            </span>
           )}
           {recap && (
             <Button
@@ -193,8 +209,8 @@ function RecapCard({ view }: { view: RecapView }) {
               className="text-muted-foreground max-md:size-11"
               disabled={writing}
               onClick={write}
-              aria-label="Write it again"
-              title="Write it again with the latest entries"
+              aria-label={m.overview_recap_rewrite()}
+              title={m.overview_recap_rewrite_hint()}
             >
               <ArrowClockwiseIcon className={cn(writing && "animate-spin")} />
             </Button>
@@ -205,7 +221,7 @@ function RecapCard({ view }: { view: RecapView }) {
               size="icon"
               className="text-muted-foreground max-md:size-11"
               onClick={hide}
-              aria-label={`Hide the ${name} recap`}
+              aria-label={m.overview_recap_hide({ month: name })}
             >
               <XIcon />
             </Button>
@@ -214,14 +230,14 @@ function RecapCard({ view }: { view: RecapView }) {
       </div>
       {error ? (
         <div className="flex flex-wrap items-center gap-3 text-[13px]">
-          <p className="text-muted-foreground">Couldn't write the recap. {error}</p>
+          <p className="text-muted-foreground">{m.overview_recap_error({ error })}</p>
           <Button variant="outline" size="sm" className="h-8 bg-card font-normal" onClick={write}>
-            Try again
+            {m.common_try_again()}
           </Button>
         </div>
       ) : writing && !recap ? (
         <div role="status" className="grid animate-pulse gap-2.5 py-1 motion-reduce:animate-none">
-          <span className="sr-only">Writing the {name} recap</span>
+          <span className="sr-only">{m.overview_recap_writing({ month: name })}</span>
           <div className="h-5 w-2/3 rounded bg-muted" />
           <div className="h-3.5 w-full max-w-[64ch] rounded bg-muted" />
           <div className="h-3.5 w-5/6 max-w-[56ch] rounded bg-muted" />
@@ -294,7 +310,7 @@ function NetWorthCard({ d }: { d: Dash }) {
 
   return (
     <Card className="min-w-0 flex-[1_1_360px] gap-5 px-6 max-md:hidden">
-      <Head title="Net worth" aside={<More to="/accounts">Accounts →</More>} />
+      <Head title={m.overview_net_worth()} aside={<More to="/accounts">{m.overview_accounts_link()}</More>} />
       <div>
         <BigMoney value={nw.total} currency={p} />
         <div className="mt-2.5">
@@ -303,15 +319,11 @@ function NetWorthCard({ d }: { d: Dash }) {
         <div className="mt-1.5 flex flex-wrap gap-3 text-[13px]">
           {thisMonth !== null && (
             <span className={cn("font-medium", thisMonth >= 0 ? "text-positive" : "text-destructive")}>
-              {thisMonth >= 0 ? "+" : ""}
-              {fmt(thisMonth, p)} this month
+              {m.overview_worth_this_month({ amount: `${thisMonth >= 0 ? "+" : ""}${fmt(thisMonth, p)}` })}
             </span>
           )}
           {growth !== null && (
-            <span className="text-muted-foreground">
-              {growth > 0 ? "+" : ""}
-              {(growth * 100).toFixed(1)}% in 12 months
-            </span>
+            <span className="text-muted-foreground">{m.overview_worth_growth({ pct: pct(growth, 1) })}</span>
           )}
         </div>
       </div>
@@ -379,16 +391,16 @@ function PaceCard({
   const name = monthName(d.month)
 
   const sentence = future ? (
-    <span className="text-muted-foreground">This month hasn't started yet</span>
+    <span className="text-muted-foreground">{m.overview_pace_future()}</span>
   ) : diff === null ? (
-    <span className="text-muted-foreground">Not enough history yet</span>
+    <span className="text-muted-foreground">{m.overview_pace_no_history()}</span>
   ) : diff >= 0 ? (
     <span className="font-medium text-positive">
-      {money(diff)} under your usual {live ? "pace" : "month"}
+      {(live ? m.overview_pace_under_pace : m.overview_pace_under_month)({ amount: money(diff) })}
     </span>
   ) : (
     <span className={cn("font-medium", -diff > 0.1 * (usualBy ?? 0) ? "text-warning" : "text-subtle-foreground")}>
-      {money(-diff)} over your usual {live ? "pace" : "month"}
+      {(live ? m.overview_pace_over_pace : m.overview_pace_over_month)({ amount: money(-diff) })}
     </span>
   )
 
@@ -396,11 +408,15 @@ function PaceCard({
     <Card className="min-w-0 flex-[1.6_1_520px] gap-5 px-6 max-md:gap-3 max-md:px-[18px]">
       <div className="flex items-baseline justify-between gap-3">
         <h2 className="text-sm font-medium max-md:text-xs max-md:font-normal max-md:text-muted-foreground">
-          <span className="max-md:hidden">{live ? `${name} so far` : name}</span>
-          <span className="md:hidden">{live ? "Spent so far" : `Spent in ${name}`}</span>
+          <span className="max-md:hidden">{live ? m.overview_pace_title_live({ month: name }) : name}</span>
+          <span className="md:hidden">
+            {live ? m.overview_pace_spent_so_far() : m.overview_pace_spent_in({ month: name })}
+          </span>
         </h2>
         <span className="text-xs text-muted-foreground">
-          {live ? `Day ${dayN} of ${pace.daysInMonth}` : `${pace.daysInMonth} days`}
+          {live
+            ? m.overview_pace_day({ day: dayN, days: pace.daysInMonth })
+            : m.overview_pace_days({ days: pace.daysInMonth })}
         </span>
       </div>
       <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
@@ -410,7 +426,11 @@ function PaceCard({
             {sentence}
             {usualBy !== null && !future && (
               <span className="text-muted-foreground max-md:hidden">
-                usual by {live ? "today" : "month end"} <span className="num">{money(usualBy)}</span>
+                <ParaglideMessage
+                  message={live ? m.overview_pace_usual_by_today : m.overview_pace_usual_by_month_end}
+                  inputs={{ amount: money(usualBy) }}
+                  markup={{ num }}
+                />
               </span>
             )}
           </div>
@@ -419,11 +439,15 @@ function PaceCard({
           <div className="grid gap-1.5 text-xs text-muted-foreground max-md:hidden">
             <span className="flex items-center gap-2">
               <i className="h-0.5 w-4 bg-chart-2" />
-              This month
+              {m.overview_this_month()}
             </span>
             <span className="flex items-center gap-2">
               <i className="h-0 w-4 border-t-[1.5px] border-dashed border-muted-foreground" />
-              Usual month · <span className="num">{money(usualMonth!)}</span>
+              <ParaglideMessage
+                message={m.overview_pace_usual_month_legend}
+                inputs={{ amount: money(usualMonth!) }}
+                markup={{ num }}
+              />
             </span>
           </div>
         )}
@@ -434,11 +458,19 @@ function PaceCard({
       {pace.usual && (
         <div className="flex justify-between text-xs text-muted-foreground md:hidden">
           <span>
-            Usual month <span className="num">{money(usualMonth!)}</span>
+            <ParaglideMessage
+              message={m.overview_pace_usual_month}
+              inputs={{ amount: money(usualMonth!) }}
+              markup={{ num }}
+            />
           </span>
           {projected !== null && (
             <span>
-              Projected <span className="num text-foreground">{money(projected)}</span>
+              <ParaglideMessage
+                message={m.overview_pace_projected}
+                inputs={{ amount: money(projected) }}
+                markup={{ num: ({ children }) => <span className="num text-foreground">{children}</span> }}
+              />
             </span>
           )}
         </div>
@@ -446,22 +478,22 @@ function PaceCard({
 
       <div className="grid grid-cols-3 gap-4 border-t pt-5 max-md:hidden">
         <Stat
-          label="Income"
+          label={m.overview_income()}
           value={<RollingMoney value={d.current.income} currency={p} />}
-          sub={d.income ? `${d.income.name || "Income"} · ${short(d.income.day)}` : "None yet"}
+          sub={d.income ? `${d.income.name || m.overview_income()} · ${short(d.income.day)}` : m.overview_none_yet()}
         />
         <Stat
-          label={live ? "Saved so far" : "Saved"}
+          label={live ? m.overview_saved_so_far() : m.overview_saved()}
           value={<RollingMoney value={saved} currency={p} />}
           positive={saved > 0}
-          sub={d.current.income ? `${Math.round((saved / d.current.income) * 100)}% of income` : undefined}
+          sub={
+            d.current.income ? m.overview_pct_of_income({ pct: pct(saved / d.current.income, 0, "auto") }) : undefined
+          }
         />
         <Stat
-          label="Still to pay"
+          label={m.overview_still_to_pay()}
           value={<RollingMoney value={stillToPay} currency={p} />}
-          sub={
-            bills ? `${bills} ${bills === 1 ? "bill" : "bills"} before ${short(monthEnd)}` : "Nothing left this month"
-          }
+          sub={bills ? m.overview_bills_before({ count: bills, day: short(monthEnd) }) : m.overview_nothing_left()}
         />
       </div>
     </Card>
@@ -512,7 +544,9 @@ function PaceChart({
                 fill="var(--muted-foreground)"
                 textAnchor={payload.value === 1 ? "start" : payload.value === pace.daysInMonth ? "end" : "middle"}
               >
-                {payload.value === t ? "Today" : `${payload.value} ${monthName(d.month, "short")}`}
+                {payload.value === t
+                  ? m.overview_today()
+                  : short(`${d.month}-${String(payload.value).padStart(2, "0")}`)}
               </text>
             )}
           />
@@ -555,7 +589,7 @@ function PaceChart({
               label={
                 projected !== null
                   ? {
-                      value: `Projected ${fmt(projected, p)}`,
+                      value: m.overview_pace_projected_label({ amount: fmt(projected, p) }),
                       position: "insideTopLeft",
                       fill: "var(--muted-foreground)",
                       fontSize: 11,
@@ -601,9 +635,9 @@ const MiniStat = ({ label, value, positive }: { label: string; value: ReactNode;
 type Cat = Dash["categories"][number]
 
 function vsUsual(total: number, usual: number | null, fixed = false) {
-  if (fixed) return { text: "fixed", tone: "" }
+  if (fixed) return { text: m.overview_chip_fixed(), tone: "" }
   // Show "new", not "+3766%", when the baseline is under a tenth of this month's spend.
-  if (!usual || usual * 10 < total) return { text: "new", tone: "" }
+  if (!usual || usual * 10 < total) return { text: m.overview_chip_new(), tone: "" }
   const r = (total - usual) / usual
   return { text: pct(r), tone: r > 0.2 ? "text-warning" : r < -0.05 ? "text-positive" : "" }
 }
@@ -638,7 +672,7 @@ function WhereItWent({ d }: { d: Dash }) {
     const info = cat(c.id)
     return {
       key: c.id,
-      name: info?.name ?? "Unknown",
+      name: info?.name ?? m.overview_unknown_category(),
       icon: info?.icon,
       total: c.total,
       chip: vsUsual(c.total, c.usualToDate, c.fixed),
@@ -649,33 +683,31 @@ function WhereItWent({ d }: { d: Dash }) {
   return (
     <Card className="min-w-0 gap-4 px-6 max-md:gap-1 max-md:px-4 md:flex-[1.6_1_520px] md:self-start">
       <Head
-        title="Where it went"
+        title={m.overview_where_title()}
         aside={
           <More to="/transactions" className="max-md:hidden">
-            All activity →
+            {m.overview_all_activity()}
           </More>
         }
       >
-        <span className="max-md:hidden">vs your usual by day {byDay}</span>
+        <span className="max-md:hidden">{m.overview_where_vs_usual({ day: byDay })}</span>
       </Head>
-      {rows.length === 0 && (
-        <p className="py-6 text-sm text-muted-foreground">No spending this month. Expenses you add show up here.</p>
-      )}
+      {rows.length === 0 && <p className="py-6 text-sm text-muted-foreground">{m.overview_where_empty()}</p>}
 
       {/* Desktop: category | share | spent | vs usual */}
       {rows.length > 0 && (
-        <Reveal kind="bars" className="-mx-3 max-md:hidden" role="table" aria-label="Spending by category">
+        <Reveal kind="bars" className="-mx-3 max-md:hidden" role="table" aria-label={m.overview_where_table()}>
           <div
             role="row"
             className="grid grid-cols-[minmax(0,1.1fr)_minmax(0,1.5fr)_104px_76px] gap-4 px-3 pb-1 text-xs text-muted-foreground"
           >
-            <span role="columnheader">Category</span>
-            <span role="columnheader">Share of spending</span>
+            <span role="columnheader">{m.overview_col_category()}</span>
+            <span role="columnheader">{m.overview_col_share()}</span>
             <span role="columnheader" className="text-right">
-              Spent
+              {m.overview_col_spent()}
             </span>
             <span role="columnheader" className="text-right">
-              vs usual
+              {m.overview_col_vs_usual()}
             </span>
           </div>
           {rows.map((r, i) => (
@@ -711,7 +743,7 @@ function WhereItWent({ d }: { d: Dash }) {
               className="grid min-h-11 grid-cols-[minmax(0,1.1fr)_minmax(0,1.5fr)_104px_76px] items-center gap-4 rounded-md px-3 text-[15px] text-subtle-foreground transition-colors hover:bg-muted"
             >
               <span role="cell" className="pl-7">
-                {rest.length} others
+                {m.overview_others({ count: rest.length })}
               </span>
               <span role="cell" className="h-1.5 overflow-hidden rounded-full bg-muted">
                 <span
@@ -783,8 +815,8 @@ function NeedsAttention({
     items.push({
       key: u.key,
       tone: "warn",
-      title: `${u.name} was due ${short(u.day)}`,
-      sub: `${fmt(u.to_wallet_id ? Math.abs(u.amount) : u.amount, u.currency)} · not marked paid`,
+      title: m.overview_att_due({ name: u.name, day: short(u.day) }),
+      sub: m.overview_att_not_paid({ amount: fmt(u.to_wallet_id ? Math.abs(u.amount) : u.amount, u.currency) }),
       action: (
         <Button
           variant="outline"
@@ -795,15 +827,15 @@ function NeedsAttention({
             try {
               await updateOccurrence({ data: { id: u.subscription_id!, dueDay: u.key.split("|")[1], action: "pay" } })
               await router.invalidate()
-              toast.success(`${u.name} marked paid`)
+              toast.success(m.overview_att_marked_paid({ name: u.name }))
             } catch (e) {
-              toast.error(e instanceof Error ? e.message : "Couldn't mark it paid")
+              toast.error(e instanceof Error ? e.message : m.overview_att_mark_failed())
             } finally {
               setBusy(null)
             }
           }}
         >
-          Mark paid
+          {m.overview_att_mark_paid()}
         </Button>
       ),
     })
@@ -814,11 +846,11 @@ function NeedsAttention({
       items.push({
         key: card.id,
         tone: "warn",
-        title: `${card.name}: ${fmt(owed, card.currency)} owed`,
-        sub: "Pay it off from a bank account",
+        title: m.overview_att_card_owed({ name: card.name, amount: fmt(owed, card.currency) }),
+        sub: m.overview_att_card_hint(),
         action: (
           <Button variant="outline" size="sm" onClick={() => onPay({ card, owed })}>
-            Pay
+            {m.overview_att_pay()}
           </Button>
         ),
       })
@@ -839,8 +871,11 @@ function NeedsAttention({
     items.push({
       key: c.id,
       tone: "warn",
-      title: `${info?.name ?? "A category"} is ${Math.round((c.total / c.usualToDate - 1) * 100)}% above usual`,
-      sub: `${money(c.total)} vs ${money(c.usualToDate)} by now · ${c.count} ${c.count === 1 ? "payment" : "payments"}`,
+      title: m.overview_att_category_above({
+        name: info?.name ?? m.overview_att_a_category(),
+        pct: pct(c.total / c.usualToDate - 1, 0, "auto"),
+      }),
+      sub: m.overview_att_category_sub({ spent: money(c.total), usual: money(c.usualToDate), count: c.count }),
       action: (
         <Button
           variant="outline"
@@ -848,7 +883,7 @@ function NeedsAttention({
           nativeButton={false}
           render={<Link to="/transactions" search={(s) => ({ ...s, category: c.id })} />}
         >
-          Review
+          {m.overview_att_review()}
         </Button>
       ),
     })
@@ -860,11 +895,14 @@ function NeedsAttention({
     items.push({
       key: w.id,
       tone: "quiet",
-      title: age === null ? `${w.name} has no value yet` : `${w.name} value is ${age} days old`,
-      sub: "Net worth may be understated",
+      title:
+        age === null
+          ? m.overview_att_no_value({ name: w.name })
+          : m.overview_att_value_age({ name: w.name, count: age }),
+      sub: m.overview_att_understated(),
       action: (
         <Button variant="outline" size="sm" onClick={() => onGain(w)}>
-          Update
+          {m.overview_att_update()}
         </Button>
       ),
     })
@@ -873,7 +911,7 @@ function NeedsAttention({
   if (!items.length) return null
   return (
     <Card className="gap-4 px-6 max-md:hidden">
-      <Head title="Needs attention" />
+      <Head title={m.overview_att_title()} />
       <div>
         {items.slice(0, 3).map((it) => (
           <div
@@ -893,6 +931,15 @@ function NeedsAttention({
       </div>
     </Card>
   )
+}
+
+/** What kind of upcoming payment a row is, for the small label beside its name. */
+function kindLabel(u: Upcoming) {
+  if (u.kind === "repetitive") return u.amount > 0 ? m.overview_kind_income() : m.overview_kind_bill()
+  if (u.kind === "subscription") return m.overview_kind_subscription()
+  if (u.kind === "transfer") return m.overview_kind_transfer()
+  if (u.kind === "upcoming") return m.overview_kind_upcoming()
+  return u.kind
 }
 
 function ComingUp({
@@ -917,44 +964,49 @@ function ComingUp({
   const soon = items.filter((u) => u.day <= end)
   const total = thirty ? soon.reduce((t, u) => t + outflow(u), 0) : monthTotal
   const later = items.filter((u) => u.day > end)
-  const name = (u: Upcoming) => u.name || meta.categories.find((c) => c.id === u.category_id)?.name || "Untitled"
+  const name = (u: Upcoming) =>
+    u.name || meta.categories.find((c) => c.id === u.category_id)?.name || m.overview_untitled()
   const amount = (u: Upcoming) => fmt(u.to_wallet_id ? Math.abs(u.amount) : u.amount, u.currency)
   if (!soon.length && !later.length) return null
+  const then = later[0] && { day: short(later[0].day), name: name(later[0]), amount: amount(later[0]) }
   return (
     <Card className="gap-3 px-6 max-md:px-4 max-md:pb-1.5">
       <Head
-        title="Coming up"
+        title={m.overview_coming_title()}
         aside={
           <>
             <span className="text-xs text-muted-foreground max-md:hidden">
-              <span className="num text-foreground">{fmt(total, d.primary)}</span> before {short(end)}
+              <ParaglideMessage
+                message={m.overview_coming_total}
+                inputs={{ amount: fmt(total, d.primary), day: short(end) }}
+                markup={{ num: ({ children }) => <span className="num text-foreground">{children}</span> }}
+              />
             </span>
             <More to="/subscriptions" className="-my-3 -mr-2 inline-flex min-h-11 items-center px-2 md:hidden">
-              All
+              {m.overview_coming_all()}
             </More>
           </>
         }
       />
       <div>
         {soon.length === 0 && (
-          <p className="border-t py-3 text-sm text-muted-foreground">Nothing else due before {short(end)}.</p>
+          <p className="border-t py-3 text-sm text-muted-foreground">{m.overview_coming_empty({ day: short(end) })}</p>
         )}
         {soon.map((u, i) => (
           <div
             key={u.key}
             className={cn(
-              "grid grid-cols-[52px_minmax(0,1fr)_auto] items-baseline gap-3 border-t py-2.5 text-sm",
+              "grid grid-cols-[64px_minmax(0,1fr)_auto] items-baseline gap-3 border-t py-2.5 text-sm",
               i >= 3 && "max-md:hidden"
             )}
           >
-            <span className={cn("num text-xs text-muted-foreground", u.day < today && "text-warning")}>
+            <span
+              className={cn("num text-xs whitespace-nowrap text-muted-foreground", u.day < today && "text-warning")}
+            >
               {short(u.day)}
             </span>
             <span className="truncate">
-              {name(u)}{" "}
-              <span className="text-xs text-muted-foreground max-md:hidden">
-                · {u.kind === "repetitive" ? (u.amount > 0 ? "income" : "bill") : u.kind}
-              </span>
+              {name(u)} <span className="text-xs text-muted-foreground max-md:hidden">· {kindLabel(u)}</span>
             </span>
             <span className={cn("num", u.to_wallet_id && "text-muted-foreground")}>{amount(u)}</span>
           </div>
@@ -964,8 +1016,15 @@ function ComingUp({
             to="/subscriptions"
             className="block border-t pt-3 text-xs text-muted-foreground transition-colors hover:text-foreground max-md:hidden"
           >
-            Then {short(later[0].day)}: {name(later[0])} <span className="num">{amount(later[0])}</span>
-            {later.length > 1 && ` and ${later.length - 1} more`} →
+            {later.length > 1 ? (
+              <ParaglideMessage
+                message={m.overview_coming_then_more}
+                inputs={{ ...then, count: later.length - 1 }}
+                markup={{ num }}
+              />
+            ) : (
+              <ParaglideMessage message={m.overview_coming_then} inputs={then} markup={{ num }} />
+            )}
           </Link>
         )}
       </div>
@@ -977,31 +1036,45 @@ function LastTwelveMonths({ d }: { d: Dash }) {
   const { current } = useGlobals()
   const months = d.series.filter((x) => x.month <= d.month).slice(-12)
   if (months.length < 2) return null
-  const max = Math.max(...months.flatMap((m) => [m.income, m.expense]), 1)
-  const income = months.reduce((t, m) => t + m.income, 0)
-  const saved = months.reduce((t, m) => t + m.income - m.expense, 0)
+  const max = Math.max(...months.flatMap((x) => [x.income, x.expense]), 1)
+  const income = months.reduce((t, x) => t + x.income, 0)
+  const saved = months.reduce((t, x) => t + x.income - x.expense, 0)
+  const savedNum = ({ children }: { children?: ReactNode }) => (
+    <span className={cn("num", saved >= 0 ? "text-positive" : "text-warning")}>{children}</span>
+  )
   const whole = (v: number) =>
-    `${v > 0 ? "+" : v < 0 ? "−" : ""}${Math.abs(Math.round(v / 100)).toLocaleString(LOCALE)}`
+    `${v > 0 ? "+" : v < 0 ? "−" : ""}${Math.abs(Math.round(v / 100)).toLocaleString(intlLocale())}`
 
   return (
     <Card className="gap-6 px-6 max-md:hidden">
       <Head
-        title={`Last ${months.length} months`}
+        title={m.overview_last_months({ count: months.length })}
         aside={
           <span className="flex gap-4 text-xs text-muted-foreground">
             <span className="flex items-center gap-1.5">
               <i className="size-2.5 rounded-[3px] bg-chart-1" />
-              In
+              {m.overview_in()}
             </span>
             <span className="flex items-center gap-1.5">
               <i className="size-2.5 rounded-[3px] bg-chart-2" />
-              Out
+              {m.overview_out()}
             </span>
           </span>
         }
       >
-        Saved <span className={cn("num", saved >= 0 ? "text-positive" : "text-warning")}>{fmt(saved, d.primary)}</span>
-        {income > 0 && ` · ${Math.round((saved / income) * 100)}% of income`}
+        {income > 0 ? (
+          <ParaglideMessage
+            message={m.overview_last_saved_pct}
+            inputs={{ amount: fmt(saved, d.primary), pct: pct(saved / income, 0, "auto") }}
+            markup={{ num: savedNum }}
+          />
+        ) : (
+          <ParaglideMessage
+            message={m.overview_last_saved}
+            inputs={{ amount: fmt(saved, d.primary) }}
+            markup={{ num: savedNum }}
+          />
+        )}
       </Head>
       <div className="overflow-x-auto">
         <Reveal
@@ -1009,42 +1082,46 @@ function LastTwelveMonths({ d }: { d: Dash }) {
           className="grid min-w-[640px] gap-1"
           style={{ gridTemplateColumns: `repeat(${months.length}, minmax(0, 1fr))` }}
         >
-          {months.map((m, i) => {
-            const live = m.month === current
-            const spike = d.spike?.month === m.month ? d.spike : null
-            const net = m.income - m.expense
+          {months.map((x, i) => {
+            const live = x.month === current
+            const spike = d.spike?.month === x.month ? d.spike : null
+            const net = x.income - x.expense
             return (
               <div
-                key={m.month}
+                key={x.month}
                 className="flex min-w-0 flex-col items-center gap-1.5"
-                aria-label={`${monthName(m.month)}: in ${fmt(m.income, d.primary)}, out ${fmt(m.expense, d.primary)}`}
+                aria-label={m.overview_last_bar({
+                  month: monthName(x.month),
+                  income: fmt(x.income, d.primary),
+                  expense: fmt(x.expense, d.primary),
+                })}
                 role="img"
               >
                 <div className="relative flex h-44 w-full items-end justify-center gap-[3px] pt-6">
                   <span
                     className="bar-grow w-[38%] max-w-4 rounded-t-[3px] bg-chart-1"
-                    style={{ height: `${(m.income / max) * 100}%`, "--i": i } as React.CSSProperties}
+                    style={{ height: `${(x.income / max) * 100}%`, "--i": i } as React.CSSProperties}
                   />
                   <span className="relative flex h-full w-[38%] max-w-4 items-end">
                     <span
                       className={cn("bar-grow w-full rounded-t-[3px]", live ? "bg-chart-2/40" : "bg-chart-2")}
-                      style={{ height: `${(m.expense / max) * 100}%`, "--i": i } as React.CSSProperties}
+                      style={{ height: `${(x.expense / max) * 100}%`, "--i": i } as React.CSSProperties}
                     />
                     {spike && (
                       <span
                         className="absolute left-1/2 -translate-x-1/2 text-[11px] whitespace-nowrap text-muted-foreground"
-                        style={{ bottom: `calc(${(m.expense / max) * 100}% + 6px)` }}
+                        style={{ bottom: `calc(${(x.expense / max) * 100}% + 6px)` }}
                       >
-                        {spike.name || "Largest"} {fmt(spike.amount, d.primary, true)}
+                        {spike.name || m.overview_largest()} {fmt(spike.amount, d.primary, true)}
                       </span>
                     )}
                   </span>
                 </div>
                 <span className={cn("text-xs text-muted-foreground", live && "font-semibold text-foreground")}>
-                  {monthName(m.month, "short")}
+                  {monthName(x.month, "short")}
                 </span>
                 <span className={cn("num text-xs text-subtle-foreground", !live && net < 0 && "text-warning")}>
-                  {live ? "so far" : whole(net)}
+                  {live ? m.overview_so_far() : whole(net)}
                 </span>
               </div>
             )

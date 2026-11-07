@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react"
 import { getRouteApi } from "@tanstack/react-router"
 import { CaretRightIcon, MagnifyingGlassIcon, PlusIcon, TrashIcon } from "@phosphor-icons/react/ssr"
 import { toast } from "sonner"
+import { ParaglideMessage } from "@inlang/paraglide-js-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
@@ -13,6 +14,7 @@ import { errorOf, usePref, useSave } from "@/components/settings/saved"
 import { deleteTitleRule, listTitleRules, saveTitleRule, type TitleRuleRow } from "@/lib/api"
 import { isNeutral } from "@/lib/core"
 import { cn } from "@/lib/utils"
+import { m } from "@/paraglide/messages"
 
 const useFirstPage = () => getRouteApi("/_app/settings/$section").useLoaderData({ select: (d) => d.rules })
 const COLS =
@@ -74,11 +76,11 @@ export function Rules() {
       <SettingGroup>
         <SettingRow
           id="learn-rules"
-          title="Learn from my edits"
-          description="When you save a transaction, Kosha remembers its payee's category. Kosha never overwrites rules you make."
+          title={m.settings_rules_learn_title()}
+          description={m.settings_rules_learn_description()}
           control={
             <Switch
-              aria-label="Learn from my edits"
+              aria-label={m.settings_rules_learn_title()}
               checked={learn === "1"}
               onCheckedChange={(on) => saveLearn(on ? "1" : "0")}
             />
@@ -86,11 +88,7 @@ export function Rules() {
         />
       </SettingGroup>
       <SettingGroup
-        label={
-          <span>
-            {data.total} {data.total === 1 ? "rule" : "rules"}
-          </span>
-        }
+        label={<span>{m.settings_rules_count({ count: data.total })}</span>}
         actions={
           <>
             <label className="relative w-40 max-md:w-32">
@@ -104,8 +102,8 @@ export function Rules() {
                   typed.current = true
                   setQ(e.target.value)
                 }}
-                placeholder="Search"
-                aria-label="Search rules"
+                placeholder={m.common_search()}
+                aria-label={m.settings_rules_search_label()}
                 className="h-7 bg-card pl-8 text-xs max-md:h-9"
               />
             </label>
@@ -116,16 +114,16 @@ export function Rules() {
               aria-expanded={open === ""}
               onClick={() => setOpen((o) => (o === "" ? null : ""))}
             >
-              <PlusIcon /> New rule
+              <PlusIcon /> {m.settings_rules_new()}
             </Button>
           </>
         }
       >
         <div id="rules">
           <div className={cn(COLS, "border-b px-5 py-2.5 text-xs text-muted-foreground max-md:hidden")}>
-            <span>When</span>
-            <span>Set category</span>
-            <span className="text-right">Used</span>
+            <span>{m.settings_rules_col_when()}</span>
+            <span>{m.settings_rules_col_category()}</span>
+            <span className="text-right">{m.settings_rules_col_used()}</span>
             <span />
           </div>
           <Expand open={open === ""}>
@@ -139,7 +137,7 @@ export function Rules() {
           </Expand>
           {data.rules.length === 0 && open !== "" && (
             <p className="px-5 py-4 text-sm text-muted-foreground">
-              {q ? `No rule matches "${q}".` : "No rules yet. Save a transaction and Kosha learns one."}
+              {q ? m.settings_rules_no_match({ query: q }) : m.settings_rules_empty()}
             </p>
           )}
           {data.rules.map((r) => (
@@ -166,7 +164,7 @@ export function Rules() {
               onClick={more}
               className="flex min-h-12 w-full items-center justify-center border-t text-[13px] text-subtle-foreground transition-colors hover:bg-muted hover:text-foreground"
             >
-              Show more
+              {m.settings_rules_show_more()}
             </button>
           )}
         </div>
@@ -180,7 +178,10 @@ function useCategoryLabel() {
   return (id: string) => {
     const c = meta.categories.find((x) => x.id === id)
     const parent = c?.parent_id ? meta.categories.find((x) => x.id === c.parent_id) : null
-    return { icon: c?.icon ?? null, name: c ? (parent ? `${parent.name} › ${c.name}` : c.name) : "Deleted category" }
+    return {
+      icon: c?.icon ?? null,
+      name: c ? (parent ? `${parent.name} › ${c.name}` : c.name) : m.settings_rules_deleted_category(),
+    }
   }
 }
 
@@ -197,10 +198,17 @@ function RuleRow({ rule: r, open, onToggle }: { rule: TitleRuleRow; open: boolea
       )}
     >
       <span className="min-w-0 truncate">
-        Payee {r.exact ? "is" : "contains"}{" "}
-        <code className="rounded-[5px] bg-foreground/[0.06] px-1.5 py-0.5 font-mono text-xs text-foreground">
-          {r.title}
-        </code>
+        <ParaglideMessage
+          message={r.exact ? m.settings_rules_payee_is : m.settings_rules_payee_contains}
+          inputs={{ title: r.title }}
+          markup={{
+            code: ({ children }) => (
+              <code className="rounded-[5px] bg-foreground/[0.06] px-1.5 py-0.5 font-mono text-xs text-foreground">
+                {children}
+              </code>
+            ),
+          }}
+        />
       </span>
       <span className="flex min-w-0 items-center gap-1.5 max-md:col-start-1 max-md:row-start-2 max-md:text-xs max-md:text-muted-foreground">
         <CategoryIcon icon={label.icon} className="size-[15px]" />
@@ -210,7 +218,9 @@ function RuleRow({ rule: r, open, onToggle }: { rule: TitleRuleRow; open: boolea
         {r.used}×
       </span>
       <span className="flex items-center justify-end gap-2 max-md:hidden">
-        <Pill tone={r.source === "manual" ? "brand" : "muted"}>{r.source === "manual" ? "yours" : "learned"}</Pill>
+        <Pill tone={r.source === "manual" ? "brand" : "muted"}>
+          {r.source === "manual" ? m.settings_rules_source_manual() : m.settings_rules_source_learned()}
+        </Pill>
         <CaretRightIcon
           className={cn(
             "size-3.5 text-muted-foreground transition-transform duration-[250ms] ease-out",
@@ -258,12 +268,12 @@ function RuleEditor({ rule: r, onDone }: { rule: TitleRuleRow | null; onDone: (r
     <div className="grid gap-3 border-t bg-muted px-5 pt-4 pb-[18px] max-md:px-4">
       <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-end">
         <label className="grid gap-1.5 text-xs text-muted-foreground">
-          Payee
+          {m.settings_rules_payee()}
           <Input
             value={title}
             autoFocus={!r}
             maxLength={100}
-            placeholder="e.g. tesco"
+            placeholder={m.settings_rules_payee_placeholder()}
             onChange={(e) => setTitle(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
             onBlur={() => {
@@ -275,7 +285,7 @@ function RuleEditor({ rule: r, onDone }: { rule: TitleRuleRow | null; onDone: (r
           />
         </label>
         <Segmented
-          label="Match"
+          label={m.settings_rules_match()}
           className="bg-foreground/[0.06]"
           value={exact ? "is" : "contains"}
           onChange={(v) => {
@@ -283,12 +293,12 @@ function RuleEditor({ rule: r, onDone }: { rule: TitleRuleRow | null; onDone: (r
             void commit({ exact: v === "is" }, () => setExact(!!r?.exact))
           }}
           options={[
-            ["contains", "Contains"],
-            ["is", "Is exactly"],
+            ["contains", m.settings_rules_contains()],
+            ["is", m.settings_rules_is_exactly()],
           ]}
         />
         <div className="grid gap-1.5 text-xs text-muted-foreground">
-          Category
+          {m.settings_rules_category()}
           <Pick
             value={categoryId}
             onChange={(v) => {
@@ -296,7 +306,7 @@ function RuleEditor({ rule: r, onDone }: { rule: TitleRuleRow | null; onDone: (r
               setCategoryId(v)
               void commit({ categoryId: v }, () => setCategoryId(old))
             }}
-            placeholder="Pick a category"
+            placeholder={m.settings_rules_pick_category()}
             options={options}
             className="h-9 w-full bg-background text-sm text-foreground"
           />
@@ -312,7 +322,7 @@ function RuleEditor({ rule: r, onDone }: { rule: TitleRuleRow | null; onDone: (r
               setBusy(true)
               try {
                 await deleteTitleRule({ data: { title: r.title } })
-                toast.success("Rule deleted")
+                toast.success(m.settings_rules_deleted())
                 onDone(null)
               } catch (e) {
                 toast.error(errorOf(e))
@@ -321,11 +331,11 @@ function RuleEditor({ rule: r, onDone }: { rule: TitleRuleRow | null; onDone: (r
               }
             }}
           >
-            <TrashIcon /> Delete
+            <TrashIcon /> {m.common_delete()}
           </Button>
         )}
         <span className="ml-auto text-xs text-muted-foreground">
-          {r ? "Changes save as you go" : "Saved once it has a payee and a category"}
+          {r ? m.settings_rules_autosave() : m.settings_rules_new_hint()}
         </span>
       </div>
     </div>

@@ -1,0 +1,168 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "reconcile_hint_an_entry": "어떤 거래",
+  "reconcile_hint_exact_unticked": "{name}({amount}) 금액이 차액과 정확히 같아요. 명세서에 있는 거래인가요?",
+  "reconcile_hint_exact_ticked": "{name}({amount}) 금액이 차액과 정확히 같아요. 정말 명세서에 있는 거래인가요?",
+  "reconcile_hint_wrong_way_in": "{name} 금액이 차액의 절반이에요. 출금이 아니라 입금인데 방향이 반대로 입력됐나요?",
+  "reconcile_hint_wrong_way_out": "{name} 금액이 차액의 절반이에요. 입금이 아니라 출금인데 방향이 반대로 입력됐나요?",
+  "reconcile_hint_swapped": "{name} 금액이 {amount} 말고 {meant} 아니었나요? 숫자 자리가 뒤바뀌는 실수는 흔해요.",
+  "reconcile_hint_decimal": "{name} 금액이 {amount} 말고 {meant} 아니었나요? 소수점 위치가 잘못됐을 수 있어요.",
+  "reconcile_hint_pair": "{first} + {second}의 합이 차액과 같아요.",
+  "reconcile_hint_duplicate": "{name} 거래가 두 번 있어요. 하나는 중복인가요?",
+  "reconcile_hint_late": "기간 마지막 며칠의 거래는 다음 명세서에 나올 수 있어요.",
+  "reconcile_hint_look_out": "명세서에서 아직 Kosha에 없는 {amount}의 수수료, 요금 또는 이자를 찾아보세요.",
+  "reconcile_hint_look_in": "명세서에서 아직 Kosha에 없는 {amount}의 이자, 환불 또는 입금을 찾아보세요.",
+  "reconcile_gap_uncovered": "{from}~{to} 기간의 명세서가 없어요.",
+  "reconcile_gap_opening": "{next}의 시작 잔액({opening})이 {previous}의 마감 잔액({closing})과 달라요. 명세서가 빠졌을 수 있어요.",
+  "reconcile_head_title": "대조 · Kosha",
+  "reconcile_title": "대조",
+  "reconcile_picker_sub": "계좌를 은행 명세서와 대조하거나 명세서를 가져오세요.",
+  "reconcile_picker_empty": "먼저 은행 계좌나 카드를 추가해 주세요.",
+  "reconcile_reconciled_to": "{day}까지 대조 완료",
+  "reconcile_never_reconciled": "대조한 적 없음",
+  "reconcile_transfer_to_name": "{account}(으)로",
+  "reconcile_transfer_from_name": "{account}에서",
+  "reconcile_transfer_to_other": "다른 계좌로",
+  "reconcile_transfer_from_other": "다른 계좌에서",
+  "reconcile_no_payee": "거래처 없음",
+  "reconcile_pdf_unsupported": "Kosha는 CSV, OFX, QFX 파일을 읽어요. 은행에서 이 중 하나로 내보내 주세요.",
+  "reconcile_currency_mismatch": "이 명세서는 {statementCurrency} 통화이고, {account}은(는) {currency} 통화예요.",
+  "reconcile_ofx_empty": "이 OFX 파일에는 거래가 없어요",
+  "reconcile_csv_empty": "이 파일에는 Kosha가 읽을 수 있는 행이 없어요",
+  "reconcile_read_failed": "파일을 읽을 수 없어요",
+  "reconcile_pick_category_first": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "먼저 {count}줄의 카테고리를 선택해 주세요"
+      }
+    }
+  ],
+  "reconcile_added": [
+    {
+      "declarations": ["input count", "input account", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{account}에 거래 {count}건을 추가했어요"
+      }
+    }
+  ],
+  "reconcile_add_failed": "추가하지 못했어요",
+  "reconcile_change_failed": "변경하지 못했어요",
+  "reconcile_finish_failed": "마치지 못했어요",
+  "reconcile_undone": "대조를 되돌렸어요",
+  "reconcile_undo_failed": "되돌리지 못했어요",
+  "reconcile_ask_failed": "물어보지 못했어요",
+  "reconcile_hint_opening_gap": "이 명세서의 시작 잔액({opening})이 마지막으로 대조한 명세서의 마감 잔액({closing})과 달라요. 중간 명세서가 빠졌을 수 있어요.",
+  "reconcile_hint_single_missing": "명세서의 {payee}({amount}) 금액이 차액과 정확히 같아요. Kosha에 추가하세요.",
+  "reconcile_hint_missing_closes": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "Kosha에 없는 {count}줄을 추가하면 차액이 정확히 없어져요."
+      }
+    }
+  ],
+  "reconcile_hint_missing_count": [
+    {
+      "declarations": ["input count", "input amount", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "명세서의 {count}줄이 아직 Kosha에 없어요 ({amount})."
+      }
+    }
+  ],
+  "reconcile_hint_close": "{name}: Kosha에는 {kosha}, 명세서에는 {statement}.",
+  "reconcile_balance_label": "마감 잔액 ({currency})",
+  "reconcile_owed_label": "명세서상 미결제 금액 ({currency})",
+  "reconcile_account_title": "{account} 대조",
+  "reconcile_done_title": "{account} 잔액이 명세서와 일치해요",
+  "reconcile_done_checked": [
+    {
+      "declarations": ["input count", "input n", "input day", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{day}까지 거래 {n}건을 확인했어요."
+      }
+    }
+  ],
+  "reconcile_done_correction": "{amount}의 보정으로 차액을 맞췄어요.",
+  "reconcile_done_marked": "Kosha가 이 거래들을 대조 완료로 표시하고, 하나라도 바꾸기 전에 알려 줘요.",
+  "reconcile_back_to_accounts": "계좌로 돌아가기",
+  "reconcile_last_reconciled": "마지막 대조: {day}까지",
+  "reconcile_check_each": "각 거래를 은행 명세서와 대조하세요.",
+  "reconcile_other_account": "다른 계좌",
+  "reconcile_drift": "{day}에 대조한 거래가 그 뒤로 {amount}만큼 바뀌어서 해당 명세서와 더 이상 맞지 않아요. 거래가 편집되거나 삭제됐어요. 다시 확인하려면 그 대조를 되돌리세요.",
+  "reconcile_pdf_off": "이 PDF에서 읽은 거래가 명세서의 마감 잔액과 {amount} 차이 나요. 잘못 읽은 줄이 있을 수 있으니 추가하기 전에 PDF와 대조해 확인하세요.",
+  "reconcile_reading": "{file} 읽는 중…",
+  "reconcile_file_lines": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count}줄"
+      }
+    }
+  ],
+  "reconcile_read_by_ai": "AI가 읽음",
+  "reconcile_another_file": "다른 파일",
+  "reconcile_drop": "명세서를 여기에 끌어다 놓거나 {#choose}파일을 선택{/choose}하세요",
+  "reconcile_drop_formats": "은행에서 받은 CSV, OFX, QFX 파일. Kosha가 일치하는 거래를 체크하고 빠진 거래를 보여 줘요.",
+  "reconcile_drop_formats_pdf": "은행에서 받은 CSV, OFX, QFX 파일이나 PDF 명세서. Kosha가 일치하는 거래를 체크하고 빠진 거래를 보여 줘요.",
+  "reconcile_statement_date": "명세서 날짜",
+  "reconcile_quick_balance": "오늘 Kosha에 표시된 잔액: {#amount}{amount}{/amount}. 은행의 사용 가능 잔액이 아니라 현재 잔액과 비교하세요.",
+  "reconcile_quick_owed": "오늘 Kosha에 표시된 미결제 금액: {#amount}{amount}{/amount}. 은행의 사용 가능 금액이 아니라 현재 잔액과 비교하세요.",
+  "reconcile_same_as_bank": "은행 잔액과 같아요",
+  "reconcile_missing_title": "명세서에는 있고 Kosha에는 없음 ({count})",
+  "reconcile_naming_payees": "거래처 이름 정하는 중…",
+  "reconcile_payee": "거래처",
+  "reconcile_category_for": "{name}의 카테고리",
+  "reconcile_pick_category": "카테고리 선택",
+  "reconcile_transfer_to": "{account}(으)로 이체",
+  "reconcile_transfer_from": "{account}에서 이체",
+  "reconcile_include_line": "이 줄 추가",
+  "reconcile_leave_out_line": "이 줄 제외",
+  "reconcile_saving_teaches": "저장하면 Kosha가 다음 명세서를 위해 이 거래처 이름을 기억해요.",
+  "reconcile_add_to_kosha": "Kosha에 {count}건 추가",
+  "reconcile_close_title": "비슷하지만 금액이 다름 ({count})",
+  "reconcile_close_detail": "Kosha {kosha} ({koshaDay}) · 명세서 {statement} ({statementDay})",
+  "reconcile_use_amount": "{amount} 사용",
+  "reconcile_not_same": "다른 거래",
+  "reconcile_in_kosha": "Kosha에 있는 거래",
+  "reconcile_tick_title": "명세서에 있는 거래 체크",
+  "reconcile_ticked_count": "{count}건 체크됨",
+  "reconcile_before_group": "이 명세서 이전 ({count})",
+  "reconcile_before_hint": "이전 명세서에 있었으므로 체크됨",
+  "reconcile_nothing": "{day}까지 대조할 거래가 없어요.",
+  "reconcile_note_amount_differs": "금액이 달라요",
+  "reconcile_note_next_statement": "다음 명세서에 있을 가능성이 커요",
+  "reconcile_note_not_on_statement": "명세서에 없음",
+  "reconcile_note_still_due": "아직 결제 전",
+  "reconcile_after_group": "{day} 이후 ({count})",
+  "reconcile_after_hint": "다음 명세서용",
+  "reconcile_finding_title": "차액 찾기",
+  "reconcile_ask_ai": "AI에게 묻기",
+  "reconcile_past": "지난 대조",
+  "reconcile_history_entries": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "거래 {count}건"
+      }
+    }
+  ],
+  "reconcile_corrected_by": "{amount} 보정",
+  "reconcile_figure_statement": "명세서",
+  "reconcile_figure_statement_owed": "명세서상 미결제 금액",
+  "reconcile_figure_ticked": "Kosha에서 체크한 금액",
+  "reconcile_figure_ticked_owed": "체크한 거래 기준 미결제 금액",
+  "reconcile_figure_difference": "차액",
+  "reconcile_figure_none": "없음",
+  "reconcile_finish_with_correction": "{amount} 보정하고 마치기",
+  "reconcile_enter_balance": "명세서 잔액을 입력해 주세요",
+  "reconcile_finish": "대조 마치기",
+  "reconcile_show": "보기"
+}

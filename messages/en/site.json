@@ -1,0 +1,48 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "site_description": "Add each payment in a few seconds, then see where the month went. A free, open-source personal finance tracker for every account, in any currency.",
+  "site_tagline": "Personal finance, a few seconds at a time.",
+  "site_landing_title": "Kosha · Personal finance, a few seconds at a time",
+  "site_og_image_alt": "Kosha: personal finance, a few seconds at a time",
+  "pwa_synced": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Synced {count} entry added offline",
+        "countPlural=other": "Synced {count} entries added offline"
+      }
+    }
+  ],
+  "pwa_rejected": "An entry added offline wasn't saved: {reason}",
+  "pwa_syncing_title": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Syncing {count} entry",
+        "countPlural=other": "Syncing {count} entries"
+      }
+    }
+  ],
+  "pwa_syncing_body": "Sending what you added while offline.",
+  "pwa_offline_waiting": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Showing data from your last visit. {count} entry will sync when you're back online.",
+        "countPlural=other": "Showing data from your last visit. {count} entries will sync when you're back online."
+      }
+    }
+  ],
+  "pwa_offline_body": "Showing data from your last visit. New entries sync when you're back online.",
+  "pwa_update_title": "A new version of Kosha is ready",
+  "pwa_update_body": "Reload to start using it.",
+  "pwa_reload": "Reload",
+  "pwa_install_title": "Install Kosha",
+  "pwa_install_ios": "Tap Share, then Add to Home Screen, to open Kosha like an app.",
+  "pwa_install_body": "Open it from your home screen or dock, even offline.",
+  "pwa_install": "Install",
+  "pwa_dismiss": "Dismiss"
+}

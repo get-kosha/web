@@ -15,16 +15,24 @@ import { currencyOptions, useMeta } from "@/components/shell"
 import { Pill, SettingGroup, SettingRow } from "@/components/settings/row"
 import { useSave } from "@/components/settings/saved"
 import { saveCore } from "@/components/settings/sections/general"
-import { LOCALE, convert, fmt } from "@/lib/core"
+import { intlLocale, convert } from "@/lib/core"
 import { cn } from "@/lib/utils"
+import { m } from "@/paraglide/messages"
 
-const ago = (unix: number) => {
+/** "Updated 5 minutes ago. …" in the visitor's language. */
+const updated = (unix: number) => {
+  if (!unix) return m.settings_currencies_never_updated()
   const s = Date.now() / 1000 - unix
-  if (!unix) return "never"
-  if (s < 90) return "just now"
-  if (s < 3600) return `${Math.round(s / 60)} minutes ago`
-  if (s < 86400 * 1.5) return `${Math.round(s / 3600)} hours ago`
-  return `${Math.round(s / 86400)} days ago`
+  const rel = new Intl.RelativeTimeFormat(intlLocale())
+  const ago =
+    s < 90
+      ? m.settings_currencies_just_now()
+      : s < 3600
+        ? rel.format(-Math.round(s / 60), "minute")
+        : s < 86400 * 1.5
+          ? rel.format(-Math.round(s / 3600), "hour")
+          : rel.format(-Math.round(s / 86400), "day")
+  return m.settings_currencies_updated({ ago })
 }
 
 export function Currencies() {
@@ -47,29 +55,25 @@ export function Currencies() {
     )
   }
   const [refresh, setRefresh] = useState<"idle" | "busy" | "done">("idle")
-  const names = new Intl.DisplayNames([LOCALE], { type: "currency" })
+  const names = new Intl.DisplayNames([intlLocale()], { type: "currency" })
   const others = items.slice(1).filter((c) => meta.rates[c])
 
   return (
     <>
       <SettingGroup
-        label="Your currencies"
-        note={
-          items.length > 1
-            ? "Drag to reorder. The header's currency switch steps through them in this order."
-            : "Add an account in another currency and it shows up here."
-        }
+        label={m.settings_row_currencies()}
+        note={items.length > 1 ? m.settings_currencies_reorder_note() : m.settings_currencies_single_note()}
       >
         <div id="currencies">
           <CurrencyOrder items={items} names={names} onChange={change} />
         </div>
       </SettingGroup>
 
-      <SettingGroup label="Exchange rates">
+      <SettingGroup label={m.settings_currencies_rates()}>
         <SettingRow
           id="rates-source"
-          title="Exchange rate source"
-          description={`Updated ${ago(meta.ratesUpdated)}. Kosha checks for new rates once a day.`}
+          title={m.settings_row_rates_source()}
+          description={updated(meta.ratesUpdated)}
           control={
             <>
               <Button
@@ -82,7 +86,11 @@ export function Currencies() {
                 }}
               >
                 {refresh === "busy" && <SpinnerGapIcon className="animate-spin" />}
-                {refresh === "busy" ? "Refreshing…" : refresh === "done" ? "Up to date" : "Refresh"}
+                {refresh === "busy"
+                  ? m.settings_currencies_refreshing()
+                  : refresh === "done"
+                    ? m.settings_currencies_up_to_date()
+                    : m.settings_currencies_refresh()}
               </Button>
             </>
           }
@@ -91,8 +99,10 @@ export function Currencies() {
           <table className="w-full border-t text-[13px]">
             <thead>
               <tr className="text-xs text-muted-foreground">
-                <th className="px-5 py-2.5 text-left font-normal max-md:px-4">Currency</th>
-                <th className="px-5 py-2.5 text-right font-normal max-md:px-4">In {items[0].toUpperCase()}</th>
+                <th className="px-5 py-2.5 text-left font-normal max-md:px-4">{m.settings_currencies_currency()}</th>
+                <th className="px-5 py-2.5 text-right font-normal max-md:px-4">
+                  {m.settings_currencies_in({ currency: items[0].toUpperCase() })}
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -115,8 +125,13 @@ export function Currencies() {
 /** "€0.0106": one unit of `from` in `to`, with enough digits to be useful. */
 function rateIn(from: string, to: string, rates: Record<string, number>) {
   const r = convert(100, from, to, rates) / 100
-  const sym = fmt(0, to).replace(/[\d.,\s]/g, "")
-  return `${sym}${r.toFixed(r >= 100 ? 2 : 4)}`
+  const digits = r >= 100 ? 2 : 4
+  return new Intl.NumberFormat(intlLocale(), {
+    style: "currency",
+    currency: to.toUpperCase(),
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+  }).format(r)
 }
 
 /** Currencies as rows sorted by dragging the handle (or with the keyboard: focus the handle, Space, arrows, Space). */
@@ -191,7 +206,7 @@ function CurrencyRow({
         <button
           ref={setActivatorNodeRef}
           type="button"
-          aria-label={`Reorder ${code.toUpperCase()}`}
+          aria-label={m.settings_currencies_reorder({ code: code.toUpperCase() })}
           className="flex size-11 cursor-grab touch-none items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground active:cursor-grabbing"
           {...attributes}
           {...listeners}
@@ -206,14 +221,14 @@ function CurrencyRow({
       </span>
       <span className="min-w-0 flex-1 truncate text-[13px] text-muted-foreground">{name}</span>
       {first ? (
-        <Pill>Default</Pill>
+        <Pill>{m.settings_currencies_default()}</Pill>
       ) : (
         <button
           type="button"
           onClick={onDefault}
           className="-mr-2 inline-flex h-9 items-center rounded-md px-2 text-xs text-subtle-foreground transition-colors hover:bg-muted hover:text-foreground"
         >
-          Make default
+          {m.settings_currencies_make_default()}
         </button>
       )}
     </li>

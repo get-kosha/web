@@ -1,0 +1,131 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "welcome_page_title": "Welcome · Kosha",
+  "welcome_type_bank": "Bank",
+  "welcome_type_cash": "Cash",
+  "welcome_type_card": "Card",
+  "welcome_type_investment": "Investment",
+  "welcome_type_bank_account": "Bank account",
+  "welcome_type_credit_card": "Credit card",
+  "welcome_type_investment_long": "Investment",
+  "welcome_suggest_current": "Current account",
+  "welcome_suggest_savings": "Savings",
+  "welcome_suggest_investments": "Investments",
+  "welcome_suggest_pension": "Pension",
+  "welcome_field_balance": "Balance",
+  "welcome_field_owed": "Owed",
+  "welcome_field_credit_limit": "Credit limit",
+  "welcome_field_put_in": "Put in",
+  "welcome_field_value_today": "Value today",
+  "welcome_name_save_failed": "Couldn't save your name",
+  "welcome_title": "Welcome to Kosha",
+  "welcome_sub": "Check these three details, then add your accounts. It takes a minute or two.",
+  "welcome_name_title": "Your name",
+  "welcome_name_description": "Shown in the menu.",
+  "welcome_name_error": "Enter the name to show in Kosha.",
+  "welcome_currency_title": "Main currency",
+  "welcome_currency_description": "Net worth and totals add up in it.",
+  "welcome_tz_title": "Time zone",
+  "welcome_tz_description": "Days and months follow it.",
+  "welcome_change_later": "You can change all three later in Settings.",
+  "welcome_saving": "Saving…",
+  "welcome_accounts_title": "Add your accounts",
+  "welcome_accounts_sub": "Enter what each one holds today. Remove any you don't have, and add the rest.",
+  "welcome_net_worth": "Net worth",
+  "welcome_adding": "Adding…",
+  "welcome_add_accounts": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Add {count} account",
+        "countPlural=other": "Add {count} accounts"
+      }
+    }
+  ],
+  "welcome_add_an_account": "Add an account",
+  "welcome_progress_label": "Setup",
+  "welcome_progress_step": "Step {at} of 2",
+  "welcome_skip": "Skip for now",
+  "welcome_rows_label": "New accounts",
+  "welcome_rows_empty": "No accounts yet. Add the first one below.",
+  "welcome_another_account": "Another account",
+  "welcome_credit_left_hint": "Add the limit to see the credit left.",
+  "welcome_credit_left": "{#num}{amount}{/num} of credit left",
+  "welcome_gain_hint": "Add today's value to count its gain.",
+  "welcome_gain": "Gain of {#num}{amount}{/num}",
+  "welcome_loss": "Loss of {#num}{amount}{/num}",
+  "welcome_account_name_label": "Account name",
+  "welcome_account_name_placeholder": "Monzo, HDFC, Wise…",
+  "welcome_type_of": "Type of {name}",
+  "welcome_type_of_account": "Type of account",
+  "welcome_remove": "Remove {name}",
+  "welcome_remove_this_account": "Remove this account",
+  "welcome_currency_label": "Currency",
+  "welcome_currency_of": "Currency of {name}",
+  "welcome_currency_of_this_account": "Currency of this account",
+  "welcome_error_name": "Name this account.",
+  "welcome_error_amount": "Enter amounts as numbers, like 1,250.00.",
+  "welcome_amount_placeholder": "0.00",
+  "welcome_currency_search_placeholder": "Search a currency",
+  "welcome_currency_search_label": "Search currencies",
+  "welcome_currency_empty": "No currency matches.",
+  "welcome_done_title": "You're all set",
+  "welcome_done_added": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} account added.",
+        "countPlural=other": "{count} accounts added."
+      }
+    }
+  ],
+  "welcome_done_added_currencies": [
+    {
+      "declarations": ["input count", "input currencies", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} account added, in {currencies} currencies.",
+        "countPlural=other": "{count} accounts added, in {currencies} currencies."
+      }
+    }
+  ],
+  "welcome_accounts_added": "Accounts added",
+  "welcome_owed": "owed",
+  "welcome_history_title": "Fill in your history",
+  "welcome_history_body": "Import statements from your bank, and Kosha adds their past transactions to these accounts.",
+  "welcome_import": "Import statements",
+  "welcome_add_transaction": "Add a transaction",
+  "ask_page_title": "Ask Kosha · Kosha",
+  "ask_title": "Ask Kosha",
+  "ask_subtitle": "Questions about your money, answered from your data.",
+  "ask_new_chat": "New chat",
+  "ask_input_label": "Ask a question about your money",
+  "ask_placeholder": "Ask about your money",
+  "ask_placeholder_follow_up": "Ask a follow-up",
+  "ask_submit": "Ask",
+  "ask_your_endpoint": "your endpoint",
+  "ask_answered_by": "Answered by {provider} ({model}).",
+  "ask_privacy": "Kosha sends only what {#link}What AI can see{/link} allows. Check important figures in Activity.",
+  "ask_error": "Couldn't ask",
+  "ask_suggest_category": "How much did I spend on {category} this month?",
+  "ask_suggest_spent": "How much did I spend this month?",
+  "ask_suggest_biggest": "What were my biggest expenses last month?",
+  "ask_suggest_compare": "How does this month compare with a usual month?",
+  "ask_suggest_event": "What did {event} cost in total?",
+  "ask_suggest_subscriptions": "What do my subscriptions cost each month?",
+  "ask_empty_title": "Ask anything about your money",
+  "ask_empty_body": "Kosha looks it up in your accounts, transactions and recurring payments, and shows where each answer comes from.",
+  "ask_thinking": "Thinking",
+  "ask_how_found": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "How Kosha found this ({count} look-up)",
+        "countPlural=other": "How Kosha found this ({count} look-ups)"
+      }
+    }
+  ]
+}
