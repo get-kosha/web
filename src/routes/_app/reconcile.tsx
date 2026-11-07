@@ -157,6 +157,7 @@ function Session({ data }: { data: ReconcileData }) {
   const [tidy, setTidy] = useState<Record<string, { payee: string; categoryId: string | null }>>({})
   const [notSame, setNotSame] = useState<Set<string>>(new Set())
   const [focus, setFocus] = useState<string[]>([])
+  const [openGroups, setOpenGroups] = useState<Set<"earlier" | "after">>(new Set())
   const [busy, setBusy] = useState<string | null>(null)
   const [done, setDone] = useState<{ id: string; entries: number; adjustment: number; day: string } | null>(null)
   const fileInput = useRef<HTMLInputElement>(null)
@@ -535,12 +536,29 @@ function Session({ data }: { data: ReconcileData }) {
       setBusy(null)
     }
   }
+  const toggleGroup = (g: "earlier" | "after") =>
+    setOpenGroups((s) => {
+      const n = new Set(s)
+      if (n.has(g)) n.delete(g)
+      else n.add(g)
+      return n
+    })
+  // A hinted entry can sit in a collapsed group, whose rows aren't rendered, so Show opens that group first.
   const show = (ids: string[]) => {
+    const has = (list: ReconcileEntry[]) => list.some((e) => ids.includes(e.id))
+    setOpenGroups((s) => {
+      const n = new Set(s)
+      if (has(earlier)) n.add("earlier")
+      if (has(after)) n.add("after")
+      return n
+    })
     setFocus(ids)
-    requestAnimationFrame(() =>
-      document.getElementById(`entry-${ids[0]}`)?.scrollIntoView({ block: "center", behavior: "smooth" })
-    )
   }
+  // Scrolls once the render that opened the group has committed, so the row exists.
+  useEffect(() => {
+    if (focus.length)
+      document.getElementById(`entry-${focus[0]}`)?.scrollIntoView({ block: "center", behavior: "smooth" })
+  }, [focus])
 
   // ---------- page ----------
 
@@ -856,6 +874,8 @@ function Session({ data }: { data: ReconcileData }) {
             <Group
               label={`Before this statement (${earlier.length})`}
               hint="Ticked, as they were on earlier statements"
+              open={openGroups.has("earlier")}
+              onToggle={() => toggleGroup("earlier")}
             >
               {earlier.map((e) => (
                 <EntryRow
@@ -896,7 +916,12 @@ function Session({ data }: { data: ReconcileData }) {
             />
           ))}
           {after.length > 0 && (
-            <Group label={`After ${dayLabel(day)} (${after.length})`} hint="For the next statement">
+            <Group
+              label={`After ${dayLabel(day)} (${after.length})`}
+              hint="For the next statement"
+              open={openGroups.has("after")}
+              onToggle={() => toggleGroup("after")}
+            >
               {after.map((e) => (
                 <EntryRow
                   key={e.id}
@@ -1009,14 +1034,25 @@ function Section({ title, aside, children }: { title: string; aside?: ReactNode;
   )
 }
 
-function Group({ label, hint, children }: { label: string; hint: string; children: ReactNode }) {
-  const [open, setOpen] = useState(false)
+function Group({
+  label,
+  hint,
+  open,
+  onToggle,
+  children,
+}: {
+  label: string
+  hint: string
+  open: boolean
+  onToggle: () => void
+  children: ReactNode
+}) {
   return (
     <div className="border-t first:border-t-0">
       <button
         type="button"
         aria-expanded={open}
-        onClick={() => setOpen((o) => !o)}
+        onClick={onToggle}
         className="flex min-h-11 w-full items-center gap-2 px-5 py-2.5 text-left text-sm transition-colors hover:bg-muted/60 max-md:px-4"
       >
         <CaretRightIcon
