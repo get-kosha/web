@@ -111,6 +111,8 @@ type Loaded = {
   source: "csv" | "ofx" | "pdf"
   name: string
   lines: StLine[]
+  /** OFX only: refs of earlier lines the bank's corrections deleted. */
+  withdrawn?: string[]
   rows?: string[][]
   layout?: Layout
   signature?: string
@@ -212,11 +214,17 @@ function Session({ data }: { data: ReconcileData }) {
       statementDay: day,
       lastDay: last?.statement_day ?? null,
       rejected: notSame,
+      withdrawn: loaded?.withdrawn,
     })
-  }, [lines, data.open, data.done, day, last, notSame])
+  }, [lines, loaded?.withdrawn, data.open, data.done, day, last, notSame])
   const { close, periodStart, inPeriod, ticks: defaultTick, matched: matchedOpen } = plan
   const missing = plan.missing.map((i) => ({ l: lines[i], i }))
   const closeIds = new Set(close.map((p) => p.entry))
+  const withdrawn = new Set(plan.withdrawn)
+  // The statement lines each entry of a split is part of.
+  const splitLines = new Map<string, number[]>()
+  for (const p of plan.pairs)
+    if (p.kind === "split") splitLines.set(p.entry, [...(splitLines.get(p.entry) ?? []), p.line])
   const isTicked = (e: ReconcileEntry) => ticks[e.id] ?? defaultTick(e)
   const toggle = (e: ReconcileEntry) => setTicks((t) => ({ ...t, [e.id]: !isTicked(e) }))
 
@@ -303,7 +311,7 @@ function Session({ data }: { data: ReconcileData }) {
       if (isOfx(text)) {
         const r = parseOfx(text)
         if (!r.lines.length) throw new Error(m.reconcile_ofx_empty())
-        setLoaded({ source: "ofx", name: file.name, lines: r.lines })
+        setLoaded({ source: "ofx", name: file.name, lines: r.lines, withdrawn: r.withdrawn })
         if (r.closingDay) setDay(r.closingDay)
         // Cards report what's owed as a negative balance.
         if (r.closing !== null) setBalanceText(((credit ? -r.closing : r.closing) / 100).toFixed(2))
@@ -505,6 +513,26 @@ function Session({ data }: { data: ReconcileData }) {
                   },
                 ]
               : []),
+          ...[...withdrawn].map((id) => {
+            const e = data.open.find((x) => x.id === id)!
+            return { text: m.reconcile_hint_withdrawn({ name: name(e), amount: money(e.amount) }), ids: [id] }
+          }),
+          ...plan.splits.map((g) => {
+            const entries = g.entries.map((id) => data.open.find((x) => x.id === id)!)
+            return {
+              text:
+                g.lines.length === 1
+                  ? m.reconcile_hint_split({
+                      amount: money(lines[g.lines[0]].amount),
+                      names: entries.map(name).join(" + "),
+                    })
+                  : m.reconcile_hint_split_lines({
+                      name: name(entries[0]),
+                      amounts: g.lines.map((i) => money(lines[i].amount)).join(" + "),
+                    }),
+              ids: g.entries,
+            }
+          }),
           ...close.map((p) => {
             const e = data.open.find((x) => x.id === p.entry)!
             return {
@@ -866,7 +894,7 @@ function Session({ data }: { data: ReconcileData }) {
                   <div className="min-w-0 text-sm">
                     <div className="truncate font-medium">{name(e)}</div>
                     <div className="num text-xs text-muted-foreground">
-                      {m.reconcile_close_detail({
+                      {(p.kind === "corrected" ? m.reconcile_corrected_detail : m.reconcile_close_detail)({
                         kosha: money(e.amount),
                         koshaDay: dayLabel(e.day),
                         statement: money(l.amount),
@@ -936,13 +964,19 @@ function Session({ data }: { data: ReconcileData }) {
               note={
                 closeIds.has(e.id)
                   ? m.reconcile_note_amount_differs()
-                  : loaded && !matchedOpen.has(e.id)
-                    ? e.day > addDays(day, -3)
-                      ? m.reconcile_note_next_statement()
-                      : m.reconcile_note_not_on_statement()
-                    : !e.paid
-                      ? m.reconcile_note_still_due()
-                      : undefined
+                  : withdrawn.has(e.id)
+                    ? m.reconcile_note_withdrawn()
+                    : splitLines.has(e.id)
+                      ? splitLines.get(e.id)!.length === 1
+                        ? m.reconcile_note_part_of({ amount: money(lines[splitLines.get(e.id)![0]].amount) })
+                        : m.reconcile_note_split_lines()
+                      : loaded && !matchedOpen.has(e.id)
+                        ? e.day > addDays(day, -3)
+                          ? m.reconcile_note_next_statement()
+                          : m.reconcile_note_not_on_statement()
+                        : !e.paid
+                          ? m.reconcile_note_still_due()
+                          : undefined
               }
               onToggle={() => toggle(e)}
             />

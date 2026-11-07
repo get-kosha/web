@@ -1369,7 +1369,7 @@ export const OPERATIONS = {
     scope: "write",
     ai: "sometimes",
     description:
-      "Reads a bank statement file and checks it against an account, saving nothing but the CSV's column layout. CSV, OFX and QFX are read by Kosha; a PDF needs the AI model (Statements on in Settings › AI). Each line comes back matched to an entry (same bank id, same amount within a few days, or a close amount such as a tip) or as missing, with a suggested payee and category. Then: add missing lines with create_transactions, passing each line's bankRef; fix close amounts with update_transactions; and finish with reconcile_account, passing reconciliation.transactionIds and the statement balance. reconciliation.hints explain a difference; explain: true also asks the AI model.",
+      "Reads a bank statement file and checks it against an account, saving nothing but the CSV's column layout. CSV, OFX and QFX are read by Kosha; a PDF needs the AI model (Statements on in Settings › AI). Each line comes back matched to an entry (same bank id, same amount within a few days, a split where one line is 2 or 3 entries or the other way round, a close amount such as a tip, or an OFX bank correction to another amount) or as missing, with a suggested payee and category. A split is matched only when it is the one way to make the sum; other ways come back as hints. Then: add missing lines with create_transactions, passing each line's bankRef; fix close amounts and bank corrections with update_transactions; delete entries in withdrawn with delete_transactions if the bank dropped them; and finish with reconcile_account, passing reconciliation.transactionIds and the statement balance. reconciliation.hints explain a difference; explain: true also asks the AI model.",
     input: z.object({
       accountId: Id,
       file: z.object({
@@ -1445,8 +1445,13 @@ export const OPERATIONS = {
           match: z
             .object({
               transactionId: Id,
-              kind: z.enum(["bank_ref", "same_amount", "close_amount"]),
-              reconciled: z.boolean().describe("The entry was already reconciled."),
+              transactionIds: z.array(Id).describe("Every entry this line matches: more than one for a split."),
+              kind: z
+                .enum(["bank_ref", "same_amount", "split", "close_amount", "bank_correction"])
+                .describe(
+                  "bank_correction: the bank's OFX correction of an entry imported earlier, now with another amount."
+                ),
+              reconciled: z.boolean().describe("The entries were already reconciled."),
             })
             .nullable()
             .describe("null: missing from Kosha."),
@@ -1454,6 +1459,11 @@ export const OPERATIONS = {
           categoryId: Id.nullable().describe("Missing lines: the category Kosha suggests, if any."),
         })
       ),
+      withdrawn: z
+        .array(Id)
+        .describe(
+          "Open entries imported from an earlier file that this OFX file's bank corrections delete. Kosha leaves them as they are."
+        ),
       notOnStatement: z.array(Id).describe("Open entries in the statement's period that match no line."),
       reconciliation: z.object({
         statementDay: Day,
@@ -1504,11 +1514,12 @@ export const OPERATIONS = {
             amount: -2350,
             description: "TESCO STORES 3211",
             bankRef: "h:1x9k2p",
-            match: { transactionId: tx.id, kind: "same_amount", reconciled: false },
+            match: { transactionId: tx.id, transactionIds: [tx.id], kind: "same_amount", reconciled: false },
             payee: null,
             categoryId: null,
           },
         ],
+        withdrawn: [],
         notOnStatement: [],
         reconciliation: {
           statementDay: "2026-10-03",

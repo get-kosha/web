@@ -458,6 +458,7 @@ export async function checkStatement(
           ? "qfx"
           : "csv")
   let lines: (Line & { payee?: string })[] = []
+  let withdrawn: string[] = []
   let closing: number | null = null
   let closingDay: string | null = null
   let addsUp: boolean | null = null
@@ -471,6 +472,7 @@ export async function checkStatement(
   } else if (format === "ofx" || format === "qfx") {
     const r = parseOfx(input.file.content)
     lines = r.lines
+    withdrawn = r.withdrawn
     // Cards report what's owed as a negative balance.
     closing = r.closing === null ? null : credit ? -r.closing : r.closing
     closingDay = r.closingDay
@@ -517,6 +519,7 @@ export async function checkStatement(
     done: data.done.map(entry),
     statementDay,
     lastDay: data.history[0]?.statement_day ?? null,
+    withdrawn,
   })
 
   // Payees and categories for the lines missing from Kosha: remembered names, past payees, rules, then AI.
@@ -583,6 +586,23 @@ export async function checkStatement(
                 },
               ]
             : []),
+          ...plan.withdrawn.map((id) => {
+            const e = data.open.find((x) => x.id === id)!
+            return {
+              text: `The bank withdrew ${e.name || "a transfer"} (${money(e.amount)}) after Kosha imported it. Delete it if it's gone.`,
+              ids: [id],
+            }
+          }),
+          ...plan.splits.map((g) => {
+            const names = g.entries.map((id) => data.open.find((x) => x.id === id)!.name || "a transfer")
+            return {
+              text:
+                g.lines.length === 1
+                  ? `The statement's ${money(lines[g.lines[0]].amount)} may be ${names.join(" + ")} together.`
+                  : `${names[0]} may be the statement's ${g.lines.map((i) => money(lines[i].amount)).join(" + ")} together.`,
+              ids: g.entries,
+            }
+          }),
           ...plan.close.map((p) => {
             const e = data.open.find((x) => x.id === p.entry)!
             return {
@@ -609,7 +629,13 @@ export async function checkStatement(
         })
       : null
   const openIds = new Set(data.open.map((e) => e.id))
-  const KIND = { ref: "bank_ref", exact: "same_amount", close: "close_amount" } as const
+  const KIND = {
+    ref: "bank_ref",
+    exact: "same_amount",
+    split: "split",
+    close: "close_amount",
+    corrected: "bank_correction",
+  } as const
   return {
     format: format === "qfx" ? ("ofx" as const) : format,
     primary,
@@ -621,7 +647,9 @@ export async function checkStatement(
     },
     columns,
     lines: lines.map((l, i) => {
-      const p = plan.pairs.find((x) => x.line === i)
+      // A split line matches several entries.
+      const ps = plan.pairs.filter((x) => x.line === i)
+      const p = ps[0]
       const s = suggested.get(i)
       return {
         index: i,
@@ -629,11 +657,19 @@ export async function checkStatement(
         amount: l.amount,
         description: l.description,
         bankRef: l.ref ?? "",
-        match: p ? { transactionId: p.entry, kind: KIND[p.kind], reconciled: !openIds.has(p.entry) } : null,
+        match: p
+          ? {
+              transactionId: p.entry,
+              transactionIds: ps.map((x) => x.entry),
+              kind: KIND[p.kind],
+              reconciled: ps.every((x) => !openIds.has(x.entry)),
+            }
+          : null,
         payee: s?.payee ?? null,
         categoryId: s?.categoryId ?? null,
       }
     }),
+    withdrawn: plan.withdrawn,
     notOnStatement: data.open
       .filter((e) => plan.inPeriod(e) && !plan.matched.has(e.id) && !plan.close.some((p) => p.entry === e.id))
       .map((e) => e.id),

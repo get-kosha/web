@@ -3,8 +3,18 @@
 import { addDays, parseAmount } from "./core.ts"
 import { m } from "../paraglide/messages.js"
 
-/** One line of a statement, in the account's currency. Negative is money out of the account. */
-export type Line = { day: string; amount: number; description: string; balance: number | null; ref: string | null }
+/**
+ * One line of a statement, in the account's currency. Negative is money out of the account. `replaces` is the
+ * ref of an earlier line the bank corrected with this one (OFX's CORRECTFITID).
+ */
+export type Line = {
+  day: string
+  amount: number
+  description: string
+  balance: number | null
+  ref: string | null
+  replaces?: string
+}
 
 // ---------- CSV ----------
 
@@ -260,27 +270,43 @@ function hash(s: string) {
 /** True for OFX and QFX files, both the SGML (1.x) and XML (2.x) kinds. */
 export const isOfx = (text: string) => /<OFX>|OFXHEADER/i.test(text.slice(0, 2000))
 
-/** Reads an OFX or QFX statement: its lines, and the closing (ledger) balance with its day when given. */
+/**
+ * Reads an OFX or QFX statement: its lines, and the closing (ledger) balance with its day when given. A bank's
+ * corrections apply within the file: CORRECTACTION REPLACE swaps out the line with the CORRECTFITID, and
+ * DELETE drops it. The replacing line keeps that ref in `replaces`, and `withdrawn` lists the deleted refs,
+ * so an entry imported from an earlier download can be found again.
+ */
 export function parseOfx(text: string) {
   // SGML OFX leaves leaf tags unclosed, so a value runs to the next tag or line end.
   const tag = (block: string, name: string) => block.match(new RegExp(`<${name}>([^<\\r\\n]*)`, "i"))?.[1].trim() ?? ""
   const ofxDay = (v: string) => (v.length >= 8 ? valid(+v.slice(0, 4), +v.slice(4, 6), +v.slice(6, 8)) : null)
   const lines: Line[] = []
+  const gone = new Set<string>()
+  const withdrawn: string[] = []
   for (const m of text.matchAll(/<STMTTRN>([\s\S]*?)(?:<\/STMTTRN>|(?=<STMTTRN>)|(?=<\/BANKTRANLIST>))/gi)) {
     const b = m[1]
+    const fixes = tag(b, "CORRECTFITID") ? `ofx:${tag(b, "CORRECTFITID")}` : ""
+    if (fixes) gone.add(fixes)
+    if (fixes && tag(b, "CORRECTACTION").toUpperCase() === "DELETE") {
+      withdrawn.push(fixes)
+      continue
+    }
     const day = ofxDay(tag(b, "DTPOSTED") || tag(b, "DTUSER"))
     const amount = parseAmount(tag(b, "TRNAMT"))
     if (!day || !amount) continue
     const name = tag(b, "NAME") || tag(b, "PAYEE")
     const memo = tag(b, "MEMO")
     const description = [name, memo && memo !== name ? memo : ""].filter(Boolean).join(" · ").replace(/&amp;/g, "&")
-    lines.push({ day, amount, description, balance: null, ref: tag(b, "FITID") ? `ofx:${tag(b, "FITID")}` : null })
+    const ref = tag(b, "FITID") ? `ofx:${tag(b, "FITID")}` : null
+    lines.push({ day, amount, description, balance: null, ref, ...(fixes ? { replaces: fixes } : {}) })
   }
   const ledger = text.match(/<LEDGERBAL>([\s\S]*?)(?:<\/LEDGERBAL>|<AVAILBAL>|$)/i)?.[1] ?? ""
   const balance = ledger ? parseAmount(tag(ledger, "BALAMT")) : null
   const accountId = tag(text, "ACCTID")
   return {
-    lines: withRefs(lines),
+    // A correction can come before the line it corrects, so they go once every line is read.
+    lines: withRefs(lines.filter((l) => !l.ref || !gone.has(l.ref))),
+    withdrawn,
     closing: balance,
     closingDay: ledger ? ofxDay(tag(ledger, "DTASOF")) : null,
     currency: tag(text, "CURDEF").toLowerCase() || null,
@@ -372,36 +398,66 @@ export function similarity(a: string, b: string) {
 
 /** A Kosha entry that a statement line can match. */
 export type Entry = { id: string; day: string; amount: number; name: string; ref: string | null }
-type Pair = { line: number; entry: string; kind: "ref" | "exact" | "close" }
+/**
+ * A statement line matched to an entry. A "split" is one line that is several entries (or several lines that
+ * are one entry), so it shows up as one pair per line and entry. "corrected" is a bank correction of an entry
+ * imported earlier with a different amount, which, like "close", the person settles.
+ */
+export type Pair = { line: number; entry: string; kind: "ref" | "exact" | "split" | "close" | "corrected" }
+/** Lines and entries whose amounts add up, but which aren't matched on their own since another way could. */
+export type Split = { lines: number[]; entries: string[] }
 
 const dayDiff = (a: string, b: string) => Math.round((Date.parse(b) - Date.parse(a)) / 86_400_000)
 
+/** Groups of 2 or 3 items whose values add up to `total`. */
+function sums<T>(items: T[], total: number, value: (t: T) => number) {
+  const out: T[][] = []
+  for (let a = 0; a < items.length; a++)
+    for (let b = a + 1; b < items.length; b++) {
+      const ab = value(items[a]) + value(items[b])
+      if (ab === total) out.push([items[a], items[b]])
+      for (let c = b + 1; c < items.length; c++)
+        if (ab + value(items[c]) === total) out.push([items[a], items[b], items[c]])
+    }
+  return out
+}
+
 /**
- * Pairs statement lines with Kosha entries, each used once. A bank id that Kosha stored matches first. Then
- * the same amount within `before` days before or `after` days after the entry (banks post a few days late),
- * closest and most alike first. Lines left over that look like an entry with a different amount (a tip, a
- * currency rate) become "close" pairs to confirm. What is left is missing from Kosha, or not on the statement.
+ * Pairs statement lines with Kosha entries, each used once. A bank id that Kosha stored matches first, also
+ * through a bank's correction of it. Then the same amount within `before` days before or `after` days after the
+ * entry (banks post a few days late), closest and most alike first. Then splits: a line that is 2 or 3 entries
+ * together, or the other way round, matched only when it is the one way to make that sum and the names agree;
+ * other ways come back in `splits` to suggest. Lines left over that look like an entry with a different amount
+ * (a tip, a currency rate) become "close" pairs to confirm. What is left is missing from Kosha, or not on the
+ * statement.
  */
 export function matchLines(lines: Line[], entries: Entry[], before = 3, after = 7) {
   const pairs: Pair[] = []
   const usedLine = new Set<number>()
   const usedEntry = new Set<string>()
+  const take = (line: number, entry: string, kind: Pair["kind"]) => {
+    pairs.push({ line, entry, kind })
+    usedLine.add(line)
+    usedEntry.add(entry)
+  }
   const byRef = new Map(entries.filter((e) => e.ref).map((e) => [e.ref!, e]))
   lines.forEach((l, i) => {
-    const e = l.ref ? byRef.get(l.ref) : undefined
+    const own = l.ref ? byRef.get(l.ref) : undefined
+    const e = own ?? (l.replaces ? byRef.get(l.replaces) : undefined)
     if (!e || usedEntry.has(e.id)) return
-    pairs.push({ line: i, entry: e.id, kind: "ref" })
-    usedLine.add(i)
-    usedEntry.add(e.id)
+    take(i, e.id, own || l.amount === e.amount ? "ref" : "corrected")
   })
+  const near = (l: Line, e: Entry) => {
+    const d = dayDiff(e.day, l.day)
+    return d >= -before && d <= after
+  }
   const scored = (kind: "exact" | "close") => {
     const list: { line: number; entry: string; score: number }[] = []
     lines.forEach((l, i) => {
       if (usedLine.has(i)) return
       for (const e of entries) {
-        if (usedEntry.has(e.id)) continue
+        if (usedEntry.has(e.id) || !near(l, e)) continue
         const d = dayDiff(e.day, l.day)
-        if (d < -before || d > after) continue
         const sim = similarity(l.description, e.name)
         if (kind === "exact") {
           if (l.amount !== e.amount) continue
@@ -414,19 +470,65 @@ export function matchLines(lines: Line[], entries: Entry[], before = 3, after = 
         }
       }
     })
-    for (const c of list.sort((a, b) => a.score - b.score)) {
-      if (usedLine.has(c.line) || usedEntry.has(c.entry)) continue
-      pairs.push({ line: c.line, entry: c.entry, kind })
-      usedLine.add(c.line)
-      usedEntry.add(c.entry)
-    }
+    for (const c of list.sort((a, b) => a.score - b.score))
+      if (!usedLine.has(c.line) && !usedEntry.has(c.entry)) take(c.line, c.entry, kind)
   }
   scored("exact")
+
+  // Parts have the same sign and are smaller than their whole. ponytail: only the 12 nearest parts are tried,
+  // so a split with a part further off stays unmatched.
+  const parts = <T>(whole: number, list: T[], amount: (t: T) => number, gap: (t: T) => number) =>
+    list
+      .filter((t) => Math.sign(amount(t)) === Math.sign(whole) && Math.abs(amount(t)) < Math.abs(whole))
+      .sort((a, b) => gap(a) - gap(b))
+      .slice(0, 12)
+  const open = entries.filter((e) => !usedEntry.has(e.id))
+  const free = lines.map((l, i) => ({ l, i })).filter(({ i }) => !usedLine.has(i))
+  const groups: (Split & { alike: boolean })[] = []
+  for (const { l, i } of free) {
+    const list = parts(
+      l.amount,
+      open.filter((e) => near(l, e)),
+      (e) => e.amount,
+      (e) => Math.abs(dayDiff(e.day, l.day))
+    )
+    for (const g of sums(list, l.amount, (e) => e.amount))
+      groups.push({
+        lines: [i],
+        entries: g.map((e) => e.id),
+        alike: g.every((e) => similarity(l.description, e.name) >= 0.5),
+      })
+  }
+  for (const e of open) {
+    const list = parts(
+      e.amount,
+      free.filter(({ l }) => near(l, e)),
+      ({ l }) => l.amount,
+      ({ l }) => Math.abs(dayDiff(e.day, l.day))
+    )
+    for (const g of sums(list, e.amount, ({ l }) => l.amount))
+      groups.push({
+        lines: g.map(({ i }) => i),
+        entries: [e.id],
+        alike: g.every(({ l }) => similarity(l.description, e.name) >= 0.5),
+      })
+  }
+  // A group is sure when nothing it holds could be part of another group.
+  const uses = new Map<string, number>()
+  const keys = (g: Split) => [...g.lines.map((i) => `l${i}`), ...g.entries.map((id) => `e${id}`)]
+  for (const g of groups) for (const k of keys(g)) uses.set(k, (uses.get(k) ?? 0) + 1)
+  const sure = groups.filter((g) => g.alike && keys(g).every((k) => uses.get(k) === 1))
+  for (const g of sure) for (const i of g.lines) for (const id of g.entries) take(i, id, "split")
+
   scored("close")
   return {
     pairs,
     missing: lines.map((_, i) => i).filter((i) => !usedLine.has(i)),
     extra: entries.filter((e) => !usedEntry.has(e.id)).map((e) => e.id),
+    splits: groups
+      .filter((g) => !sure.includes(g) && g.lines.every((i) => !usedLine.has(i)))
+      .filter((g) => g.entries.every((id) => !usedEntry.has(id)))
+      .map(({ lines, entries }): Split => ({ lines, entries })),
   }
 }
 
@@ -545,9 +647,11 @@ export function differenceHints(
  * What a reconciliation starts from: which statement lines match Kosha's entries, which are missing, and
  * which entries count as ticked. With a statement, its period starts at its first line; an entry from before
  * then that matches no line was on an earlier statement, so it counts as ticked, and in the period only
- * matched entries are. A close match (a tip, a currency rate) is never ticked until settled. Without a
- * statement, every paid entry up to the statement day is ticked. `rejected` holds the refs of lines the
- * person said aren't the same as their close match.
+ * matched entries are. Every entry of a split counts as matched. A close match (a tip, a currency rate) or a
+ * bank's correction to another amount is never ticked until settled. Without a statement, every paid entry up
+ * to the statement day is ticked. `rejected` holds the refs of lines the person said aren't the same as their
+ * close match. `withdrawn` holds refs a bank's correction deleted: their entries match nothing and come back in
+ * `withdrawn` for the person to look at, since Kosha never deletes an entry by itself.
  */
 export function planReconciliation(o: {
   lines: Line[]
@@ -556,17 +660,22 @@ export function planReconciliation(o: {
   statementDay: string
   lastDay: string | null
   rejected?: Set<string>
+  withdrawn?: string[]
 }) {
-  const match = o.lines.length ? matchLines(o.lines, [...o.open, ...o.done]) : null
+  const gone = new Set(o.withdrawn)
+  const entries = [...o.open, ...o.done].filter((e) => !e.ref || !gone.has(e.ref))
+  const match = o.lines.length ? matchLines(o.lines, entries) : null
   const openIds = new Set(o.open.map((e) => e.id))
-  const pairs = (match?.pairs ?? []).filter((p) => !(p.kind === "close" && o.rejected?.has(o.lines[p.line].ref ?? "")))
+  const settle = (p: Pair) => p.kind === "close" || p.kind === "corrected"
+  const pairs = (match?.pairs ?? []).filter((p) => !(settle(p) && o.rejected?.has(o.lines[p.line].ref ?? "")))
   const paired = new Set(pairs.map((p) => p.line))
-  const matched = new Set(pairs.filter((p) => p.kind !== "close" && openIds.has(p.entry)).map((p) => p.entry))
-  const close = pairs.filter((p) => p.kind === "close" && openIds.has(p.entry))
+  const matched = new Set(pairs.filter((p) => !settle(p) && openIds.has(p.entry)).map((p) => p.entry))
+  const close = pairs.filter((p) => settle(p) && openIds.has(p.entry))
+  const withdrawn = new Set(o.open.filter((e) => e.ref && gone.has(e.ref)).map((e) => e.id))
   const firstLine = o.lines.reduce((m, l) => (l.day < m ? l.day : m), "9999-12-31")
   const periodStart = o.lines.length ? firstLine : o.lastDay ? addDays(o.lastDay, 1) : addDays(o.statementDay, -45)
   const inPeriod = (e: { id: string; day: string }) =>
-    e.day <= o.statementDay && (e.day >= periodStart || matched.has(e.id))
+    e.day <= o.statementDay && (e.day >= periodStart || matched.has(e.id) || withdrawn.has(e.id))
   const ticks = (e: { id: string; day: string; paid: number }) =>
     e.day <= o.statementDay && (o.lines.length ? !inPeriod(e) || matched.has(e.id) : e.paid === 1)
   return {
@@ -574,6 +683,8 @@ export function planReconciliation(o: {
     missing: o.lines.map((_, i) => i).filter((i) => !paired.has(i)),
     matched,
     close,
+    splits: (match?.splits ?? []).filter((s) => s.entries.every((id) => openIds.has(id))),
+    withdrawn: [...withdrawn],
     periodStart,
     inPeriod,
     ticks,
@@ -692,9 +803,11 @@ export function statementGaps(
 /**
  * One account's lines from several statements, each line once. Statements that overlap (a yearly export and
  * a monthly one, or the same file twice) share lines: the same bank id, or in days an earlier statement
- * covers, the same day and amount. Within one statement, two equal lines are two payments.
+ * covers, the same day and amount. Within one statement, two equal lines are two payments. A line another
+ * statement's bank correction replaced or withdrew is left out.
  */
-export function mergeStatements<L extends Line>(files: { lines: L[] }[]) {
+export function mergeStatements<L extends Line>(files: { lines: L[]; withdrawn?: string[] }[]) {
+  const corrected = new Set(files.flatMap((f) => [...(f.withdrawn ?? []), ...f.lines.flatMap((l) => l.replaces ?? [])]))
   const span = (f: { lines: L[] }) => [
     Math.min(...f.lines.map((l) => +l.day.replace(/-/g, ""))),
     Math.max(...f.lines.map((l) => +l.day.replace(/-/g, ""))),
@@ -711,7 +824,7 @@ export function mergeStatements<L extends Line>(files: { lines: L[] }[]) {
       const d = +l.day.replace(/-/g, "")
       const seen = covered.some(([a, b]) => d >= a && d <= b) ? (counts.get(k) ?? 0) : 0
       if (seen) counts.set(k, seen - 1)
-      if (seen || (l.ref && refs.has(l.ref))) continue
+      if (seen || (l.ref && (refs.has(l.ref) || corrected.has(l.ref)))) continue
       kept.push(l)
     }
     for (const l of kept) {

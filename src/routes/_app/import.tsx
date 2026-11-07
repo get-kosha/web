@@ -72,6 +72,8 @@ type Stmt = {
   file: string
   source: "csv" | "ofx" | "pdf"
   lines: StLine[]
+  /** OFX only: refs of earlier lines the bank's corrections deleted. */
+  withdrawn?: string[]
   rows?: string[][]
   layout?: Layout
   signature?: string
@@ -233,6 +235,7 @@ function Import() {
         ...base,
         source: "ofx",
         lines: r.lines,
+        withdrawn: r.withdrawn,
         // Cards report what's owed as a negative balance.
         closing: r.closing === null ? null : credit ? -r.closing : r.closing,
         closingDay: r.closingDay ?? span(r.lines)?.to ?? null,
@@ -399,7 +402,11 @@ function Import() {
         const lines = linesOf(a)
         const r = span(lines)
         if (!r) continue
-        const entries = await getImportEntries({ data: { walletId: w.id, ...r } })
+        // An entry the bank withdrew stays as it is, but matches nothing. A line that corrects an entry counts as found.
+        const gone = new Set(stmts.flatMap((s) => (s.acct === a.id ? (s.withdrawn ?? []) : [])))
+        const entries = (await getImportEntries({ data: { walletId: w.id, ...r } })).filter(
+          (e) => !gone.has(e.ref ?? "")
+        )
         const m = matchLines(lines, entries)
         found[a.id] = new Set(m.pairs.filter((p) => p.kind !== "close").map((p) => lines[p.line].ref!))
       }

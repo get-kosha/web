@@ -679,6 +679,143 @@ assert.deepEqual(
 assert.match(hint(-777, [])[0].text, /a fee, a charge or interest of 7\.77/)
 console.log("statements ok")
 
+// ---------- splits and bank corrections ----------
+
+// One bank charge of 50.00 that was entered as 30 + 20: the one way to make it, named alike, so it matches.
+const line = (day: string, amount: number, description: string, ref: string | null = null) => ({
+  day,
+  amount,
+  description,
+  balance: null,
+  ref,
+})
+const entry = (id: string, day: string, amount: number, name: string, ref: string | null = null) => ({
+  id,
+  day,
+  amount,
+  name,
+  ref,
+})
+const split = matchLines(
+  [line("2026-11-05", -5000, "TESCO STORES 3211"), line("2026-11-06", -999, "NETFLIX")],
+  [entry("s1", "2026-11-04", -3000, "Tesco"), entry("s2", "2026-11-04", -2000, "Tesco")]
+)
+assert.deepEqual(split.pairs, [
+  { line: 0, entry: "s1", kind: "split" },
+  { line: 0, entry: "s2", kind: "split" },
+])
+assert.deepEqual([split.missing, split.extra, split.splits], [[1], [], []])
+// The other way round: two bank lines that Kosha has as one entry.
+const halves = matchLines(
+  [line("2026-11-05", -1500, "IKEA"), line("2026-11-07", -2500, "IKEA")],
+  [entry("k1", "2026-11-05", -4000, "Ikea")]
+)
+assert.deepEqual(
+  halves.pairs.map((p) => [p.line, p.entry, p.kind]),
+  [
+    [0, "k1", "split"],
+    [1, "k1", "split"],
+  ]
+)
+// Two ways to make 50.00 (30 with either 20): nothing is matched, and both come back to suggest.
+const twoWays = matchLines(
+  [line("2026-11-05", -5000, "TESCO")],
+  [
+    entry("a", "2026-11-04", -3000, "Tesco"),
+    entry("b", "2026-11-04", -2000, "Tesco"),
+    entry("c", "2026-11-05", -2000, "Tesco"),
+  ]
+)
+assert.deepEqual(twoWays.pairs, [])
+assert.deepEqual(
+  twoWays.splits.map((g) => g.entries.sort()),
+  [
+    ["a", "c"],
+    ["a", "b"],
+  ]
+)
+// One way, but the names don't agree: suggested, not matched. Out of the date window: neither.
+const unalike = matchLines(
+  [line("2026-11-05", -5000, "TESCO")],
+  [entry("a", "2026-11-04", -3000, "Uber"), entry("b", "2026-11-04", -2000, "Tesco")]
+)
+assert.deepEqual([unalike.pairs, unalike.splits], [[], [{ lines: [0], entries: ["a", "b"] }]])
+const far = matchLines(
+  [line("2026-11-20", -5000, "TESCO")],
+  [entry("a", "2026-11-04", -3000, "Tesco"), entry("b", "2026-11-04", -2000, "Tesco")]
+)
+assert.deepEqual([far.pairs, far.splits, far.missing], [[], [], [0]])
+// An exact match wins over a split, and parts only go once.
+const exactFirst = matchLines(
+  [line("2026-11-05", -5000, "TESCO")],
+  [
+    entry("a", "2026-11-04", -3000, "Tesco"),
+    entry("b", "2026-11-04", -2000, "Tesco"),
+    entry("x", "2026-11-05", -5000, "Tesco"),
+  ]
+)
+assert.deepEqual(exactFirst.pairs, [{ line: 0, entry: "x", kind: "exact" }])
+// A reconciliation ticks every entry of a split, so finishing it reconciles them all (and undo clears them all).
+const splitPlan = planReconciliation({
+  lines: [line("2026-11-05", -5000, "TESCO STORES")],
+  open: [entry("s1", "2026-11-04", -3000, "Tesco"), entry("s2", "2026-11-04", -2000, "Tesco")].map((e) => ({
+    ...e,
+    paid: 1,
+  })),
+  done: [],
+  statementDay: "2026-11-30",
+  lastDay: null,
+})
+assert.deepEqual([[...splitPlan.matched].sort(), splitPlan.missing], [["s1", "s2"], []])
+assert.equal(
+  splitPlan.ticks({ id: "s1", day: "2026-11-04", paid: 1 }) &&
+    splitPlan.ticks({ id: "s2", day: "2026-11-04", paid: 1 }),
+  true
+)
+
+// OFX corrections within one file: REPLACE swaps the line, DELETE drops it, in whichever order they come.
+const corrected = parseOfx(`<OFX><BANKTRANLIST>
+<STMTTRN><DTPOSTED>20261103<TRNAMT>-12.50<FITID>A1<NAME>TESCO</STMTTRN>
+<STMTTRN><DTPOSTED>20261103<TRNAMT>-15.00<FITID>A1b<CORRECTFITID>A1<CORRECTACTION>REPLACE<NAME>TESCO</STMTTRN>
+<STMTTRN><DTPOSTED>20261104<TRNAMT>-9.99<FITID>B1<CORRECTFITID>B0<CORRECTACTION>DELETE<NAME>NETFLIX</STMTTRN>
+<STMTTRN><DTPOSTED>20261104<TRNAMT>-9.99<FITID>B0<NAME>NETFLIX</STMTTRN>
+<STMTTRN><DTPOSTED>20261105<TRNAMT>-4.00<FITID>C1<NAME>KIOSK</STMTTRN>
+</BANKTRANLIST></OFX>`)
+assert.deepEqual(
+  corrected.lines.map((l) => [l.ref, l.amount, l.replaces]),
+  [
+    ["ofx:A1b", -1500, "ofx:A1"],
+    ["ofx:C1", -400, undefined],
+  ]
+)
+assert.deepEqual(corrected.withdrawn, ["ofx:B0"])
+assert.deepEqual(parseOfx(ofx).withdrawn, [])
+// Across imports: a correction finds the entry by the ref it replaces. The same amount is a plain match; another
+// amount is a "corrected" pair the person settles, never ticked or changed by itself.
+const fix = planReconciliation({
+  lines: corrected.lines,
+  open: [
+    entry("t1", "2026-11-03", -1250, "Tesco", "ofx:A1"),
+    entry("n1", "2026-11-04", -999, "Netflix", "ofx:B0"),
+    entry("k1", "2026-11-05", -400, "Kiosk", "ofx:C1"),
+  ].map((e) => ({ ...e, paid: 1 })),
+  done: [],
+  statementDay: "2026-11-30",
+  lastDay: null,
+  withdrawn: corrected.withdrawn,
+})
+assert.deepEqual(fix.close, [{ line: 0, entry: "t1", kind: "corrected" }])
+assert.deepEqual([[...fix.matched], fix.missing, fix.withdrawn], [["k1"], [], ["n1"]])
+// The withdrawn entry stays, unticked and in the period, even dated before the statement's first line.
+assert.equal(fix.ticks({ id: "n1", day: "2026-11-04", paid: 1 }), false)
+assert.equal(fix.ticks({ id: "t1", day: "2026-11-03", paid: 1 }), false)
+const sameFix = matchLines(
+  [{ ...corrected.lines[0], amount: -1250 }],
+  [entry("t1", "2026-11-03", -1250, "Tesco", "ofx:A1")]
+)
+assert.deepEqual(sameFix.pairs, [{ line: 0, entry: "t1", kind: "ref" }])
+console.log("splits and corrections ok")
+
 // ---------- spotting recurring payments ----------
 
 import { findRecurring } from "./core.ts"
@@ -872,6 +1009,14 @@ const merged = mergeStatements([
 assert.deepEqual(
   merged.map((l) => l.ref),
   ["y1", "y2", "y3", "y4", "m3"]
+)
+// A later download's bank corrections replace or withdraw lines an earlier one has.
+assert.deepEqual(
+  mergeStatements<ReturnType<typeof ln> & { replaces?: string }>([
+    { lines: [ln("2026-03-02", -450, "a"), ln("2026-03-03", -900, "b")] },
+    { lines: [{ ...ln("2026-03-02", -500, "a2"), replaces: "a" }], withdrawn: ["b"] },
+  ]).map((l) => l.ref),
+  ["a2"]
 )
 console.log("getting started ok")
 
