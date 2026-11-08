@@ -86,7 +86,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   const reconciling = useLocation({
     select: (l) => l.pathname === "/reconcile" || l.pathname === "/import" || l.pathname === "/welcome",
   })
-  const asking = useLocation({ select: (l) => l.pathname === "/ask" }) || reconciling
+  const chat = useLocation({ select: (l) => l.pathname === "/ask" })
+  const asking = chat || reconciling
   // /add, Ask and Settings are full-screen on phones, with no top header or tab bar around them.
   const bare = useLocation({ select: (l) => l.pathname === "/add" }) || settings || asking
 
@@ -118,7 +119,8 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <ShortcutsContext value={() => setShortcuts(true)}>
-      <div className="flex min-h-svh flex-col">
+      {/* Ask fits the window exactly, so only its messages scroll and the header and question box stay put. */}
+      <div className={cn("flex flex-col", chat ? "h-dvh" : "min-h-svh")}>
         {prefsUser.id === DEMO.id && <DemoBanner />}
         <header className="hidden flex-wrap items-center gap-x-5 gap-y-3 border-b bg-card px-8 py-3 md:flex">
           <Link to="/">
@@ -190,7 +192,8 @@ export function AppShell({ children }: { children: ReactNode }) {
             prefs.layout === "boxed" && "max-w-[1240px]",
             "pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-14",
             // A bare page fills what is left under the demo banner, so /add can pin its keypad to the bottom.
-            bare && "max-md:flex max-md:flex-col max-md:pb-0"
+            bare && "max-md:flex max-md:flex-col max-md:pb-0",
+            chat && "flex min-h-0 flex-col pb-0 md:pb-0"
           )}
         >
           {children}

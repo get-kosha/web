@@ -119,10 +119,10 @@ function Ask() {
   const model = meta.aiModel
 
   return (
-    // The column fills the screen below the header, so the question box sits at the bottom even before there are answers.
-    <div className="mx-auto flex w-full max-w-[760px] flex-col max-md:min-h-svh max-md:flex-1 md:min-h-[calc(100svh-10rem)]">
+    // The shell gives this page the window's height. Only the messages scroll, so the header and question box stay put.
+    <div className="flex min-h-0 w-full flex-1 flex-col">
       {/* Phone: a bar of its own, since this page hides the app header and tab bar. */}
-      <div className="sticky top-0 z-10 grid grid-cols-[44px_minmax(0,1fr)_44px] items-center border-b bg-background/95 px-2 pt-[env(safe-area-inset-top)] backdrop-blur md:hidden">
+      <div className="grid grid-cols-[44px_minmax(0,1fr)_44px] items-center border-b bg-background/95 px-2 pt-[env(safe-area-inset-top)] backdrop-blur md:hidden">
         <Button variant="ghost" size="icon-lg" className="size-11" onClick={leave} aria-label={m.common_back()}>
           <CaretLeftIcon className="size-5" />
         </Button>
@@ -140,7 +140,7 @@ function Ask() {
           </Button>
         )}
       </div>
-      <header className="flex items-end justify-between gap-3 px-8 pt-7 pb-5 max-md:hidden">
+      <header className="mx-auto flex w-full max-w-[760px] items-end justify-between gap-3 px-8 pt-7 pb-5 max-md:hidden">
         <div className="min-w-0">
           <h1 className="text-[22px] font-semibold tracking-[-0.02em]">{m.ask_title()}</h1>
           <p className="mt-1 text-[13px] text-muted-foreground">{m.ask_subtitle()}</p>
@@ -158,33 +158,36 @@ function Ask() {
         )}
       </header>
 
-      <div className="flex flex-1 flex-col gap-6 px-4 pt-5 pb-4 md:px-8 md:pt-0">
-        {messages.length === 0 && !busy ? (
-          <Suggestions onPick={(s) => void send(s)} />
-        ) : (
-          messages.map((m, i) =>
-            m.role === "user" ? (
-              <p
-                key={i}
-                className="max-w-[85%] self-end rounded-2xl rounded-br-md bg-muted px-4 py-2.5 text-[15px] leading-relaxed whitespace-pre-wrap md:text-sm"
-              >
-                {m.text}
-              </p>
-            ) : m.role === "error" ? (
-              <p key={i} role="alert" className="text-sm text-destructive">
-                {m.text}
-              </p>
-            ) : (
-              <Answer key={i} msg={m} />
+      {/* Full width, so the scrollbar sits at the window's edge rather than beside the text. */}
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        <div className="mx-auto flex min-h-full max-w-[760px] flex-col gap-6 px-4 pt-5 pb-4 md:px-8 md:pt-0">
+          {messages.length === 0 && !busy ? (
+            <Suggestions onPick={(s) => void send(s)} />
+          ) : (
+            messages.map((m, i) =>
+              m.role === "user" ? (
+                <p
+                  key={i}
+                  className="max-w-[85%] self-end rounded-2xl rounded-br-md bg-muted px-4 py-2.5 text-[15px] leading-relaxed whitespace-pre-wrap md:text-sm"
+                >
+                  {m.text}
+                </p>
+              ) : m.role === "error" ? (
+                <p key={i} role="alert" className="text-sm text-destructive">
+                  {m.text}
+                </p>
+              ) : (
+                <Answer key={i} msg={m} />
+              )
             )
-          )
-        )}
-        {busy && <Working steps={steps} />}
-        <div ref={end} />
+          )}
+          {busy && <Working steps={steps} />}
+          <div ref={end} />
+        </div>
       </div>
 
       <form
-        className="sticky bottom-0 z-10 bg-background px-4 pt-2 pb-[max(1rem,env(safe-area-inset-bottom))] md:bottom-0 md:px-8 md:pb-6"
+        className="mx-auto w-full max-w-[760px] px-4 pt-2 pb-[max(1rem,env(safe-area-inset-bottom))] md:px-8 md:pb-6"
         onSubmit={(e) => {
           e.preventDefault()
           void send(draft)
