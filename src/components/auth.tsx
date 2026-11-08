@@ -1,4 +1,4 @@
-// The frame and controls shared by /login, /forgot-password, /reset-password and /consent.
+// The frame and controls shared by sign-in, password reset, auth errors and consent.
 // The brand panel is the only place brand colours and Bricolage appear; the form side is the neutral interface.
 import { useEffect, useRef, useState, type ComponentProps, type ReactNode } from "react"
 import {

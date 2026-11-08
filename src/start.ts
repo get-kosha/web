@@ -18,6 +18,7 @@ const SIGNED_OUT_PAGES = new Set([
   "/delete-account",
   "/forgot-password",
   "/reset-password",
+  "/auth/error",
   "/app/oauth/callback",
 ])
 const requireUser = createMiddleware().server(async ({ next, request }) => {
@@ -29,8 +30,8 @@ const requireUser = createMiddleware().server(async ({ next, request }) => {
     return user && !url.searchParams.has("sig") ? redirect(safeReturn(url.searchParams.get("returnTo"))) : next()
   if (user) return next()
   // A signed-out visit to / gets the landing page (the _app layout renders it instead of the app), and the
-  // legal and password reset pages and the apps' sign-in callback are public too. Any GET or HEAD qualifies, so link-preview bots that send Accept: */* can
-  // read the card. Server functions live under /_serverFn/, so nothing else answers at these paths.
+  // legal, password reset and auth error pages and the apps' sign-in callback are public too. GET and HEAD
+  // qualify, so link-preview bots can read the card. Server functions live under /_serverFn/.
   if ((request.method === "GET" || request.method === "HEAD") && SIGNED_OUT_PAGES.has(url.pathname)) return next()
   const page = request.method === "GET" && request.headers.get("accept")?.includes("text/html")
   if (page) return redirect(`/login?returnTo=${encodeURIComponent(url.pathname + url.search)}`)

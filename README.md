@@ -99,7 +99,7 @@ The [Better Auth dashboard](https://dash.better-auth.com) is optional. To connec
 
 Password reset emails go out over SMTP. Set `SMTP_HOST`, `SMTP_USER` and `SMTP_PASSWORD` with `npx wrangler secret put`, and optionally `SMTP_PORT` (default `587`, STARTTLS; `465` uses TLS) and `SMTP_FROM` (default `noreply@getkosha.app`; the sender name is always Kosha). Cloudflare blocks port 25. Without `SMTP_HOST`, production hides "Forgot password?", and `npm run dev` prints each email, reset link included, to the terminal instead. Preview the email templates in `src/emails/` with `npm run email`.
 
-Before you deploy, set `BETTER_AUTH_URL` under `vars` in `wrangler.jsonc` to the public URL of the app. Passkeys only work on this domain.
+Before you deploy, set `BETTER_AUTH_URL` under `vars` in `wrangler.jsonc` to the public URL of the app. Its hostname is the passkey RP ID, and its origin is where passkeys can be used. Keep this hostname stable: existing passkeys cannot move to another domain, so users would need another sign-in method and would have to register new passkeys.
 
 To deploy on every push, connect the repository under the Worker's **Settings → Build**. Use `npm run deploy` as the deploy command and leave the build command empty. The build token needs **D1: Edit** for the migration step, which the token Cloudflare creates by default does not have.
 

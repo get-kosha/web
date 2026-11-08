@@ -32,6 +32,7 @@ import { Route as AppSubscriptionsRouteImport } from './routes/_app/subscription
 import { Route as AppTransactionsRouteImport } from './routes/_app/transactions'
 import { Route as AppWelcomeRouteImport } from './routes/_app/welcome'
 import { Route as ApiAvatarRouteImport } from './routes/api/avatar'
+import { Route as AuthErrorRouteImport } from './routes/auth.error'
 import { Route as AppSettingsIndexRouteImport } from './routes/_app/settings.index'
 import { Route as AppSettingsSectionRouteImport } from './routes/_app/settings.$section'
 import { Route as ApiAppSplatRouteImport } from './routes/api/app/$'
@@ -156,6 +157,11 @@ const ApiAvatarRoute = ApiAvatarRouteImport.update({
   path: '/api/avatar',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthErrorRoute = AuthErrorRouteImport.update({
+  id: '/auth/error',
+  path: '/auth/error',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppSettingsIndexRoute = AppSettingsIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -226,6 +232,7 @@ export interface FileRoutesByFullPath {
   '/transactions': typeof AppTransactionsRoute
   '/welcome': typeof AppWelcomeRoute
   '/api/avatar': typeof ApiAvatarRoute
+  '/auth/error': typeof AuthErrorRoute
   '/settings/$section': typeof AppSettingsSectionRoute
   '/api/app/$': typeof ApiAppSplatRoute
   '/api/attachments/$id': typeof ApiAttachmentsIdRoute
@@ -257,6 +264,7 @@ export interface FileRoutesByTo {
   '/transactions': typeof AppTransactionsRoute
   '/welcome': typeof AppWelcomeRoute
   '/api/avatar': typeof ApiAvatarRoute
+  '/auth/error': typeof AuthErrorRoute
   '/': typeof AppIndexRoute
   '/settings/$section': typeof AppSettingsSectionRoute
   '/api/app/$': typeof ApiAppSplatRoute
@@ -292,6 +300,7 @@ export interface FileRoutesById {
   '/_app/transactions': typeof AppTransactionsRoute
   '/_app/welcome': typeof AppWelcomeRoute
   '/api/avatar': typeof ApiAvatarRoute
+  '/auth/error': typeof AuthErrorRoute
   '/_app/': typeof AppIndexRoute
   '/_app/settings/$section': typeof AppSettingsSectionRoute
   '/api/app/$': typeof ApiAppSplatRoute
@@ -328,6 +337,7 @@ export interface FileRouteTypes {
     | '/transactions'
     | '/welcome'
     | '/api/avatar'
+    | '/auth/error'
     | '/settings/$section'
     | '/api/app/$'
     | '/api/attachments/$id'
@@ -359,6 +369,7 @@ export interface FileRouteTypes {
     | '/transactions'
     | '/welcome'
     | '/api/avatar'
+    | '/auth/error'
     | '/'
     | '/settings/$section'
     | '/api/app/$'
@@ -393,6 +404,7 @@ export interface FileRouteTypes {
     | '/_app/transactions'
     | '/_app/welcome'
     | '/api/avatar'
+    | '/auth/error'
     | '/_app/'
     | '/_app/settings/$section'
     | '/api/app/$'
@@ -417,6 +429,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   DotwellKnownSplatRoute: typeof DotwellKnownSplatRoute
   ApiAvatarRoute: typeof ApiAvatarRoute
+  AuthErrorRoute: typeof AuthErrorRoute
   ApiAppSplatRoute: typeof ApiAppSplatRoute
   ApiAttachmentsIdRoute: typeof ApiAttachmentsIdRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -589,6 +602,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAvatarRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/error': {
+      id: '/auth/error'
+      path: '/auth/error'
+      fullPath: '/auth/error'
+      preLoaderRoute: typeof AuthErrorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_app/settings/': {
       id: '/_app/settings/'
       path: '/'
@@ -713,6 +733,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   DotwellKnownSplatRoute: DotwellKnownSplatRoute,
   ApiAvatarRoute: ApiAvatarRoute,
+  AuthErrorRoute: AuthErrorRoute,
   ApiAppSplatRoute: ApiAppSplatRoute,
   ApiAttachmentsIdRoute: ApiAttachmentsIdRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,

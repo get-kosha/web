@@ -104,9 +104,11 @@ function ensureAppClients() {
 }
 
 export const auth = betterAuth({
+  appName: "Kosha",
   database: env.DB,
   baseURL: env.BETTER_AUTH_URL,
   secret: env.BETTER_AUTH_SECRET,
+  onAPIError: { errorURL: "/auth/error" },
   emailAndPassword: {
     enabled: true,
     minPasswordLength: MIN_PASSWORD,
@@ -136,6 +138,7 @@ export const auth = betterAuth({
   // Better Auth's default for reset emails is 3 a minute per IP. Stated here so an upgrade can't loosen it.
   rateLimit: { enabled: true, storage: "database", customRules: { "/request-password-reset": { window: 60, max: 3 } } },
   advanced: {
+    database: { joins: true },
     // Cloudflare sets the visitor's IP here; rate limits are per IP.
     ipAddress: { ipAddressHeaders: ["cf-connecting-ip"] },
     // Work Better Auth doesn't wait on, such as sending a reset email, outlives the response through waitUntil.
@@ -179,7 +182,7 @@ export const auth = betterAuth({
   disabledPaths: ["/token"],
   // tanstackStartCookies must stay last, because it forwards cookies set by server-side auth.api calls.
   plugins: [
-    passkey({ rpName: "Kosha" }),
+    passkey({ rpID: new URL(ORIGIN).hostname, rpName: "Kosha", origin: ORIGIN }),
     twoFactor({ issuer: "Kosha" }),
     // Signs MCP access tokens. It sets no set-auth-jwt header, because session JWTs would share the signing key.
     jwt({ disableSettingJwtHeader: true }),
