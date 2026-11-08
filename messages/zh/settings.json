@@ -392,5 +392,7 @@
         "countPlural=other": "它的 {count} 笔交易会保留，但不再属于任何事件。"
       }
     }
-  ]
+  ],
+  "settings_report_issue": "报告问题",
+  "settings_report_issue_desc": "打开 Kosha 在 GitHub 上的 issue 页面，你可以在那里报告错误或提出建议。"
 }

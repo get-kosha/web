@@ -403,5 +403,7 @@
         "countPlural=other": "Die {count} Buchungen bleiben erhalten, gehören aber zu keinem Ereignis mehr."
       }
     }
-  ]
+  ],
+  "settings_report_issue": "Problem melden",
+  "settings_report_issue_desc": "Öffnet die Issues von Kosha auf GitHub. Dort kannst du einen Fehler melden oder eine Idee vorschlagen."
 }

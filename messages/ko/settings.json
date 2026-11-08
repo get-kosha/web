@@ -392,5 +392,7 @@
         "countPlural=other": "이벤트의 거래 {count}건은 그대로 남지만, 더 이상 이벤트에 속하지 않아요."
       }
     }
-  ]
+  ],
+  "settings_report_issue": "문제 신고",
+  "settings_report_issue_desc": "GitHub에서 Kosha 이슈를 열어요. 버그를 신고하거나 아이디어를 제안할 수 있어요."
 }

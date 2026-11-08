@@ -403,5 +403,7 @@
         "countPlural=other": "इसके {count} लेन-देन बने रहेंगे; वे अब किसी इवेंट का हिस्सा नहीं रहेंगे।"
       }
     }
-  ]
+  ],
+  "settings_report_issue": "समस्या बताएँ",
+  "settings_report_issue_desc": "GitHub पर Kosha के issues खोलता है, जहाँ आप कोई गड़बड़ी बता सकते हैं या कोई सुझाव दे सकते हैं।"
 }

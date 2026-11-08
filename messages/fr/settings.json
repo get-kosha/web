@@ -403,5 +403,7 @@
         "countPlural=*": "Ses {count} opérations sont conservées ; elles n'appartiendront plus à aucun événement."
       }
     }
-  ]
+  ],
+  "settings_report_issue": "Signaler un problème",
+  "settings_report_issue_desc": "Ouvre les tickets de Kosha sur GitHub, où vous pouvez signaler un bug ou proposer une idée."
 }

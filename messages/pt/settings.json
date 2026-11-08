@@ -403,5 +403,7 @@
         "countPlural=*": "As {count} transações dele continuam, mas não vão mais pertencer a um evento."
       }
     }
-  ]
+  ],
+  "settings_report_issue": "Relatar um problema",
+  "settings_report_issue_desc": "Abre as issues do Kosha no GitHub, onde você pode relatar um bug ou sugerir uma ideia."
 }

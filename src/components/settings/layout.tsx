@@ -1,11 +1,20 @@
 import { useEffect, useRef, useState, type ReactNode } from "react"
 import { Link, useLocation, useNavigate, useParams } from "@tanstack/react-router"
-import { CaretLeftIcon, CaretRightIcon, MagnifyingGlassIcon, ShieldCheckIcon, XIcon } from "@phosphor-icons/react/ssr"
+import {
+  ArrowSquareOutIcon,
+  BugIcon,
+  CaretLeftIcon,
+  CaretRightIcon,
+  MagnifyingGlassIcon,
+  ShieldCheckIcon,
+  XIcon,
+} from "@phosphor-icons/react/ssr"
 import { groups, searchSettings, type Section, type SearchResult } from "@/components/settings/registry"
 import { Kbd } from "@/components/account-menu"
 import { isTyping, useMeta, useShortcuts } from "@/components/shell"
 import { Avatar } from "@/components/account-menu"
 import { securitySteps, useAccount } from "@/components/settings/sections/security"
+import { SOURCE } from "@/components/legal"
 import { Pill } from "@/components/settings/row"
 import { cn } from "@/lib/utils"
 import { m } from "@/paraglide/messages"
@@ -132,7 +141,16 @@ export function SettingsLayout({ children }: { children: ReactNode }) {
             </div>
           ))}
         </nav>
-        <div className="mt-6 border-t px-2.5 pt-3.5 text-xs text-muted-foreground max-md:hidden">
+        <div className="mt-6 grid gap-2.5 border-t px-2.5 pt-3.5 text-xs text-muted-foreground max-md:hidden">
+          <a
+            href={`${SOURCE}/issues`}
+            target="_blank"
+            rel="noreferrer"
+            title={m.settings_report_issue_desc()}
+            className="flex items-center justify-between transition-colors hover:text-foreground"
+          >
+            {m.settings_report_issue()} <ArrowSquareOutIcon className="size-3.5" />
+          </a>
           <button
             type="button"
             onClick={shortcuts}
@@ -375,6 +393,21 @@ export function PhoneList() {
           </section>
         )
       })}
+      <a
+        href={`${SOURCE}/issues`}
+        target="_blank"
+        rel="noreferrer"
+        className="mt-6 flex min-h-[52px] items-center gap-3 rounded-2xl border bg-card px-3 py-2 transition-colors active:bg-muted"
+      >
+        <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-subtle-foreground">
+          <BugIcon className="size-[18px]" />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-base">{m.settings_report_issue()}</span>
+          <span className="block text-[13px] text-muted-foreground">{m.settings_report_issue_desc()}</span>
+        </span>
+        <ArrowSquareOutIcon className="size-[18px] shrink-0 text-muted-foreground" />
+      </a>
     </div>
   )
 }

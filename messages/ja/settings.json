@@ -392,5 +392,7 @@
         "countPlural=other": "{count}件の取引は残りますが、イベントには属さなくなります。"
       }
     }
-  ]
+  ],
+  "settings_report_issue": "問題を報告",
+  "settings_report_issue_desc": "GitHubのKoshaのissueを開きます。不具合の報告やアイデアの提案ができます。"
 }

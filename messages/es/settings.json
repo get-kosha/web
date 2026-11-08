@@ -403,5 +403,7 @@
         "countPlural=*": "Sus {count} movimientos se conservan, pero ya no pertenecerán a ningún evento."
       }
     }
-  ]
+  ],
+  "settings_report_issue": "Informar de un problema",
+  "settings_report_issue_desc": "Abre las incidencias de Kosha en GitHub, donde puedes informar de un error o proponer una idea."
 }

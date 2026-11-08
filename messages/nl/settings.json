@@ -403,5 +403,7 @@
         "countPlural=other": "De {count} transacties blijven bestaan, maar horen dan niet meer bij een evenement."
       }
     }
-  ]
+  ],
+  "settings_report_issue": "Probleem melden",
+  "settings_report_issue_desc": "Opent de issues van Kosha op GitHub, waar je een fout kunt melden of een idee kunt voorstellen."
 }

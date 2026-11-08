@@ -403,5 +403,7 @@
         "countPlural=other": "Its {count} transactions stay; they won't belong to an event any more."
       }
     }
-  ]
+  ],
+  "settings_report_issue": "Report a problem",
+  "settings_report_issue_desc": "Opens Kosha's issues on GitHub, where you can report a bug or suggest an idea."
 }
