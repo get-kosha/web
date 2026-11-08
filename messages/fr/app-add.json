@@ -49,5 +49,11 @@
   "app_add_account_guessed": "Compte, {name}, deviné",
   "app_add_clear_payee": "Effacer le tiers",
   "app_add_time_row": "Heure, {time}, modifier",
-  "app_add_back_to_date": "Retour à la date"
+  "app_add_back_to_date": "Retour à la date",
+  "app_add_repeat": "Répéter",
+  "app_add_repeat_once": "Ne se répète pas",
+  "app_add_repeat_custom": "Personnalisé",
+  "app_add_repeat_note": "Kosha l’enregistre comme paiement récurrent à partir de sa date. Modifiez-le ou arrêtez-le à tout moment dans Récurrents.",
+  "app_add_repeat_offline": "Les opérations répétées nécessitent une connexion. Ajoutez-la une fois maintenant, ou réessayez une fois en ligne.",
+  "app_add_repeat_label": "Répéter, {frequency}"
 }

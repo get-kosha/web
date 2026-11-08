@@ -49,5 +49,11 @@
   "app_add_account_guessed": "Account, {name}, guessed",
   "app_add_clear_payee": "Clear payee",
   "app_add_time_row": "Time, {time}, change",
-  "app_add_back_to_date": "Back to date"
+  "app_add_back_to_date": "Back to date",
+  "app_add_repeat": "Repeat",
+  "app_add_repeat_once": "Doesn’t repeat",
+  "app_add_repeat_custom": "Custom",
+  "app_add_repeat_note": "Kosha saves this as a recurring payment from its date. Change or end it any time in Recurring.",
+  "app_add_repeat_offline": "Repeating entries need a connection. Add it once now, or try again when you’re online.",
+  "app_add_repeat_label": "Repeat, {frequency}"
 }

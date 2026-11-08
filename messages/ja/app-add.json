@@ -48,5 +48,11 @@
   "app_add_account_guessed": "口座、{name}、推測",
   "app_add_clear_payee": "取引先を消去",
   "app_add_time_row": "時刻、{time}、変更",
-  "app_add_back_to_date": "日付に戻る"
+  "app_add_back_to_date": "日付に戻る",
+  "app_add_repeat": "繰り返し",
+  "app_add_repeat_once": "繰り返さない",
+  "app_add_repeat_custom": "カスタム",
+  "app_add_repeat_note": "この日付から定期支払いとして保存します。定期の画面でいつでも変更・終了できます。",
+  "app_add_repeat_offline": "繰り返しの記録にはネット接続が必要です。今は1回だけ追加するか、オンラインになってからもう一度お試しください。",
+  "app_add_repeat_label": "繰り返し、{frequency}"
 }

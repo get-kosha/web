@@ -48,5 +48,11 @@
   "app_add_account_guessed": "계좌, {name}, 추측",
   "app_add_clear_payee": "거래처 지우기",
   "app_add_time_row": "시간, {time}, 변경",
-  "app_add_back_to_date": "날짜로 돌아가기"
+  "app_add_back_to_date": "날짜로 돌아가기",
+  "app_add_repeat": "반복",
+  "app_add_repeat_once": "반복 안 함",
+  "app_add_repeat_custom": "직접 설정",
+  "app_add_repeat_note": "이 날짜부터 반복 결제로 저장해요. 반복 화면에서 언제든 바꾸거나 끝낼 수 있어요.",
+  "app_add_repeat_offline": "반복 항목은 인터넷 연결이 필요해요. 지금은 한 번만 추가하거나 연결된 뒤 다시 시도하세요.",
+  "app_add_repeat_label": "반복, {frequency}"
 }

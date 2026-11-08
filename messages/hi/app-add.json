@@ -49,5 +49,11 @@
   "app_add_account_guessed": "खाता, {name}, अंदाज़ा",
   "app_add_clear_payee": "पार्टी हटाएँ",
   "app_add_time_row": "समय, {time}, बदलें",
-  "app_add_back_to_date": "तारीख पर वापस"
+  "app_add_back_to_date": "तारीख पर वापस",
+  "app_add_repeat": "दोहराएँ",
+  "app_add_repeat_once": "दोहराता नहीं",
+  "app_add_repeat_custom": "अपने हिसाब से",
+  "app_add_repeat_note": "Kosha इसे इस तारीख़ से आवर्ती भुगतान के रूप में सहेजेगा। आवर्ती में इसे कभी भी बदलें या बंद करें।",
+  "app_add_repeat_offline": "दोहराने वाली एंट्रियों के लिए कनेक्शन चाहिए। अभी एक बार जोड़ें, या ऑनलाइन होने पर फिर कोशिश करें।",
+  "app_add_repeat_label": "दोहराएँ, {frequency}"
 }

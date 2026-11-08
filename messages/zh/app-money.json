@@ -98,5 +98,14 @@
         "countPlural=*": "今年 {count} 次"
       }
     }
+  ],
+  "app_rec_payslips": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{count} 份工资单"
+      }
+    }
   ]
 }

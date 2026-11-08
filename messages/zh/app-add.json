@@ -48,5 +48,11 @@
   "app_add_account_guessed": "账户，{name}，推测",
   "app_add_clear_payee": "清除交易对象",
   "app_add_time_row": "时间，{time}，更改",
-  "app_add_back_to_date": "返回日期"
+  "app_add_back_to_date": "返回日期",
+  "app_add_repeat": "重复",
+  "app_add_repeat_once": "不重复",
+  "app_add_repeat_custom": "自定义",
+  "app_add_repeat_note": "Kosha 会从该日期起将其保存为周期付款。可随时在周期页面修改或结束。",
+  "app_add_repeat_offline": "重复记录需要联网。现在先添加一次，或联网后再试。",
+  "app_add_repeat_label": "重复，{frequency}"
 }

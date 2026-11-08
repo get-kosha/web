@@ -119,5 +119,17 @@
         "countPlural=*": "{count} в этом году"
       }
     }
+  ],
+  "app_rec_payslips": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} расчётный листок",
+        "countPlural=few": "{count} расчётных листка",
+        "countPlural=many": "{count} расчётных листков",
+        "countPlural=*": "{count} расчётного листка"
+      }
+    }
   ]
 }

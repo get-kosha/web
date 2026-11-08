@@ -49,5 +49,11 @@
   "app_add_account_guessed": "Konto, {name}, erraten",
   "app_add_clear_payee": "Zahlungspartner leeren",
   "app_add_time_row": "Uhrzeit, {time}, ändern",
-  "app_add_back_to_date": "Zurück zum Datum"
+  "app_add_back_to_date": "Zurück zum Datum",
+  "app_add_repeat": "Wiederholen",
+  "app_add_repeat_once": "Einmalig",
+  "app_add_repeat_custom": "Eigene",
+  "app_add_repeat_note": "Kosha speichert das als wiederkehrende Zahlung ab diesem Datum. Ändere oder beende sie jederzeit unter Wiederkehrend.",
+  "app_add_repeat_offline": "Wiederkehrende Einträge brauchen eine Verbindung. Erfasse ihn jetzt einmalig oder versuche es online erneut.",
+  "app_add_repeat_label": "Wiederholen, {frequency}"
 }

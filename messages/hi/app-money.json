@@ -105,5 +105,15 @@
         "countPlural=*": "इस साल {count}"
       }
     }
+  ],
+  "app_rec_payslips": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} सैलरी स्लिप",
+        "countPlural=*": "{count} सैलरी स्लिप"
+      }
+    }
   ]
 }

@@ -51,5 +51,11 @@
   "app_add_account_guessed": "Счёт, {name}, угадан",
   "app_add_clear_payee": "Очистить контрагента",
   "app_add_time_row": "Время, {time}, изменить",
-  "app_add_back_to_date": "Назад к дате"
+  "app_add_back_to_date": "Назад к дате",
+  "app_add_repeat": "Повтор",
+  "app_add_repeat_once": "Не повторяется",
+  "app_add_repeat_custom": "Своё",
+  "app_add_repeat_note": "Kosha сохранит это как регулярный платёж с этой даты. Изменить или завершить его можно в разделе «Регулярные».",
+  "app_add_repeat_offline": "Для повторяющихся записей нужна сеть. Добавьте запись один раз сейчас или повторите, когда появится сеть.",
+  "app_add_repeat_label": "Повтор, {frequency}"
 }

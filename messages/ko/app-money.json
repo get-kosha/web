@@ -98,5 +98,14 @@
         "countPlural=*": "올해 {count}건"
       }
     }
+  ],
+  "app_rec_payslips": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "급여 명세서 {count}건"
+      }
+    }
   ]
 }

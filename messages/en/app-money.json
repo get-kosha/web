@@ -105,5 +105,15 @@
         "countPlural=*": "{count} this year"
       }
     }
+  ],
+  "app_rec_payslips": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} payslip",
+        "countPlural=*": "{count} payslips"
+      }
+    }
   ]
 }

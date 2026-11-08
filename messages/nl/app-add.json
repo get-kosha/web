@@ -49,5 +49,11 @@
   "app_add_account_guessed": "Rekening, {name}, geraden",
   "app_add_clear_payee": "Tegenpartij wissen",
   "app_add_time_row": "Tijd, {time}, wijzigen",
-  "app_add_back_to_date": "Terug naar datum"
+  "app_add_back_to_date": "Terug naar datum",
+  "app_add_repeat": "Herhalen",
+  "app_add_repeat_once": "Herhaalt niet",
+  "app_add_repeat_custom": "Aangepast",
+  "app_add_repeat_note": "Kosha bewaart dit als terugkerende betaling vanaf de datum. Wijzig of stop hem wanneer je wilt in Terugkerend.",
+  "app_add_repeat_offline": "Herhalende boekingen hebben een verbinding nodig. Voeg hem nu eenmalig toe of probeer het opnieuw als je online bent.",
+  "app_add_repeat_label": "Herhalen, {frequency}"
 }

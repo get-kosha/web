@@ -49,5 +49,11 @@
   "app_add_account_guessed": "Cuenta, {name}, adivinada",
   "app_add_clear_payee": "Borrar beneficiario",
   "app_add_time_row": "Hora, {time}, cambiar",
-  "app_add_back_to_date": "Volver a la fecha"
+  "app_add_back_to_date": "Volver a la fecha",
+  "app_add_repeat": "Repetir",
+  "app_add_repeat_once": "No se repite",
+  "app_add_repeat_custom": "Personalizado",
+  "app_add_repeat_note": "Kosha lo guarda como pago recurrente desde su fecha. Cámbialo o termínalo cuando quieras en Recurrentes.",
+  "app_add_repeat_offline": "Los movimientos que se repiten necesitan conexión. Añádelo una vez ahora o vuelve a intentarlo con conexión.",
+  "app_add_repeat_label": "Repetir, {frequency}"
 }

@@ -49,5 +49,11 @@
   "app_add_account_guessed": "Conta, {name}, sugerida",
   "app_add_clear_payee": "Limpar favorecido",
   "app_add_time_row": "Hora, {time}, alterar",
-  "app_add_back_to_date": "Voltar à data"
+  "app_add_back_to_date": "Voltar à data",
+  "app_add_repeat": "Repetir",
+  "app_add_repeat_once": "Não se repete",
+  "app_add_repeat_custom": "Personalizado",
+  "app_add_repeat_note": "O Kosha salva isto como pagamento recorrente a partir da data. Altere ou encerre quando quiser em Recorrentes.",
+  "app_add_repeat_offline": "Lançamentos que se repetem precisam de conexão. Adicione uma vez agora ou tente de novo quando estiver online.",
+  "app_add_repeat_label": "Repetir, {frequency}"
 }
