@@ -48,7 +48,7 @@
   "server_recurring_not_found": "Paiement récurrent introuvable",
   "server_attachments_unavailable": "Les pièces jointes ne sont pas configurées sur ce serveur",
   "server_attachment_too_big": "Choisissez un fichier de moins de 10 Mo",
-  "server_attachment_type": "Joignez une photo (JPEG, PNG ou WebP) ou un PDF",
+  "server_attachment_type": "Joignez une photo (JPEG, PNG, WebP ou HEIF) ou un PDF",
   "server_attachment_not_found": "Pièce jointe introuvable",
   "server_avatar_too_big": "Choisissez une image de moins de 512 Ko",
   "server_choose_file": "Choisissez un fichier",

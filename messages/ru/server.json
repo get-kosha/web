@@ -48,7 +48,7 @@
   "server_recurring_not_found": "Регулярный платёж не найден",
   "server_attachments_unavailable": "Вложения на этом сервере не настроены",
   "server_attachment_too_big": "Выберите файл меньше 10 МБ",
-  "server_attachment_type": "Прикрепите фото (JPEG, PNG или WebP) или PDF",
+  "server_attachment_type": "Прикрепите фото (JPEG, PNG, WebP или HEIF) или PDF",
   "server_attachment_not_found": "Вложение не найдено",
   "server_avatar_too_big": "Выберите изображение меньше 512 КБ",
   "server_choose_file": "Выберите файл",

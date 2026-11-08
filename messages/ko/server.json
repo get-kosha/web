@@ -48,7 +48,7 @@
   "server_recurring_not_found": "정기 거래를 찾을 수 없어요",
   "server_attachments_unavailable": "이 서버에는 첨부 파일 기능이 설정되어 있지 않아요",
   "server_attachment_too_big": "10MB 미만의 파일을 선택해 주세요",
-  "server_attachment_type": "사진(JPEG, PNG, WebP)이나 PDF를 첨부해 주세요",
+  "server_attachment_type": "사진(JPEG, PNG, WebP, HEIF)이나 PDF를 첨부해 주세요",
   "server_attachment_not_found": "첨부 파일을 찾을 수 없어요",
   "server_avatar_too_big": "512KB 미만의 이미지를 선택해 주세요",
   "server_choose_file": "파일을 선택해 주세요",

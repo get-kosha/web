@@ -856,11 +856,19 @@ export function readJson(text: string): Record<string, unknown> | null {
 
 /** The largest receipt or payslip Kosha stores. */
 export const ATTACHMENT_LIMIT = 10 * 1024 * 1024
-/** What the file picker offers. The server still checks the bytes with fileKind. */
+/**
+ * What the web's file picker offers. The server also takes HEIF (fileKind), but the picker leaves it out on
+ * purpose: an iPhone's browser then turns its HEIC photos into JPEG, which every browser can show.
+ */
 export const ATTACHMENT_ACCEPT = "image/jpeg,image/png,image/webp,application/pdf"
+/** Image types every browser can show. HEIF shows in Safari only, so elsewhere it's a file to open. */
+export const BROWSER_IMAGES = new Set(["image/jpeg", "image/png", "image/webp"])
+
+const HEIC_BRANDS = new Set(["heic", "heix", "heim", "heis", "hevc", "hevx"])
+const HEIF_BRANDS = new Set(["mif1", "msf1", "heif"])
 
 /**
- * The type of an attachment from its first bytes, or null when it isn't a JPEG, PNG, WebP or PDF. Files are
+ * The type of an attachment from its first bytes, or null when it isn't a JPEG, PNG, WebP, HEIF or PDF. Files are
  * served with this type, so a file that only claims to be an image can't be served as something else.
  */
 export function fileKind(b: Uint8Array) {
@@ -868,6 +876,9 @@ export function fileKind(b: Uint8Array) {
   if (b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) return "image/jpeg"
   if (b[0] === 0x89 && ascii(1, 4) === "PNG") return "image/png"
   if (ascii(0, 4) === "RIFF" && ascii(8, 12) === "WEBP") return "image/webp"
+  // HEIC and HEIF, what phone cameras save: an ISO media file whose major brand is HEIF's (AVIF's isn't).
+  if (ascii(4, 8) === "ftyp" && HEIC_BRANDS.has(ascii(8, 12))) return "image/heic"
+  if (ascii(4, 8) === "ftyp" && HEIF_BRANDS.has(ascii(8, 12))) return "image/heif"
   if (ascii(0, 5) === "%PDF-") return "application/pdf"
   return null
 }

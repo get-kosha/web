@@ -48,7 +48,7 @@
   "server_recurring_not_found": "定期支払いが見つかりません",
   "server_attachments_unavailable": "このサーバーでは添付ファイルが設定されていません",
   "server_attachment_too_big": "10 MB未満のファイルを選んでください",
-  "server_attachment_type": "写真（JPEG、PNG、WebP）またはPDFを添付してください",
+  "server_attachment_type": "写真（JPEG、PNG、WebP、HEIF）またはPDFを添付してください",
   "server_attachment_not_found": "添付ファイルが見つかりません",
   "server_avatar_too_big": "512 KB未満の画像を選んでください",
   "server_choose_file": "ファイルを選んでください",

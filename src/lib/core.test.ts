@@ -1058,6 +1058,10 @@ console.log("getting started ok")
   assert.equal(fileKind(new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d])), "image/png")
   assert.equal(fileKind(bytes("RIFF\0\0\0\0WEBPVP8 ")), "image/webp")
   assert.equal(fileKind(bytes("%PDF-1.7")), "application/pdf")
+  assert.equal(fileKind(bytes("\0\0\0\x18ftypheic\0\0\0\0")), "image/heic")
+  assert.equal(fileKind(bytes("\0\0\0\x1cftypmif1\0\0\0\0")), "image/heif")
+  // AVIF shares HEIF's container but isn't taken.
+  assert.equal(fileKind(bytes("\0\0\0\x1cftypavif\0\0\0\0")), null)
   assert.equal(fileKind(bytes("<html><script>")), null)
   assert.equal(fileKind(new Uint8Array()), null)
   assert.deepEqual(

@@ -20,7 +20,7 @@ import {
   uploadAttachment,
   type Attachment,
 } from "@/lib/api"
-import { ATTACHMENT_ACCEPT, ATTACHMENT_LIMIT, intlLocale, archiveNames } from "@/lib/core"
+import { ATTACHMENT_ACCEPT, ATTACHMENT_LIMIT, BROWSER_IMAGES, intlLocale, archiveNames } from "@/lib/core"
 import { cn } from "@/lib/utils"
 import { m } from "@/paraglide/messages"
 
@@ -141,7 +141,7 @@ export function Attachments({
           <span className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded bg-muted">
             {r.type === "application/pdf" ? (
               <FilePdfIcon className="size-4 text-muted-foreground" />
-            ) : r.id ? (
+            ) : r.id && BROWSER_IMAGES.has(r.type) ? (
               <img src={fileUrl(r.id)} alt="" loading="lazy" className="size-full object-cover" />
             ) : (
               <PaperclipIcon className="size-4 text-muted-foreground" />

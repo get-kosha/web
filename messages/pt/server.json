@@ -48,7 +48,7 @@
   "server_recurring_not_found": "Pagamento recorrente não encontrado",
   "server_attachments_unavailable": "Os anexos não estão configurados neste servidor",
   "server_attachment_too_big": "Escolha um arquivo com menos de 10 MB",
-  "server_attachment_type": "Anexe uma foto (JPEG, PNG ou WebP) ou um PDF",
+  "server_attachment_type": "Anexe uma foto (JPEG, PNG, WebP ou HEIF) ou um PDF",
   "server_attachment_not_found": "Anexo não encontrado",
   "server_avatar_too_big": "Escolha uma imagem com menos de 512 KB",
   "server_choose_file": "Escolha um arquivo",

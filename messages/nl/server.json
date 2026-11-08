@@ -48,7 +48,7 @@
   "server_recurring_not_found": "Terugkerende betaling niet gevonden",
   "server_attachments_unavailable": "Bijlagen zijn niet ingesteld op deze server",
   "server_attachment_too_big": "Kies een bestand kleiner dan 10 MB",
-  "server_attachment_type": "Voeg een foto (JPEG, PNG of WebP) of een pdf toe",
+  "server_attachment_type": "Voeg een foto (JPEG, PNG, WebP of HEIF) of een pdf toe",
   "server_attachment_not_found": "Bijlage niet gevonden",
   "server_avatar_too_big": "Kies een afbeelding kleiner dan 512 KB",
   "server_choose_file": "Kies een bestand",

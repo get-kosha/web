@@ -48,7 +48,7 @@
   "server_recurring_not_found": "Wiederkehrende Zahlung nicht gefunden",
   "server_attachments_unavailable": "Anhänge sind auf diesem Server nicht eingerichtet",
   "server_attachment_too_big": "Wähle eine Datei unter 10 MB",
-  "server_attachment_type": "Hänge ein Foto (JPEG, PNG oder WebP) oder ein PDF an",
+  "server_attachment_type": "Hänge ein Foto (JPEG, PNG, WebP oder HEIF) oder ein PDF an",
   "server_attachment_not_found": "Anhang nicht gefunden",
   "server_avatar_too_big": "Wähle ein Bild unter 512 KB",
   "server_choose_file": "Wähle eine Datei",
