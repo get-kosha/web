@@ -25,6 +25,7 @@ import {
   TRANSFER_CATEGORY,
   accountWorth,
   addDays,
+  canRefund,
   shiftMonth,
   cleanTag,
   convert,
@@ -35,9 +36,12 @@ import {
   monthRange,
   netWorth,
   occurrencesBetween,
+  refundList,
+  refundedShare,
   tagList,
   timeOf,
   type Instance,
+  type Rates,
   type TitleRule,
 } from "@/lib/core"
 import {
@@ -168,11 +172,12 @@ const toEvent = (e: finance.Event) => ({
 /** Names and parents for the ids a request mentions, in one round trip. */
 async function lookups(uid: string) {
   const DB = db()
-  const [w, c, e, r] = await DB.batch([
+  const [w, c, e, r, x] = await DB.batch([
     DB.prepare("SELECT id, name, currency FROM wallets WHERE user_id = ?").bind(uid),
     DB.prepare("SELECT id, name, parent_id, income FROM categories WHERE user_id = ?").bind(uid),
     DB.prepare("SELECT id FROM events WHERE user_id = ?").bind(uid),
     DB.prepare("SELECT title, category_id, exact FROM title_rules WHERE user_id = ?").bind(uid),
+    DB.prepare("SELECT currency, per_usd FROM rates"),
   ])
   return {
     accounts: new Map((w.results as { id: string; name: string; currency: string }[]).map((x) => [x.id, x])),
@@ -181,6 +186,9 @@ async function lookups(uid: string) {
     ),
     events: new Set((e.results as { id: string }[]).map((x) => x.id)),
     rules: r.results as TitleRule[],
+    rates: Object.fromEntries(
+      (x.results as { currency: string; per_usd: number }[]).map((v) => [v.currency, v.per_usd])
+    ) as Rates,
   }
 }
 type Lookups = Awaited<ReturnType<typeof lookups>>
@@ -217,13 +225,30 @@ const toTransaction = (t: Tx, tz: string, l: Lookups) => ({
   bankRef: t.bank_ref ?? null,
   attachmentCount: t.files ?? 0,
   refundOf: t.refund_of ?? null,
+  ...refundsOut(t, tz, l),
 })
+
+/** A spending entry's refunds, and how much came back in its own currency. */
+function refundsOut(t: Tx, tz: string, l: Lookups) {
+  const currency = l.accounts.get(t.wallet_id)?.currency ?? ""
+  const refunds = refundList(t.refunds).map((r) => ({
+    id: r.id,
+    accountId: r.wallet_id,
+    amount: r.amount,
+    currency: l.accounts.get(r.wallet_id)?.currency ?? "",
+    day: dayOf(r.date, tz),
+  }))
+  const { refunded } = refundedShare(t.amount, currency, refunds, l.rates)
+  return { refunds, refunded: Math.round(refunded) }
+}
 
 /** Transactions by id, in the order asked for. */
 async function loadTransactions(uid: string, list: string[]) {
   const { results } = await db()
     .prepare(`SELECT t.*,
       (SELECT COUNT(*) FROM attachments a WHERE a.user_id = t.user_id AND a.transaction_id = t.id) AS files,
+      (SELECT json_group_array(json_object('id', r.id, 'wallet_id', r.wallet_id, 'amount', r.amount, 'date', r.date))
+        FROM transactions r WHERE r.user_id = t.user_id AND r.refund_of = t.id) AS refunds,
       ${COUNTERPART} WHERE t.user_id = ? AND t.id IN (SELECT value FROM json_each(?))`)
     .bind(uid, ids(list))
     .all<Tx>()
@@ -433,7 +458,29 @@ const HANDLERS: Handlers = {
     })
     const fresh = input.transactions.flatMap((t, i) => (t.id && savedHash.has(t.id) ? [] : [{ t, i }]))
 
-    const ruled = fresh.map(({ t }) => t.categoryId ?? guessCategory(t.payee, l.rules))
+    // A refund takes its spending entry's category, so it lowers the same spending.
+    const refunded = fresh.flatMap(({ t }) => (t.refundOf ? [t.refundOf] : []))
+    const { results: parents } = refunded.length
+      ? await db()
+          .prepare(
+            `SELECT id, amount, paid, transfer_id, category_id, subcategory_id, refund_of FROM transactions
+            WHERE user_id = ? AND id IN (SELECT value FROM json_each(?))`
+          )
+          .bind(uid, JSON.stringify(refunded))
+          .all<Tx>()
+      : { results: [] as Tx[] }
+    const parentOf = new Map(parents.map((p) => [p.id, p]))
+    fresh.forEach(({ t, i }) => {
+      if (!t.refundOf) return
+      const p = parentOf.get(t.refundOf)
+      if (!p) issues.push({ path: `transactions.${i}.refundOf`, message: m.server_transaction_not_found() })
+      else if (!canRefund(p) || t.amount < 0)
+        issues.push({ path: `transactions.${i}.refundOf`, message: m.server_refund_not_spending() })
+    })
+    const ruled = fresh.map(
+      ({ t }) =>
+        (t.refundOf && parentOf.get(t.refundOf)?.category_id) || t.categoryId || guessCategory(t.payee, l.rules)
+    )
     // What no rule places goes to the AI model in one request, when Auto-categorise is on. A failing model
     // leaves them uncategorised, so the call reports them rather than failing on the AI.
     const unplaced = ruled.flatMap((c, n) => (c || !fresh[n].t.payee.trim() ? [] : [n]))
@@ -456,13 +503,18 @@ const HANDLERS: Handlers = {
             ? `No payee rule matches “${t.payee}”, and the AI model couldn't place it. Pass a categoryId (see list_categories).`
             : `No payee rule matches “${t.payee}”. Pass a categoryId (see list_categories), or turn on Auto-categorise in Kosha under Settings › AI.`,
         })
-      checkRefs(`transactions.${i}`, { ...t, categoryId: categoryId ?? undefined }, l, issues)
+      checkRefs(
+        `transactions.${i}`,
+        { ...t, categoryId: categoryId ?? undefined, subcategoryId: t.refundOf ? undefined : t.subcategoryId },
+        l,
+        issues
+      )
       return {
         newId: t.id,
         requestHash: hashes[i],
         walletId: t.accountId,
         categoryId: categoryId ?? "",
-        subcategoryId: t.subcategoryId ?? null,
+        subcategoryId: t.refundOf ? (parentOf.get(t.refundOf)?.subcategory_id ?? null) : (t.subcategoryId ?? null),
         name: t.payee,
         note: t.note,
         amount: t.amount,
@@ -472,6 +524,7 @@ const HANDLERS: Handlers = {
         tags: cleanTags(t.tags),
         eventId: t.eventId,
         bankRef: t.bankRef,
+        refundOf: t.refundOf,
       }
     })
     check(issues)

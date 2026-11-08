@@ -170,6 +170,23 @@ const Transaction = z.object({
     .describe(
       "A refund: the spending entry it gave money back for. Totals count a refund as spending undone, never as income."
     ),
+  refunds: z
+    .array(
+      z.object({
+        id: Id.describe("The refund's own transaction id. Delete it with delete_transactions."),
+        accountId: Id.describe("The account the money came back to, which may not be the one that paid."),
+        amount: z.number().int().describe("What came back, positive, in that account's currency."),
+        currency: z.string(),
+        day: Day,
+      })
+    )
+    .describe("A spending entry's refunds. Empty for anything else."),
+  refunded: z
+    .number()
+    .int()
+    .describe(
+      "The refunds' total in this entry's currency (other currencies at today's rate). It is refunded in full when this reaches -amount."
+    ),
 })
 const Payment = z.object({
   dueDay: Day.describe("The scheduled day; identifies the payment."),
@@ -272,6 +289,8 @@ const tx = {
   bankRef: null,
   attachmentCount: 0,
   refundOf: null,
+  refunds: [],
+  refunded: 0,
 }
 const account = {
   id: "a1",
@@ -518,6 +537,9 @@ export const OPERATIONS = {
             .optional()
             .describe("Left out: the event whose dates cover the day, if any. null: none."),
           status: z.enum(["paid", "upcoming"]).default("paid"),
+          refundOf: Id.optional().describe(
+            "Makes this entry a refund: money coming back, in full or in part, for that paid spending entry, into any account. The amount is positive, in this account's currency, and the category is the entry's. Totals count it as spending undone, never as income. Send one per part of a partial refund; the entry's refunds and refunded show what is back. Delete a refund with delete_transactions; deleting the entry deletes its refunds."
+          ),
           bankRef: z
             .string()
             .min(1)
