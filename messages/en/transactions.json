@@ -16,7 +16,7 @@
     }
   ],
   "tx_search_label": "Search activity",
-  "tx_search_placeholder": "Search payee, note or amount",
+  "tx_search_placeholder": "Search payee, note, tag, event or amount",
   "tx_filters": "Filters",
   "tx_filters_on": "Filters, {count} on",
   "tx_show": "Show",
@@ -227,5 +227,15 @@
   "tx_remove_refund_title": "Remove this refund?",
   "tx_remove_refund_body": "The {amount} back to {account} is deleted, and counts as spending again.",
   "tx_refund_for": "Refund for {name}. It lowers spending in {category} and isn't income.",
-  "tx_delete_refunds": "Its refunds are deleted too."
+  "tx_delete_refunds": "Its refunds are deleted too.",
+  "tx_period_label": "Dates: {period}",
+  "tx_period_month": "Month",
+  "tx_period_year": "Year",
+  "tx_period_all": "All time",
+  "tx_period_custom": "Choose dates…",
+  "tx_period_custom_title": "Choose dates",
+  "tx_previous_year": "Previous year",
+  "tx_next_year": "Next year",
+  "tx_empty_period": "No transactions in these dates.",
+  "tx_date_from": "From"
 }

@@ -18,7 +18,7 @@
     }
   ],
   "tx_search_label": "Поиск операций",
-  "tx_search_placeholder": "Контрагент, заметка или сумма",
+  "tx_search_placeholder": "Контрагент, заметка, тег, событие или сумма",
   "tx_filters": "Фильтры",
   "tx_filters_on": "Фильтры, включено: {count}",
   "tx_show": "Показать",
@@ -232,5 +232,15 @@
   "tx_remove_refund_title": "Удалить этот возврат?",
   "tx_remove_refund_body": "Возврат {amount} на {account} будет удалён, и эта сумма снова будет считаться расходом.",
   "tx_refund_for": "Возврат за {name}. Уменьшает расходы в категории {category} и не считается доходом.",
-  "tx_delete_refunds": "Её возвраты тоже будут удалены."
+  "tx_delete_refunds": "Её возвраты тоже будут удалены.",
+  "tx_period_label": "Период: {period}",
+  "tx_period_month": "Месяц",
+  "tx_period_year": "Год",
+  "tx_period_all": "Все даты",
+  "tx_period_custom": "Выбрать даты…",
+  "tx_period_custom_title": "Выберите даты",
+  "tx_previous_year": "Предыдущий год",
+  "tx_next_year": "Следующий год",
+  "tx_empty_period": "За эти даты операций нет.",
+  "tx_date_from": "С"
 }

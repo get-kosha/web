@@ -380,7 +380,7 @@ export function ActivityPanel({
             <span className="text-[13px] font-medium">{m.tx_at_payee()}</span>
             <Link
               to="/transactions"
-              search={(p) => ({ ...p, q: tx.name })}
+              search={{ q: tx.name }}
               className="text-xs text-muted-foreground hover:text-foreground"
             >
               <ParaglideMessage

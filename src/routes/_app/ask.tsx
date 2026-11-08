@@ -318,7 +318,7 @@ function Answer({ msg }: { msg: Extract<Msg, { role: "assistant" }> }) {
             <Link
               key={JSON.stringify(l.search)}
               to="/transactions"
-              search={l.search}
+              search={{ ...l.search, month: undefined, period: l.search.month }}
               className="inline-flex min-h-9 max-w-full items-center gap-1.5 rounded-full border bg-card px-3 text-[13px] text-subtle-foreground transition-colors hover:bg-muted hover:text-foreground max-md:min-h-11"
             >
               <span className="truncate">{l.label}</span>

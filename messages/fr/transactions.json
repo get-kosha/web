@@ -16,7 +16,7 @@
     }
   ],
   "tx_search_label": "Rechercher dans l'activité",
-  "tx_search_placeholder": "Rechercher un tiers, une note ou un montant",
+  "tx_search_placeholder": "Rechercher un tiers, une note, une étiquette, un événement ou un montant",
   "tx_filters": "Filtres",
   "tx_filters_on": "Filtres, {count} actifs",
   "tx_show": "Afficher",
@@ -227,5 +227,15 @@
   "tx_remove_refund_title": "Retirer ce remboursement ?",
   "tx_remove_refund_body": "Les {amount} remboursés sur {account} sont supprimés et comptent de nouveau comme dépense.",
   "tx_refund_for": "Remboursement pour {name}. Il réduit les dépenses en {category} et ne compte pas comme revenu.",
-  "tx_delete_refunds": "Ses remboursements sont aussi supprimés."
+  "tx_delete_refunds": "Ses remboursements sont aussi supprimés.",
+  "tx_period_label": "Période : {period}",
+  "tx_period_month": "Mois",
+  "tx_period_year": "Année",
+  "tx_period_all": "Toutes les dates",
+  "tx_period_custom": "Choisir les dates…",
+  "tx_period_custom_title": "Choisir les dates",
+  "tx_previous_year": "Année précédente",
+  "tx_next_year": "Année suivante",
+  "tx_empty_period": "Aucune opération sur cette période.",
+  "tx_date_from": "Du"
 }

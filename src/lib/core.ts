@@ -264,6 +264,46 @@ export function shiftMonth(month: string, by: number) {
   return d.toISOString().slice(0, 7)
 }
 
+// --- Activity periods ---
+
+/** The dates Activity lists. In the URL: "2026-11", "2026", "all", or "2026-01-05..2026-02-10". */
+export type Period =
+  | { kind: "month"; month: string }
+  | { kind: "year"; year: string }
+  | { kind: "all" }
+  | { kind: "range"; from: string; to: string }
+
+const isDay = (d: string | undefined): d is string => !!d && /^\d{4}-\d{2}-\d{2}$/.test(d) && addDays(d, 0) === d
+
+/** Reads a period from the URL. Anything malformed is undefined, which leaves Activity on its default. */
+export function parsePeriod(value: string | undefined): Period | undefined {
+  if (!value) return
+  if (value === "all") return { kind: "all" }
+  if (/^\d{4}$/.test(value)) return { kind: "year", year: value }
+  if (/^\d{4}-(0[1-9]|1[0-2])$/.test(value)) return { kind: "month", month: value }
+  const [a, b] = value.split("..")
+  if (!isDay(a) || !isDay(b)) return
+  return a <= b ? { kind: "range", from: a, to: b } : { kind: "range", from: b, to: a }
+}
+
+export function periodParam(p: Period) {
+  return p.kind === "month" ? p.month : p.kind === "year" ? p.year : p.kind === "all" ? "all" : `${p.from}..${p.to}`
+}
+
+/** The first and last day a period covers, or null for every date. */
+export function periodDays(p: Period): { from: string; to: string } | null {
+  if (p.kind === "all") return null
+  if (p.kind === "range") return { from: p.from, to: p.to }
+  if (p.kind === "year") return { from: `${p.year}-01-01`, to: `${p.year}-12-31` }
+  return { from: `${p.month}-01`, to: `${p.month}-${String(daysInMonth(p.month)).padStart(2, "0")}` }
+}
+
+/** The month or year before (-1) or after (1). A day range and every date have no neighbours. */
+export function shiftPeriod(p: Period, by: number): Period | undefined {
+  if (p.kind === "month") return { kind: "month", month: shiftMonth(p.month, by) }
+  if (p.kind === "year") return { kind: "year", year: String(+p.year + by) }
+}
+
 // --- categorising ---
 
 export type TitleRule = { title: string; category_id: string; exact: number }

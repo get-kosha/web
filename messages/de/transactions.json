@@ -16,7 +16,7 @@
     }
   ],
   "tx_search_label": "Aktivität durchsuchen",
-  "tx_search_placeholder": "Zahlungspartner, Notiz oder Betrag suchen",
+  "tx_search_placeholder": "Zahlungspartner, Notiz, Schlagwort, Ereignis oder Betrag suchen",
   "tx_filters": "Filter",
   "tx_filters_on": "Filter, {count} aktiv",
   "tx_show": "Anzeigen",
@@ -227,5 +227,15 @@
   "tx_remove_refund_title": "Diese Erstattung entfernen?",
   "tx_remove_refund_body": "Die {amount} auf {account} werden gelöscht und zählen wieder als Ausgabe.",
   "tx_refund_for": "Erstattung für {name}. Sie senkt die Ausgaben in {category} und zählt nicht als Einnahme.",
-  "tx_delete_refunds": "Ihre Erstattungen werden ebenfalls gelöscht."
+  "tx_delete_refunds": "Ihre Erstattungen werden ebenfalls gelöscht.",
+  "tx_period_label": "Zeitraum: {period}",
+  "tx_period_month": "Monat",
+  "tx_period_year": "Jahr",
+  "tx_period_all": "Gesamter Zeitraum",
+  "tx_period_custom": "Zeitraum wählen…",
+  "tx_period_custom_title": "Zeitraum wählen",
+  "tx_previous_year": "Vorheriges Jahr",
+  "tx_next_year": "Nächstes Jahr",
+  "tx_empty_period": "In diesem Zeitraum gibt es keine Buchungen.",
+  "tx_date_from": "Von"
 }

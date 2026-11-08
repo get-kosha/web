@@ -1,20 +1,63 @@
 import { Fragment, useEffect, useRef, useState, type ReactNode } from "react"
-import { MagnifyingGlassIcon, PaperclipIcon, SlidersHorizontalIcon, XIcon } from "@phosphor-icons/react/ssr"
+import {
+  CaretDownIcon,
+  CaretLeftIcon,
+  CaretRightIcon,
+  MagnifyingGlassIcon,
+  PaperclipIcon,
+  SlidersHorizontalIcon,
+  XIcon,
+} from "@phosphor-icons/react/ssr"
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router"
 import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { DatePicker } from "@/components/date-time"
 import { Switch } from "@/components/ui/switch"
 import { Segmented } from "@/components/settings/row"
 import { Chip, eventDates } from "@/components/tags-events"
 import { ActivityPanel } from "@/components/activity-panel"
 import { CategoryIcon } from "@/components/category-icon"
 import { CategoryPicker, categoryPath } from "@/components/category-picker"
-import { PageHeader, PageSkeleton, bottomSheet, isTyping, monthLabel, useGlobals, useMeta } from "@/components/shell"
+import {
+  PageHeader,
+  PageSkeleton,
+  bottomSheet,
+  isTyping,
+  monthLabel,
+  segment,
+  segmentButton,
+  useGlobals,
+  useMeta,
+} from "@/components/shell"
 import { TransactionForm, TransactionSheet } from "@/components/transaction-form"
 import { listTransactions, type Tx } from "@/lib/api"
-import { intlLocale, convert, dayOf, fmt, isNeutral, parseAmount, refundList, refundedShare, tagList } from "@/lib/core"
+import {
+  intlLocale,
+  convert,
+  dayOf,
+  fmt,
+  isNeutral,
+  parseAmount,
+  parsePeriod,
+  periodDays,
+  periodParam,
+  refundList,
+  refundedShare,
+  shiftPeriod,
+  tagList,
+  type Period,
+} from "@/lib/core"
 import { cn } from "@/lib/utils"
 import { ParaglideMessage } from "@inlang/paraglide-js-react"
 import { m } from "@/paraglide/messages"
@@ -28,6 +71,8 @@ const search = z.object({
   category: z.coerce.string().optional(),
   tag: z.coerce.string().optional(),
   event: z.coerce.string().optional(),
+  /** The dates to list (see `parsePeriod`). Unset, a search, tag or event covers every date and anything else this month. */
+  period: z.coerce.string().optional(),
   /** Amount range in cents, by absolute value. */
   min: z.number().int().min(0).optional(),
   max: z.number().int().min(0).optional(),
@@ -39,39 +84,62 @@ type Search = z.infer<typeof search>
 
 export const Route = createFileRoute("/_app/transactions")({
   validateSearch: search,
-  loaderDeps: ({ search: { q, wallet, category, tag, event, month, min, max, type, corrections, limit } }) => ({
+  loaderDeps: ({ search: { q, wallet, category, tag, event, period, min, max, type, corrections, limit } }) => ({
     q,
     wallet,
     category,
     tag,
     event,
-    month,
+    period,
     min,
     max,
     type,
     corrections,
     limit,
   }),
-  loader: ({ deps }) => listTransactions({ data: { ...deps, limit: deps.limit ?? PAGE } }),
+  loader: ({ deps: { period, limit, ...deps } }) =>
+    listTransactions({ data: { ...deps, ...periodInput(period), limit: limit ?? PAGE } }),
   head: () => ({ meta: [{ title: `${m.tx_activity()} · Kosha` }] }),
   pendingComponent: PageSkeleton,
   component: Activity,
 })
 
-const dayTitle = (day: string) =>
+// A day from another year names its year, since a search or a long period can span several.
+const dayTitle = (day: string, current: string) =>
   new Date(`${day}T12:00:00Z`).toLocaleDateString(intlLocale(), {
     weekday: "short",
     day: "numeric",
     month: "short",
+    year: day.slice(0, 4) === current.slice(0, 4) ? undefined : "numeric",
     timeZone: "UTC",
   })
 const signed = (cents: number, currency: string) => `${cents > 0 ? "+" : ""}${fmt(cents, currency)}`
+
+/** The days a period asks the server for. No period leaves the server's default (see `listTransactions`). */
+function periodInput(value: string | undefined) {
+  const p = parsePeriod(value)
+  return p ? (periodDays(p) ?? { all: true }) : {}
+}
+
+const periodLabel = (p: Period) =>
+  p.kind === "month"
+    ? monthLabel(p.month)
+    : p.kind === "year"
+      ? p.year
+      : p.kind === "all"
+        ? m.tx_period_all()
+        : new Intl.DateTimeFormat(intlLocale(), {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+            timeZone: "UTC",
+          }).formatRange(new Date(`${p.from}T12:00:00Z`), new Date(`${p.to}T12:00:00Z`))
 
 function Activity() {
   const meta = useMeta()
   const data = Route.useLoaderData()
   const s = Route.useSearch()
-  const { month, currency: cur } = useGlobals()
+  const { current, currency: cur } = useGlobals()
   const navigate = useNavigate({ from: Route.fullPath })
   const [q, setQ] = useState(s.q ?? "")
   const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -146,6 +214,13 @@ function Activity() {
           : null
 
   const event = s.event ? meta.events.find((e) => e.id === s.event) : undefined
+  const period = parsePeriod(s.period)
+  const finding = !!(s.q || s.tag || s.event)
+  // What's listed when no period is set, matching the server's default.
+  const shown: Period = period ?? (finding ? { kind: "all" } : { kind: "month", month: current })
+  // The current month is the default unless you're finding something, so it stays out of the URL then.
+  const pickPeriod = (p: Period) =>
+    set({ period: !finding && p.kind === "month" && p.month === current ? undefined : periodParam(p) })
   // Every active filter as a removable chip under the search. `text` names it for screen readers.
   const chips = [
     wallet && { key: "wallet", label: wallet.name, text: wallet.name, clear: { wallet: undefined } },
@@ -181,11 +256,11 @@ function Activity() {
         title={m.tx_activity()}
         sub={
           <>
-            {event
+            {event && !period
               ? [event.name, eventDates(event)].filter(Boolean).join(" · ")
-              : s.tag
+              : s.tag && !period
                 ? m.tx_tag_all_dates({ tag: s.tag })
-                : monthLabel(month)}{" "}
+                : periodLabel(shown)}{" "}
             ·{" "}
             <ParaglideMessage
               message={m.tx_count}
@@ -228,6 +303,7 @@ function Activity() {
               </span>
             )}
           </Button>
+          <PeriodPicker shown={shown} current={current} onPick={pickPeriod} />
           <div className="hidden flex-1 md:block" />
           <Segmented
             label={m.tx_show()}
@@ -309,7 +385,9 @@ function Activity() {
                   </Button>
                 </div>
               ) : (
-                <p className="px-4 py-12 text-center text-sm text-muted-foreground">{m.tx_empty_month()}</p>
+                <p className="px-4 py-12 text-center text-sm text-muted-foreground">
+                  {period ? m.tx_empty_period() : m.tx_empty_month()}
+                </p>
               ))}
             {groups.map((g, gi) => {
               const dayTotal = g.rows.reduce(
@@ -318,14 +396,14 @@ function Activity() {
                 0
               )
               return (
-                <div key={g.day} role="group" aria-label={dayTitle(g.day)}>
+                <div key={g.day} role="group" aria-label={dayTitle(g.day, current)}>
                   <div
                     className={cn(
                       "flex items-baseline justify-between px-4 pt-4 pb-1.5 text-xs text-muted-foreground",
                       gi > 0 && "border-t"
                     )}
                   >
-                    <span className="font-medium text-subtle-foreground">{dayTitle(g.day)}</span>
+                    <span className="font-medium text-subtle-foreground">{dayTitle(g.day, current)}</span>
                     <span className="num">{dayTotal ? signed(dayTotal, cur) : ""}</span>
                   </div>
                   {g.rows.map((t) => (
@@ -410,6 +488,138 @@ function Activity() {
         )}
       </TransactionSheet>
     </div>
+  )
+}
+
+/**
+ * ‹ November 2026 › for Activity's dates. The arrows step a month or a year, and the label opens a menu
+ * to pick a month, a year, every date or two days.
+ */
+function PeriodPicker({ shown, current, onPick }: { shown: Period; current: string; onPick: (p: Period) => void }) {
+  const meta = useMeta()
+  const [choosing, setChoosing] = useState(false)
+  // Remounts the dates dialog each time it opens, so it starts from what's shown.
+  const [opened, setOpened] = useState(0)
+  const days = periodDays(shown)
+  // Switching to a month or a year keeps where you are, but never moves past now.
+  const month = days && days.to.slice(0, 7) < current ? days.to.slice(0, 7) : current
+  const label = periodLabel(shown)
+  const prev = shiftPeriod(shown, -1)
+  const next = shiftPeriod(shown, 1)
+  const year = shown.kind === "year"
+  return (
+    <div className={cn(segment, "max-md:basis-full")}>
+      {prev && (
+        <button
+          type="button"
+          onClick={() => onPick(prev)}
+          aria-label={year ? m.tx_previous_year() : m.shell_previous_month()}
+          className={segmentButton}
+        >
+          <CaretLeftIcon className="size-4" />
+        </button>
+      )}
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          aria-label={m.tx_period_label({ period: label })}
+          className={cn(segmentButton, "gap-1.5 px-2.5 text-[13px] font-medium text-foreground max-md:flex-1")}
+        >
+          {label}
+          <CaretDownIcon className="size-3.5 text-muted-foreground" />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-auto min-w-44">
+          <DropdownMenuRadioGroup value={shown.kind}>
+            <DropdownMenuRadioItem closeOnClick value="month" onClick={() => onPick({ kind: "month", month })}>
+              {m.tx_period_month()}
+            </DropdownMenuRadioItem>
+            <DropdownMenuRadioItem
+              closeOnClick
+              value="year"
+              onClick={() => onPick({ kind: "year", year: month.slice(0, 4) })}
+            >
+              {m.tx_period_year()}
+            </DropdownMenuRadioItem>
+            <DropdownMenuRadioItem closeOnClick value="all" onClick={() => onPick({ kind: "all" })}>
+              {m.tx_period_all()}
+            </DropdownMenuRadioItem>
+          </DropdownMenuRadioGroup>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            onClick={() => {
+              setOpened((n) => n + 1)
+              setChoosing(true)
+            }}
+          >
+            {m.tx_period_custom()}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      {next && (
+        <button
+          type="button"
+          onClick={() => onPick(next)}
+          aria-label={year ? m.tx_next_year() : m.shell_next_month()}
+          className={segmentButton}
+        >
+          <CaretRightIcon className="size-4" />
+        </button>
+      )}
+      <DaysDialog
+        key={opened}
+        open={choosing}
+        initial={days ?? { from: `${current}-01`, to: dayOf(Date.now() / 1000, meta.tz) }}
+        onClose={() => setChoosing(false)}
+        onPick={(from, to) => onPick({ kind: "range", from, to })}
+      />
+    </div>
+  )
+}
+
+function DaysDialog({
+  open,
+  initial,
+  onClose,
+  onPick,
+}: {
+  open: boolean
+  initial: { from: string; to: string }
+  onClose: () => void
+  onPick: (from: string, to: string) => void
+}) {
+  const [from, setFrom] = useState(initial.from)
+  const [to, setTo] = useState(initial.to)
+  return (
+    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className={cn(bottomSheet, "gap-5 md:max-w-sm")}>
+        <DialogHeader>
+          <DialogTitle>{m.tx_period_custom_title()}</DialogTitle>
+        </DialogHeader>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="grid gap-1">
+            <span id="period-from" className="text-xs text-muted-foreground">
+              {m.tx_date_from()}
+            </span>
+            <DatePicker aria-labelledby="period-from" value={from} max={to} onChange={setFrom} />
+          </div>
+          <div className="grid gap-1">
+            <span id="period-to" className="text-xs text-muted-foreground">
+              {m.tx_until()}
+            </span>
+            <DatePicker aria-labelledby="period-to" value={to} min={from} onChange={setTo} />
+          </div>
+        </div>
+        <Button
+          size="lg"
+          className="max-md:h-11"
+          onClick={() => {
+            onPick(from, to)
+            onClose()
+          }}
+        >
+          {m.tx_show()}
+        </Button>
+      </DialogContent>
+    </Dialog>
   )
 }
 

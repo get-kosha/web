@@ -16,7 +16,7 @@
     }
   ],
   "tx_search_label": "Buscar em Atividade",
-  "tx_search_placeholder": "Buscar favorecido, observação ou valor",
+  "tx_search_placeholder": "Buscar favorecido, observação, tag, evento ou valor",
   "tx_filters": "Filtros",
   "tx_filters_on": "Filtros, {count} ativos",
   "tx_show": "Mostrar",
@@ -227,5 +227,15 @@
   "tx_remove_refund_title": "Remover este reembolso?",
   "tx_remove_refund_body": "Os {amount} devolvidos para {account} são apagados e voltam a contar como despesa.",
   "tx_refund_for": "Reembolso de {name}. Reduz as despesas em {category} e não conta como receita.",
-  "tx_delete_refunds": "Os reembolsos também são apagados."
+  "tx_delete_refunds": "Os reembolsos também são apagados.",
+  "tx_period_label": "Período: {period}",
+  "tx_period_month": "Mês",
+  "tx_period_year": "Ano",
+  "tx_period_all": "Todas as datas",
+  "tx_period_custom": "Escolher datas…",
+  "tx_period_custom_title": "Escolha as datas",
+  "tx_previous_year": "Ano anterior",
+  "tx_next_year": "Próximo ano",
+  "tx_empty_period": "Nenhuma transação nessas datas.",
+  "tx_date_from": "De"
 }

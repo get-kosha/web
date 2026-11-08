@@ -268,7 +268,7 @@ function Body({
   const searchTerm = (payee.value || q).trim()
   const searchActivity = () => {
     onDone()
-    void navigate({ to: "/transactions", search: (s) => ({ ...s, q: searchTerm || undefined }) })
+    void navigate({ to: "/transactions", search: { q: searchTerm || undefined } })
   }
 
   async function add(again = false) {

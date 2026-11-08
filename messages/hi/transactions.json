@@ -16,7 +16,7 @@
     }
   ],
   "tx_search_label": "गतिविधि में खोजें",
-  "tx_search_placeholder": "पार्टी, नोट या रकम खोजें",
+  "tx_search_placeholder": "पार्टी, नोट, टैग, इवेंट या रकम खोजें",
   "tx_filters": "फ़िल्टर",
   "tx_filters_on": "फ़िल्टर, {count} चालू",
   "tx_show": "दिखाएँ",
@@ -227,5 +227,15 @@
   "tx_remove_refund_title": "यह रिफ़ंड हटाएँ?",
   "tx_remove_refund_body": "{account} में वापस आए {amount} हट जाएँगे, और यह रकम फिर से खर्च में गिनी जाएगी।",
   "tx_refund_for": "{name} का रिफ़ंड। यह {category} में खर्च घटाता है और आमदनी नहीं गिना जाता।",
-  "tx_delete_refunds": "इसके रिफ़ंड भी हट जाएँगे।"
+  "tx_delete_refunds": "इसके रिफ़ंड भी हट जाएँगे।",
+  "tx_period_label": "तारीखें: {period}",
+  "tx_period_month": "महीना",
+  "tx_period_year": "साल",
+  "tx_period_all": "सभी तारीखें",
+  "tx_period_custom": "तारीखें चुनें…",
+  "tx_period_custom_title": "तारीखें चुनें",
+  "tx_previous_year": "पिछला साल",
+  "tx_next_year": "अगला साल",
+  "tx_empty_period": "इन तारीखों में कोई लेन-देन नहीं।",
+  "tx_date_from": "से"
 }

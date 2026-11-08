@@ -821,7 +821,7 @@ function AccountDetail({
           {w.tx_count > 0 && (
             <Link
               to="/transactions"
-              search={{ wallet: w.id }}
+              search={{ wallet: w.id, period: "all" }}
               className="text-xs text-muted-foreground hover:text-foreground"
             >
               {m.accounts_all_count({ n: w.tx_count.toLocaleString(intlLocale()) })}

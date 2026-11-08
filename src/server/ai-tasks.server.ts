@@ -567,12 +567,15 @@ const TOOLS: Tool[] = [
   {
     name: "find_transactions",
     description:
-      "Lists matching transactions, newest or largest first, with how many match and their total spent and received in the display currency (for every match, not only those listed). Without from or to it covers the current month. An event or tag on its own covers every date. Spending and income leave out transfers between the person's own accounts and balance corrections. Leave out every filter you don't need.",
+      "Lists matching transactions, newest or largest first, with how many match and their total spent and received in the display currency (for every match, not only those listed). Without from or to, a search, event or tag covers every date, and anything else the current month. Spending and income leave out transfers between the person's own accounts and balance corrections. Leave out every filter you don't need.",
     parameters: {
       type: "object",
       properties: {
         ...dayProps,
-        search: { type: "string", description: "Text in the payee or note, or a payee code" },
+        search: {
+          type: "string",
+          description: "Text in the payee, note, a tag, or an event or category name; or a payee code",
+        },
         category: { type: "string", description: "A category id" },
         account: { type: "string", description: "An account ref" },
         tag: { type: "string", description: "A tag, without #" },
@@ -808,8 +811,8 @@ Tags: ${json(tags.map((t) => t.tag))}`
           : f.type === "transfers"
             ? m.ai_what_transfers()
             : m.ai_what_transactions())
-      // An event's page in Activity shows all of it, which is what a look-up by event is about.
-      const allDates = !!f.event || (!f.from && !f.to && !!f.tag)
+      // An event is about all of it, and without days a search or tag covers every date too.
+      const allDates = !!f.event || (!f.from && !f.to && (!!f.tag || !!q))
       const lm = linkMonth(f.from, f.to)
       const search = {
         q,
@@ -827,9 +830,9 @@ Tags: ${json(tags.map((t) => t.tag))}`
           allDates || lm.ok
             ? {
                 label: `${what}${allDates ? "" : ` · ${range(f.from, f.to)}`}`,
-                // JSON drops the unset filters. The current month is the Activity default, so it stays unset too.
+                // JSON drops the unset filters. No days means the current month.
                 search: JSON.parse(
-                  json({ ...search, month: allDates || lm.month === s.today.slice(0, 7) ? undefined : lm.month })
+                  json({ ...search, month: allDates ? undefined : (lm.month ?? s.today.slice(0, 7)) })
                 ),
               }
             : undefined,

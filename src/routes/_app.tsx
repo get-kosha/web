@@ -6,7 +6,8 @@ import { Landing } from "@/components/landing"
 import { SITE, publicHead } from "@/lib/core"
 import { m } from "@/paraglide/messages"
 
-// Month and display currency are app-wide. The shell's stepper and switch set them, and every page reads them.
+// The display currency is app-wide and follows you from page to page. The month belongs to Overview and
+// Accounts, where the header's stepper sets it; other pages leave it behind. Activity has its own period.
 // A malformed value is dropped rather than failing the page, which the public landing page shares.
 const appSearch = z.object({
   month: z
@@ -25,7 +26,7 @@ const appSearch = z.object({
 // The one exception is a signed-out visit to /, which renders the landing page here instead of the app.
 export const Route = createFileRoute("/_app")({
   validateSearch: appSearch,
-  search: { middlewares: [retainSearchParams(["month", "currency"])] },
+  search: { middlewares: [retainSearchParams(["currency"])] },
   beforeLoad: async ({ location }) => ({ guest: location.pathname === "/" ? await guestVisit() : null }),
   // A guest never renders anything that reads the meta, so the cast only skips the fetch.
   loader: ({ context }) => (context.guest ? (null as unknown as Meta) : getMeta()),

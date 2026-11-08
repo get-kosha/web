@@ -1216,3 +1216,16 @@ for (const ip of [
   "1.2.3",
 ])
   assert.equal(isPrivateIp(ip), false, ip)
+
+// Activity periods: the URL value round-trips, bad values fall back to the default, and months and years step.
+import { parsePeriod, periodDays, periodParam, shiftPeriod } from "./core.ts"
+for (const v of ["2026-11", "2026", "all", "2026-01-05..2026-02-10"]) assert.equal(periodParam(parsePeriod(v)!), v)
+for (const v of [undefined, "", "2026-13", "26", "2026-02-30..2026-03-01", "2026-01-05..", "soon"])
+  assert.equal(parsePeriod(v), undefined, String(v))
+assert.deepEqual(parsePeriod("2026-03-01..2026-01-05"), { kind: "range", from: "2026-01-05", to: "2026-03-01" })
+assert.deepEqual(periodDays(parsePeriod("2024-02")!), { from: "2024-02-01", to: "2024-02-29" })
+assert.deepEqual(periodDays(parsePeriod("2026")!), { from: "2026-01-01", to: "2026-12-31" })
+assert.equal(periodDays({ kind: "all" }), null)
+assert.deepEqual(shiftPeriod(parsePeriod("2026-01")!, -1), { kind: "month", month: "2025-12" })
+assert.deepEqual(shiftPeriod(parsePeriod("2026")!, 1), { kind: "year", year: "2027" })
+assert.equal(shiftPeriod({ kind: "all" }, 1), undefined)

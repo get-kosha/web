@@ -105,7 +105,7 @@ export function Events() {
                     <Button
                       variant="outline"
                       nativeButton={false}
-                      render={<Link to="/transactions" search={(p) => ({ ...p, event: e.id })} />}
+                      render={<Link to="/transactions" search={{ event: e.id }} />}
                     >
                       {m.settings_events_see_transactions()} <ArrowRightIcon />
                     </Button>

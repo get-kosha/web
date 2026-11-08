@@ -15,7 +15,7 @@
     }
   ],
   "tx_search_label": "履歴を検索",
-  "tx_search_placeholder": "取引先、メモ、金額で検索",
+  "tx_search_placeholder": "取引先、メモ、タグ、イベント、金額で検索",
   "tx_filters": "絞り込み",
   "tx_filters_on": "絞り込み（{count}件適用中）",
   "tx_show": "表示",
@@ -223,5 +223,15 @@
   "tx_remove_refund_title": "この返金を削除しますか？",
   "tx_remove_refund_body": "{account}への{amount}の返金が削除され、その分は再び支出として数えられます。",
   "tx_refund_for": "{name}の返金です。{category}の支出を減らし、収入には数えません。",
-  "tx_delete_refunds": "返金も一緒に削除されます。"
+  "tx_delete_refunds": "返金も一緒に削除されます。",
+  "tx_period_label": "期間: {period}",
+  "tx_period_month": "月",
+  "tx_period_year": "年",
+  "tx_period_all": "全期間",
+  "tx_period_custom": "期間を指定…",
+  "tx_period_custom_title": "期間を指定",
+  "tx_previous_year": "前の年",
+  "tx_next_year": "次の年",
+  "tx_empty_period": "この期間の取引はありません。",
+  "tx_date_from": "開始日"
 }

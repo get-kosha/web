@@ -653,8 +653,12 @@ const Chip = ({ text, tone }: { text: string; tone: string }) => (
   </span>
 )
 
+/** Activity's period for the month on screen. The current month is Activity's default, so it stays unset. */
+const activityPeriod = (d: Dash, current: string) => (d.month === current ? undefined : d.month)
+
 function WhereItWent({ d }: { d: Dash }) {
   const meta = useMeta()
+  const period = activityPeriod(d, useGlobals().current)
   const money = (v: number) => fmt(v, d.primary)
   const cat = (id: string) => meta.categories.find((c) => c.id === id)
   const top = d.categories.slice(0, 7)
@@ -685,9 +689,13 @@ function WhereItWent({ d }: { d: Dash }) {
       <Head
         title={m.overview_where_title()}
         aside={
-          <More to="/transactions" className="max-md:hidden">
+          <Link
+            to="/transactions"
+            search={{ period }}
+            className="shrink-0 text-xs text-muted-foreground transition-colors hover:text-foreground max-md:hidden"
+          >
             {m.overview_all_activity()}
-          </More>
+          </Link>
         }
       >
         <span className="max-md:hidden">{m.overview_where_vs_usual({ day: byDay })}</span>
@@ -715,7 +723,7 @@ function WhereItWent({ d }: { d: Dash }) {
               key={r.key}
               role="row"
               to="/transactions"
-              search={(s) => ({ ...s, category: r.key })}
+              search={{ category: r.key, period }}
               className="grid min-h-11 grid-cols-[minmax(0,1.1fr)_minmax(0,1.5fr)_104px_76px] items-center gap-4 rounded-md px-3 text-[15px] transition-colors hover:bg-muted"
             >
               <span role="cell" className="flex min-w-0 items-center gap-2.5">
@@ -740,6 +748,7 @@ function WhereItWent({ d }: { d: Dash }) {
             <Link
               role="row"
               to="/transactions"
+              search={{ period }}
               className="grid min-h-11 grid-cols-[minmax(0,1.1fr)_minmax(0,1.5fr)_104px_76px] items-center gap-4 rounded-md px-3 text-[15px] text-subtle-foreground transition-colors hover:bg-muted"
             >
               <span role="cell" className="pl-7">
@@ -768,7 +777,7 @@ function WhereItWent({ d }: { d: Dash }) {
           <Link
             key={r.key}
             to="/transactions"
-            search={(s) => ({ ...s, category: r.key })}
+            search={{ category: r.key, period }}
             className="block py-2.5 text-[15px]"
           >
             <span className="grid grid-cols-[minmax(0,1fr)_auto_52px] items-center gap-2.5">
@@ -807,6 +816,7 @@ function NeedsAttention({
 }) {
   const meta = useMeta()
   const router = useRouter()
+  const period = activityPeriod(d, useGlobals().current)
   const [busy, setBusy] = useState<string | null>(null)
   const money = (v: number) => fmt(v, d.primary)
   const items: Attention[] = []
@@ -881,7 +891,7 @@ function NeedsAttention({
           variant="outline"
           size="sm"
           nativeButton={false}
-          render={<Link to="/transactions" search={(s) => ({ ...s, category: c.id })} />}
+          render={<Link to="/transactions" search={{ category: c.id, period }} />}
         >
           {m.overview_att_review()}
         </Button>

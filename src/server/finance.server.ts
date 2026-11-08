@@ -483,12 +483,13 @@ export const listInput = z.object({
   wallet: z.string().optional(),
   category: z.string().optional(),
   tag: z.string().max(32).optional(),
-  /** An event's transactions, whatever their month. */
+  /** An event's transactions, whatever their dates. */
   event: z.string().optional(),
-  month: month.optional(),
-  /** A day range instead of a month, both ends included. */
+  /** A day range, both ends included. */
   from: day.optional(),
   to: day.optional(),
+  /** Every date, even with nothing to search for. */
+  all: z.boolean().optional(),
   /** Amount range in cents, by absolute value. */
   min: z.number().int().min(0).optional(),
   max: z.number().int().min(0).optional(),
@@ -512,26 +513,32 @@ export async function listTransactions(uid: string, data: z.infer<typeof listInp
     "COALESCE(t.kind, '') <> 'skipped'",
   ]
   const binds: unknown[] = [uid]
+  // Search matches the payee, the note, a tag, the event's name, the category's name or an exact amount.
   if (data.q) {
     const cents = parseAmount(data.q)
-    where.push(`(t.name LIKE ? OR t.note LIKE ?${cents ? " OR ABS(t.amount) = ?" : ""})`)
-    binds.push(`%${data.q}%`, `%${data.q}%`, ...(cents ? [Math.abs(cents)] : []))
+    const like = `%${data.q}%`
+    where.push(`(t.name LIKE ? OR t.note LIKE ?
+      OR EXISTS (SELECT 1 FROM json_each(t.tags) WHERE value LIKE ?)
+      OR EXISTS (SELECT 1 FROM events e WHERE e.user_id = t.user_id AND e.id = t.event_id AND e.name LIKE ?)
+      OR EXISTS (SELECT 1 FROM categories c WHERE c.user_id = t.user_id AND c.id IN (t.category_id, t.subcategory_id) AND c.name LIKE ?)
+      ${cents ? "OR ABS(t.amount) = ?" : ""})`)
+    binds.push(like, like, `%${data.q.replace(/^#/, "")}%`, like, like, ...(cents ? [Math.abs(cents)] : []))
   }
   if (data.wallet) {
     where.push("t.wallet_id = ?")
     binds.push(data.wallet)
   } else where.push("NOT (t.transfer_id IS NOT NULL AND t.amount > 0)") // one row per transfer
-  // Activity follows the app-wide month (no month means the current one), except for an event or a tag,
-  // which are about every entry they hold, whatever the month. A day range overrides both.
   if (data.event) {
     where.push("t.event_id = ?")
     binds.push(data.event)
   }
-  if (data.from || data.to || (!data.event && !data.tag)) {
+  // A day range is the dates asked for. Without one, a search, tag or event covers every date, since it
+  // is about every entry it finds, and anything else covers the current month.
+  if (data.from || data.to || !(data.all || data.q || data.tag || data.event)) {
     const [from, to] =
       data.from || data.to
         ? [data.from ? unixOf(data.from, tz) : 0, data.to ? unixOf(addDays(data.to, 1), tz) : 2 ** 40]
-        : monthRange(data.month ?? monthOf(Date.now() / 1000, tz), tz)
+        : monthRange(monthOf(Date.now() / 1000, tz), tz)
     where.push("t.date >= ? AND t.date < ?")
     binds.push(from, to)
   }

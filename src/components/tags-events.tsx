@@ -313,7 +313,7 @@ export function EventEditor({
       <div className="grid grid-cols-[repeat(auto-fit,minmax(8.5rem,1fr))] gap-3">
         <div className="grid gap-1">
           <span id="ev-from" className="text-xs text-muted-foreground">
-            {m.tx_from()}
+            {m.tx_date_from()}
           </span>
           <DatePicker
             aria-labelledby="ev-from"

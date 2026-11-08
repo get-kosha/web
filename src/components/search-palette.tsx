@@ -106,7 +106,7 @@ function Body({ close, onAdd }: { close: () => void; onAdd: (text: string) => vo
       () =>
         void navigate({
           to: "/transactions",
-          search: (s) => ({ ...s, q: undefined, category: undefined, wallet: undefined, ...search }),
+          search,
         })
     )
 

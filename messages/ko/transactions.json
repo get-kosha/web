@@ -15,7 +15,7 @@
     }
   ],
   "tx_search_label": "내역 검색",
-  "tx_search_placeholder": "거래처, 메모, 금액 검색",
+  "tx_search_placeholder": "거래처, 메모, 태그, 이벤트, 금액 검색",
   "tx_filters": "필터",
   "tx_filters_on": "필터, {count}개 적용됨",
   "tx_show": "보기",
@@ -223,5 +223,15 @@
   "tx_remove_refund_title": "이 환불을 삭제할까요?",
   "tx_remove_refund_body": "{account}(으)로 받은 {amount} 환불이 삭제되고, 그만큼 다시 지출로 계산돼요.",
   "tx_refund_for": "{name}의 환불이에요. {category} 지출을 줄이고 수입으로는 계산하지 않아요.",
-  "tx_delete_refunds": "환불도 함께 삭제돼요."
+  "tx_delete_refunds": "환불도 함께 삭제돼요.",
+  "tx_period_label": "기간: {period}",
+  "tx_period_month": "월",
+  "tx_period_year": "연도",
+  "tx_period_all": "전체 기간",
+  "tx_period_custom": "기간 선택…",
+  "tx_period_custom_title": "기간 선택",
+  "tx_previous_year": "이전 연도",
+  "tx_next_year": "다음 연도",
+  "tx_empty_period": "이 기간에는 거래가 없어요.",
+  "tx_date_from": "시작"
 }

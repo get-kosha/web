@@ -362,7 +362,7 @@ const HANDLERS: Handlers = {
 
   // Transactions
   async search_transactions(uid, input) {
-    // A month you pass narrows a tag or event too; the app's month never does (it is always set).
+    // A month you pass narrows a search, tag or event too, as its days.
     const month = input.month && !input.from && !input.to
     const res = await finance.listTransactions(uid, {
       q: input.query,
@@ -370,7 +370,6 @@ const HANDLERS: Handlers = {
       category: input.categoryId,
       tag: input.tag && cleanTag(input.tag),
       event: input.eventId,
-      month: input.month,
       from: month ? `${input.month}-01` : input.from,
       to: month ? addDays(`${shiftMonth(input.month!, 1)}-01`, -1) : input.to,
       min: input.minAmount,

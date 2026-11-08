@@ -425,9 +425,14 @@ export const OPERATIONS = {
     path: "/transactions",
     scope: "read",
     description:
-      "Finds transactions, newest first. Without a month or day range it searches the current month, or every date when you filter by tag or event. `query` matches the payee and note, or an exact amount (“12.50”). A transfer appears once, as its outgoing half, unless you filter by account. Totals sum the matching paid rows per currency. Page with `offset` and `nextOffset`.",
+      "Finds transactions, newest first. Without a month or day range it covers every date when you pass a query, tag or event, and the current month otherwise. `query` matches the payee, note, tags, event name and category name, or an exact amount (“12.50”). A transfer appears once, as its outgoing half, unless you filter by account. Totals sum the matching paid rows per currency. Page with `offset` and `nextOffset`.",
     input: z.object({
-      query: z.string().trim().max(40).optional().describe("Text in the payee or note, or an amount such as 12.50."),
+      query: z
+        .string()
+        .trim()
+        .max(40)
+        .optional()
+        .describe("Text in the payee, note, a tag, the event name or the category name, or an amount such as 12.50."),
       accountId: Id.optional(),
       categoryId: Id.optional().describe("Matches the category and its subcategories."),
       tag: z.string().max(32).optional().describe("A tag without the #."),

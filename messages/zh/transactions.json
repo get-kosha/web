@@ -15,7 +15,7 @@
     }
   ],
   "tx_search_label": "搜索明细",
-  "tx_search_placeholder": "搜索交易对象、备注或金额",
+  "tx_search_placeholder": "搜索交易对象、备注、标签、事件或金额",
   "tx_filters": "筛选",
   "tx_filters_on": "筛选，已开启 {count} 项",
   "tx_show": "显示",
@@ -223,5 +223,15 @@
   "tx_remove_refund_title": "移除这笔退款？",
   "tx_remove_refund_body": "退回到 {account} 的 {amount} 将被删除，并重新计入支出。",
   "tx_refund_for": "{name} 的退款。它会减少 {category} 的支出，不计入收入。",
-  "tx_delete_refunds": "它的退款也会一并删除。"
+  "tx_delete_refunds": "它的退款也会一并删除。",
+  "tx_period_label": "日期：{period}",
+  "tx_period_month": "月",
+  "tx_period_year": "年",
+  "tx_period_all": "所有日期",
+  "tx_period_custom": "选择日期…",
+  "tx_period_custom_title": "选择日期",
+  "tx_previous_year": "上一年",
+  "tx_next_year": "下一年",
+  "tx_empty_period": "这段日期内没有交易。",
+  "tx_date_from": "从"
 }

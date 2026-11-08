@@ -16,7 +16,7 @@
     }
   ],
   "tx_search_label": "Activiteit doorzoeken",
-  "tx_search_placeholder": "Zoek tegenpartij, notitie of bedrag",
+  "tx_search_placeholder": "Zoek tegenpartij, notitie, tag, evenement of bedrag",
   "tx_filters": "Filters",
   "tx_filters_on": "Filters, {count} actief",
   "tx_show": "Tonen",
@@ -227,5 +227,15 @@
   "tx_remove_refund_title": "Deze terugbetaling verwijderen?",
   "tx_remove_refund_body": "De {amount} terug naar {account} wordt verwijderd en telt weer als uitgave.",
   "tx_refund_for": "Terugbetaling voor {name}. Verlaagt de uitgaven in {category} en telt niet als inkomen.",
-  "tx_delete_refunds": "De terugbetalingen worden ook verwijderd."
+  "tx_delete_refunds": "De terugbetalingen worden ook verwijderd.",
+  "tx_period_label": "Periode: {period}",
+  "tx_period_month": "Maand",
+  "tx_period_year": "Jaar",
+  "tx_period_all": "Alle datums",
+  "tx_period_custom": "Kies datums…",
+  "tx_period_custom_title": "Kies datums",
+  "tx_previous_year": "Vorig jaar",
+  "tx_next_year": "Volgend jaar",
+  "tx_empty_period": "Geen transacties in deze periode.",
+  "tx_date_from": "Van"
 }

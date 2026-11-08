@@ -276,8 +276,8 @@ Tailwind's default breakpoints: `sm` 640px, `md` 768px, `lg` 1024px. **`md` is t
 
 ### App shell (`src/components/shell.tsx`)
 
-- **Desktop (md+):** a card-coloured top bar, `px-8 py-3`, with the logo, page links (Overview, Activity, Recurring, Accounts, Ask when AI is on), the month stepper, the currency switch, Search (⌘K), Add and the account menu.
-- **Phone:** a slim top row (month stepper, currency, Ask, account menu) and a fixed bottom tab bar, 5 columns, with the Add button in the middle (52px, `rounded-2xl`, `primary`). The tab bar is `bg-card/95` with `backdrop-blur` and respects `env(safe-area-inset-bottom)`.
+- **Desktop (md+):** a card-coloured top bar, `px-8 py-3`, with the logo, page links (Overview, Activity, Recurring, Accounts, Ask when AI is on), the month stepper (Overview and Accounts only), the currency switch, Search (⌘K), Add and the account menu. Activity picks its dates with its own period control beside Filters.
+- **Phone:** a slim top row (month stepper on Overview and Accounts, currency, Ask, account menu) and a fixed bottom tab bar, 5 columns, with the Add button in the middle (52px, `rounded-2xl`, `primary`). The tab bar is `bg-card/95` with `backdrop-blur` and respects `env(safe-area-inset-bottom)`.
 - **Bare pages:** `/add`, `/ask` and Settings are full-screen on phones, with no header or tab bar. `/add` pins its keypad to the bottom.
 - **Main width:** Settings › Appearance › Layout. `boxed` (default) caps `<main>` at 1240px; `full` uses the whole width.
 - **Page gutters:** 16px on phones, 32px on desktop (`px-4 md:px-8`). `PageHeader` adds `pt-5 pb-5`, `md:pt-7`.
@@ -355,7 +355,7 @@ Recharts through `ChartContainer` and its `ChartConfig`, which maps series to co
 
 ### Segmented controls and pills
 
-- **Header segment** (`segment` / `segmentButton` in `shell.tsx`): bordered `card` box, 36px tall, 30px buttons that grow to 44px on phones. Used by the month stepper, currency switch and filters.
+- **Header segment** (`segment` / `segmentButton` in `shell.tsx`): bordered `card` box, 36px tall, 30px buttons that grow to 44px on phones. Used by the month stepper, Activity's period control, the currency switch and filters.
 - **`Segmented`** (`settings/row.tsx`): soft `muted` track; the pressed button turns `card` with a 1px shadow. Full width on phones.
 - **`Pill`**: 10.5px, `rounded-full`, in `brand`, `warning` or `muted` tone.
 

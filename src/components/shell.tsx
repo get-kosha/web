@@ -41,7 +41,7 @@ export const isTyping = (t: EventTarget | null) =>
   t instanceof HTMLElement && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))
 export const useMeta = () => app.useLoaderData()
 
-/** The app-wide month and display currency, with defaults filled in. */
+/** Overview and Accounts' month, the current month and the app-wide display currency, with defaults filled in. */
 export function useGlobals() {
   const meta = useMeta()
   const s = app.useSearch()
@@ -80,9 +80,11 @@ export function AppShell({ children }: { children: ReactNode }) {
     setAddText(text)
     setAdding(true)
   }
-  // Settings, Ask, Reconcile, Import and Welcome aren't about a month or a currency, so the header drops those
-  // controls. The three with a button at the bottom also keep the install card away.
+  // Settings, Ask, Reconcile, Import and Welcome aren't about a currency, so the header drops that switch.
+  // The three with a button at the bottom also keep the install card away. Only Overview and Accounts show
+  // a month; Activity picks its own dates.
   const settings = useLocation({ select: (l) => l.pathname.startsWith("/settings") })
+  const monthly = useLocation({ select: (l) => l.pathname === "/" || l.pathname === "/accounts" })
   const reconciling = useLocation({
     select: (l) => l.pathname === "/reconcile" || l.pathname === "/import" || l.pathname === "/welcome",
   })
@@ -141,12 +143,8 @@ export function AppShell({ children }: { children: ReactNode }) {
           </nav>
           <div className="flex-1" />
           <div className="flex flex-wrap items-center gap-2">
-            {!settings && !asking && (
-              <>
-                <MonthStepper />
-                <CurrencySwitch />
-              </>
-            )}
+            {monthly && <MonthStepper />}
+            {!settings && !asking && <CurrencySwitch />}
             <Button
               variant="outline"
               size="lg"
@@ -170,7 +168,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             bare && "hidden"
           )}
         >
-          <MonthStepper />
+          {monthly && <MonthStepper />}
           <div className="flex-1" />
           <CurrencySwitch />
           {ai.ask && (
@@ -294,7 +292,7 @@ export const segment = "inline-flex h-9 items-center rounded-md border bg-card p
 export const segmentButton =
   "inline-flex h-[30px] min-w-[30px] items-center justify-center rounded-[6px] px-2 text-xs text-muted-foreground transition-colors hover:text-foreground aria-pressed:bg-muted aria-pressed:font-medium aria-pressed:text-foreground max-md:h-11 max-md:min-w-11"
 
-/** The ‹ November 2026 › stepper sets the app-wide month. Its arrows are links, so hovering one preloads it. */
+/** The ‹ November 2026 › stepper sets Overview's and Accounts' month. Its arrows are links, so hovering one preloads it. */
 function MonthStepper() {
   const { month, current } = useGlobals()
   const to = (by: number) => {

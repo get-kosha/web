@@ -835,7 +835,7 @@ function Detail({ sub, today, displayCurrency }: { sub: SubscriptionView; today:
         {sub.history.length > 5 && (
           <Link
             to="/transactions"
-            search={(p) => ({ ...p, q: sub.name })}
+            search={{ q: sub.name }}
             className="mt-2.5 inline-block text-xs text-muted-foreground hover:text-foreground"
           >
             {m.subs_all_payments({ count: sub.history.length })}
