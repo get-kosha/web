@@ -14,6 +14,12 @@ export function getRouter() {
     defaultPendingMinMs: 300,
   })
 
+  // The skeleton is for arriving at a page. When the same page reloads for new search params (a search,
+  // a filter, the month), keep it on screen, or the skeleton hides it and takes focus and scroll with it.
+  router.subscribe("onBeforeNavigate", ({ pathChanged }) => {
+    router.options.defaultPendingMs = pathChanged ? 150 : Infinity
+  })
+
   return router
 }
 
