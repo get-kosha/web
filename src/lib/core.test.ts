@@ -367,6 +367,38 @@ assert.equal(eventFor("2027-02-01", evs), "open") // no end: still going
 assert.equal(eventFor("2025-06-01", evs), null)
 console.log("tags and events ok")
 
+// refunds
+import { canRefund, refundList, refundedShare } from "./core.ts"
+const spend = { amount: -5000, paid: 1, transfer_id: null, category_id: "food", refund_of: null }
+assert.equal(canRefund(spend), true)
+assert.equal(canRefund({ ...spend, amount: 5000 }), false) // income
+assert.equal(canRefund({ ...spend, paid: 0 }), false) // not paid yet
+assert.equal(canRefund({ ...spend, transfer_id: "x" }), false)
+assert.equal(canRefund({ ...spend, category_id: "0" }), false) // correction
+assert.equal(canRefund({ ...spend, refund_of: "y" }), false) // a refund itself
+assert.deepEqual(refundList("oops"), [])
+assert.equal(refundList('[{"id":"r","wallet_id":"w","amount":1,"date":2}]')[0].id, "r")
+const fxr = { eur: 1, gbp: 0.5 }
+assert.deepEqual(refundedShare(-5000, "eur", [{ amount: 2000, currency: "eur" }], fxr), {
+  refunded: 2000,
+  left: 3000,
+  full: false,
+})
+// A refund into a pound account converts: £1,500 is €3,000, so with €2,000 more it's all back.
+assert.deepEqual(
+  refundedShare(
+    -5000,
+    "eur",
+    [
+      { amount: 2000, currency: "eur" },
+      { amount: 1500, currency: "gbp" },
+    ],
+    fxr
+  ),
+  { refunded: 5000, left: 0, full: true }
+)
+console.log("refunds ok")
+
 // preferences
 import { parsePrefs } from "./core.ts"
 assert.deepEqual(parsePrefs({}), {

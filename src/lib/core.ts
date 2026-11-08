@@ -22,6 +22,12 @@ export const isNeutral = (categoryId: string) => categoryId === CORRECTION_CATEG
 export const isSystemCategory = (id: string) =>
   id === CORRECTION_CATEGORY || id === TRANSFER_CATEGORY || id === "transfer_fee"
 export const NEUTRAL_SQL = `('${CORRECTION_CATEGORY}', '${TRANSFER_CATEGORY}')`
+/**
+ * Spending and income as totals count them. A refund (a row with refund_of) is money in that undoes spending, so it
+ * sits on the spending side and lowers it, and never counts as income. `t` is the table's name or alias.
+ */
+export const SPENDING_SQL = (t = "t") => `(${t}.amount < 0 OR ${t}.refund_of IS NOT NULL)`
+export const INCOME_SQL = (t = "t") => `(${t}.amount > 0 AND ${t}.refund_of IS NULL)`
 
 // ponytail: hard-coded production origin, so self-hosted copies share getkosha.app's canonical URLs and card image
 /** The public site's origin, for canonical URLs and share cards. */
@@ -305,6 +311,41 @@ export function tagList(json: string | null | undefined): string[] {
   } catch {
     return []
   }
+}
+
+/** Paid spending that isn't a transfer, a correction or itself a refund can take refunds. */
+export const canRefund = (t: {
+  amount: number
+  paid: number | boolean
+  transfer_id?: string | null
+  category_id: string
+  refund_of?: string | null
+}) => t.amount < 0 && !!t.paid && !t.transfer_id && !t.refund_of && !isNeutral(t.category_id)
+
+export type Refund = { id: string; wallet_id: string; amount: number; date: number }
+/** Reads the refunds Activity's list attaches to an entry as JSON. Anything unreadable gives none. */
+export function refundList(json: string | null | undefined): Refund[] {
+  try {
+    const v: unknown = JSON.parse(json || "[]")
+    return Array.isArray(v) ? (v as Refund[]) : []
+  } catch {
+    return []
+  }
+}
+
+/**
+ * How much of a spending entry of `amount` (negative, in `currency`) came back, in its currency, and whether
+ * all of it did.
+ */
+export function refundedShare(
+  amount: number,
+  currency: string,
+  refunds: { amount: number; currency: string }[],
+  rates: Rates
+) {
+  // ponytail: a refund into an account in another currency converts at today's rates, not the refund day's
+  const refunded = refunds.reduce((t, r) => t + convert(r.amount, r.currency, currency, rates), 0)
+  return { refunded, left: Math.max(0, -amount - refunded), full: refunded >= -amount }
 }
 
 export type EventSpan = { id: string; start_day: string | null; end_day: string | null }

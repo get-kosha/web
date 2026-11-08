@@ -14,7 +14,7 @@ import { CategoryPicker, categoryPath } from "@/components/category-picker"
 import { PageHeader, PageSkeleton, bottomSheet, isTyping, monthLabel, useGlobals, useMeta } from "@/components/shell"
 import { TransactionForm, TransactionSheet } from "@/components/transaction-form"
 import { listTransactions, type Tx } from "@/lib/api"
-import { intlLocale, convert, dayOf, fmt, isNeutral, parseAmount, tagList } from "@/lib/core"
+import { intlLocale, convert, dayOf, fmt, isNeutral, parseAmount, refundList, refundedShare, tagList } from "@/lib/core"
 import { cn } from "@/lib/utils"
 import { ParaglideMessage } from "@inlang/paraglide-js-react"
 import { m } from "@/paraglide/messages"
@@ -458,6 +458,23 @@ function Row({
     t.note,
   ].filter(Boolean)
   const shown = isTransfer ? fmt(amount, currency) : signed(amount, currency)
+  const refunds = refundList(t.refunds)
+  const refunded = refunds.length
+    ? refundedShare(
+        t.amount,
+        currency,
+        refunds.map((r) => ({
+          amount: r.amount,
+          currency: meta.wallets.find((x) => x.id === r.wallet_id)?.currency ?? meta.primary,
+        })),
+        meta.rates
+      )
+    : null
+  const badge = isTransfer
+    ? m.tx_transfer_badge()
+    : t.refund_of
+      ? m.tx_refund_badge()
+      : refunded && (refunded.full ? m.tx_refunded_badge() : m.tx_part_refunded_badge())
 
   // The row opens with its title button, whose ::after covers the whole row; tags sit above it as links
   // to every transaction with that tag. (A link can't go inside a button.)
@@ -477,7 +494,7 @@ function Row({
             type="button"
             data-tx={t.id}
             aria-pressed={selected}
-            aria-label={[title, shown, c?.name, t.files && m.tx_files_attached({ count: t.files })]
+            aria-label={[title, shown, badge, c?.name, t.files && m.tx_files_attached({ count: t.files })]
               .filter(Boolean)
               .join(", ")}
             onClick={onClick}
@@ -486,9 +503,9 @@ function Row({
             {title}
           </button>
           {!!t.files && <PaperclipIcon aria-hidden="true" className="ml-1.5 size-3.5 shrink-0 text-muted-foreground" />}
-          {isTransfer && (
+          {badge && (
             <span className="ml-1.5 shrink-0 rounded-sm bg-muted px-1.5 text-[11px] text-muted-foreground">
-              {m.tx_transfer_badge()}
+              {badge}
             </span>
           )}
         </span>
@@ -510,7 +527,8 @@ function Row({
       </span>
       <span className="hidden truncate text-[13px] text-subtle-foreground min-[760px]:block">{w?.name}</span>
       <span className={cn("num text-right", !isTransfer && t.amount > 0 && "text-positive")}>
-        {shown}
+        {/* Refunded in full: it happened, but costs nothing now. */}
+        <span className={cn(refunded?.full && "text-muted-foreground line-through")}>{shown}</span>
         {foreign && (
           <span className="block text-xs text-muted-foreground">
             ≈ {fmt(convert(amount, currency, cur, meta.rates), cur)}

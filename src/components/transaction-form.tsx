@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react"
 import { useRouter } from "@tanstack/react-router"
 import {
   ArrowDownIcon,
+  ArrowUUpLeftIcon,
   CalendarStarIcon,
   CheckCircleIcon,
   HashIcon,
@@ -28,9 +29,18 @@ import { segment, segmentButton, useMeta } from "@/components/shell"
 import { DatePicker, TimePicker, dayLabel } from "@/components/date-time"
 import { Suggest } from "@/components/suggest"
 import { EventPicker, TagInput } from "@/components/tags-events"
-import { deleteTransaction, saveTransaction, saveTransfer, type Category, type Tx, type Wallet } from "@/lib/api"
+import {
+  deleteTransaction,
+  saveRefund,
+  saveTransaction,
+  saveTransfer,
+  type Category,
+  type Tx,
+  type Wallet,
+} from "@/lib/api"
 import {
   CORRECTION_CATEGORY,
+  canRefund,
   convert,
   dayOf,
   eventFor,
@@ -41,8 +51,12 @@ import {
   intlLocale,
   isNeutral,
   parseAmount,
+  refundList,
+  refundedShare,
   tagList,
   timeOf,
+  unixOf,
+  type Refund,
 } from "@/lib/core"
 import { cn } from "@/lib/utils"
 import { m } from "@/paraglide/messages"
@@ -284,6 +298,8 @@ export function TransactionForm({
   const [confirming, setConfirming] = useState(false)
   const income = mode === "income"
   const transfer = mode === "transfer"
+  // A refund is money in that keeps its spending entry's category, so it lists spending categories.
+  const refund = !!initial?.refund_of
 
   // A new entry starts on the default or last used account.
   useEffect(() => {
@@ -298,12 +314,12 @@ export function TransactionForm({
         .filter(
           (c) =>
             !c.parent_id &&
-            !!c.income === income &&
+            !!c.income === (income && !refund) &&
             (!c.archived || c.id === initial?.category_id) &&
             (!isNeutral(c.id) || (c.id === CORRECTION_CATEGORY && initial?.category_id === c.id))
         )
         .sort((a, b) => b.uses - a.uses),
-    [meta.categories, income, initial]
+    [meta.categories, income, refund, initial]
   )
   const wallet = meta.wallets.find((w) => w.id === walletId)
   const toWallet = meta.wallets.find((w) => w.id === toWalletId)
@@ -426,23 +442,30 @@ export function TransactionForm({
   return (
     <form onSubmit={submit} className="flex flex-1 flex-col gap-5">
       <div className="flex items-center justify-between gap-3">
-        <div role="group" aria-label={m.tx_type()} className={segment}>
-          {(["expense", "income", "transfer"] as const).map((k) => (
-            <button
-              key={k}
-              type="button"
-              aria-pressed={mode === k}
-              onClick={() => {
-                setMode(k)
-                setCategoryId("")
-                setCategoryTouched(false)
-              }}
-              className={cn(segmentButton, "px-3 text-[13px]")}
-            >
-              {MODE_LABEL[k]()}
-            </button>
-          ))}
-        </div>
+        {refund ? (
+          <span className="flex min-h-8 items-center gap-1.5 text-sm font-medium">
+            <ArrowUUpLeftIcon className="size-4 text-muted-foreground" aria-hidden="true" />
+            {m.tx_kind_refund()}
+          </span>
+        ) : (
+          <div role="group" aria-label={m.tx_type()} className={segment}>
+            {(["expense", "income", "transfer"] as const).map((k) => (
+              <button
+                key={k}
+                type="button"
+                aria-pressed={mode === k}
+                onClick={() => {
+                  setMode(k)
+                  setCategoryId("")
+                  setCategoryTouched(false)
+                }}
+                className={cn(segmentButton, "px-3 text-[13px]")}
+              >
+                {MODE_LABEL[k]()}
+              </button>
+            ))}
+          </div>
+        )}
         <div className="flex items-center gap-1">
           <DatePicker
             aria-label={m.tx_date()}
@@ -503,20 +526,29 @@ export function TransactionForm({
             <Suggest value={name} onChange={onName} options={meta.titles} render={<Input className="h-10" />} />
           </label>
 
-          <CategoryStrip
-            // The suggestion leads the strip, so it's in view.
-            categories={
-              suggested
-                ? [...categories.filter((c) => c.id === suggested), ...categories.filter((c) => c.id !== suggested)]
-                : categories
-            }
-            value={pickedCategory}
-            suggested={suggested}
-            onPick={(id) => {
-              setCategoryId(id)
-              setCategoryTouched(true)
-            }}
-          />
+          {refund ? (
+            <p className="text-xs text-muted-foreground">
+              {m.tx_refund_for({
+                name: name || meta.categories.find((c) => c.id === pickedCategory)?.name || "",
+                category: meta.categories.find((c) => c.id === pickedCategory)?.name ?? "",
+              })}
+            </p>
+          ) : (
+            <CategoryStrip
+              // The suggestion leads the strip, so it's in view.
+              categories={
+                suggested
+                  ? [...categories.filter((c) => c.id === suggested), ...categories.filter((c) => c.id !== suggested)]
+                  : categories
+              }
+              value={pickedCategory}
+              suggested={suggested}
+              onPick={(id) => {
+                setCategoryId(id)
+                setCategoryTouched(true)
+              }}
+            />
+          )}
         </>
       )}
 
@@ -534,6 +566,8 @@ export function TransactionForm({
       />
 
       {initial && <Attachments key={initial.id} transactionId={initial.id} />}
+
+      {initial && canRefund(initial) && <Refunds tx={initial} />}
 
       {initial?.reconciled_id && (
         <p className="flex items-start gap-2 rounded-lg bg-muted px-3 py-2.5 text-xs text-muted-foreground">
@@ -583,9 +617,13 @@ export function TransactionForm({
             <DialogTitle>
               {initial?.transfer_id ? m.tx_delete_transfer_title() : m.tx_delete_transaction_title()}
             </DialogTitle>
-            {(initial?.transfer_id || initial?.reconciled_id) && (
+            {(initial?.transfer_id || initial?.reconciled_id || refundList(initial?.refunds).length > 0) && (
               <DialogDescription>
-                {[initial.transfer_id && m.tx_delete_transfer_both(), initial.reconciled_id && m.tx_delete_reconciled()]
+                {[
+                  initial?.transfer_id && m.tx_delete_transfer_both(),
+                  initial?.reconciled_id && m.tx_delete_reconciled(),
+                  refundList(initial?.refunds).length > 0 && m.tx_delete_refunds(),
+                ]
                   .filter(Boolean)
                   .join(" ")}
               </DialogDescription>
@@ -620,6 +658,7 @@ function WalletChips({
         <button
           key={w.id}
           type="button"
+          aria-pressed={w.id === value}
           onClick={() => onChange(w.id)}
           className={cn(
             "shrink-0 rounded-full border px-3 py-1 text-sm whitespace-nowrap text-muted-foreground transition-colors",
@@ -629,6 +668,199 @@ function WalletChips({
           {w.name}
         </button>
       ))}
+    </div>
+  )
+}
+
+/**
+ * Money that came back for a spending entry: all of it or part, in one go or several, into any account (a shop
+ * may refund a card payment to a bank account). Each refund is its own entry, so balances and statements see it,
+ * and totals count it as spending undone rather than income. Removing one deletes that entry.
+ */
+export function Refunds({ tx, className }: { tx: Tx; className?: string }) {
+  const meta = useMeta()
+  const router = useRouter()
+  const today = dayOf(Date.now() / 1000, meta.tz)
+  const walletOf = (id: string) => meta.wallets.find((w) => w.id === id)
+  const currencyOf = (id: string) => walletOf(id)?.currency ?? meta.primary
+  const currency = currencyOf(tx.wallet_id)
+  // Kept here, since the edit sheet holds the entry as it was when it opened.
+  const [list, setList] = useState(() => refundList(tx.refunds))
+  const [open, setOpen] = useState(false)
+  const [walletId, setWalletId] = useState(tx.wallet_id)
+  // null until typed: what's still to come back, in the chosen account's currency.
+  const [amount, setAmount] = useState<string | null>(null)
+  const [day, setDay] = useState(today)
+  const [busy, setBusy] = useState(false)
+  const [removing, setRemoving] = useState<Refund | null>(null)
+  const share = refundedShare(
+    tx.amount,
+    currency,
+    list.map((r) => ({ amount: r.amount, currency: currencyOf(r.wallet_id) })),
+    meta.rates
+  )
+  const target = walletOf(walletId)
+  const left = Math.round(convert(share.left, currency, currencyOf(walletId), meta.rates))
+  const shownAmount = amount ?? (left ? cents2(left) : "")
+  const accounts = meta.wallets.filter((w) => !w.archived || w.id === tx.wallet_id)
+  const money = (r: Refund) => fmt(r.amount, currencyOf(r.wallet_id))
+
+  async function add() {
+    const cents = Math.abs(parseAmount(shownAmount) ?? 0)
+    if (!cents) return toast.error(m.tx_enter_amount())
+    setBusy(true)
+    try {
+      const { id } = await saveRefund({ data: { of: tx.id, walletId, amount: cents, day } })
+      setList((l) => [...l, { id, wallet_id: walletId, amount: cents, date: unixOf(day, meta.tz, 12) }])
+      toast.success(m.tx_refund_saved({ amount: fmt(cents, currencyOf(walletId)) }))
+      setOpen(false)
+      setAmount(null)
+      setDay(today)
+      await router.invalidate()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : m.tx_refund_failed())
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function remove(r: Refund) {
+    setRemoving(null)
+    try {
+      await deleteTransaction({ data: { id: r.id } })
+      setList((l) => l.filter((x) => x.id !== r.id))
+      toast.success(m.tx_refund_removed())
+      await router.invalidate()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : m.tx_delete_failed())
+    }
+  }
+
+  return (
+    <div className={cn("grid grid-cols-1 gap-1.5", className)}>
+      {list.length > 0 && (
+        <div className="flex items-baseline justify-between gap-3">
+          <span className="text-xs text-muted-foreground">{m.tx_refunds()}</span>
+          <span className={cn("text-xs", share.full ? "text-positive" : "text-muted-foreground")}>
+            {share.full
+              ? m.tx_refunded_full()
+              : m.tx_refunded_part({ refunded: fmt(share.refunded, currency), spent: fmt(-tx.amount, currency) })}
+          </span>
+        </div>
+      )}
+      {list.map((r) => (
+        <div key={r.id} className="flex min-h-11 items-center gap-2.5 rounded-md border bg-card pr-1 pl-2.5 text-sm">
+          <ArrowUUpLeftIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+          <span className="num shrink-0 text-positive">+{money(r)}</span>
+          <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">
+            {walletOf(r.wallet_id)?.name} · {dayLabel(dayOf(r.date, meta.tz))}
+          </span>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="text-muted-foreground max-md:size-11"
+            aria-label={m.tx_remove_refund({ amount: money(r) })}
+            onClick={() => setRemoving(r)}
+          >
+            <XIcon />
+          </Button>
+        </div>
+      ))}
+
+      {open ? (
+        <div className="grid gap-3 rounded-lg border bg-card p-3">
+          <label className="grid gap-1">
+            <span className="text-xs text-muted-foreground">
+              {m.tx_refund_amount()} <span className="uppercase">{target?.currency}</span>
+            </span>
+            <Input
+              value={shownAmount}
+              onChange={(e) => setAmount(e.target.value)}
+              // Enter saves the refund, not the form around it.
+              onKeyDown={(e) => {
+                if (e.key !== "Enter") return
+                e.preventDefault()
+                void add()
+              }}
+              inputMode="decimal"
+              autoComplete="off"
+              autoFocus
+              className="num h-10"
+            />
+          </label>
+          <div className="grid gap-1">
+            <span className="text-xs text-muted-foreground">{m.tx_refund_to()}</span>
+            <WalletChips wallets={accounts} value={walletId} onChange={setWalletId} />
+          </div>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <DatePicker
+              aria-label={m.tx_date()}
+              value={day}
+              onChange={setDay}
+              min={dayOf(tx.date, meta.tz)}
+              className="-ml-1.5 rounded-md px-1.5 py-1 text-sm text-muted-foreground transition-colors outline-none hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring aria-expanded:bg-muted max-md:min-h-11"
+            >
+              {day === today ? m.tx_today() : dayLabel(day)}
+            </DatePicker>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                className="max-md:h-11"
+                onClick={() => {
+                  setOpen(false)
+                  setAmount(null)
+                }}
+              >
+                {m.common_cancel()}
+              </Button>
+              <Button type="button" className="max-md:h-11" disabled={busy} onClick={() => void add()}>
+                {m.tx_save_refund()}
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : (
+        !share.full && (
+          <Button
+            type="button"
+            variant="outline"
+            className="justify-start max-md:h-11"
+            onClick={() => {
+              setWalletId(tx.wallet_id)
+              setOpen(true)
+            }}
+          >
+            <ArrowUUpLeftIcon />
+            {list.length ? m.tx_add_refund() : m.tx_mark_refunded()}
+          </Button>
+        )
+      )}
+
+      <Dialog open={!!removing} onOpenChange={(o) => !o && setRemoving(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{m.tx_remove_refund_title()}</DialogTitle>
+            {removing && (
+              <DialogDescription>
+                {m.tx_remove_refund_body({
+                  amount: money(removing),
+                  account: walletOf(removing.wallet_id)?.name ?? "",
+                })}
+              </DialogDescription>
+            )}
+          </DialogHeader>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setRemoving(null)}>
+              {m.common_cancel()}
+            </Button>
+            <Button type="button" variant="destructive" onClick={() => removing && void remove(removing)}>
+              {m.common_remove()}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

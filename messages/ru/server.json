@@ -62,5 +62,6 @@
   "server_avatar_unreadable": "Не удалось прочитать это изображение",
   "server_request_too_large": "Это слишком большой объём для отправки. Попробуйте файл поменьше или меньше операций.",
   "server_transaction_id_taken": "У другой операции уже есть id {id}. Для новой операции используйте новый id.",
-  "server_transaction_id_twice": "Этот id встречается в одном запросе дважды."
+  "server_transaction_id_twice": "Этот id встречается в одном запросе дважды.",
+  "server_refund_not_spending": "Вернуть можно только оплаченный расход"
 }

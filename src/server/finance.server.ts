@@ -6,7 +6,9 @@ import { z } from "zod"
 import { m } from "@/paraglide/messages"
 import {
   CORRECTION_CATEGORY,
+  INCOME_SQL,
   NEUTRAL_SQL,
+  SPENDING_SQL,
   PREFS,
   TRANSFER_CATEGORY,
   addDays,
@@ -15,10 +17,12 @@ import {
   cumulative,
   dayOf,
   daysInMonth,
+  canRefund,
   isNeutral,
   isSystemCategory,
   MAX_TAGS,
   cleanTag,
+  tagList,
   eventFor,
   monthOf,
   monthRange,
@@ -101,6 +105,10 @@ export type Tx = {
   bank_ref?: string | null
   /** How many files are attached. Only Activity's list counts them. */
   files?: number
+  /** A refund: the spending entry it gave money back for. */
+  refund_of?: string | null
+  /** A spending entry's refunds as JSON; read with refundList. Only Activity's list reads them. */
+  refunds?: string
 }
 export type Event = {
   id: string
@@ -227,8 +235,8 @@ type Bucket = { k: number; wallet_id: string; n: number; net: number; income: nu
 const bucketTotals = (uid: string, bounds: number[]) =>
   db()
     .prepare(`SELECT b.key AS k, t.wallet_id, COUNT(*) AS n, SUM(t.amount) AS net,
-      SUM(CASE WHEN t.amount > 0 AND t.category_id NOT IN ${NEUTRAL_SQL} THEN t.amount ELSE 0 END) AS income,
-      SUM(CASE WHEN t.amount < 0 AND t.category_id NOT IN ${NEUTRAL_SQL} THEN -t.amount ELSE 0 END) AS expense
+      SUM(CASE WHEN ${INCOME_SQL()} AND t.category_id NOT IN ${NEUTRAL_SQL} THEN t.amount ELSE 0 END) AS income,
+      SUM(CASE WHEN ${SPENDING_SQL()} AND t.category_id NOT IN ${NEUTRAL_SQL} THEN -t.amount ELSE 0 END) AS expense
       FROM json_each(?2) b CROSS JOIN transactions t ON t.user_id = ?1 AND t.paid = 1
         AND t.date >= json_extract(b.value, '$[0]') AND t.date < json_extract(b.value, '$[1]')
       GROUP BY b.key, t.wallet_id`)
@@ -265,7 +273,7 @@ export async function dashboard(uid: string, data: z.infer<typeof dashboardInput
   const since = shiftMonth(selected < nowMonth ? selected : nowMonth, -11)
   const [spans, entries, oneOff, accounts, valuations] = await DB.batch([
     spansQuery(uid),
-    DB.prepare(`SELECT t.amount, t.date, t.category_id, t.name, t.subscription_id, w.currency
+    DB.prepare(`SELECT t.amount, t.date, t.category_id, t.name, t.subscription_id, t.refund_of, w.currency
       FROM transactions t JOIN wallets w ON w.user_id = t.user_id AND w.id = t.wallet_id
       WHERE t.user_id = ? AND t.paid = 1 AND t.date >= ? AND t.date < ? ORDER BY t.date, t.id`).bind(
       uid,
@@ -377,12 +385,14 @@ export async function dashboard(uid: string, data: z.infer<typeof dashboardInput
     name: string
     currency: string
     subscription_id: string | null
+    refund_of: string | null
   }
   for (const r of entries.results as Row[]) {
     if (isNeutral(r.category_id)) continue
     const m = monthOf(r.date, tz)
     const v = convert(r.amount, r.currency, primary, rates)
-    if (v > 0) {
+    // A refund is spending undone: it lowers its month, day and category instead of counting as income.
+    if (v > 0 && !r.refund_of) {
       if (m === selected && (!income || v > income.amount))
         income = { name: r.name.trim(), day: dayOf(r.date, tz), amount: v }
       continue
@@ -394,7 +404,7 @@ export async function dashboard(uid: string, data: z.infer<typeof dashboardInput
     if (m === selected) {
       const c = byCat.get(r.category_id) ?? { total: 0, count: 0, fixed: true, usual: 0 }
       c.total -= v
-      c.count++
+      if (!r.refund_of) c.count++
       c.fixed &&= !!r.subscription_id
       byCat.set(r.category_id, c)
     } else if (days && d <= upTo) {
@@ -543,8 +553,8 @@ export async function listTransactions(uid: string, data: z.infer<typeof listInp
     where.push("ABS(t.amount) <= ?")
     binds.push(data.max)
   }
-  if (data.type === "out") where.push(`t.amount < 0 AND t.category_id NOT IN ${NEUTRAL_SQL}`)
-  if (data.type === "in") where.push(`t.amount > 0 AND t.category_id NOT IN ${NEUTRAL_SQL}`)
+  if (data.type === "out") where.push(`${SPENDING_SQL()} AND t.category_id NOT IN ${NEUTRAL_SQL}`)
+  if (data.type === "in") where.push(`${INCOME_SQL()} AND t.category_id NOT IN ${NEUTRAL_SQL}`)
   if (data.type === "transfers") where.push("t.transfer_id IS NOT NULL")
   if (!data.corrections) where.push(`t.category_id <> '${CORRECTION_CATEGORY}'`)
   if (data.reconciled !== undefined) where.push(`t.reconciled_id IS ${data.reconciled ? "NOT " : ""}NULL`)
@@ -553,12 +563,14 @@ export async function listTransactions(uid: string, data: z.infer<typeof listInp
   const [rows, count, totals, corrections, byCategory] = await DB.batch([
     DB.prepare(`SELECT t.*,
       (SELECT COUNT(*) FROM attachments a WHERE a.user_id = t.user_id AND a.transaction_id = t.id) AS files,
+      (SELECT json_group_array(json_object('id', r.id, 'wallet_id', r.wallet_id, 'amount', r.amount, 'date', r.date))
+        FROM transactions r WHERE r.user_id = t.user_id AND r.refund_of = t.id) AS refunds,
       ${COUNTERPART} ${w} ORDER BY t.date DESC LIMIT ? OFFSET ?`).bind(...binds, data.limit + 1, data.offset),
     DB.prepare(`SELECT COUNT(*) AS n FROM transactions t ${w}`).bind(...binds),
     // Money out, money in and transfers per currency for the filtered list. The client converts them to the display currency.
     DB.prepare(`SELECT w.currency,
-        SUM(CASE WHEN t.amount < 0 AND t.category_id NOT IN ${NEUTRAL_SQL} THEN t.amount ELSE 0 END) AS out,
-        SUM(CASE WHEN t.amount > 0 AND t.category_id NOT IN ${NEUTRAL_SQL} THEN t.amount ELSE 0 END) AS inn,
+        SUM(CASE WHEN ${SPENDING_SQL()} AND t.category_id NOT IN ${NEUTRAL_SQL} THEN t.amount ELSE 0 END) AS out,
+        SUM(CASE WHEN ${INCOME_SQL()} AND t.category_id NOT IN ${NEUTRAL_SQL} THEN t.amount ELSE 0 END) AS inn,
         SUM(CASE WHEN t.transfer_id IS NOT NULL AND t.amount < 0 THEN -t.amount ELSE 0 END) AS transfers
       FROM transactions t JOIN wallets w ON w.user_id = t.user_id AND w.id = t.wallet_id ${w} AND t.paid = 1
       GROUP BY w.currency`).bind(...binds),
@@ -680,7 +692,7 @@ type SaveTx = z.infer<typeof saveInput>
  * Creates or edits transactions in one atomic batch. Returns their ids in input order. `requestHash` is kept
  * on a new entry so the public API can tell a retried create from a reused id.
  */
-export async function saveTransactions(uid: string, items: (SaveTx & { requestHash?: string })[]) {
+export async function saveTransactions(uid: string, items: (SaveTx & { requestHash?: string; refundOf?: string })[]) {
   const DB = db()
   const { tz, prefs } = await getSettings(uid)
   const now = Math.floor(Date.now() / 1000)
@@ -714,8 +726,12 @@ export async function saveTransactions(uid: string, items: (SaveTx & { requestHa
     reconciled_id = CASE WHEN amount = ?5 AND wallet_id = ?1 AND ?15 = 1 THEN reconciled_id END,
     name = ?3, note = ?4, amount = ?5, date = ?6, paid = ?7, updated_at = unixepoch() WHERE user_id = ?9 AND id = ?8`)
   const insert =
-    DB.prepare(`INSERT INTO transactions (user_id, id, wallet_id, category_id, subcategory_id, name, note, amount, date, paid, tags, event_id, bank_ref, request_hash)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (user_id, id) DO NOTHING`)
+    DB.prepare(`INSERT INTO transactions (user_id, id, wallet_id, category_id, subcategory_id, name, note, amount, date, paid, tags, event_id, bank_ref, request_hash, refund_of)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (user_id, id) DO NOTHING`)
+  // Refunds keep their entry's category, so they lower the same spending.
+  const refundsFollow = DB.prepare(`UPDATE transactions SET category_id = ?3,
+    subcategory_id = (SELECT subcategory_id FROM transactions WHERE user_id = ?1 AND id = ?2), updated_at = unixepoch()
+    WHERE user_id = ?1 AND refund_of = ?2 AND category_id <> ?3`)
   // Settings › Payee rules › Learn from my edits. A learned rule never replaces one you made.
   const learn = DB.prepare(`INSERT INTO title_rules (user_id, title, category_id) VALUES (?, ?, ?)
     ON CONFLICT(user_id, title) DO UPDATE SET category_id = excluded.category_id WHERE source = 'learned'`)
@@ -763,9 +779,11 @@ export async function saveTransactions(uid: string, items: (SaveTx & { requestHa
             tagsJson ?? "[]",
             eventId ?? null,
             data.bankRef ?? null,
-            data.requestHash ?? null
+            data.requestHash ?? null,
+            data.refundOf ?? null
           )
     )
+    if (old !== undefined) writes.push(refundsFollow.bind(uid, id, data.categoryId))
     if (name && !isNeutral(data.categoryId) && prefs.learn_rules === "1")
       writes.push(learn.bind(uid, name, data.categoryId))
   }
@@ -775,18 +793,26 @@ export async function saveTransactions(uid: string, items: (SaveTx & { requestHa
 
 /**
  * Deletes transactions in one batch. Deleting either half of a transfer deletes both halves and its fee;
- * deleting just a fee clears it from its transfer. A deleted subscription payment becomes a skipped
+ * deleting just a fee clears it from its transfer. Deleting a spending entry deletes its refunds. A deleted subscription payment becomes a skipped
  * occurrence, otherwise auto-pay would re-create it. Returns the ids found and the ids that weren't.
  */
 export async function deleteTransactions(uid: string, list: string[]) {
   const DB = db()
-  const { results: rows } = await DB.prepare(`SELECT id, transfer_id, subscription_id, due_day FROM transactions
-    WHERE user_id = ?1 AND (id IN (SELECT value FROM json_each(?2)) OR transfer_id IN
+  const { results: rows } =
+    await DB.prepare(`SELECT id, transfer_id, subscription_id, due_day, refund_of FROM transactions
+    WHERE user_id = ?1 AND (id IN (SELECT value FROM json_each(?2)) OR refund_of IN (SELECT value FROM json_each(?2)) OR transfer_id IN
       (SELECT transfer_id FROM transactions WHERE user_id = ?1 AND id IN (SELECT value FROM json_each(?2)) AND transfer_id IS NOT NULL))`)
-    .bind(uid, ids(list))
-    .all<{ id: string; transfer_id: string | null; subscription_id: string | null; due_day: string | null }>()
+      .bind(uid, ids(list))
+      .all<{
+        id: string
+        transfer_id: string | null
+        subscription_id: string | null
+        due_day: string | null
+        refund_of: string | null
+      }>()
   const asked = new Set(list)
   const found = rows.filter((r) => asked.has(r.id))
+  const refunds = rows.filter((r) => !asked.has(r.id) && r.refund_of && asked.has(r.refund_of)).map((r) => r.id)
   const transferIds = [...new Set(found.flatMap((r) => (r.transfer_id ? [r.transfer_id] : [])))]
   const legs = rows.filter((r) => asked.has(r.id) || (r.transfer_id && transferIds.includes(r.transfer_id)))
   const occurrences = legs.filter((r) => r.subscription_id && r.due_day).map((r) => r.id)
@@ -814,10 +840,50 @@ export async function deleteTransactions(uid: string, list: string[]) {
       ).bind(uid, ids(occurrences)),
       DB.prepare("DELETE FROM transactions WHERE user_id = ? AND id IN (SELECT value FROM json_each(?))").bind(
         uid,
-        ids(legs.filter((r) => !occurrences.includes(r.id)).map((r) => r.id))
+        ids([...legs.filter((r) => !occurrences.includes(r.id)).map((r) => r.id), ...refunds])
       ),
     ])
   return { deleted: found.map((r) => r.id), notFound: list.filter((id) => !found.some((r) => r.id === id)) }
+}
+
+export const refundInput = z.object({
+  /** The spending entry the money came back for. */
+  of: z.string().min(1),
+  /** The account the money came back to, which may not be the one that paid. */
+  walletId: z.string().min(1),
+  /** What came back, in that account's currency. Less than was spent is a partial refund. */
+  amount: z
+    .number()
+    .int()
+    .positive({ error: () => m.server_amount_required() }),
+  day,
+})
+
+/**
+ * Records money coming back for a spending entry as its own entry in `walletId`, with the entry's payee, category,
+ * tags and event, so balances, statements and totals all see it. A refund is edited and deleted like any entry.
+ * Returns its id.
+ */
+export async function saveRefund(uid: string, data: z.infer<typeof refundInput>) {
+  const t = await db().prepare("SELECT * FROM transactions WHERE user_id = ? AND id = ?").bind(uid, data.of).first<Tx>()
+  if (!t) throw notFound(m.server_transaction_not_found())
+  if (!canRefund(t)) throw new HttpError(400, m.server_refund_not_spending())
+  const [id] = await saveTransactions(uid, [
+    {
+      walletId: data.walletId,
+      categoryId: t.category_id,
+      subcategoryId: t.subcategory_id ?? null,
+      name: t.name,
+      note: "",
+      amount: data.amount,
+      day: data.day,
+      paid: true,
+      tags: tagList(t.tags),
+      eventId: t.event_id ?? null,
+      refundOf: t.id,
+    },
+  ])
+  return id
 }
 
 export const transferInput = z
@@ -1032,7 +1098,7 @@ export async function recentIncome(uid: string) {
   const { results } = await db()
     .prepare(`SELECT w.currency, SUM(t.amount) AS total FROM transactions t
     JOIN wallets w ON w.user_id = t.user_id AND w.id = t.wallet_id
-    WHERE t.user_id = ? AND t.paid = 1 AND t.amount > 0 AND t.category_id NOT IN ${NEUTRAL_SQL} AND t.date >= unixepoch() - 365 * 86400
+    WHERE t.user_id = ? AND t.paid = 1 AND ${INCOME_SQL()} AND t.category_id NOT IN ${NEUTRAL_SQL} AND t.date >= unixepoch() - 365 * 86400
     GROUP BY w.currency`)
     .bind(uid)
     .all<{ currency: string; total: number }>()
@@ -1462,8 +1528,8 @@ export async function accountsOverview(uid: string, data: z.infer<typeof dashboa
     DB.prepare("SELECT wallet_id, day, gain FROM valuations WHERE user_id = ? ORDER BY day").bind(uid),
     // The selected month's in, out and moved per account.
     DB.prepare(`SELECT wallet_id,
-      SUM(CASE WHEN category_id <> '${TRANSFER_CATEGORY}' AND amount > 0 THEN amount ELSE 0 END) AS inc,
-      SUM(CASE WHEN category_id <> '${TRANSFER_CATEGORY}' AND amount < 0 THEN amount ELSE 0 END) AS spent,
+      SUM(CASE WHEN category_id <> '${TRANSFER_CATEGORY}' AND ${INCOME_SQL("transactions")} THEN amount ELSE 0 END) AS inc,
+      SUM(CASE WHEN category_id <> '${TRANSFER_CATEGORY}' AND ${SPENDING_SQL("transactions")} THEN amount ELSE 0 END) AS spent,
       SUM(CASE WHEN category_id = '${TRANSFER_CATEGORY}' THEN ABS(amount) ELSE 0 END) AS moved
       FROM transactions WHERE user_id = ? AND paid = 1 AND date >= ? AND date < ? AND category_id <> '${CORRECTION_CATEGORY}'
       GROUP BY wallet_id`).bind(uid, from, to),

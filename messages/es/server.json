@@ -62,5 +62,6 @@
   "server_avatar_unreadable": "No se pudo leer esa imagen",
   "server_request_too_large": "Es demasiado grande para enviarlo. Prueba con un archivo más pequeño o menos movimientos.",
   "server_transaction_id_taken": "Otro movimiento ya tiene el id {id}. Usa un id nuevo para un movimiento nuevo.",
-  "server_transaction_id_twice": "Este id aparece dos veces en la misma solicitud."
+  "server_transaction_id_twice": "Este id aparece dos veces en la misma solicitud.",
+  "server_refund_not_spending": "Solo se puede reembolsar un gasto pagado"
 }

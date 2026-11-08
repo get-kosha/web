@@ -6,7 +6,9 @@ import { waitUntil } from "cloudflare:workers"
 import { z } from "zod"
 import {
   intlLocale,
+  INCOME_SQL,
   NEUTRAL_SQL,
+  SPENDING_SQL,
   addDays,
   aiBlocker,
   aiFeatures,
@@ -399,7 +401,7 @@ async function recapFacts(s: Session, m: string) {
   const [spends, firsts, cats, events] = await DB.batch([
     DB.prepare(`SELECT t.name, t.amount, t.date, t.category_id, t.event_id, t.subscription_id, w.currency FROM transactions t
       JOIN wallets w ON w.user_id = t.user_id AND w.id = t.wallet_id
-      WHERE t.user_id = ? AND t.paid = 1 AND t.amount < 0 AND t.date >= ? AND t.date < ? AND t.category_id NOT IN ${NEUTRAL_SQL}`).bind(
+      WHERE t.user_id = ? AND t.paid = 1 AND ${SPENDING_SQL()} AND t.date >= ? AND t.date < ? AND t.category_id NOT IN ${NEUTRAL_SQL}`).bind(
       s.uid,
       from,
       to
@@ -893,7 +895,7 @@ Tags: ${json(tags.map((t) => t.tag))}`
             .prepare(`SELECT t.name, t.amount, t.date, t.category_id, t.wallet_id, t.tags, w.currency FROM transactions t
               JOIN wallets w ON w.user_id = t.user_id AND w.id = t.wallet_id
               WHERE t.user_id = ? AND t.paid = 1 AND t.date >= ? AND t.date < ? AND t.category_id NOT IN ${NEUTRAL_SQL}
-              AND ${income ? "t.amount > 0" : "t.amount < 0"}`)
+              AND ${income ? INCOME_SQL() : SPENDING_SQL()}`)
             .bind(s.uid, unixOf(from, tz), unixOf(addDays(to, 1), tz))
             .all<{
               name: string
@@ -907,7 +909,8 @@ Tags: ${json(tags.map((t) => t.tag))}`
           const groups = new Map<string, { name: string; total: number; count: number }>()
           let total = 0
           for (const t of results) {
-            const v = Math.abs(convert(t.amount, t.currency, p, rates))
+            // Refunds are on the spending side as money in, so they lower spending.
+            const v = convert(t.amount, t.currency, p, rates) * (income ? 1 : -1)
             total += v
             const keys =
               f.by === "category"

@@ -164,6 +164,12 @@ const Transaction = z.object({
     .describe("Checked against a bank statement. Changing its amount, account or day un-reconciles it."),
   bankRef: z.string().nullable().describe("The bank's id for the statement line it was imported from."),
   attachmentCount: z.number().int().describe("How many receipts or other files are attached."),
+  refundOf: z
+    .string()
+    .nullable()
+    .describe(
+      "A refund: the spending entry it gave money back for. Totals count a refund as spending undone, never as income."
+    ),
 })
 const Payment = z.object({
   dueDay: Day.describe("The scheduled day; identifies the payment."),
@@ -265,6 +271,7 @@ const tx = {
   reconciled: false,
   bankRef: null,
   attachmentCount: 0,
+  refundOf: null,
 }
 const account = {
   id: "a1",

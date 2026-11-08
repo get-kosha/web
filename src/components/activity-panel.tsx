@@ -15,19 +15,21 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { CategoryIcon } from "@/components/category-icon"
 import { CategoryPicker, categoryPath } from "@/components/category-picker"
 import { useGlobals, useMeta } from "@/components/shell"
-import { TransactionForm } from "@/components/transaction-form"
+import { Refunds, TransactionForm } from "@/components/transaction-form"
 import { Attachments } from "@/components/attachments"
 import { DatePicker, TimePicker } from "@/components/date-time"
 import { EventPicker, TagInput } from "@/components/tags-events"
 import { deleteTransaction, getPayeeHistory, saveTransaction, type Tx } from "@/lib/api"
 import {
   CORRECTION_CATEGORY,
+  canRefund,
   intlLocale,
   convert,
   dayOf,
   fmt,
   isNeutral,
   parseAmount,
+  refundList,
   tagList,
   timeOf,
 } from "@/lib/core"
@@ -82,13 +84,16 @@ export function ActivityPanel({
   const wallet = meta.wallets.find((w) => w.id === tx.wallet_id)
   const currency = wallet?.currency ?? meta.primary
   const isTransfer = !!tx.transfer_id
+  const isRefund = !!tx.refund_of
   const kind = isTransfer
     ? m.tx_kind_transfer()
-    : tx.category_id === CORRECTION_CATEGORY
-      ? m.tx_kind_correction()
-      : tx.amount > 0
-        ? m.tx_kind_income()
-        : m.tx_kind_expense()
+    : isRefund
+      ? m.tx_kind_refund()
+      : tx.category_id === CORRECTION_CATEGORY
+        ? m.tx_kind_correction()
+        : tx.amount > 0
+          ? m.tx_kind_income()
+          : m.tx_kind_expense()
 
   const initial: Draft = {
     name: tx.name,
@@ -238,37 +243,44 @@ export function ActivityPanel({
         )}
       />
 
-      <div className={field}>
-        <span className={fieldLabel} id="f-cat">
-          {m.tx_category()}
-        </span>
-        <Popover>
-          <PopoverTrigger aria-labelledby="f-cat" className={fieldValue}>
-            <span className="flex min-w-0 items-center gap-2">
-              <CategoryIcon icon={parent?.icon} />
-              <span className="truncate">
-                {parent?.name}
-                {draft.subcategoryId && cat && <span className="text-muted-foreground"> › {cat.name}</span>}
+      {isRefund ? (
+        // A refund keeps its spending entry's category, which changes with that entry.
+        <p className="border-t py-3 text-xs text-muted-foreground">
+          {m.tx_refund_for({ name: draft.name || parent?.name || "", category: parent?.name ?? "" })}
+        </p>
+      ) : (
+        <div className={field}>
+          <span className={fieldLabel} id="f-cat">
+            {m.tx_category()}
+          </span>
+          <Popover>
+            <PopoverTrigger aria-labelledby="f-cat" className={fieldValue}>
+              <span className="flex min-w-0 items-center gap-2">
+                <CategoryIcon icon={parent?.icon} />
+                <span className="truncate">
+                  {parent?.name}
+                  {draft.subcategoryId && cat && <span className="text-muted-foreground"> › {cat.name}</span>}
+                </span>
               </span>
-            </span>
-            <CaretDownIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-          </PopoverTrigger>
-          <PopoverContent align="start" className="w-64 gap-0 p-0">
-            <CategoryPicker
-              value={cat?.id}
-              filter={(c) => !isNeutral(c.id) && !!c.income === draft.amount > 0}
-              onPick={(c) =>
-                change(
-                  c.parent_id
-                    ? { categoryId: c.parent_id, subcategoryId: c.id }
-                    : { categoryId: c.id, subcategoryId: null },
-                  0
-                )
-              }
-            />
-          </PopoverContent>
-        </Popover>
-      </div>
+              <CaretDownIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+            </PopoverTrigger>
+            <PopoverContent align="start" className="w-64 gap-0 p-0">
+              <CategoryPicker
+                value={cat?.id}
+                filter={(c) => !isNeutral(c.id) && !!c.income === draft.amount > 0}
+                onPick={(c) =>
+                  change(
+                    c.parent_id
+                      ? { categoryId: c.parent_id, subcategoryId: c.id }
+                      : { categoryId: c.id, subcategoryId: null },
+                    0
+                  )
+                }
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+      )}
 
       <div className={field}>
         <span className={fieldLabel} id="f-acc">
@@ -360,6 +372,8 @@ export function ActivityPanel({
 
       <Attachments key={tx.id} transactionId={tx.id} className="mt-4" />
 
+      {canRefund(tx) && <Refunds tx={tx} className="mt-4" />}
+
       {recent.length > 1 && (
         <div className="mt-5">
           <div className="mb-2.5 flex items-baseline justify-between">
@@ -404,9 +418,11 @@ export function ActivityPanel({
           {status === "error" ? m.tx_not_saved() : status === "saving" ? m.tx_saving() : m.tx_autosaved()}
         </span>
         <div className="flex gap-1">
-          <Button variant="ghost" onClick={duplicate}>
-            {m.tx_duplicate()}
-          </Button>
+          {!isRefund && (
+            <Button variant="ghost" onClick={duplicate}>
+              {m.tx_duplicate()}
+            </Button>
+          )}
           <Button
             variant="ghost"
             className="text-destructive hover:text-destructive"
@@ -431,6 +447,7 @@ export function ActivityPanel({
                 }}
                 markup={{ num: ({ children }) => <span className="num">{children}</span> }}
               />
+              {refundList(tx.refunds).length > 0 && ` ${m.tx_delete_refunds()}`}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

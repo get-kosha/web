@@ -216,6 +216,7 @@ const toTransaction = (t: Tx, tz: string, l: Lookups) => ({
   reconciled: !!t.reconciled_id,
   bankRef: t.bank_ref ?? null,
   attachmentCount: t.files ?? 0,
+  refundOf: t.refund_of ?? null,
 })
 
 /** Transactions by id, in the order asked for. */

@@ -62,6 +62,7 @@ What each term means in Kosha. Pick one word per concept and use it everywhere.
 | income                           | Money coming in.                                                                                         |
 | transfer                         | Money moved between two of the user's own accounts. Never income or spending.                            |
 | transfer fee                     | The fee on a transfer or currency exchange. It counts as spending.                                       |
+| refund                           | Money that came back for spending, in full or in part, into any account. Lowers spending.                |
 | correction                       | A neutral entry that fixes a balance.                                                                    |
 | opening balance                  | What an account held before its first transaction in Kosha.                                              |
 | balance                          | What an account holds now.                                                                               |
@@ -169,6 +170,7 @@ What each term means in Kosha. Pick one word per concept and use it everywhere.
 | income                           | Einnahmen                                  |
 | transfer                         | Umbuchung                                  |
 | transfer fee                     | Umbuchungsgebühr                           |
+| refund                           | Erstattung                                 |
 | correction                       | Korrektur                                  |
 | opening balance                  | Anfangssaldo                               |
 | balance                          | Kontostand                                 |
@@ -274,6 +276,7 @@ What each term means in Kosha. Pick one word per concept and use it everywhere.
 | income                           | ingresos                                        |
 | transfer                         | transferencia                                   |
 | transfer fee                     | comisión de transferencia                       |
+| refund                           | reembolso                                       |
 | correction                       | corrección                                      |
 | opening balance                  | saldo inicial                                   |
 | balance                          | saldo                                           |
@@ -379,6 +382,7 @@ What each term means in Kosha. Pick one word per concept and use it everywhere.
 | income                           | revenus                                                 |
 | transfer                         | virement                                                |
 | transfer fee                     | frais de virement                                       |
+| refund                           | remboursement                                           |
 | correction                       | correction                                              |
 | opening balance                  | solde initial                                           |
 | balance                          | solde                                                   |
@@ -484,6 +488,7 @@ What each term means in Kosha. Pick one word per concept and use it everywhere.
 | income                           | receita (pl. receitas)                  |
 | transfer                         | transferência                           |
 | transfer fee                     | taxa de transferência                   |
+| refund                           | reembolso                               |
 | correction                       | ajuste                                  |
 | opening balance                  | saldo inicial                           |
 | balance                          | saldo                                   |
@@ -589,6 +594,7 @@ What each term means in Kosha. Pick one word per concept and use it everywhere.
 | income                           | entrata / entrate                               |
 | transfer                         | giroconto (pl. giroconti)                       |
 | transfer fee                     | commissione giroconto                           |
+| refund                           | rimborso                                        |
 | correction                       | correzione                                      |
 | opening balance                  | saldo iniziale                                  |
 | balance                          | saldo                                           |
@@ -694,6 +700,7 @@ What each term means in Kosha. Pick one word per concept and use it everywhere.
 | income                           | inkomsten                               |
 | transfer                         | overboeking                             |
 | transfer fee                     | overboekingskosten                      |
+| refund                           | terugbetaling                           |
 | correction                       | correctie                               |
 | opening balance                  | beginsaldo                              |
 | balance                          | saldo                                   |
@@ -799,6 +806,7 @@ What each term means in Kosha. Pick one word per concept and use it everywhere.
 | income                           | доход / доходы                                      |
 | transfer                         | перевод                                             |
 | transfer fee                     | комиссия за перевод                                 |
+| refund                           | возврат                                             |
 | correction                       | корректировка                                       |
 | opening balance                  | начальный остаток                                   |
 | balance                          | баланс                                              |
@@ -904,6 +912,7 @@ What each term means in Kosha. Pick one word per concept and use it everywhere.
 | income                           | 収入                                 |
 | transfer                         | 振替                                 |
 | transfer fee                     | 振替手数料                           |
+| refund                           | 返金                                 |
 | correction                       | 修正                                 |
 | opening balance                  | 開始残高                             |
 | balance                          | 残高                                 |
@@ -1009,6 +1018,7 @@ What each term means in Kosha. Pick one word per concept and use it everywhere.
 | income                           | 收入                 |
 | transfer                         | 转账                 |
 | transfer fee                     | 转账手续费           |
+| refund                           | 退款                 |
 | correction                       | 更正                 |
 | opening balance                  | 期初余额             |
 | balance                          | 余额                 |
@@ -1114,6 +1124,7 @@ What each term means in Kosha. Pick one word per concept and use it everywhere.
 | income                           | 수입                            |
 | transfer                         | 이체                            |
 | transfer fee                     | 이체 수수료                     |
+| refund                           | 환불                            |
 | correction                       | 보정                            |
 | opening balance                  | 시작 잔액                       |
 | balance                          | 잔액                            |
@@ -1219,6 +1230,7 @@ What each term means in Kosha. Pick one word per concept and use it everywhere.
 | income                           | आय                                              |
 | transfer                         | ट्रांसफ़र                                          |
 | transfer fee                     | ट्रांसफ़र शुल्क                                      |
+| refund                           | रिफ़ंड                                            |
 | correction                       | सुधार                                            |
 | opening balance                  | शुरुआती बैलेंस                                       |
 | balance                          | बैलेंस                                             |

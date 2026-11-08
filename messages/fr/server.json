@@ -62,5 +62,6 @@
   "server_avatar_unreadable": "Impossible de lire cette image",
   "server_request_too_large": "C'est trop volumineux pour être envoyé. Essayez un fichier plus petit ou moins d'opérations.",
   "server_transaction_id_taken": "Une autre opération a déjà l'identifiant {id}. Utilisez un nouvel identifiant pour une nouvelle opération.",
-  "server_transaction_id_twice": "Cet identifiant apparaît deux fois dans la même requête."
+  "server_transaction_id_twice": "Cet identifiant apparaît deux fois dans la même requête.",
+  "server_refund_not_spending": "Seule une dépense payée peut être remboursée"
 }

@@ -62,5 +62,6 @@
   "server_avatar_unreadable": "その画像を読み込めませんでした",
   "server_request_too_large": "送信するにはサイズが大きすぎます。小さいファイルにするか、取引の数を減らしてください。",
   "server_transaction_id_taken": "別の取引がすでにID {id} を使っています。新しい取引には新しいIDを使ってください。",
-  "server_transaction_id_twice": "このIDが同じリクエスト内に2回含まれています。"
+  "server_transaction_id_twice": "このIDが同じリクエスト内に2回含まれています。",
+  "server_refund_not_spending": "返金できるのは支払い済みの支出だけです"
 }

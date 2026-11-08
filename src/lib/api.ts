@@ -171,6 +171,11 @@ export const deleteTransaction = createServerFn({ method: "POST" })
     await finance.deleteTransactions(await userId(), [data.id])
   })
 
+/** Records money coming back for a spending entry, in full or in part, into any account. */
+export const saveRefund = createServerFn({ method: "POST" })
+  .validator(finance.refundInput)
+  .handler(async ({ data }) => ({ id: await finance.saveRefund(await userId(), data) }))
+
 export const saveTransfer = createServerFn({ method: "POST" })
   .validator(finance.transferInput)
   .handler(async ({ data }) => ({ transferId: (await finance.saveTransfers(await userId(), [data]))[0] }))

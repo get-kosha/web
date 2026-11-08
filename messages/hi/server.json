@@ -62,5 +62,6 @@
   "server_avatar_unreadable": "वह इमेज पढ़ी नहीं जा सकी",
   "server_request_too_large": "यह भेजने के लिए बहुत बड़ा है। कोई छोटी फ़ाइल आज़माएँ या कम एंट्री भेजें।",
   "server_transaction_id_taken": "किसी दूसरे लेन-देन की ID पहले से {id} है। नए लेन-देन के लिए नई ID इस्तेमाल करें।",
-  "server_transaction_id_twice": "यह ID एक ही अनुरोध में दो बार है।"
+  "server_transaction_id_twice": "यह ID एक ही अनुरोध में दो बार है।",
+  "server_refund_not_spending": "सिर्फ़ चुकाए गए खर्च का रिफ़ंड हो सकता है"
 }

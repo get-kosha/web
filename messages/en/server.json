@@ -62,5 +62,6 @@
   "server_avatar_unreadable": "That image couldn't be read",
   "server_request_too_large": "This is too large to send. Try a smaller file or fewer entries.",
   "server_transaction_id_taken": "Another entry already has the id {id}. Use a new id for a new entry.",
-  "server_transaction_id_twice": "This id appears twice in the same request."
+  "server_transaction_id_twice": "This id appears twice in the same request.",
+  "server_refund_not_spending": "Only paid spending can be refunded"
 }
