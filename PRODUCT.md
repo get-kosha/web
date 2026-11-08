@@ -36,7 +36,7 @@ Built around the habit of writing each payment down as it happens: entry takes s
 - Name: Kosha (कोश, Sanskrit for treasury). Tagline: "Jot down what you spent. Know where it went." (since 2026-11-07; the owner wanted a line that rhymes, says what the app does and does not sound machine-written. It replaced "Personal finance, a few seconds at a time.", which had replaced "Every account. Every currency. One treasury."). Translations rhyme in their own language rather than translating word for word; see `translations.md`.
 - Symbol: a K whose arm is a coin. Peacock `#0F524E`, marigold `#F4A62A`, paper `#F3F5F0`. Wordmark: lowercase "kosha", Bricolage Grotesque Bold.
 - Inside the app, brand colours appear only in the mark. Marketing surfaces (the landing page) may use peacock and marigold as grounds (confirmed by the owner, 2026-11-06).
-- Source code: github.com/amruthpillai/kosha, public and MIT licensed (`LICENSE`). The hosted service has a privacy policy at `/privacy` and terms at `/terms` (`src/routes/`); update them when what the app stores or sends changes.
+- Source code: github.com/get-kosha/web, public and MIT licensed (`LICENSE`). The hosted service has a privacy policy at `/privacy` and terms at `/terms` (`src/routes/`); update them when what the app stores or sends changes.
 
 ## Evidence on Hand
 

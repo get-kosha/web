@@ -20,11 +20,11 @@ import {
   WEEK_STATS,
   WeekDemo,
 } from "@/components/landing-demos"
+import { SOURCE } from "@/components/legal"
 import { cn } from "@/lib/utils"
 import { m } from "@/paraglide/messages"
 import { locales } from "@/paraglide/runtime"
 
-const SOURCE = "https://github.com/amruthpillai/kosha"
 const SIGN_UP = "/login?mode=up"
 // Opens /login with the shared demo account filled in.
 const DEMO_SIGN_IN = "/login?demo=1"

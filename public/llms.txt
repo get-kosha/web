@@ -18,7 +18,7 @@ Main features:
 
 ## Docs
 
-- [README](https://github.com/amruthpillai/kosha/blob/main/README.md): features, running it locally and deploying your own copy
+- [README](https://github.com/get-kosha/web/blob/main/README.md): features, running it locally and deploying your own copy
 - [API reference](https://getkosha.app/api/v1/docs): the REST API under /api/v1, authenticated with API keys from Settings › API & MCP
 - [OpenAPI document](https://getkosha.app/api/v1/openapi.json): the same API as OpenAPI JSON
 - MCP server: https://getkosha.app/mcp (OAuth 2.1 with dynamic client registration; every REST operation is also an MCP tool)
@@ -27,8 +27,8 @@ Main features:
 
 - [Privacy policy](https://getkosha.app/privacy): what the hosted service stores and which outside services it uses
 - [Terms of service](https://getkosha.app/terms)
-- [MIT licence](https://github.com/amruthpillai/kosha/blob/main/LICENSE)
+- [MIT licence](https://github.com/get-kosha/web/blob/main/LICENSE)
 
 ## Optional
 
-- [Source code](https://github.com/amruthpillai/kosha)
+- [Source code](https://github.com/get-kosha/web)

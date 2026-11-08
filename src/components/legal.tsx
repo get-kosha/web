@@ -4,7 +4,7 @@ import { KoshaLogo } from "@/components/kosha-mark"
 import { intlLocale } from "@/lib/core"
 import { m } from "@/paraglide/messages"
 
-export const SOURCE = "https://github.com/amruthpillai/kosha"
+export const SOURCE = "https://github.com/get-kosha/web"
 /** Where private questions go: the maintainer's GitHub profile lists a contact address. */
 export const MAINTAINER = "https://github.com/amruthpillai"
 export const LICENSE = `${SOURCE}/blob/main/LICENSE`
