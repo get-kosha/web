@@ -60,7 +60,7 @@
     }
   ],
   "app_acc_credit_used": "{percent} de {limit} utilisés",
-  "app_acc_debt_hint": "La valeur nette compte ce que vous devez comme une dette.",
+  "app_acc_debt_hint": "Le patrimoine compte ce que vous devez comme une dette.",
   "app_acc_from_account": "De {account}",
   "app_acc_fx_cost": "coût {amount}",
   "app_acc_fx_empty": "Aucun change pour l'instant. Les virements entre comptes de devises différentes s'affichent ici.",
@@ -74,7 +74,7 @@
   "app_acc_kosha_shows": "Kosha affiche {amount}",
   "app_acc_owed": "{account}, dû",
   "app_acc_reconcile_hint": "Le comparer à un relevé bancaire",
-  "app_acc_still_counted": "toujours dans la valeur nette",
+  "app_acc_still_counted": "toujours dans le patrimoine",
   "app_acc_value": "Valeur",
   "app_acc_currencies": [
     {
