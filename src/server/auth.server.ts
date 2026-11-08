@@ -4,7 +4,6 @@ import { tanstackStartCookies } from "better-auth/tanstack-start"
 import { passkey } from "@better-auth/passkey"
 import { jwt, twoFactor } from "better-auth/plugins"
 import { createAuthMiddleware } from "better-auth/api"
-import type { BetterAuthPlugin } from "better-auth"
 import { mcp } from "@better-auth/mcp"
 import { getOAuthProviderApi, type OAuthClaimExtensionInput } from "@better-auth/oauth-provider"
 import { dash, sentinel } from "@better-auth/infra"
@@ -68,32 +67,41 @@ async function grantClaim({ ctx, opts, client, grantType }: OAuthClaimExtensionI
 
 /**
  * Points Kosha's apps (migrations/0009_app_clients.sql) at this server's own callback and REST API, which a
- * migration can't know. Runs once per isolate, after mcp() has stored its resources.
+ * migration can't know. It runs on the first auth request of each isolate, before Better Auth reads (and caches)
+ * the clients: a Worker can't reach D1 while it starts up, so a plugin `init` would silently do nothing.
  */
-const appClients = {
-  id: "kosha-app-clients",
-  init: async () => {
+let appClientsReady: Promise<void> | null = null
+function ensureAppClients() {
+  appClientsReady ??= (async () => {
     const DB = env.DB
     const ids = [...APP_CLIENTS]
-    try {
-      await DB.batch([
-        DB.prepare(
-          `UPDATE "oauthClient" SET "redirectUris" = ?1 WHERE "clientId" IN (?2, ?3) AND "redirectUris" IS NOT ?1`
-        ).bind(JSON.stringify([APP_CALLBACK, APP_SCHEME_CALLBACK]), ...ids),
-        DB.prepare(`INSERT OR IGNORE INTO "oauthClientResource" ("id", "clientId", "resourceId", "createdAt")
-          SELECT c."clientId" || ' ' || r."identifier", c."clientId", r."identifier", ?1
-          FROM "oauthClient" c JOIN "oauthResource" r ON r."identifier" = ?4 WHERE c."clientId" IN (?2, ?3)`).bind(
-          new Date().toISOString(),
-          ...ids,
-          API_RESOURCE
-        ),
-      ])
-    } catch (e) {
-      // Before the migrations have run there is nothing to update; the next isolate tries again.
-      console.error("Couldn't set up Kosha's app clients", e)
-    }
-  },
-} satisfies BetterAuthPlugin
+    const now = new Date().toISOString()
+    // The resources as Better Auth seeds them (it does so lazily, on its first look-up), so the link below has
+    // its row to point at. Better Auth leaves rows that already exist alone.
+    const resource =
+      DB.prepare(`INSERT OR IGNORE INTO "oauthResource" ("id", "identifier", "name", "dpopBoundAccessTokensRequired",
+      "disabled", "policyVersion", "createdAt", "updatedAt") VALUES (?1, ?1, ?1, 0, 0, 1, ?2, ?2)`)
+    await DB.batch([
+      resource.bind(API_RESOURCE, now),
+      resource.bind(MCP_RESOURCE, now),
+      DB.prepare(
+        `UPDATE "oauthClient" SET "redirectUris" = ?1 WHERE "clientId" IN (?2, ?3) AND "redirectUris" IS NOT ?1`
+      ).bind(JSON.stringify([APP_CALLBACK, APP_SCHEME_CALLBACK]), ...ids),
+      DB.prepare(`INSERT OR IGNORE INTO "oauthClientResource" ("id", "clientId", "resourceId", "createdAt")
+        SELECT c."clientId" || ' ' || r."identifier", c."clientId", r."identifier", ?1
+        FROM "oauthClient" c JOIN "oauthResource" r ON r."identifier" = ?4 WHERE c."clientId" IN (?2, ?3)`).bind(
+        now,
+        ...ids,
+        API_RESOURCE
+      ),
+    ])
+  })().catch((e) => {
+    // Before the migrations have run there is nothing to update; the next request tries again.
+    appClientsReady = null
+    console.error("Couldn't set up Kosha's app clients", e)
+  })
+  return appClientsReady
+}
 
 export const auth = betterAuth({
   database: env.DB,
@@ -138,6 +146,7 @@ export const auth = betterAuth({
     // consent for APP_CALLBACK; any other redirect of theirs, such as the app.getkosha: scheme that another
     // app could register, shows the consent screen every time, remembered consent or not.
     before: createAuthMiddleware(async (ctx) => {
+      await ensureAppClients()
       if (ctx.path !== "/oauth2/authorize") return
       const post = ctx.method === "POST"
       const params = ((post ? ctx.body : ctx.query) ?? {}) as Record<string, unknown>
@@ -181,7 +190,7 @@ export const auth = betterAuth({
       resource: MCP_RESOURCE,
       resources: [API_RESOURCE],
       // RFC 8707: a client gets tokens only for the resources it's linked to. Registration links new clients to
-      // both (mcp() adds /mcp); appClients() below links Kosha's apps to the REST API alone.
+      // both (mcp() adds /mcp); ensureAppClients() links Kosha's apps to the REST API alone.
       clientRegistrationDefaultResources: [API_RESOURCE],
       cachedTrustedClients: APP_CLIENTS,
       loginPage: "/login",
@@ -199,7 +208,6 @@ export const auth = betterAuth({
       refreshTokenReuseInterval: 7 * 24 * 60 * 60,
       extensions: [{ claims: { accessToken: grantClaim } }],
     }),
-    appClients,
     ...(DASH_KEY
       ? [
           dash({ apiKey: DASH_KEY }),
