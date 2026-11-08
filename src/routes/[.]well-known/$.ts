@@ -9,7 +9,7 @@ import { APP_CALLBACK, auth } from "@/server/auth.server"
 //   /.well-known/openid-configuration[/api/auth]       the same, for OpenID Connect clients
 // and the files that let Kosha's apps claim the sign-in callback (APP_CALLBACK), so no other app receives it:
 //   /.well-known/assetlinks.json              Android App Links: the app's package and signing certificates
-//   /.well-known/apple-app-site-association   iOS universal links: the app's team and bundle id
+//   /.well-known/apple-app-site-association   iOS universal links and web credentials: the app's team and bundle id
 // Each needs its variable (ANDROID_CERT_SHA256, APPLE_TEAM_ID). A server without them answers 404, and the
 // callback page asks the person to open the app instead.
 const cors = { "Access-Control-Allow-Origin": "*" }
@@ -42,11 +42,16 @@ function assetLinks() {
   ]
 }
 
+/**
+ * applinks lets Safari hand the callback to the app. webcredentials is what iOS checks before an
+ * ASWebAuthenticationSession may finish on an HTTPS callback (.https(host:path:)), so the app's sign-in needs it.
+ */
 function appleAppSite() {
   const team = APPS.APPLE_TEAM_ID?.trim()
   if (!team) return null
+  const app = `${team}.${APP_ID}`
   const path = new URL(APP_CALLBACK).pathname
-  return { applinks: { details: [{ appIDs: [`${team}.${APP_ID}`], components: [{ "/": path }] }] } }
+  return { applinks: { details: [{ appIDs: [app], components: [{ "/": path }] }] }, webcredentials: { apps: [app] } }
 }
 
 const jsonOr404 = (doc: unknown) =>
