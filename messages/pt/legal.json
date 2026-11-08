@@ -83,5 +83,22 @@
   "legal_terms_ending_body": "Você pode parar a qualquer momento excluindo sua conta em Configurações › Excluir e redefinir. O serviço pode encerrar uma conta que viole estes termos. As seções que, por sua natureza, devam continuar valendo, como as de garantia e de responsabilidade, continuam após o encerramento de uma conta.",
   "legal_terms_changes_title": "Alterações nestes termos",
   "legal_terms_changes_body": "Quando estes termos mudam, a data no topo também muda, e o histórico completo é público no {#source}repositório do código-fonte{/source}. Continuar usando o serviço após uma alteração significa que você aceita os novos termos.",
-  "legal_terms_contact_body": "Para dúvidas sobre estes termos, use os dados de contato no {#maintainer}perfil do mantenedor no GitHub{/maintainer} ou abra uma issue no {#github}GitHub{/github}."
+  "legal_terms_contact_body": "Para dúvidas sobre estes termos, use os dados de contato no {#maintainer}perfil do mantenedor no GitHub{/maintainer} ou abra uma issue no {#github}GitHub{/github}.",
+  "legal_delete_title": "Excluir sua conta",
+  "legal_delete_head_description": "Como excluir sua conta do Kosha e todos os dados dela, o que é excluído e o que é mantido.",
+  "legal_delete_intro": "Você pode excluir sua conta do Kosha e todos os dados dela a qualquer momento, no app do Kosha para Android ou iOS ou no site. A exclusão é imediata e não pode ser desfeita, então exporte antes o que quiser guardar em Configurações › Importar e exportar.",
+  "legal_delete_steps_title": "Como excluir sua conta",
+  "legal_delete_step_sign_in": "Entre no Kosha pelo app ou em {#app}getkosha.app{/app}.",
+  "legal_delete_step_open": "Abra {#settings}Configurações › Excluir e redefinir{/settings}.",
+  "legal_delete_step_confirm": "Escolha “Excluir conta…” e siga as etapas para confirmar. O Kosha exclui a conta assim que você confirma.",
+  "legal_delete_no_sign_in": "Não consegue entrar? Redefina sua senha na página de login. Se não der certo, envie um e-mail para {#email}{email}{/email} a partir do endereço da sua conta, e a conta e os dados dela serão excluídos em até 30 dias.",
+  "legal_delete_deleted_title": "O que é excluído imediatamente",
+  "legal_delete_deleted_profile": "{#strong}Seu perfil:{/strong} nome, endereço de e-mail, hash da senha, foto de perfil, chaves de acesso, configurações de autenticação em dois fatores e vínculo com o Google.",
+  "legal_delete_deleted_finances": "{#strong}Suas finanças:{/strong} contas, transações, transferências, categorias, beneficiários, tags, eventos, pagamentos recorrentes, valores de investimento, conciliações, extratos importados e os recibos e holerites anexados.",
+  "legal_delete_deleted_access": "{#strong}Acessos e configurações:{/strong} preferências, sessões de login, chaves de API, apps conectados, chaves de provedores de IA e o registro de solicitações de IA.",
+  "legal_delete_kept_title": "O que é mantido, e por quanto tempo",
+  "legal_delete_kept_backups": "As cópias na recuperação pontual (point-in-time recovery) do provedor do banco de dados expiram em até 30 dias.",
+  "legal_delete_kept_logs": "Os registros de solicitações de curta duração da Cloudflare, usados para corrigir erros, expiram em até 7 dias.",
+  "legal_delete_kept_better_auth": "O Better Auth, que opera o painel de login do Kosha, mantém o registro com seu nome, endereço de e-mail e atividade de login conforme a própria política de retenção. Envie um e-mail para {#email}{email}{/email} para pedir a remoção.",
+  "legal_delete_kept_nothing_else": "O Kosha não mantém mais nada."
 }

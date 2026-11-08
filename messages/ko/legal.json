@@ -83,5 +83,22 @@
   "legal_terms_ending_body": "설정 › 삭제 및 초기화에서 계정을 삭제하면 언제든 이용을 그만둘 수 있어요. 이 약관을 위반한 계정은 서비스에서 해지할 수 있어요. 보증과 책임 조항처럼 성격상 계속 유효해야 하는 조항은 계정이 종료된 뒤에도 유효해요.",
   "legal_terms_changes_title": "약관 변경",
   "legal_terms_changes_body": "이 약관이 바뀌면 상단의 날짜도 바뀌며, 전체 변경 이력은 {#source}소스 저장소{/source}에 공개돼 있어요. 변경 후에도 서비스를 이용하면 새 약관에 동의하는 것으로 간주돼요.",
-  "legal_terms_contact_body": "이 약관에 관한 질문은 {#maintainer}관리자의 GitHub 프로필{/maintainer}에 있는 연락처를 이용하거나 {#github}GitHub{/github}에 이슈를 열어 주세요."
+  "legal_terms_contact_body": "이 약관에 관한 질문은 {#maintainer}관리자의 GitHub 프로필{/maintainer}에 있는 연락처를 이용하거나 {#github}GitHub{/github}에 이슈를 열어 주세요.",
+  "legal_delete_title": "계정 삭제",
+  "legal_delete_head_description": "Kosha 계정과 모든 데이터를 삭제하는 방법, 삭제되는 것과 남는 것.",
+  "legal_delete_intro": "Android나 iOS용 Kosha 앱 또는 웹사이트에서 언제든지 직접 Kosha 계정과 모든 데이터를 삭제할 수 있어요. 삭제는 바로 이루어지고 되돌릴 수 없으니, 남기고 싶은 데이터는 먼저 설정 › 가져오기 및 내보내기에서 내보내세요.",
+  "legal_delete_steps_title": "계정 삭제 방법",
+  "legal_delete_step_sign_in": "앱이나 {#app}getkosha.app{/app}에서 Kosha에 로그인하세요.",
+  "legal_delete_step_open": "{#settings}설정 › 삭제 및 초기화{/settings}를 여세요.",
+  "legal_delete_step_confirm": "'계정 삭제…'를 선택하고 안내에 따라 확인하세요. 확인하면 Kosha가 바로 계정을 삭제해요.",
+  "legal_delete_no_sign_in": "로그인할 수 없나요? 로그인 페이지에서 비밀번호를 재설정하세요. 그래도 안 되면 계정의 이메일 주소로 {#email}{email}{/email}에 메일을 보내 주세요. 30일 안에 계정과 데이터를 삭제해 드려요.",
+  "legal_delete_deleted_title": "바로 삭제되는 것",
+  "legal_delete_deleted_profile": "{#strong}프로필:{/strong} 이름, 이메일 주소, 비밀번호 해시, 프로필 사진, 패스키, 2단계 인증 설정, Google 연결.",
+  "legal_delete_deleted_finances": "{#strong}금융 데이터:{/strong} 계좌, 거래, 이체, 카테고리, 수취인, 태그, 이벤트, 정기 결제, 투자 평가액, 대사 기록, 가져온 명세서, 첨부한 영수증과 급여 명세서.",
+  "legal_delete_deleted_access": "{#strong}접근 권한과 설정:{/strong} 환경설정, 로그인 세션, API 키, 연결된 앱, AI 제공업체 키, AI 요청 로그.",
+  "legal_delete_kept_title": "남는 것과 보관 기간",
+  "legal_delete_kept_backups": "데이터베이스 제공업체의 특정 시점 복구에 남은 사본은 30일 안에 만료돼요.",
+  "legal_delete_kept_logs": "오류 수정에 쓰는 Cloudflare의 단기 요청 로그는 7일 안에 만료돼요.",
+  "legal_delete_kept_better_auth": "Kosha의 로그인 대시보드를 운영하는 Better Auth는 이름, 이메일 주소, 로그인 활동 기록을 자체 보관 정책에 따라 보관해요. 삭제를 원하면 {#email}{email}{/email}로 메일을 보내 주세요.",
+  "legal_delete_kept_nothing_else": "그 밖에 Kosha가 보관하는 것은 없어요."
 }

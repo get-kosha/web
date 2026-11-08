@@ -83,5 +83,22 @@
   "legal_terms_ending_body": "你可以随时在“设置 › 删除与重置”中删除账号以停止使用。对于违反本条款的账号，本服务可以将其终止。按其性质应当持续有效的条款（例如担保和责任条款）在账号终止后继续有效。",
   "legal_terms_changes_title": "条款变更",
   "legal_terms_changes_body": "本条款变更时，顶部的日期也会随之更新，完整的变更历史公开在{#source}源代码仓库{/source}中。变更后继续使用本服务，即表示你接受新的条款。",
-  "legal_terms_contact_body": "如对本条款有疑问，请使用{#maintainer}维护者 GitHub 个人资料{/maintainer}上的联系方式，或在 {#github}GitHub{/github} 上提交 issue。"
+  "legal_terms_contact_body": "如对本条款有疑问，请使用{#maintainer}维护者 GitHub 个人资料{/maintainer}上的联系方式，或在 {#github}GitHub{/github} 上提交 issue。",
+  "legal_delete_title": "删除账号",
+  "legal_delete_head_description": "如何删除你的 Kosha 账号及其所有数据，哪些会被删除，哪些会保留。",
+  "legal_delete_intro": "你可以随时在 Android 或 iOS 版 Kosha 应用或网站上自行删除 Kosha 账号及其所有数据。删除会立即生效且无法撤销，所以请先在“设置 › 导入与导出”中导出想保留的内容。",
+  "legal_delete_steps_title": "如何删除账号",
+  "legal_delete_step_sign_in": "在应用中或在 {#app}getkosha.app{/app} 登录 Kosha。",
+  "legal_delete_step_open": "打开{#settings}“设置 › 删除与重置”{/settings}。",
+  "legal_delete_step_confirm": "选择“删除 Kosha 账号…”，并按步骤确认。确认后 Kosha 会立即删除账号。",
+  "legal_delete_no_sign_in": "无法登录？请在登录页面重置密码。如果仍然不行，请用账号的邮箱地址发送邮件至 {#email}{email}{/email}，账号及其数据会在 30 天内删除。",
+  "legal_delete_deleted_title": "立即删除的内容",
+  "legal_delete_deleted_profile": "{#strong}你的个人资料：{/strong}姓名、邮箱地址、密码哈希、头像、通行密钥、两步验证设置以及与 Google 的关联。",
+  "legal_delete_deleted_finances": "{#strong}你的财务数据：{/strong}账户、交易、转账、分类、收款方、标签、事件、定期付款、投资估值、对账记录、导入的账单，以及附加的收据和工资单。",
+  "legal_delete_deleted_access": "{#strong}访问与设置：{/strong}偏好设置、登录会话、API 密钥、已连接的应用、AI 服务商密钥和 AI 请求日志。",
+  "legal_delete_kept_title": "保留的内容和保留时间",
+  "legal_delete_kept_backups": "数据库服务商的时间点恢复副本会在 30 天内过期。",
+  "legal_delete_kept_logs": "Cloudflare 用于排查错误的短期请求日志会在 7 天内过期。",
+  "legal_delete_kept_better_auth": "运营 Kosha 登录管理后台的 Better Auth 会按其自身的保留政策保存你的姓名、邮箱地址和登录活动记录。如需删除，请发送邮件至 {#email}{email}{/email}。",
+  "legal_delete_kept_nothing_else": "除此之外，Kosha 不保留任何内容。"
 }

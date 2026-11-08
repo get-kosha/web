@@ -83,5 +83,22 @@
   "legal_terms_ending_body": "You can stop at any time by deleting your account in Settings › Delete & reset. The service may end an account that breaks these terms. Sections that by their nature should last, such as the warranty and liability sections, continue after an account ends.",
   "legal_terms_changes_title": "Changes to these terms",
   "legal_terms_changes_body": "When these terms change, the date at the top changes too, and the full history is public in the {#source}source repository{/source}. Using the service after a change means you accept the new terms.",
-  "legal_terms_contact_body": "For questions about these terms, use the contact details on {#maintainer}the maintainer's GitHub profile{/maintainer}, or open an issue on {#github}GitHub{/github}."
+  "legal_terms_contact_body": "For questions about these terms, use the contact details on {#maintainer}the maintainer's GitHub profile{/maintainer}, or open an issue on {#github}GitHub{/github}.",
+  "legal_delete_title": "Delete your account",
+  "legal_delete_head_description": "How to delete your Kosha account and all its data, what is deleted and what is kept.",
+  "legal_delete_intro": "You can delete your Kosha account and all its data yourself at any time, in the Kosha app for Android or iOS or on the website. Deletion happens straight away and can't be undone, so export anything you want to keep first in Settings › Import & export.",
+  "legal_delete_steps_title": "How to delete your account",
+  "legal_delete_step_sign_in": "Sign in to Kosha in the app, or at {#app}getkosha.app{/app}.",
+  "legal_delete_step_open": "Open {#settings}Settings › Delete & reset{/settings}.",
+  "legal_delete_step_confirm": "Choose Delete account… and follow the steps to confirm. Kosha deletes the account as soon as you confirm.",
+  "legal_delete_no_sign_in": "Can't sign in? Reset your password from the sign-in page. If that doesn't work, email {#email}{email}{/email} from the address on your account, and the account and its data will be deleted within 30 days.",
+  "legal_delete_deleted_title": "What is deleted straight away",
+  "legal_delete_deleted_profile": "{#strong}Your profile:{/strong} name, email address, password hash, profile picture, passkeys, two-factor settings and Google sign-in link.",
+  "legal_delete_deleted_finances": "{#strong}Your finances:{/strong} accounts, transactions, transfers, categories, payees, tags, events, recurring payments, investment values, reconciliations, statement imports, and attached receipts and payslips.",
+  "legal_delete_deleted_access": "{#strong}Access and settings:{/strong} preferences, sign-in sessions, API keys, connected apps, AI provider keys and the AI request log.",
+  "legal_delete_kept_title": "What is kept, and for how long",
+  "legal_delete_kept_backups": "Copies in the database provider's point-in-time recovery expire within 30 days.",
+  "legal_delete_kept_logs": "Cloudflare's short-lived request logs, used to fix errors, expire within 7 days.",
+  "legal_delete_kept_better_auth": "Better Auth, which runs Kosha's sign-in dashboard, keeps its record of your name, email address and sign-in activity under its own retention policy. Email {#email}{email}{/email} to have it removed.",
+  "legal_delete_kept_nothing_else": "Kosha keeps nothing else."
 }

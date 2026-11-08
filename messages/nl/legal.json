@@ -83,5 +83,22 @@
   "legal_terms_ending_body": "Je kunt op elk moment stoppen door je account te verwijderen via Instellingen › Verwijderen & resetten. De dienst kan een account beëindigen dat deze voorwaarden overtreedt. Bepalingen die naar hun aard moeten blijven gelden, zoals die over garantie en aansprakelijkheid, blijven gelden nadat een account is beëindigd.",
   "legal_terms_changes_title": "Wijzigingen in deze voorwaarden",
   "legal_terms_changes_body": "Als deze voorwaarden veranderen, verandert ook de datum bovenaan, en de volledige geschiedenis is openbaar in de {#source}broncoderepository{/source}. Als je de dienst na een wijziging blijft gebruiken, accepteer je de nieuwe voorwaarden.",
-  "legal_terms_contact_body": "Gebruik voor vragen over deze voorwaarden de contactgegevens op {#maintainer}het GitHub-profiel van de beheerder{/maintainer}, of open een issue op {#github}GitHub{/github}."
+  "legal_terms_contact_body": "Gebruik voor vragen over deze voorwaarden de contactgegevens op {#maintainer}het GitHub-profiel van de beheerder{/maintainer}, of open een issue op {#github}GitHub{/github}.",
+  "legal_delete_title": "Account verwijderen",
+  "legal_delete_head_description": "Zo verwijder je je Kosha-account met al zijn gegevens: wat er wordt verwijderd en wat er blijft.",
+  "legal_delete_intro": "Je kunt je Kosha-account met al zijn gegevens altijd zelf verwijderen, in de Kosha-app voor Android of iOS of op de website. Het verwijderen gebeurt meteen en kan niet ongedaan worden gemaakt, dus exporteer eerst wat je wilt bewaren via Instellingen › Import & export.",
+  "legal_delete_steps_title": "Zo verwijder je je account",
+  "legal_delete_step_sign_in": "Log in bij Kosha in de app of op {#app}getkosha.app{/app}.",
+  "legal_delete_step_open": "Open {#settings}Instellingen › Verwijderen & resetten{/settings}.",
+  "legal_delete_step_confirm": "Kies ‘Account verwijderen…’ en volg de stappen om te bevestigen. Kosha verwijdert het account zodra je bevestigt.",
+  "legal_delete_no_sign_in": "Kun je niet inloggen? Stel je wachtwoord opnieuw in via de inlogpagina. Lukt dat niet, mail dan naar {#email}{email}{/email} vanaf het adres van je account. Het account en zijn gegevens worden dan binnen 30 dagen verwijderd.",
+  "legal_delete_deleted_title": "Wat er meteen wordt verwijderd",
+  "legal_delete_deleted_profile": "{#strong}Je profiel:{/strong} naam, e-mailadres, wachtwoordhash, profielfoto, passkeys, instellingen voor tweestapsverificatie en de koppeling met Google.",
+  "legal_delete_deleted_finances": "{#strong}Je financiën:{/strong} rekeningen, transacties, overboekingen, categorieën, begunstigden, tags, gebeurtenissen, terugkerende betalingen, beleggingswaarden, afstemmingen, geïmporteerde afschriften en bijgevoegde bonnen en loonstroken.",
+  "legal_delete_deleted_access": "{#strong}Toegang en instellingen:{/strong} voorkeuren, inlogsessies, API-sleutels, gekoppelde apps, sleutels van AI-providers en het AI-verzoeklogboek.",
+  "legal_delete_kept_title": "Wat er blijft, en hoe lang",
+  "legal_delete_kept_backups": "Kopieën in het point-in-time-herstel van de databaseprovider verlopen binnen 30 dagen.",
+  "legal_delete_kept_logs": "De kortlevende verzoeklogboeken van Cloudflare, gebruikt om fouten op te lossen, verlopen binnen 7 dagen.",
+  "legal_delete_kept_better_auth": "Better Auth, dat het inlogdashboard van Kosha draait, bewaart zijn gegevens over je naam, e-mailadres en inlogactiviteit volgens zijn eigen bewaarbeleid. Mail naar {#email}{email}{/email} om ze te laten verwijderen.",
+  "legal_delete_kept_nothing_else": "Verder bewaart Kosha niets."
 }

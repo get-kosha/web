@@ -83,5 +83,22 @@
   "legal_terms_ending_body": "Vous pouvez arrêter à tout moment en supprimant votre compte dans Paramètres › Supprimer et réinitialiser. Le service peut clôturer un compte qui enfreint ces conditions. Les clauses qui, par nature, doivent perdurer, comme celles relatives à la garantie et à la responsabilité, restent en vigueur après la clôture d'un compte.",
   "legal_terms_changes_title": "Modifications de ces conditions",
   "legal_terms_changes_body": "Lorsque ces conditions changent, la date en haut de page change aussi, et l'historique complet est public dans le {#source}dépôt du code source{/source}. Utiliser le service après une modification signifie que vous acceptez les nouvelles conditions.",
-  "legal_terms_contact_body": "Pour toute question sur ces conditions, utilisez les coordonnées figurant sur {#maintainer}le profil GitHub du mainteneur{/maintainer}, ou ouvrez un ticket sur {#github}GitHub{/github}."
+  "legal_terms_contact_body": "Pour toute question sur ces conditions, utilisez les coordonnées figurant sur {#maintainer}le profil GitHub du mainteneur{/maintainer}, ou ouvrez un ticket sur {#github}GitHub{/github}.",
+  "legal_delete_title": "Supprimer votre compte",
+  "legal_delete_head_description": "Comment supprimer votre compte Kosha et toutes ses données, ce qui est supprimé et ce qui est conservé.",
+  "legal_delete_intro": "Vous pouvez supprimer vous-même votre compte Kosha et toutes ses données à tout moment, dans l’app Kosha pour Android ou iOS ou sur le site. La suppression est immédiate et irréversible : exportez d’abord ce que vous voulez garder dans Paramètres › Import et export.",
+  "legal_delete_steps_title": "Comment supprimer votre compte",
+  "legal_delete_step_sign_in": "Connectez-vous à Kosha dans l’app ou sur {#app}getkosha.app{/app}.",
+  "legal_delete_step_open": "Ouvrez {#settings}Paramètres › Supprimer et réinitialiser{/settings}.",
+  "legal_delete_step_confirm": "Choisissez « Supprimer le compte Kosha… » et suivez les étapes de confirmation. Kosha supprime le compte dès que vous confirmez.",
+  "legal_delete_no_sign_in": "Vous ne pouvez pas vous connecter ? Réinitialisez votre mot de passe depuis la page de connexion. Si cela ne fonctionne pas, écrivez à {#email}{email}{/email} depuis l’adresse de votre compte : le compte et ses données seront supprimés sous 30 jours.",
+  "legal_delete_deleted_title": "Ce qui est supprimé immédiatement",
+  "legal_delete_deleted_profile": "{#strong}Votre profil :{/strong} nom, adresse e-mail, empreinte du mot de passe, photo de profil, clés d’accès, réglages de double authentification et lien avec Google.",
+  "legal_delete_deleted_finances": "{#strong}Vos finances :{/strong} comptes, opérations, virements, catégories, bénéficiaires, tags, événements, paiements récurrents, valeurs d’investissement, rapprochements, relevés importés, ainsi que les reçus et fiches de paie joints.",
+  "legal_delete_deleted_access": "{#strong}Accès et réglages :{/strong} préférences, sessions de connexion, clés d’API, apps connectées, clés des fournisseurs d’IA et journal des requêtes d’IA.",
+  "legal_delete_kept_title": "Ce qui est conservé, et combien de temps",
+  "legal_delete_kept_backups": "Les copies présentes dans la restauration à un instant donné du fournisseur de base de données expirent sous 30 jours.",
+  "legal_delete_kept_logs": "Les journaux de requêtes de courte durée de Cloudflare, utilisés pour corriger les erreurs, expirent sous 7 jours.",
+  "legal_delete_kept_better_auth": "Better Auth, qui fait fonctionner le tableau de bord de connexion de Kosha, conserve sa fiche avec votre nom, votre adresse e-mail et votre activité de connexion selon sa propre politique de conservation. Écrivez à {#email}{email}{/email} pour la faire supprimer.",
+  "legal_delete_kept_nothing_else": "Kosha ne conserve rien d’autre."
 }

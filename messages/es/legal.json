@@ -83,5 +83,22 @@
   "legal_terms_ending_body": "Puedes dejarlo en cualquier momento eliminando tu cuenta en Ajustes › Borrar y restablecer. El servicio puede cerrar una cuenta que incumpla estos términos. Las secciones que por su naturaleza deban perdurar, como las de garantía y responsabilidad, siguen vigentes después de que se cierre una cuenta.",
   "legal_terms_changes_title": "Cambios en estos términos",
   "legal_terms_changes_body": "Cuando estos términos cambian, también cambia la fecha de arriba, y el historial completo es público en el {#source}repositorio del código fuente{/source}. Seguir usando el servicio después de un cambio significa que aceptas los nuevos términos.",
-  "legal_terms_contact_body": "Para preguntas sobre estos términos, usa los datos de contacto del {#maintainer}perfil de GitHub del responsable{/maintainer}, o abre una incidencia en {#github}GitHub{/github}."
+  "legal_terms_contact_body": "Para preguntas sobre estos términos, usa los datos de contacto del {#maintainer}perfil de GitHub del responsable{/maintainer}, o abre una incidencia en {#github}GitHub{/github}.",
+  "legal_delete_title": "Eliminar tu cuenta",
+  "legal_delete_head_description": "Cómo eliminar tu cuenta de Kosha y todos sus datos, qué se elimina y qué se conserva.",
+  "legal_delete_intro": "Puedes eliminar tu cuenta de Kosha y todos sus datos tú mismo en cualquier momento, en la app de Kosha para Android o iOS o en la web. La eliminación es inmediata y no se puede deshacer, así que antes exporta lo que quieras conservar en Ajustes › Importar y exportar.",
+  "legal_delete_steps_title": "Cómo eliminar tu cuenta",
+  "legal_delete_step_sign_in": "Inicia sesión en Kosha en la app o en {#app}getkosha.app{/app}.",
+  "legal_delete_step_open": "Abre {#settings}Ajustes › Borrar y restablecer{/settings}.",
+  "legal_delete_step_confirm": "Elige «Eliminar cuenta de Kosha…» y sigue los pasos para confirmar. Kosha elimina la cuenta en cuanto confirmas.",
+  "legal_delete_no_sign_in": "¿No puedes iniciar sesión? Restablece tu contraseña desde la página de inicio de sesión. Si no funciona, escribe a {#email}{email}{/email} desde la dirección de tu cuenta, y la cuenta y sus datos se eliminarán en un plazo de 30 días.",
+  "legal_delete_deleted_title": "Qué se elimina de inmediato",
+  "legal_delete_deleted_profile": "{#strong}Tu perfil:{/strong} nombre, correo electrónico, hash de la contraseña, foto de perfil, llaves de acceso, ajustes de verificación en dos pasos y vínculo con Google.",
+  "legal_delete_deleted_finances": "{#strong}Tus finanzas:{/strong} cuentas, movimientos, transferencias, categorías, beneficiarios, etiquetas, eventos, pagos recurrentes, valores de inversión, conciliaciones, extractos importados y los recibos y nóminas adjuntos.",
+  "legal_delete_deleted_access": "{#strong}Accesos y ajustes:{/strong} preferencias, sesiones iniciadas, claves de API, apps conectadas, claves de proveedores de IA y el registro de solicitudes de IA.",
+  "legal_delete_kept_title": "Qué se conserva y durante cuánto tiempo",
+  "legal_delete_kept_backups": "Las copias en la recuperación a un momento dado del proveedor de la base de datos caducan en un plazo de 30 días.",
+  "legal_delete_kept_logs": "Los registros de solicitudes de corta duración de Cloudflare, usados para corregir errores, caducan en un plazo de 7 días.",
+  "legal_delete_kept_better_auth": "Better Auth, que gestiona el panel de inicio de sesión de Kosha, conserva su registro con tu nombre, tu correo electrónico y tu actividad de inicio de sesión según su propia política de conservación. Escribe a {#email}{email}{/email} para que lo eliminen.",
+  "legal_delete_kept_nothing_else": "Kosha no conserva nada más."
 }

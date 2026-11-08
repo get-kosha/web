@@ -83,5 +83,22 @@
   "legal_terms_ending_body": "Du kannst jederzeit aufhören, indem du dein Konto unter Einstellungen › Löschen & Zurücksetzen löschst. Der Dienst kann ein Konto beenden, das gegen diese Bedingungen verstößt. Abschnitte, die ihrer Natur nach fortbestehen sollen, etwa die zu Gewährleistung und Haftung, gelten auch nach dem Ende eines Kontos weiter.",
   "legal_terms_changes_title": "Änderungen dieser Bedingungen",
   "legal_terms_changes_body": "Wenn sich diese Bedingungen ändern, ändert sich auch das Datum oben, und der vollständige Verlauf ist öffentlich im {#source}Quellcode-Repository{/source} einsehbar. Wenn du den Dienst nach einer Änderung weiter nutzt, akzeptierst du die neuen Bedingungen.",
-  "legal_terms_contact_body": "Für Fragen zu diesen Bedingungen nutze die Kontaktdaten auf {#maintainer}dem GitHub-Profil des Betreibers{/maintainer} oder eröffne ein Issue auf {#github}GitHub{/github}."
+  "legal_terms_contact_body": "Für Fragen zu diesen Bedingungen nutze die Kontaktdaten auf {#maintainer}dem GitHub-Profil des Betreibers{/maintainer} oder eröffne ein Issue auf {#github}GitHub{/github}.",
+  "legal_delete_title": "Konto löschen",
+  "legal_delete_head_description": "So löschst du dein Kosha-Konto mit allen Daten: was gelöscht wird und was bleibt.",
+  "legal_delete_intro": "Du kannst dein Kosha-Konto mit allen Daten jederzeit selbst löschen, in der Kosha-App für Android oder iOS oder auf der Website. Die Löschung passiert sofort und lässt sich nicht rückgängig machen. Exportiere also vorher alles, was du behalten willst, unter Einstellungen › Import & Export.",
+  "legal_delete_steps_title": "So löschst du dein Konto",
+  "legal_delete_step_sign_in": "Melde dich in der App oder auf {#app}getkosha.app{/app} bei Kosha an.",
+  "legal_delete_step_open": "Öffne {#settings}Einstellungen › Löschen & Zurücksetzen{/settings}.",
+  "legal_delete_step_confirm": "Wähle „Kosha-Konto löschen …“ und bestätige die Schritte. Kosha löscht das Konto, sobald du bestätigst.",
+  "legal_delete_no_sign_in": "Du kannst dich nicht anmelden? Setze dein Passwort auf der Anmeldeseite zurück. Wenn das nicht klappt, schreib von der Adresse deines Kontos an {#email}{email}{/email}. Dann werden das Konto und seine Daten innerhalb von 30 Tagen gelöscht.",
+  "legal_delete_deleted_title": "Was sofort gelöscht wird",
+  "legal_delete_deleted_profile": "{#strong}Dein Profil:{/strong} Name, E-Mail-Adresse, Passwort-Hash, Profilbild, Passkeys, Zwei-Faktor-Einstellungen und die Verknüpfung mit Google.",
+  "legal_delete_deleted_finances": "{#strong}Deine Finanzen:{/strong} Konten, Buchungen, Umbuchungen, Kategorien, Empfänger, Tags, Ereignisse, wiederkehrende Zahlungen, Depotwerte, Abgleiche, Auszugsimporte sowie angehängte Belege und Gehaltsabrechnungen.",
+  "legal_delete_deleted_access": "{#strong}Zugänge und Einstellungen:{/strong} Einstellungen, Anmeldesitzungen, API-Schlüssel, verbundene Apps, KI-Anbieterschlüssel und das KI-Anfrageprotokoll.",
+  "legal_delete_kept_title": "Was bleibt, und wie lange",
+  "legal_delete_kept_backups": "Kopien in der Point-in-Time-Wiederherstellung des Datenbankanbieters verfallen innerhalb von 30 Tagen.",
+  "legal_delete_kept_logs": "Die kurzlebigen Anfrageprotokolle von Cloudflare, mit denen Fehler behoben werden, verfallen innerhalb von 7 Tagen.",
+  "legal_delete_kept_better_auth": "Better Auth, das Kosha-Anmelde-Dashboard betreibt, bewahrt seinen Eintrag mit deinem Namen, deiner E-Mail-Adresse und deinen Anmeldeaktivitäten nach eigenen Aufbewahrungsregeln auf. Schreib an {#email}{email}{/email}, um ihn entfernen zu lassen.",
+  "legal_delete_kept_nothing_else": "Sonst bewahrt Kosha nichts auf."
 }

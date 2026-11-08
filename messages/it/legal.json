@@ -83,5 +83,22 @@
   "legal_terms_ending_body": "Puoi smettere in qualsiasi momento eliminando il tuo account in Impostazioni › Elimina e reimposta. Il servizio può chiudere un account che viola questi termini. Le sezioni che per loro natura devono restare in vigore, come quelle sulla garanzia e sulla responsabilità, continuano ad applicarsi dopo la chiusura dell'account.",
   "legal_terms_changes_title": "Modifiche a questi termini",
   "legal_terms_changes_body": "Quando questi termini cambiano, cambia anche la data in alto, e lo storico completo è pubblico nel {#source}repository del codice sorgente{/source}. Continuare a usare il servizio dopo una modifica significa accettare i nuovi termini.",
-  "legal_terms_contact_body": "Per domande su questi termini, usa i recapiti indicati sul {#maintainer}profilo GitHub del responsabile del progetto{/maintainer}, oppure apri una issue su {#github}GitHub{/github}."
+  "legal_terms_contact_body": "Per domande su questi termini, usa i recapiti indicati sul {#maintainer}profilo GitHub del responsabile del progetto{/maintainer}, oppure apri una issue su {#github}GitHub{/github}.",
+  "legal_delete_title": "Elimina il tuo account",
+  "legal_delete_head_description": "Come eliminare il tuo account Kosha e tutti i suoi dati, cosa viene eliminato e cosa viene conservato.",
+  "legal_delete_intro": "Puoi eliminare da solo il tuo account Kosha e tutti i suoi dati in qualsiasi momento, nell'app Kosha per Android o iOS o sul sito. L'eliminazione è immediata e non si può annullare, quindi esporta prima ciò che vuoi tenere in Impostazioni › Importa ed esporta.",
+  "legal_delete_steps_title": "Come eliminare il tuo account",
+  "legal_delete_step_sign_in": "Accedi a Kosha nell'app o su {#app}getkosha.app{/app}.",
+  "legal_delete_step_open": "Apri {#settings}Impostazioni › Elimina e reimposta{/settings}.",
+  "legal_delete_step_confirm": "Scegli «Elimina account…» e segui i passaggi per confermare. Kosha elimina l'account appena confermi.",
+  "legal_delete_no_sign_in": "Non riesci ad accedere? Reimposta la password dalla pagina di accesso. Se non funziona, scrivi a {#email}{email}{/email} dall'indirizzo del tuo account: l'account e i suoi dati verranno eliminati entro 30 giorni.",
+  "legal_delete_deleted_title": "Cosa viene eliminato subito",
+  "legal_delete_deleted_profile": "{#strong}Il tuo profilo:{/strong} nome, indirizzo email, hash della password, immagine del profilo, passkey, impostazioni dell'autenticazione a due fattori e collegamento a Google.",
+  "legal_delete_deleted_finances": "{#strong}Le tue finanze:{/strong} conti, transazioni, trasferimenti, categorie, beneficiari, tag, eventi, pagamenti ricorrenti, valori degli investimenti, riconciliazioni, estratti importati e le ricevute e buste paga allegate.",
+  "legal_delete_deleted_access": "{#strong}Accessi e impostazioni:{/strong} preferenze, sessioni di accesso, chiavi API, app collegate, chiavi dei fornitori di IA e registro delle richieste IA.",
+  "legal_delete_kept_title": "Cosa viene conservato, e per quanto",
+  "legal_delete_kept_backups": "Le copie nel ripristino point-in-time del fornitore del database scadono entro 30 giorni.",
+  "legal_delete_kept_logs": "I registri delle richieste di breve durata di Cloudflare, usati per correggere gli errori, scadono entro 7 giorni.",
+  "legal_delete_kept_better_auth": "Better Auth, che gestisce la dashboard di accesso di Kosha, conserva la sua scheda con nome, indirizzo email e attività di accesso secondo la propria politica di conservazione. Scrivi a {#email}{email}{/email} per farla rimuovere.",
+  "legal_delete_kept_nothing_else": "Kosha non conserva nient'altro."
 }

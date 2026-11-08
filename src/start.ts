@@ -15,6 +15,7 @@ const SIGNED_OUT_PAGES = new Set([
   "/",
   "/privacy",
   "/terms",
+  "/delete-account",
   "/forgot-password",
   "/reset-password",
   "/app/oauth/callback",

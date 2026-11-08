@@ -83,5 +83,22 @@
   "legal_terms_ending_body": "「設定 › 削除とリセット」でアカウントを削除すれば、いつでも利用をやめられます。この規約に違反したアカウントは、サービス側で終了させることがあります。保証や責任に関する条項など、その性質上存続すべき条項は、アカウントの終了後も引き続き有効です。",
   "legal_terms_changes_title": "規約の変更",
   "legal_terms_changes_body": "この規約が変更された場合は、上部の日付も更新されます。変更履歴はすべて{#source}ソースリポジトリ{/source}で公開されています。変更後にサービスを利用した場合、新しい規約に同意したものとみなされます。",
-  "legal_terms_contact_body": "この規約に関するご質問は、{#maintainer}管理者のGitHubプロフィール{/maintainer}に記載の連絡先をご利用いただくか、{#github}GitHub{/github}でissueを作成してください。"
+  "legal_terms_contact_body": "この規約に関するご質問は、{#maintainer}管理者のGitHubプロフィール{/maintainer}に記載の連絡先をご利用いただくか、{#github}GitHub{/github}でissueを作成してください。",
+  "legal_delete_title": "アカウントの削除",
+  "legal_delete_head_description": "Kosha のアカウントとすべてのデータを削除する方法、削除されるものと残るもの。",
+  "legal_delete_intro": "Kosha のアカウントとすべてのデータは、Android・iOS 向けの Kosha アプリまたはウェブサイトから、いつでもご自身で削除できます。削除はすぐに行われ、元に戻せません。残しておきたいデータは、先に「設定 › インポートとエクスポート」で書き出してください。",
+  "legal_delete_steps_title": "アカウントの削除方法",
+  "legal_delete_step_sign_in": "アプリまたは {#app}getkosha.app{/app} で Kosha にサインインします。",
+  "legal_delete_step_open": "{#settings}「設定 › 削除とリセット」{/settings}を開きます。",
+  "legal_delete_step_confirm": "「アカウントを削除…」を選び、手順に沿って確認します。確認するとすぐに Kosha がアカウントを削除します。",
+  "legal_delete_no_sign_in": "サインインできない場合は、サインインページからパスワードをリセットしてください。それでも解決しない場合は、アカウントのメールアドレスから {#email}{email}{/email} へご連絡ください。30日以内にアカウントとそのデータを削除します。",
+  "legal_delete_deleted_title": "すぐに削除されるもの",
+  "legal_delete_deleted_profile": "{#strong}プロフィール：{/strong}名前、メールアドレス、パスワードのハッシュ、プロフィール画像、パスキー、2 段階認証の設定、Google との連携。",
+  "legal_delete_deleted_finances": "{#strong}お金のデータ：{/strong}口座、取引、振替、カテゴリ、支払先、タグ、イベント、定期支払い、投資の評価額、照合、取り込んだ明細、添付したレシートや給与明細。",
+  "legal_delete_deleted_access": "{#strong}アクセスと設定：{/strong}環境設定、サインインセッション、API キー、接続済みアプリ、AI プロバイダのキー、AI リクエストのログ。",
+  "legal_delete_kept_title": "残るものと保存期間",
+  "legal_delete_kept_backups": "データベースプロバイダのポイントインタイムリカバリに残るコピーは、30日以内に期限切れになります。",
+  "legal_delete_kept_logs": "エラー修正に使う Cloudflare の短期間のリクエストログは、7日以内に期限切れになります。",
+  "legal_delete_kept_better_auth": "Kosha のサインイン管理画面を提供する Better Auth は、名前、メールアドレス、サインイン履歴の記録を独自の保存ポリシーに従って保持します。削除を希望する場合は {#email}{email}{/email} へご連絡ください。",
+  "legal_delete_kept_nothing_else": "Kosha がそれ以外に保持するものはありません。"
 }
