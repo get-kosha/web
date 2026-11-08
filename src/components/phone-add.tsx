@@ -1,37 +1,51 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react"
 import { useNavigate, useRouter } from "@tanstack/react-router"
 import {
-  ArrowRightIcon,
+  ArrowsClockwiseIcon,
+  ArrowsDownUpIcon,
   BackspaceIcon,
   CalendarBlankIcon,
   CameraIcon,
+  CaretRightIcon,
   ClockIcon,
-  CreditCardIcon,
-  DotsNineIcon,
   NotePencilIcon,
+  PaperclipIcon,
   SparkleIcon,
   SpinnerGapIcon,
+  SquaresFourIcon,
+  WalletIcon,
   XIcon,
 } from "@phosphor-icons/react/ssr"
 import { toast } from "sonner"
 import { AiMark, readReceipt, useAiCategory } from "@/components/ai"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
+import { Switch } from "@/components/ui/switch"
 import { CategoryIcon } from "@/components/category-icon"
-import { TimePicker } from "@/components/date-time"
+import { DatePicker, TimePicker } from "@/components/date-time"
 import { Suggest } from "@/components/suggest"
 import { EventPicker, TagInput } from "@/components/tags-events"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { ExchangeFields, useExchange } from "@/components/transaction-form"
 import { bottomSheet, segment, segmentButton, useMeta } from "@/components/shell"
-import { readEntry, saveTransfer, suggestPayees, type AiEntry, type PayeeSuggestion, type Wallet } from "@/lib/api"
+import {
+  addRecurring,
+  readEntry,
+  saveTransfer,
+  suggestPayees,
+  type AiEntry,
+  type PayeeSuggestion,
+  type Wallet,
+} from "@/lib/api"
 import { addTransaction } from "@/lib/offline"
 import { Attachments, uploadFiles } from "@/components/attachments"
 import { WALLET_KEY, decimalMark, startWallet } from "@/lib/add-defaults"
 import {
   intlLocale,
   ATTACHMENT_LIMIT,
+  TRANSFER_CATEGORY,
   addDays,
+  convert,
   dateOfDay,
   dayOf,
   dayOfDate,
@@ -40,9 +54,11 @@ import {
   guessCategory,
   inCurrency,
   isNeutral,
+  keypadCents,
   pressKey,
   shiftMonth,
   timeOf,
+  type Unit,
 } from "@/lib/core"
 import { cn } from "@/lib/utils"
 import { m } from "@/paraglide/messages"
@@ -50,25 +66,50 @@ import { m } from "@/paraglide/messages"
 type Kind = "expense" | "income" | "transfer"
 const KIND_LABEL = { expense: m.add_kind_expense, income: m.add_kind_income, transfer: m.add_kind_transfer }
 const ADD_KIND = { expense: m.add_add_expense, income: m.add_add_income, transfer: m.add_add_transfer }
-type Sheet = "from" | "to" | "date" | "category" | "details" | "exchange" | "describe" | null
+type Sheet = "from" | "to" | "date" | "category" | "details" | "exchange" | "describe" | "repeat" | null
+/** Repeat on Add: the entry becomes a schedule (bill, subscription, recurring income or transfer) from its day. */
+type Repeat = {
+  every: number
+  unit: Unit
+  kind: "repetitive" | "subscription"
+  endDay: string | null
+  autoPay: boolean
+}
 
-const KEYS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "0", "del"]
+const EVERY = { day: m.subs_every_day, week: m.subs_every_week, month: m.subs_every_month, year: m.subs_every_year }
+const INTERVAL = {
+  day: m.subs_interval_day,
+  week: m.subs_interval_week,
+  month: m.subs_interval_month,
+  year: m.subs_interval_year,
+}
+/** "Every month", "Every 2 weeks": the "every …" messages with a capital, to start a label. */
+const frequency = (r: Pick<Repeat, "every" | "unit">) => {
+  const text = EVERY[r.unit]({ count: r.every })
+  return text.charAt(0).toLocaleUpperCase(intlLocale()) + text.slice(1)
+}
 
-// The category grid takes one row on short phones, two on most and three on tall ones (5 tiles a row).
-// When there are more categories than tiles, the last tile is "All".
-const ROWS = [
-  { hideBelow: "[@media(max-height:759px)]:hidden", hideAt: "[@media(max-height:759px)]:hidden" },
-  {
-    hideBelow: "[@media(max-height:879px)]:hidden",
-    hideAt: "[@media(min-height:760px)_and_(max-height:879px)]:hidden",
-  },
-  { hideBelow: "", hideAt: "[@media(min-height:880px)]:hidden" },
-]
+// The calculator keypad, as on the phone apps: digits on the left, ÷ × − + down the right.
+const KEYS = ["1", "2", "3", "/", "4", "5", "6", "*", "7", "8", "9", "-", ".", "0", "del", "+"]
+const OPS: Record<string, string> = { "/": "÷", "*": "×", "-": "−", "+": "+" }
+const OP_LABEL: Record<string, () => string> = {
+  "/": m.app_key_divide,
+  "*": m.app_key_multiply,
+  "-": m.app_key_subtract,
+  "+": m.app_key_add,
+}
+
+/** One typed number with the language's grouping and decimal mark, as typed: "1204.5" reads "1,204.5". */
+const group = (n: string) => {
+  const [whole, dec] = n.split(".")
+  return `${Number(whole || 0).toLocaleString(intlLocale())}${dec !== undefined ? `${decimalMark()}${dec}` : ""}`
+}
 
 /**
- * The amount-first add screen. Everything fits on one phone screen: the amount, account, date and
- * note chips, then the payee and a category grid (or, for a transfer, the two accounts and the fee),
- * then the keypad. Each chip opens a sheet. Adding closes the screen; "Add another" keeps it open.
+ * The amount-first add screen, laid out like the phone apps' Add. Everything fits on one phone screen:
+ * the amount with the account under it, the category, date and note tiles, the payee (or, for a transfer,
+ * the two accounts and the fee), then the calculator keypad. Each tile opens a sheet. Adding closes the
+ * screen; "Add another" keeps it open.
  */
 export function PhoneAdd() {
   const meta = useMeta()
@@ -104,18 +145,33 @@ export function PhoneAdd() {
   const eventId = pickedEvent !== undefined ? pickedEvent : eventFor(day, meta.events)
   const [match, setMatch] = useState<PayeeSuggestion | null>(null)
   const [saving, setSaving] = useState(false)
+  const [savedOnce, setSavedOnce] = useState(false)
+  const [repeat, setRepeat] = useState<Repeat | null>(null)
+  // Set when Next opened the category sheet: picking one then adds the entry.
+  const [next, setNext] = useState(false)
   // Natural-language add and receipt scanning fill the screen; `filled` says which, until the next reset.
   const [reading, setReading] = useState<"text" | "receipt" | null>(null)
   const [filled, setFilled] = useState<"text" | "receipt" | null>(null)
   const [described, setDescribed] = useState("")
   const [aiCategoryId, setAiCategoryId] = useState<string | null>(null)
   const camera = useRef<HTMLInputElement>(null)
+  // Holding backspace: the timer, and whether it fired, so the click that ends the hold deletes nothing.
+  const holding = useRef<ReturnType<typeof setTimeout>>(undefined)
+  const held = useRef(false)
 
   const transfer = kind === "transfer"
   const wallet = wallets.find((w) => w.id === walletId) ?? wallets[0]
   const toWallet = wallets.find((w) => w.id === toWalletId && w.id !== wallet?.id)
   const currency = wallet?.currency ?? meta.primary
-  const cents = Math.round(Number(amount || "0") * 100)
+  // The keypad offers as many decimals as the currency has, up to 2 (amounts are always kept in hundredths).
+  const decimals = Math.min(
+    2,
+    new Intl.NumberFormat("en", { style: "currency", currency: currency.toUpperCase() }).resolvedOptions()
+      .maximumFractionDigits ?? 2
+  )
+  const press = (key: string) => setAmount((a) => pressKey(a, key, decimals))
+  const value = keypadCents(amount, decimals)
+  const cents = value && value > 0 ? value : 0
   const signed = kind === "income" ? cents : -cents
   const x = useExchange(transfer ? wallet : undefined, toWallet, cents)
 
@@ -160,21 +216,37 @@ export function PhoneAdd() {
   // A pick only counts while it fits the kind, so switching to income never saves an expense category.
   const chosen = [categoryId, usual].find((id) => id && candidates.some((c) => c.id === id)) ?? null
   const chosenCat = meta.categories.find((c) => c.id === chosen)
-  // A category picked from the full list moves to the front, so the grid always shows the choice.
-  const shown =
-    chosenCat && ordered.findIndex((c) => c.id === chosen) >= 4
-      ? [chosenCat, ...ordered.filter((c) => c.id !== chosen)]
-      : ordered
+  const ready = !!cents && (transfer || !!chosenCat)
 
+  // With an operator the amount shows the result, else the number as typed. "…" when it divides by zero.
+  const calculating = /[-+*/]/.test(amount)
   const display = (() => {
-    const [whole, dec] = (amount || "0").split(".")
     const sign = kind === "expense" ? "−" : kind === "income" ? "+" : ""
+    if (calculating) {
+      if (value === null) return "…"
+      return value > 0 ? sign + fmt(value, currency) : value < 0 ? `−${fmt(-value, currency)}` : fmt(0, currency)
+    }
     const zero = fmt(0, currency)
     const symbol = zero.replace(/[\d.,\s]/g, "")
     // Kept with "." while typed, shown with the language's mark, and the symbol on the side the language puts it.
-    const number = `${Number(whole).toLocaleString(intlLocale())}${dec !== undefined ? `${decimalMark()}${dec}` : ""}`
-    return /^\d/.test(zero) ? `${sign}${number}\u00a0${symbol}` : `${sign}${symbol}${number}`
+    const number = group(amount || "0")
+    const s = amount ? sign : ""
+    return /^\d/.test(zero) ? `${s}${number}\u00a0${symbol}` : `${s}${symbol}${number}`
   })()
+  const expression = calculating ? amount.replace(/[-+*/]|[^-+*/]+/g, (t) => (OPS[t] ? ` ${OPS[t]} ` : group(t))) : ""
+  const converted =
+    !transfer && cents && currency !== meta.primary ? convert(cents, currency, meta.primary, meta.rates) : 0
+  const hint = transfer
+    ? m.app_add_transfer_note()
+    : !amount
+      ? savedOnce
+        ? m.app_add_ready_next()
+        : m.app_add_start()
+      : converted
+        ? m.app_add_converted({ amount: fmt(Math.round(converted), meta.primary) })
+        : kind === "income"
+          ? m.app_add_income_note()
+          : null
 
   // Back to the page you came from, or Overview when the app opened straight here.
   const leave = () => (router.history.canGoBack() ? router.history.back() : void navigate({ to: "/" }))
@@ -191,10 +263,22 @@ export function PhoneAdd() {
     setFiles([])
     setPickedEvent(undefined)
     setTime(null)
+    setRepeat(null)
     x.reset()
   }
 
-  async function add(again = false) {
+  /** The primary button: Next opens the categories when Kosha can't guess one, else it adds and closes. */
+  function primary() {
+    if (!cents) return
+    if (!transfer && !chosenCat) {
+      setNext(true)
+      return setSheet("category")
+    }
+    void add()
+  }
+
+  /** Saves the entry. `again` keeps the screen open; `cat` is a category picked after Next. */
+  async function add(again = false, cat = chosenCat) {
     if (saving) return
     if (!cents) return toast.error(m.add_error_amount())
     if (!wallet) return toast.error(m.add_error_no_account())
@@ -205,11 +289,43 @@ export function PhoneAdd() {
       }
       if (x.converted <= 0) return toast.error(m.add_error_fee())
       if (!x.receivedCents) return toast.error(m.add_error_received())
-    } else if (!chosenCat) return toast.error(m.add_error_category())
+    } else if (!cat) return toast.error(m.add_error_category())
     setSaving(true)
     const sendTime = time ?? (day === today ? undefined : shownTime)
     try {
-      if (transfer && toWallet) {
+      if (repeat) {
+        // A repeating entry is a schedule, so it needs a connection; its first payment gets the tags and files.
+        const { paid } = await addRecurring({
+          data: {
+            name: payee.trim() || (transfer && toWallet ? `${wallet.name} → ${toWallet.name}` : (cat?.name ?? "")),
+            walletId: wallet.id,
+            categoryId: transfer ? TRANSFER_CATEGORY : cat!.id,
+            amount: transfer ? -cents : signed,
+            note: note.trim(),
+            every: repeat.every,
+            unit: repeat.unit,
+            nextDay: day,
+            endDay: repeat.endDay,
+            autoPay: repeat.autoPay,
+            kind: kind === "expense" ? repeat.kind : "repetitive",
+            toWalletId: transfer ? toWallet!.id : null,
+            toAmount: transfer && x.crossCurrency ? x.receivedCents : null,
+            tags: transfer ? [] : tags,
+            eventId: transfer ? undefined : (eventId ?? null),
+          },
+        })
+        if (paid && !transfer && files.length) await uploadFiles(paid, files)
+        await router.invalidate()
+        toast.success(
+          transfer
+            ? m.subs_transfer_added()
+            : kind === "income"
+              ? m.subs_income_added()
+              : repeat.kind === "subscription"
+                ? m.subs_subscription_added()
+                : m.subs_bill_added()
+        )
+      } else if (transfer && toWallet) {
         await saveTransfer({
           data: {
             fromWalletId: wallet.id,
@@ -225,11 +341,11 @@ export function PhoneAdd() {
         })
         await router.invalidate()
         toast.success(m.add_toast_moved({ amount: fmt(cents, currency), from: wallet.name, to: toWallet.name }))
-      } else if (chosenCat) {
+      } else if (cat) {
         const name = payee.trim()
         const { queued, undo, id } = await addTransaction(meta.user.id, {
           walletId: wallet.id,
-          categoryId: chosenCat.id,
+          categoryId: cat.id,
           name,
           note,
           amount: signed,
@@ -243,7 +359,7 @@ export function PhoneAdd() {
         if (queued && files.length) toast.error(m.add_toast_offline_files())
         if (!queued) await router.invalidate()
         const msg = queued ? m.add_toast_saved_offline : m.add_toast_added
-        toast(msg({ amount: fmt(signed, currency), name: name || chosenCat.name }), {
+        toast(msg({ amount: fmt(signed, currency), name: name || cat.name }), {
           action: {
             label: m.common_undo(),
             onClick: async () => {
@@ -258,10 +374,14 @@ export function PhoneAdd() {
       } catch {
         // remembering the account is a convenience only
       }
-      if (again) reset()
-      else leave()
+      if (again) {
+        reset()
+        setSavedOnce(true)
+      } else leave()
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : m.add_error_add())
+      toast.error(
+        repeat && !navigator.onLine ? m.app_add_repeat_offline() : e instanceof Error ? e.message : m.add_error_add()
+      )
     } finally {
       setSaving(false)
     }
@@ -272,7 +392,7 @@ export function PhoneAdd() {
     const w = wallets.find((x) => x.id === e.walletId) ?? wallet
     const fit = inCurrency(e, w?.currency ?? currency, meta.rates)
     if (w) setWalletId(w.id)
-    if (fit.amount) setAmount((fit.amount / 100).toFixed(2).replace(/\.00$/, ""))
+    if (fit.amount) setAmount((fit.amount / 100).toFixed(decimals).replace(/\.00$/, ""))
     if (fit.amount || e.categoryId) setKind(e.income ? "income" : "expense")
     if (e.payee) setPayee(e.payee)
     setCategoryId(null)
@@ -312,19 +432,21 @@ export function PhoneAdd() {
     }
   }
 
-  // Physical keyboards type into the amount too, unless a field or a sheet has focus. Enter adds and closes,
-  // Shift+Enter adds another and Escape closes.
+  // Physical keyboards type into the amount too, operators included, unless a field or a sheet has focus.
+  // Enter adds (or picks a category first), Shift+Enter adds another and Escape closes.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.metaKey || e.ctrlKey || e.altKey || (e.target as HTMLElement).closest("input, textarea, [role=dialog]"))
         return
-      const key = e.key === "Backspace" ? "del" : e.key === "," ? "." : e.key
+      const key = e.key === "Backspace" ? "del" : e.key === "," ? "." : e.key === "x" ? "*" : e.key
       if (KEYS.includes(key)) {
         e.preventDefault()
-        setAmount((a) => pressKey(a, key))
+        press(key)
       } else if (e.key === "Enter") {
         e.preventDefault()
-        void add(e.shiftKey)
+        if (e.shiftKey) {
+          if (ready) void add(true)
+        } else primary()
       } else if (e.key === "Escape") leave()
     }
     window.addEventListener("keydown", onKey)
@@ -413,152 +535,223 @@ export function PhoneAdd() {
         )}
       </div>
 
-      <div className="pt-3 text-center">
+      <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-2 py-3 text-center md:min-h-56">
         {reading ? (
-          <p
-            role="status"
-            className="flex h-[50px] items-center justify-center gap-2 text-[15px] text-muted-foreground"
-          >
+          <p role="status" className="flex items-center justify-center gap-2 text-[15px] text-muted-foreground">
             <SpinnerGapIcon aria-hidden="true" className="size-5 animate-spin text-brand" />
             {reading === "receipt" ? m.add_hint_reading_receipt() : m.add_reading_text()}
           </p>
         ) : (
-          <output
-            aria-live="polite"
-            aria-label={m.add_amount()}
-            className={cn(
-              "num block text-[48px] leading-[1.05] font-medium tracking-[-0.03em]",
-              !cents && "text-muted-foreground",
-              kind === "income" && cents && "text-positive"
+          <>
+            {filled && (
+              <p className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
+                <AiMark className="size-3" />
+                {filled === "receipt" ? m.add_filled_receipt() : m.add_filled_ai()}
+              </p>
             )}
-          >
-            {display}
-          </output>
+            <div>
+              {/* The sum being worked out, above the amount it comes to. */}
+              <p aria-hidden="true" className="num min-h-5 truncate text-[15px] text-muted-foreground">
+                {expression}
+              </p>
+              <output
+                aria-live="polite"
+                aria-label={m.add_amount()}
+                className={cn(
+                  "num block max-w-full py-1 leading-[1.05] font-medium tracking-[-0.03em] whitespace-nowrap",
+                  display.length > 11 ? "text-[34px]" : display.length > 8 ? "text-[44px]" : "text-[56px]",
+                  !amount && "text-muted-foreground",
+                  kind === "income" && cents > 0 && "text-positive"
+                )}
+              >
+                {display}
+              </output>
+              {hint && <p className="text-[13px] text-muted-foreground">{hint}</p>}
+            </div>
+            <div className="flex max-w-full min-w-0 justify-center gap-2">
+              {!transfer && (
+                <Chip
+                  onClick={() => setSheet("from")}
+                  icon={<WalletIcon />}
+                  label={wallet?.name ?? m.add_no_account()}
+                  aria-label={wallet ? m.add_chip_account({ name: wallet.name }) : m.add_chip_account_none()}
+                />
+              )}
+              <Chip
+                onClick={() => setSheet("repeat")}
+                icon={<ArrowsClockwiseIcon />}
+                label={repeat ? frequency(repeat) : m.app_add_repeat_once()}
+                aria-label={m.app_add_repeat_label({ frequency: repeat ? frequency(repeat) : m.app_add_repeat_once() })}
+                quiet={!repeat}
+              />
+            </div>
+          </>
         )}
-        {filled && !reading && (
-          <p className="mt-1 flex items-center justify-center gap-1 text-xs text-muted-foreground">
-            <AiMark className="size-3" />
-            {filled === "receipt" ? m.add_filled_receipt() : m.add_filled_ai()}
-          </p>
+      </div>
+
+      <div className={cn("grid gap-1.5", transfer ? "grid-cols-2" : "grid-cols-3")}>
+        {!transfer && (
+          <FieldTile
+            onClick={() => {
+              setNext(false)
+              setSheet("category")
+            }}
+            icon={chosenCat ? <CategoryIcon icon={chosenCat.icon} /> : <SquaresFourIcon />}
+            label={chosenCat?.name ?? m.add_category()}
+            state={!chosenCat ? "empty" : chosen === categoryId ? "set" : "guess"}
+            ai={!!chosenCat && !categoryId && !fromHistory && chosen === aiGuess}
+            aria-label={
+              !chosenCat
+                ? m.app_add_category_none()
+                : chosen === categoryId
+                  ? m.app_add_category_picked({ name: chosenCat.name })
+                  : chosen === aiGuess && !fromHistory
+                    ? m.app_add_category_ai({ name: chosenCat.name })
+                    : m.app_add_category_usual({ name: chosenCat.name })
+            }
+          />
         )}
-        <div className="mt-3 flex justify-center gap-2">
-          {!transfer && (
-            <Chip
-              onClick={() => setSheet("from")}
-              icon={<CreditCardIcon />}
-              label={wallet?.name ?? m.add_no_account()}
-              aria-label={wallet ? m.add_chip_account({ name: wallet.name }) : m.add_chip_account_none()}
-            />
-          )}
-          <Chip
-            onClick={() => setSheet("date")}
-            icon={<CalendarBlankIcon />}
-            label={time ? `${dayLabel}, ${time}` : dayLabel}
-            aria-label={m.add_chip_date({ day: dayLabel, time: shownTime })}
-            fixed
-          />
-          <Chip
-            onClick={() => setSheet("details")}
-            icon={<NotePencilIcon />}
-            label={details.length ? details[0] + (details.length > 1 ? ` +${details.length - 1}` : "") : m.add_note()}
-            set={details.length > 0}
-            fixed={!details.length}
-            aria-label={transfer ? m.add_note() : m.add_note_tags_event()}
-          />
-        </div>
+        <FieldTile
+          onClick={() => setSheet("date")}
+          icon={<CalendarBlankIcon />}
+          label={dayLabel}
+          aria-label={m.add_chip_date({ day: dayLabel, time: shownTime })}
+        />
+        <FieldTile
+          onClick={() => setSheet("details")}
+          icon={details.length === 1 && files.length > 0 ? <PaperclipIcon /> : <NotePencilIcon />}
+          label={details.length ? details[0] + (details.length > 1 ? ` +${details.length - 1}` : "") : m.add_note()}
+          state={details.length ? "set" : "guess"}
+          aria-label={
+            details.length ? `${m.add_note()}, ${details[0]}` : transfer ? m.add_note() : m.add_note_tags_event()
+          }
+        />
       </div>
 
       {transfer ? (
-        <div className="mt-4 grid gap-2">
-          <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-1.5">
-            <AccountButton label={m.add_from()} wallet={wallet} onClick={() => setSheet("from")} />
-            <ArrowRightIcon aria-hidden="true" className="size-4 text-muted-foreground" />
-            <AccountButton label={m.add_to()} wallet={toWallet} onClick={() => setSheet("to")} />
+        <div className="mt-3 grid gap-3">
+          <div className="relative divide-y rounded-[14px] border bg-card">
+            <SideRow label={m.add_from()} wallet={wallet} onClick={() => setSheet("from")} />
+            <SideRow label={m.add_to()} wallet={toWallet} onClick={() => setSheet("to")} />
+            {wallet && toWallet && (
+              <Button
+                variant="outline"
+                size="icon-lg"
+                className="absolute top-1/2 right-10 size-11 -translate-y-1/2 rounded-full bg-card"
+                onClick={() => {
+                  setWalletId(toWallet.id)
+                  setToWalletId(wallet.id)
+                }}
+                aria-label={m.app_add_swap()}
+              >
+                <ArrowsDownUpIcon className="size-5" />
+              </Button>
+            )}
           </div>
           <button
             type="button"
             onClick={() => setSheet("exchange")}
-            className={cn(field, "justify-between gap-3 transition-colors hover:bg-muted")}
+            className={cn(
+              field,
+              "gap-3 transition-colors outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50"
+            )}
           >
-            <span className="text-muted-foreground">{x.crossCurrency ? m.add_fee_and_rate() : m.add_fee()}</span>
-            <span className="num truncate">
+            <span className="shrink-0 text-muted-foreground">
+              {x.crossCurrency ? m.add_fee_and_rate() : m.add_fee()}
+            </span>
+            <span className="num min-w-0 flex-1 truncate text-right text-[13px] text-muted-foreground">
               {x.crossCurrency && x.to
-                ? m.add_arrives({ amount: fmt(x.receivedCents, x.to.currency) })
+                ? [
+                    x.feeCents > 0 && m.app_add_fee_amount({ amount: fmt(x.feeCents, currency) }),
+                    m.add_arrives({ amount: fmt(x.receivedCents, x.to.currency) }),
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")
                 : x.feeCents
-                  ? fmt(x.feeCents, currency)
+                  ? m.app_add_fee_amount({ amount: fmt(x.feeCents, currency) })
                   : m.add_fee_none()}
             </span>
+            <CaretRightIcon aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
           </button>
-          {x.fx.totalCost > 0.5 && x.converted > 0 && (
-            <p className="num px-1 text-xs text-muted-foreground">
-              {m.add_fx_cost({
-                cost: fmt(x.fx.totalCost, currency),
-                pct: x.fx.costPct.toLocaleString(intlLocale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
-              })}
-            </p>
-          )}
         </div>
       ) : (
-        <>
-          <label className={cn(field, "mt-4 focus-within:border-ring")}>
-            <span className="sr-only">{m.add_payee()}</span>
-            <Suggest
-              value={payee}
-              onChange={(v) => {
-                setPayee(v)
-                // A category read with an earlier payee doesn't speak for the new one.
-                setAiCategoryId(null)
-              }}
-              options={meta.titles}
-              placeholder={m.add_payee()}
-              className="min-w-0 flex-1 bg-transparent outline-none placeholder:text-muted-foreground"
-            />
-            {match && match.avg !== 0 && (
-              <span className="num shrink-0 text-xs text-muted-foreground">
-                {m.add_usually({ amount: fmt(Math.abs(match.avg), match.currency) })}
-              </span>
-            )}
-          </label>
-          <div role="group" aria-label={m.add_category()} className="mt-3 grid grid-cols-5 gap-1">
-            {shown.slice(0, ordered.length > 15 ? 14 : 15).map((c, i) => (
-              <Tile
-                key={c.id}
-                pressed={c.id === chosen}
-                onClick={() => setCategoryId(c.id)}
-                icon={<CategoryIcon icon={c.icon} className="size-5" />}
-                label={c.name}
-                suggested={c.id === chosen && !categoryId && !fromHistory && c.id === aiGuess}
-                // Hidden on screens with fewer rows, where it falls in or past the "All" slot.
-                className={cn(ROWS.map((r, row) => i >= row * 5 + 4 && ordered.length > row * 5 + 5 && r.hideBelow))}
-              />
-            ))}
-            {ordered.length > 5 && (
-              <Tile
-                onClick={() => setSheet("category")}
-                icon={<DotsNineIcon className="size-5" />}
-                label={m.add_all()}
-                aria-label={m.add_all_categories()}
-                className={cn(ROWS.map((r, row) => ordered.length <= row * 5 + 5 && r.hideAt))}
-              />
-            )}
-          </div>
-        </>
+        <label className={cn(field, "mt-3 focus-within:border-ring")}>
+          <span className="sr-only">{m.add_payee()}</span>
+          <Suggest
+            value={payee}
+            onChange={(v) => {
+              setPayee(v)
+              // A category read with an earlier payee doesn't speak for the new one.
+              setAiCategoryId(null)
+            }}
+            options={meta.titles}
+            placeholder={m.add_payee()}
+            className="min-w-0 flex-1 bg-transparent outline-none placeholder:text-muted-foreground"
+          />
+          {match && match.avg !== 0 && (
+            <span className="num shrink-0 text-xs text-muted-foreground">
+              {m.add_usually({ amount: fmt(Math.abs(match.avg), match.currency) })}
+            </span>
+          )}
+        </label>
       )}
 
-      <div className="min-h-3 flex-1" />
-
-      <div role="group" aria-label={m.add_keypad()} className="grid grid-cols-3 gap-1">
-        {KEYS.map((k) => (
-          <button
-            key={k}
-            type="button"
-            aria-label={k === "del" ? m.add_key_delete() : k === "." ? m.add_key_decimal() : k}
-            onClick={() => setAmount((a) => pressKey(a, k))}
-            className="num flex h-[clamp(2.875rem,6.5svh,3.5rem)] items-center justify-center rounded-xl text-[22px] transition-[background-color,scale] duration-100 ease-out outline-none focus-visible:ring-3 focus-visible:ring-ring/50 active:bg-muted motion-safe:active:scale-[0.96] md:h-12 md:hover:bg-muted"
-          >
-            {k === "del" ? <BackspaceIcon className="size-6" /> : k === "." ? decimalMark() : k}
-          </button>
-        ))}
+      <div role="group" aria-label={m.add_keypad()} className="mt-3 grid grid-cols-4 gap-x-2 gap-y-0.5">
+        {KEYS.map((k) =>
+          k === "." && decimals === 0 ? (
+            <span key={k} />
+          ) : k === "del" ? (
+            <button
+              key={k}
+              type="button"
+              aria-label={m.app_key_delete()}
+              onClick={() => {
+                if (held.current) held.current = false
+                else press("del")
+              }}
+              // Holding backspace clears the amount, as on the phone apps.
+              onPointerDown={() => {
+                held.current = false
+                clearTimeout(holding.current)
+                holding.current = setTimeout(() => {
+                  held.current = true
+                  setAmount("")
+                }, 500)
+              }}
+              onPointerUp={() => clearTimeout(holding.current)}
+              onPointerLeave={() => clearTimeout(holding.current)}
+              onPointerCancel={() => clearTimeout(holding.current)}
+              onContextMenu={(e) => e.preventDefault()}
+              className={cn(key, "text-muted-foreground")}
+            >
+              <BackspaceIcon className="size-7" />
+            </button>
+          ) : OPS[k] ? (
+            <button
+              key={k}
+              type="button"
+              aria-label={OP_LABEL[k]()}
+              aria-pressed={amount.endsWith(k)}
+              onClick={() => press(k)}
+              className={cn(
+                key,
+                "my-[3px] ml-1.5 h-auto rounded-xl bg-muted text-[26px] text-muted-foreground aria-pressed:bg-primary aria-pressed:text-primary-foreground md:hover:bg-muted md:aria-pressed:hover:bg-primary"
+              )}
+            >
+              {OPS[k]}
+            </button>
+          ) : (
+            <button
+              key={k}
+              type="button"
+              aria-label={k === "." ? m.add_key_decimal() : k}
+              onClick={() => press(k)}
+              className={key}
+            >
+              {k === "." ? decimalMark() : k}
+            </button>
+          )
+        )}
       </div>
 
       <div className="mt-2 flex gap-2">
@@ -566,7 +759,7 @@ export function PhoneAdd() {
           variant="outline"
           size="lg"
           className="h-[52px] rounded-[14px] px-4 text-[15px]"
-          disabled={saving || !cents}
+          disabled={saving || !ready}
           onClick={() => add(true)}
         >
           {m.add_another()}
@@ -575,12 +768,11 @@ export function PhoneAdd() {
           size="lg"
           className="h-[52px] min-w-0 flex-1 rounded-[14px] text-base"
           disabled={saving || !cents}
-          onClick={() => add()}
+          onClick={primary}
         >
-          {cents ? ADD_KIND[kind]() : m.add_enter_amount()}
+          {!cents ? m.add_enter_amount() : !transfer && !chosenCat ? m.app_next() : ADD_KIND[kind]()}
         </Button>
       </div>
-
       <Sheet
         open={sheet === "from" || sheet === "to"}
         onClose={() => setSheet(null)}
@@ -641,15 +833,31 @@ export function PhoneAdd() {
         </form>
       </Sheet>
 
-      <Sheet open={sheet === "category"} onClose={() => setSheet(null)} title={m.add_category()}>
-        <div className="-mx-1 grid max-h-[60svh] grid-cols-4 gap-1 overflow-y-auto overscroll-contain px-1">
+      <Sheet
+        open={sheet === "category"}
+        onClose={() => setSheet(null)}
+        title={next ? m.tx_pick_category() : m.add_category()}
+      >
+        <p className="-mt-2 text-sm text-muted-foreground">
+          {!next
+            ? m.app_add_most_used_first()
+            : payee.trim()
+              ? (kind === "income" ? m.app_add_why_income_new : m.app_add_why_expense_new)({ payee: payee.trim() })
+              : kind === "income"
+                ? m.app_add_why_income()
+                : m.app_add_why_expense()}
+        </p>
+        <div className="-mx-1 grid max-h-[60svh] grid-cols-4 gap-1 overflow-y-auto overscroll-contain px-1 sm:grid-cols-5">
           {ordered.map((c) => (
             <Tile
               key={c.id}
               pressed={c.id === chosen}
+              suggested={c.id === chosen && !categoryId && !fromHistory && c.id === aiGuess}
               onClick={() => {
                 setCategoryId(c.id)
                 setSheet(null)
+                // After Next, picking the category is the last step.
+                if (next) void add(false, c)
               }}
               icon={<CategoryIcon icon={c.icon} className="size-5" />}
               label={c.name}
@@ -707,6 +915,20 @@ export function PhoneAdd() {
             {m.common_done()}
           </Button>
         </div>
+      </Sheet>
+
+      <Sheet open={sheet === "repeat"} onClose={() => setSheet(null)} title={m.app_add_repeat()}>
+        <RepeatPanel
+          value={repeat}
+          day={day}
+          today={today}
+          expense={kind === "expense"}
+          autoPay={meta.prefs.default_auto_pay === "1"}
+          onDone={(r) => {
+            setRepeat(r)
+            setSheet(null)
+          }}
+        />
       </Sheet>
 
       <Sheet open={sheet === "date"} onClose={() => setSheet(null)} title={m.add_date_and_time()}>
@@ -797,20 +1019,69 @@ function AccountList({ wallets, value, onPick }: { wallets: Wallet[]; value?: st
   )
 }
 
-/** One side of a transfer: what it is ("From", "To"), then the account and its currency. */
-function AccountButton({ label, wallet, onClick }: { label: string; wallet?: Wallet; onClick: () => void }) {
+/** One side of a transfer, as a row: "From" or "To", then the account with its balance and currency. */
+function SideRow({ label, wallet, onClick }: { label: string; wallet?: Wallet; onClick: () => void }) {
   return (
     <button
       type="button"
       onClick={onClick}
       aria-label={wallet ? m.add_side_account({ side: label, name: wallet.name }) : m.add_side_pick({ side: label })}
-      className="flex h-16 min-w-0 flex-col justify-center gap-0.5 rounded-xl border bg-card px-3.5 text-left transition-colors outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50"
+      className="flex min-h-15 w-full items-center gap-3 py-2 pr-3 pl-4 text-left transition-colors outline-none first:rounded-t-[13px] last-of-type:rounded-b-[13px] hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50"
     >
-      <span className="text-xs text-muted-foreground">{label}</span>
-      <span className={cn("flex min-w-0 items-baseline gap-1.5 text-[15px]", !wallet && "text-muted-foreground")}>
-        <span className="truncate">{wallet?.name ?? m.add_pick_one()}</span>
-        {wallet && <span className="shrink-0 text-xs text-muted-foreground uppercase">{wallet.currency}</span>}
-      </span>
+      <span className="w-11 shrink-0 text-xs text-muted-foreground">{label}</span>
+      {wallet ? (
+        <span className="grid min-w-0 flex-1">
+          <span className="truncate text-[15px] font-medium">{wallet.name}</span>
+          <span className="num truncate text-xs text-muted-foreground">
+            {fmt(wallet.balance, wallet.currency)} · {wallet.currency.toUpperCase()}
+          </span>
+        </span>
+      ) : (
+        <span className="flex-1 text-[15px] text-muted-foreground">{m.add_pick_one()}</span>
+      )}
+      <CaretRightIcon aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
+    </button>
+  )
+}
+
+// A keypad key: tall enough for a thumb on phones, shorter at desk widths where a keyboard does the typing.
+const key =
+  "num flex h-[clamp(2.875rem,7svh,3.75rem)] items-center justify-center rounded-[14px] text-[26px] transition-[background-color,scale] duration-100 ease-out outline-none select-none focus-visible:ring-3 focus-visible:ring-ring/50 active:bg-muted motion-safe:active:scale-[0.96] md:h-12 md:hover:bg-muted"
+
+/**
+ * A tile in the row under the amount (category, date, note): an icon over a short label. Empty is dashed,
+ * a guess has a quieter label, and `ai` adds the sparkle when the guess is AI's.
+ */
+function FieldTile({
+  icon,
+  label,
+  state = "set",
+  ai,
+  onClick,
+  "aria-label": ariaLabel,
+}: {
+  icon: ReactNode
+  label: string
+  state?: "empty" | "guess" | "set"
+  ai?: boolean
+  onClick: () => void
+  "aria-label": string
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={ariaLabel}
+      title={ariaLabel}
+      className={cn(
+        "relative flex min-h-[58px] min-w-0 flex-col items-center justify-center gap-1.5 rounded-[14px] border bg-card px-1.5 py-2 text-[12.5px] leading-tight transition-colors outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 [&_svg]:size-[18px] [&_svg]:shrink-0",
+        state === "empty" ? "border-dashed text-muted-foreground" : "[&_svg]:text-muted-foreground",
+        state === "guess" && "text-muted-foreground"
+      )}
+    >
+      {ai && <AiMark className="absolute top-1 right-1.5 size-2.5!" />}
+      {icon}
+      <span className="w-full truncate text-center">{label}</span>
     </button>
   )
 }
@@ -854,19 +1125,18 @@ function Tile({
   )
 }
 
-// Chips share one row and never wrap: the account name and the note shrink and truncate, the date stays whole.
+/** The account, as a pill under the amount. A long name is cut off, and stays readable on hover. */
 const Chip = ({
   icon,
   label,
-  set,
-  fixed,
+  quiet,
   onClick,
   "aria-label": ariaLabel,
 }: {
   icon: ReactNode
   label: string
-  set?: boolean
-  fixed?: boolean
+  /** Nothing set yet, as "Doesn't repeat": a quieter label. */
+  quiet?: boolean
   onClick: () => void
   "aria-label": string
 }) => (
@@ -874,19 +1144,153 @@ const Chip = ({
     type="button"
     onClick={onClick}
     aria-label={ariaLabel}
-    // A truncated label stays readable on hover, and the empty note chip says it holds tags and the event too.
     title={ariaLabel}
     className={cn(
-      "inline-flex h-11 max-w-[11rem] min-w-0 items-center gap-1.5 rounded-full border bg-card px-3 text-[13px] transition-colors outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:text-subtle-foreground",
-      fixed && "shrink-0",
-      set === false && "text-muted-foreground",
-      set && "border-foreground/40"
+      "inline-flex h-11 max-w-[14rem] min-w-0 items-center gap-1.5 rounded-full border bg-card px-4 text-[15px] transition-colors outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:text-subtle-foreground",
+      quiet && "text-muted-foreground"
     )}
   >
     {icon}
     <span className="truncate">{label}</span>
   </button>
 )
+
+/**
+ * The Repeat sheet: doesn't repeat, every week, month or year, or custom; for an expense, bill or subscription;
+ * an end; and auto-record. It edits a draft, and Done applies it.
+ */
+function RepeatPanel({
+  value,
+  day,
+  today,
+  expense,
+  autoPay,
+  onDone,
+}: {
+  value: Repeat | null
+  day: string
+  today: string
+  expense: boolean
+  autoPay: boolean
+  onDone: (r: Repeat | null) => void
+}) {
+  const [on, setOn] = useState(!!value)
+  const [draft, setDraft] = useState<Repeat>(
+    value ?? { every: 1, unit: "month", kind: "repetitive", endDay: null, autoPay }
+  )
+  const [custom, setCustom] = useState(!!value && (value.every !== 1 || value.unit === "day"))
+  // The interval as typed, so it can be cleared on the way to another number.
+  const [everyText, setEveryText] = useState(String(value?.every ?? 1))
+  const set = (patch: Partial<Repeat>) => setDraft((d) => ({ ...d, ...patch }))
+  const option = (label: string, selected: boolean, pick: () => void) => (
+    <button
+      key={label}
+      type="button"
+      role="radio"
+      aria-checked={selected}
+      onClick={pick}
+      className="flex min-h-11 items-center justify-between rounded-md px-3 text-left text-sm transition-colors outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 aria-checked:bg-selected aria-checked:font-medium"
+    >
+      {label}
+      <span
+        aria-hidden="true"
+        className={cn("size-4 rounded-full border", selected && "border-[5px] border-primary")}
+      />
+    </button>
+  )
+  return (
+    <div className="grid max-h-[70svh] gap-4 overflow-y-auto overscroll-contain">
+      <div role="radiogroup" aria-label={m.app_add_repeat()} className="grid gap-1">
+        {option(m.app_add_repeat_once(), !on, () => setOn(false))}
+        {(["week", "month", "year"] as const).map((unit) =>
+          option(frequency({ every: 1, unit }), on && !custom && draft.every === 1 && draft.unit === unit, () => {
+            setOn(true)
+            setCustom(false)
+            set({ every: 1, unit })
+          })
+        )}
+        {option(m.app_add_repeat_custom(), on && custom, () => {
+          setOn(true)
+          setCustom(true)
+        })}
+      </div>
+      {on && custom && (
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-sm text-muted-foreground">{m.subs_repeats_every()}</span>
+          <input
+            value={everyText}
+            onChange={(e) => {
+              const text = e.target.value.replace(/\D/g, "").slice(0, 3)
+              setEveryText(text)
+              if (Number(text) >= 1) set({ every: Math.min(365, Number(text)) })
+            }}
+            onBlur={() => setEveryText(String(draft.every))}
+            inputMode="numeric"
+            aria-label={m.subs_interval()}
+            className="num h-11 w-14 rounded-md border bg-card px-2 text-center text-base outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+          />
+          <div role="group" aria-label={m.subs_interval()} className={segment}>
+            {(["day", "week", "month", "year"] as const).map((unit) => (
+              <button
+                key={unit}
+                type="button"
+                aria-pressed={draft.unit === unit}
+                onClick={() => set({ unit })}
+                className={segmentButton}
+              >
+                {INTERVAL[unit]({ count: draft.every })}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+      {on && (
+        <>
+          {expense && (
+            <div role="group" aria-label={m.subs_type()} className={cn(segment, "w-full")}>
+              {(["repetitive", "subscription"] as const).map((k) => (
+                <button
+                  key={k}
+                  type="button"
+                  aria-pressed={draft.kind === k}
+                  onClick={() => set({ kind: k })}
+                  className={cn(segmentButton, "flex-1")}
+                >
+                  {k === "subscription" ? m.subs_kind_subscription() : m.subs_kind_bill()}
+                </button>
+              ))}
+            </div>
+          )}
+          <div className="flex items-center justify-between gap-3">
+            <span id="repeat-ends" className="text-sm">
+              {m.subs_ends()}
+            </span>
+            <DatePicker
+              aria-labelledby="repeat-ends"
+              value={draft.endDay ?? ""}
+              min={day}
+              onChange={(d) => set({ endDay: d || null })}
+              clearable
+              placeholder={m.subs_never()}
+              className="w-auto min-w-36"
+            />
+          </div>
+          <label className="flex items-center justify-between gap-3 text-sm">
+            {m.subs_auto_pay()}
+            <Switch checked={draft.autoPay} onCheckedChange={(v) => set({ autoPay: v })} />
+          </label>
+          <p className="text-xs text-muted-foreground">
+            {m.app_add_repeat_note()}
+            {draft.autoPay && day < today && ` ${m.subs_backfill_hint({ date: day })}`}
+          </p>
+        </>
+      )}
+      <Button size="lg" className="h-11" onClick={() => onDone(on ? draft : null)}>
+        {m.common_done()}
+      </Button>
+    </div>
+  )
+}
 
 const pill =
   "inline-flex h-11 items-center gap-1.5 rounded-full border bg-card px-4 text-sm text-subtle-foreground transition-[color,background-color,scale] duration-150 ease-out motion-safe:active:scale-[0.97]"

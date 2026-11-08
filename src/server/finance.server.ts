@@ -1348,6 +1348,38 @@ export async function updateOccurrence(uid: string, data: z.infer<typeof occurre
     .run()
 }
 
+export const recurringEntryInput = subInput.omit({ id: true }).extend({
+  /** For the first payment's entry, not the schedule. */
+  tags: tags.default([]),
+  eventId: z.string().nullable().optional(),
+})
+
+/**
+ * Add with Repeat on: saves the schedule, then pays its first payment when that day has come (auto-record may
+ * already have), and gives that entry the tags and event. Returns the paid entry's id, for its files.
+ */
+export async function addRecurring(uid: string, data: z.infer<typeof recurringEntryInput>) {
+  const { tags: entryTags, eventId, ...sub } = data
+  const id = await saveSubscription(uid, sub)
+  const { tz } = await getSettings(uid)
+  if (sub.nextDay > dayOf(Date.now() / 1000, tz)) return { id, paid: null }
+  const first = () =>
+    db()
+      .prepare("SELECT id, paid FROM transactions WHERE user_id = ? AND subscription_id = ? AND due_day = ?")
+      .bind(uid, id, sub.nextDay)
+      .first<{ id: string; paid: number }>()
+  if (!(await first())?.paid) await updateOccurrence(uid, { id, dueDay: sub.nextDay, action: "pay" })
+  const paid = await first()
+  if (paid && !sub.toWalletId && (entryTags.length || eventId !== undefined))
+    await db()
+      .prepare(
+        "UPDATE transactions SET tags = ?1, event_id = CASE WHEN ?2 THEN ?3 ELSE event_id END, updated_at = unixepoch() WHERE user_id = ?4 AND id = ?5"
+      )
+      .bind(JSON.stringify(entryTags), eventId !== undefined ? 1 : 0, eventId ?? null, uid, paid.id)
+      .run()
+  return { id, paid: paid?.id ?? null }
+}
+
 // ---------- accounts ----------
 
 export const accountInput = z.object({

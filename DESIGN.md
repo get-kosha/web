@@ -239,7 +239,7 @@ Sizes are Tailwind steps plus a few fixed pixel sizes. There is no type-scale to
 | Role             | Size, weight, tracking                                      | Where                                                                |
 | ---------------- | ----------------------------------------------------------- | -------------------------------------------------------------------- |
 | Hero figure      | 32px, 40px from 700px wide; 600; `-0.035em`; `tabular-nums` | Net worth (`net-worth.tsx:129`). Geist, cents muted (`.cents-muted`) |
-| Amount entry     | 48px; 500; `-0.03em`; `.num`                                | Phone `/add` (`phone-add.tsx:430`)                                   |
+| Amount entry     | 56px (44px, then 34px, as it grows); 500; `-0.03em`; `.num` | Phone `/add` (`phone-add.tsx:562`)                                   |
 | Editable amount  | 34px; 500; `-0.04em`; `.num`                                | Activity panel (`activity-panel.tsx:236`)                            |
 | Phone page title | 34px; 600; `-0.03em`                                        | Settings on phones (`settings/layout.tsx:81`)                        |
 | Section title    | 26px; 600; `-0.025em`                                       | Settings section headers                                             |
@@ -285,7 +285,7 @@ Tailwind's default breakpoints: `sm` 640px, `md` 768px, `lg` 1024px. **`md` is t
 
 ### Phone versus desktop
 
-- **Phone `/add`** (`phone-add.tsx`): amount first, a 3-column keypad of `num` keys, `max-w-md`. Keys are `clamp(2.875rem, 6.5svh, 3.5rem)` tall on phones, 48px from `md`. Save buttons are 52px with a 14px radius.
+- **Phone `/add`** (`phone-add.tsx`): laid out like the phone apps' Add, in `max-w-md`. The amount comes first, with the sum being worked out above it, a hint below, then the account and Repeat pills. Under it are 58px Category, Date and Note tiles (dashed while empty), then the payee, or the From and To rows and the fee for a transfer. The calculator keypad has four columns: digits on the left, and ÷ × − + on `muted` keys down the right. The operator just pressed fills with `primary`, and holding backspace clears. Keys are `clamp(2.875rem, 7svh, 3.75rem)` tall on phones, 48px from `md`. Save buttons are 52px with a 14px radius. Without a category, the primary button reads Next and opens the categories.
 - **Desktop Overview** (`routes/_app/index.tsx`): net worth and the month's pace side by side in a wrapping flex row, then cards. On phones a 2-column mini-stat grid replaces the desktop stat row.
 - **Desktop Activity** (`routes/_app/transactions.tsx`, `activity-panel.tsx`): a list with a side panel for the selected entry. Quick add (`quick-add.tsx`) opens as a dialog from the header.
 - **Settings** (`settings/layout.tsx`): desktop has a sticky rail (236–260px) and content up to 760px, inside 1240px. Phones show the section list, then push each section in as its own page.

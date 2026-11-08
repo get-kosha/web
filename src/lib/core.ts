@@ -149,14 +149,64 @@ export function fmt(cents: number, currency: string, compact = false) {
   return f.format(cents / 100)
 }
 
-/** The phone keypad: one ".", at most 2 decimals, a leading "0" is replaced, at most 8 digits. */
-export function pressKey(amount: string, key: string) {
-  if (key === "del") return amount.slice(0, -1)
-  if (key === ".") return amount.includes(".") ? amount : (amount || "0") + "."
-  const dot = amount.indexOf(".")
-  if (dot !== -1 && amount.length - dot > 2) return amount
-  if (amount.replace(".", "").length >= 8) return amount
-  return (amount === "0" ? "" : amount) + key
+const KEY_OPS = "+-*/"
+
+/** The number being typed on the keypad: the text after the last operator. */
+const keypadNumber = (input: string) => input.slice(Math.max(...[...KEY_OPS].map((o) => input.lastIndexOf(o))) + 1)
+
+/**
+ * The amount keypad, which works like the phone app's: digits, ".", "del" and the operators "+", "-", "*", "/" build an
+ * expression such as "24.07+5.5". Each number has one ".", at most `decimals` decimals and 8 whole digits, and a
+ * leading "0" is replaced. An operator replaces one just typed and does nothing on an empty amount.
+ */
+export function pressKey(input: string, key: string, decimals = 2) {
+  if (key === "del") return input.slice(0, -1)
+  const seg = keypadNumber(input)
+  if (KEY_OPS.includes(key)) {
+    if (!input) return input
+    return (KEY_OPS.includes(input.at(-1)!) ? input.slice(0, -1) : input.replace(/\.$/, "")) + key
+  }
+  if (key === ".") return decimals === 0 || seg.includes(".") ? input : input + (seg ? "." : "0.")
+  const dot = seg.indexOf(".")
+  if (dot !== -1) return seg.length - dot - 1 >= decimals ? input : input + key
+  if (seg === "0") return input.slice(0, -1) + key
+  return seg.length >= 8 ? input : input + key
+}
+
+/**
+ * What a keypad expression comes to, in cents: × and ÷ before + and −, a trailing operator or "." ignored,
+ * rounded half up to `decimals` (0 to 2). Zero for no input, null when it divides by zero. It uses exact
+ * fractions, so 0.15 × 0.5 rounds to 0.08 as it should.
+ */
+export function keypadCents(input: string, decimals = 2): number | null {
+  const tokens = input.replace(/[-+*/.]+$/, "").match(/\d*\.?\d+|[-+*/]/g)
+  if (!tokens) return 0
+  const frac = (s: string): [bigint, bigint] => {
+    const [whole, dec = ""] = s.split(".")
+    return [BigInt(whole + dec || "0"), 10n ** BigInt(dec.length)]
+  }
+  let sum: [bigint, bigint] = [0n, 1n]
+  let term = frac(tokens[0])
+  let sign = 1n
+  const close = () => (sum = [sum[0] * term[1] + sign * term[0] * sum[1], sum[1] * term[1]])
+  for (let i = 1; i + 1 < tokens.length; i += 2) {
+    const [n, d] = frac(tokens[i + 1])
+    if (tokens[i] === "*") term = [term[0] * n, term[1] * d]
+    else if (tokens[i] === "/") {
+      if (!n) return null
+      term = [term[0] * d, term[1] * n]
+    } else {
+      close()
+      term = [n, d]
+      sign = tokens[i] === "-" ? -1n : 1n
+    }
+  }
+  close()
+  const [n, d] = sum
+  const unit = 10n ** BigInt(decimals)
+  const rounded = ((n < 0n ? -n : n) * unit * 2n + d) / (2n * d)
+  const cents = Number(rounded) * 10 ** (2 - decimals)
+  return n < 0n ? -cents : cents
 }
 
 /** Parses "12,50", "1.234,56", "1,234.56", "-45", "€ 12.00" or "12.00 Dr" into cents, or returns null. */

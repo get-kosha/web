@@ -14,6 +14,7 @@ import {
   remember,
   parseAmount,
   pressKey,
+  keypadCents,
   unixOf,
   dayOf,
   entryDate,
@@ -22,11 +23,23 @@ import {
   usualCurve,
 } from "./core.ts"
 
-assert.equal(["1", "2", ".", "5", "7", "9"].reduce(pressKey, ""), "12.57")
-assert.equal(["0", "4"].reduce(pressKey, ""), "4")
-assert.equal([".", ".", "5"].reduce(pressKey, ""), "0.5")
+const keys = (k: string[], decimals = 2) => k.reduce((a, key) => pressKey(a, key, decimals), "")
+assert.equal(keys(["1", "2", ".", "5", "7", "9"]), "12.57")
+assert.equal(keys(["0", "4"]), "4")
+assert.equal(keys([".", ".", "5"]), "0.5")
 assert.equal(pressKey("12.5", "del"), "12.")
 assert.equal(pressKey("12345678", "9"), "12345678")
+assert.equal(keys(["+", "2", "4", ".", "+", "*", "0", "0", "5", "."]), "24*5.")
+assert.equal(keys(["1", "2", "."], 0), "12")
+assert.equal(keypadCents("24.07+5.5"), 2957)
+assert.equal(keypadCents("2+3*4-1/4"), 1375)
+assert.equal(keypadCents("0.15*0.5"), 8)
+assert.equal(keypadCents("10/3"), 333)
+assert.equal(keypadCents("100/3", 0), 3300)
+assert.equal(keypadCents("5-8"), -300)
+assert.equal(keypadCents("12*"), 1200)
+assert.equal(keypadCents("4/0"), null)
+assert.equal(keypadCents(""), 0)
 
 assert.equal(parseAmount("12,50"), 1250)
 assert.equal(parseAmount("-1.234,56"), -123456)

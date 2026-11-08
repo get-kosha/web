@@ -215,6 +215,11 @@ export const saveSubscription = createServerFn({ method: "POST" })
   .validator(finance.subInput)
   .handler(async ({ data }) => ({ id: await finance.saveSubscription(await userId(), data) }))
 
+/** Add with Repeat on: the schedule, and its first payment when that day has come. */
+export const addRecurring = createServerFn({ method: "POST" })
+  .validator(finance.recurringEntryInput)
+  .handler(async ({ data }) => finance.addRecurring(await userId(), data))
+
 export const deleteSubscription = createServerFn({ method: "POST" })
   .validator(z.object({ id: z.string() }))
   .handler(async ({ data }) => {
