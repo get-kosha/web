@@ -1,0 +1,6 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_shortcut_add_expense": "{app} में खर्च जोड़ें",
+  "app_shortcut_add_income": "{app} में आय जोड़ें",
+  "app_shortcut_scan": "{app} में रसीद स्कैन करें"
+}

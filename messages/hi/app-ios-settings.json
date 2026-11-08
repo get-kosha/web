@@ -1,0 +1,8 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_ios_set_unlock_face_id": "Face ID से अनलॉक करें",
+  "app_ios_set_unlock_touch_id": "Touch ID से अनलॉक करें",
+  "app_ios_set_unlock_passcode": "पासकोड से अनलॉक करें",
+  "app_ios_set_unlock_desc": "Kosha खोलते समय पूछता है। पासकोड भी चलता है।",
+  "app_ios_set_unlock_unavailable": "पहले इस डिवाइस पर पासकोड सेट करें।"
+}

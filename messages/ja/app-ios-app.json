@@ -1,0 +1,6 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_shortcut_add_expense": "{app}で支出を追加",
+  "app_shortcut_add_income": "{app}で収入を追加",
+  "app_shortcut_scan": "{app}でレシートをスキャン"
+}

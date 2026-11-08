@@ -1,0 +1,17 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_ios_add_weekly": "Wekelijks",
+  "app_ios_add_monthly": "Maandelijks",
+  "app_ios_add_yearly": "Jaarlijks",
+  "app_ios_add_rule_week": "Elke week op {weekday}",
+  "app_ios_add_rule_month": "Elke maand op de {day}e",
+  "app_ios_add_rule_year": "Elk jaar op {date}",
+  "app_ios_add_list_as": "Opslaan als",
+  "app_ios_add_auto_hint": "Kosha voegt elke betaling op de dag zelf toe",
+  "app_ios_add_repeat_today": "De betaling van vandaag wordt nu toegevoegd. De volgende is op {date}, onder {list} in Terugkerend.",
+  "app_ios_add_repeat_past": "Deze betaling wordt nu toegevoegd. De volgende is op {date}, onder {list} in Terugkerend.",
+  "app_ios_add_repeat_future": "De eerste betaling is op {date}, onder {list} in Terugkerend.",
+  "app_ios_add_recurring_income": "Terugkerende inkomsten toevoegen",
+  "app_ios_add_recurring_transfer": "Terugkerende overboeking toevoegen",
+  "app_ios_add_toast_repeats": "{amount} toegevoegd · {name}, herhaalt {frequency}"
+}

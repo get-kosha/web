@@ -1,0 +1,17 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_ios_add_weekly": "毎週",
+  "app_ios_add_monthly": "毎月",
+  "app_ios_add_yearly": "毎年",
+  "app_ios_add_rule_week": "毎週{weekday}",
+  "app_ios_add_rule_month": "毎月{day}日",
+  "app_ios_add_rule_year": "毎年{date}",
+  "app_ios_add_list_as": "分類",
+  "app_ios_add_auto_hint": "Koshaが各支払いを当日に追加します",
+  "app_ios_add_repeat_today": "今日の支払いは今すぐ追加されます。次回は{date}で、「定期」の{list}に表示されます。",
+  "app_ios_add_repeat_past": "この支払いは今すぐ追加されます。次回は{date}で、「定期」の{list}に表示されます。",
+  "app_ios_add_repeat_future": "初回の支払いは{date}で、「定期」の{list}に表示されます。",
+  "app_ios_add_recurring_income": "定期収入を追加",
+  "app_ios_add_recurring_transfer": "定期振替を追加",
+  "app_ios_add_toast_repeats": "{amount}、{name}を追加しました。{frequency}繰り返します"
+}

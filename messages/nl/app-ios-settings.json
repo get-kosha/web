@@ -1,0 +1,8 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_ios_set_unlock_face_id": "Ontgrendelen met Face ID",
+  "app_ios_set_unlock_touch_id": "Ontgrendelen met Touch ID",
+  "app_ios_set_unlock_passcode": "Ontgrendelen met je toegangscode",
+  "app_ios_set_unlock_desc": "Vraagt het als je Kosha opent. Je toegangscode werkt ook.",
+  "app_ios_set_unlock_unavailable": "Stel eerst een toegangscode in op dit apparaat."
+}

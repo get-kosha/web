@@ -1,0 +1,17 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_ios_add_weekly": "Weekly",
+  "app_ios_add_monthly": "Monthly",
+  "app_ios_add_yearly": "Yearly",
+  "app_ios_add_rule_week": "Every week on {weekday}",
+  "app_ios_add_rule_month": "Every month on the {day}",
+  "app_ios_add_rule_year": "Every year on {date}",
+  "app_ios_add_list_as": "List it as",
+  "app_ios_add_auto_hint": "Kosha adds each payment on its day",
+  "app_ios_add_repeat_today": "Today’s payment is added now. The next is due {date}, under {list} in Recurring.",
+  "app_ios_add_repeat_past": "This payment is added now. The next is due {date}, under {list} in Recurring.",
+  "app_ios_add_repeat_future": "The first payment is due {date}, under {list} in Recurring.",
+  "app_ios_add_recurring_income": "Add recurring income",
+  "app_ios_add_recurring_transfer": "Add recurring transfer",
+  "app_ios_add_toast_repeats": "Added {amount} · {name}, repeats {frequency}"
+}

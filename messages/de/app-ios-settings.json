@@ -1,0 +1,8 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_ios_set_unlock_face_id": "Mit Face ID entsperren",
+  "app_ios_set_unlock_touch_id": "Mit Touch ID entsperren",
+  "app_ios_set_unlock_passcode": "Mit deinem Code entsperren",
+  "app_ios_set_unlock_desc": "Fragt, wenn du Kosha öffnest. Dein Code geht auch.",
+  "app_ios_set_unlock_unavailable": "Richte zuerst einen Code auf diesem Gerät ein."
+}

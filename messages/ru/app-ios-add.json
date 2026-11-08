@@ -1,0 +1,17 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_ios_add_weekly": "Еженедельно",
+  "app_ios_add_monthly": "Ежемесячно",
+  "app_ios_add_yearly": "Ежегодно",
+  "app_ios_add_rule_week": "Каждую неделю: {weekday}",
+  "app_ios_add_rule_month": "Каждый месяц {day}-го числа",
+  "app_ios_add_rule_year": "Каждый год {date}",
+  "app_ios_add_list_as": "Отнести к",
+  "app_ios_add_auto_hint": "Kosha добавляет каждый платёж в его день",
+  "app_ios_add_repeat_today": "Сегодняшний платёж добавляется сейчас. Следующий — {date}, в разделе «{list}» в «Регулярных».",
+  "app_ios_add_repeat_past": "Этот платёж добавляется сейчас. Следующий — {date}, в разделе «{list}» в «Регулярных».",
+  "app_ios_add_repeat_future": "Первый платёж — {date}, в разделе «{list}» в «Регулярных».",
+  "app_ios_add_recurring_income": "Добавить регулярный доход",
+  "app_ios_add_recurring_transfer": "Добавить регулярный перевод",
+  "app_ios_add_toast_repeats": "Добавлено: {amount} · {name}, повтор {frequency}"
+}

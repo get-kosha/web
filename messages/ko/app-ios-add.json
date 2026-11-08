@@ -1,0 +1,17 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_ios_add_weekly": "매주",
+  "app_ios_add_monthly": "매월",
+  "app_ios_add_yearly": "매년",
+  "app_ios_add_rule_week": "매주 {weekday}",
+  "app_ios_add_rule_month": "매월 {day}일",
+  "app_ios_add_rule_year": "매년 {date}",
+  "app_ios_add_list_as": "분류",
+  "app_ios_add_auto_hint": "Kosha가 각 결제를 그날 추가해요",
+  "app_ios_add_repeat_today": "오늘 결제는 지금 추가돼요. 다음 결제는 {date}이며, 정기 거래의 {list}에 있어요.",
+  "app_ios_add_repeat_past": "이 결제는 지금 추가돼요. 다음 결제는 {date}이며, 정기 거래의 {list}에 있어요.",
+  "app_ios_add_repeat_future": "첫 결제는 {date}이며, 정기 거래의 {list}에 있어요.",
+  "app_ios_add_recurring_income": "정기 수입 추가",
+  "app_ios_add_recurring_transfer": "정기 이체 추가",
+  "app_ios_add_toast_repeats": "추가했어요: {amount} · {name}, {frequency} 반복"
+}

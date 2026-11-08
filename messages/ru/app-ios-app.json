@@ -1,0 +1,6 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_shortcut_add_expense": "Добавить расход в {app}",
+  "app_shortcut_add_income": "Добавить доход в {app}",
+  "app_shortcut_scan": "Сканировать чек в {app}"
+}

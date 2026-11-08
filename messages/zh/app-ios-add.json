@@ -1,0 +1,17 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_ios_add_weekly": "每周",
+  "app_ios_add_monthly": "每月",
+  "app_ios_add_yearly": "每年",
+  "app_ios_add_rule_week": "每周{weekday}",
+  "app_ios_add_rule_month": "每月{day}日",
+  "app_ios_add_rule_year": "每年{date}",
+  "app_ios_add_list_as": "归类为",
+  "app_ios_add_auto_hint": "Kosha 会在当天添加每笔付款",
+  "app_ios_add_repeat_today": "今天的付款现在就会添加。下一笔在 {date} 到期，显示在“定期”的{list}中。",
+  "app_ios_add_repeat_past": "这笔付款现在就会添加。下一笔在 {date} 到期，显示在“定期”的{list}中。",
+  "app_ios_add_repeat_future": "第一笔付款在 {date} 到期，显示在“定期”的{list}中。",
+  "app_ios_add_recurring_income": "添加定期收入",
+  "app_ios_add_recurring_transfer": "添加定期转账",
+  "app_ios_add_toast_repeats": "已添加 {amount} · {name}，{frequency}重复"
+}

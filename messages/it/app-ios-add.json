@@ -1,0 +1,17 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_ios_add_weekly": "Settimanale",
+  "app_ios_add_monthly": "Mensile",
+  "app_ios_add_yearly": "Annuale",
+  "app_ios_add_rule_week": "Ogni settimana il {weekday}",
+  "app_ios_add_rule_month": "Ogni mese il giorno {day}",
+  "app_ios_add_rule_year": "Ogni anno il {date}",
+  "app_ios_add_list_as": "Registra come",
+  "app_ios_add_auto_hint": "Kosha aggiunge ogni pagamento nel suo giorno",
+  "app_ios_add_repeat_today": "Il pagamento di oggi viene aggiunto ora. Il prossimo scade il {date}, in {list} sotto Ricorrenti.",
+  "app_ios_add_repeat_past": "Questo pagamento viene aggiunto ora. Il prossimo scade il {date}, in {list} sotto Ricorrenti.",
+  "app_ios_add_repeat_future": "Il primo pagamento scade il {date}, in {list} sotto Ricorrenti.",
+  "app_ios_add_recurring_income": "Aggiungi entrata ricorrente",
+  "app_ios_add_recurring_transfer": "Aggiungi giroconto ricorrente",
+  "app_ios_add_toast_repeats": "Aggiunto {amount} · {name}, si ripete {frequency}"
+}

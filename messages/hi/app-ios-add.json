@@ -1,0 +1,17 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_ios_add_weekly": "साप्ताहिक",
+  "app_ios_add_monthly": "मासिक",
+  "app_ios_add_yearly": "वार्षिक",
+  "app_ios_add_rule_week": "हर हफ़्ते {weekday} को",
+  "app_ios_add_rule_month": "हर महीने की {day} तारीख़ को",
+  "app_ios_add_rule_year": "हर साल {date} को",
+  "app_ios_add_list_as": "इस रूप में दर्ज करें",
+  "app_ios_add_auto_hint": "Kosha हर भुगतान उसके दिन जोड़ता है",
+  "app_ios_add_repeat_today": "आज का भुगतान अभी जुड़ जाएगा। अगला {date} को देय है, नियमित में {list} के अंतर्गत।",
+  "app_ios_add_repeat_past": "यह भुगतान अभी जुड़ जाएगा। अगला {date} को देय है, नियमित में {list} के अंतर्गत।",
+  "app_ios_add_repeat_future": "पहला भुगतान {date} को देय है, नियमित में {list} के अंतर्गत।",
+  "app_ios_add_recurring_income": "नियमित आय जोड़ें",
+  "app_ios_add_recurring_transfer": "नियमित ट्रांसफ़र जोड़ें",
+  "app_ios_add_toast_repeats": "{amount} जोड़ा गया · {name}, {frequency} दोहराया जाएगा"
+}

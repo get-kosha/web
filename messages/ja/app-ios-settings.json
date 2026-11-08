@@ -1,0 +1,8 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_ios_set_unlock_face_id": "Face IDでロック解除",
+  "app_ios_set_unlock_touch_id": "Touch IDでロック解除",
+  "app_ios_set_unlock_passcode": "パスコードでロック解除",
+  "app_ios_set_unlock_desc": "Koshaを開くときに確認します。パスコードも使えます。",
+  "app_ios_set_unlock_unavailable": "先にこのデバイスでパスコードを設定してください。"
+}

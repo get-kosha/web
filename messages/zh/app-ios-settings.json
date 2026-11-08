@@ -1,0 +1,8 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_ios_set_unlock_face_id": "使用面容 ID 解锁",
+  "app_ios_set_unlock_touch_id": "使用触控 ID 解锁",
+  "app_ios_set_unlock_passcode": "使用设备密码解锁",
+  "app_ios_set_unlock_desc": "打开 Kosha 时询问。也可以用设备密码。",
+  "app_ios_set_unlock_unavailable": "请先在此设备上设置密码。"
+}
