@@ -16,14 +16,15 @@
   </picture>
 </p>
 
-Kosha (कोश, "treasury") keeps every account in one place: bank accounts, cash, credit cards and investments, in any currency. On a phone it is a quick-entry app you can install from the browser. On a desktop it is a dashboard that shows where your money went and where it stands.
+Kosha (कोश, "treasury") keeps every account in one place: bank accounts, cash, credit cards and investments, in any currency. On a phone it is a quick-entry app, installed from the browser or as the native [Android](https://github.com/get-kosha/android) and [iOS](https://github.com/get-kosha/ios) apps. On a desktop it is a dashboard that shows where your money went and where it stands.
 
 ## What it does
 
 - **Net worth across currencies.** Totals convert at daily exchange rates. Credit cards count what you owe, and investments count what you put in plus their latest gain.
 - **Quick setup.** A new account opens on a welcome screen: confirm your name, main currency and time zone (guessed from your browser), then add your bank accounts, cards, cash and investments in one go, each with what it holds today. Every step can be skipped.
 - **The current month.** Spending so far against your usual pace, a projection to the end of the month, and the bills still to pay.
-- **Fast entry.** Type one line, like `12.50 groceries yesterday`, and Kosha fills in the amount, category, date and account. Categories are also guessed from payees you have entered before.
+- **Fast entry.** Type one line, like `12.50 groceries yesterday`, and Kosha fills in the amount, category, date and account. Categories are also guessed from payees you have entered before. On a phone, **Add** starts with the amount on a calculator keypad (`12.40 + 3.10` works), and **Repeat** turns the entry into a recurring payment as you save it.
+- **Activity.** Pick a month, a year, all time or chosen days. A search, tag or event covers every date unless you pick a period, and search also matches tags, event names and categories.
 - **Tags and events.** Tag entries with hashtags (`#work`, or type them in the one-line entry). Create an event such as a trip with its dates, and everything you add during it is filed under it, so Activity can show what the whole trip cost. Click a tag on any entry to see every transaction with it, from any month.
 - **Subscriptions and bills.** Set a schedule once. Payments are recorded when they fall due, and you can skip or edit a single one.
 - **Transfers and currency exchange.** Moving money between your own accounts never counts as spending. For exchanges through Wise or similar, Kosha shows the fee and the cost of the provider's rate against the market rate.
@@ -31,7 +32,7 @@ Kosha (कोश, "treasury") keeps every account in one place: bank accounts, c
 - **Start from your statements.** A new account opens with a banner that takes every statement you have, from every bank and card and as many months as you like, all at once. Kosha sorts the files into accounts (by account number, or the bank's format), counts lines that appear in two statements once, links transfers between your own accounts, and names and sorts each payee from well-known merchants and your rules (and AI, when it's on). You check the result by payee, where a new name or category applies to every transaction from that payee, before anything is saved. Each account then gets an opening balance that makes it meet its latest statement, and is reconciled to it. An account you already had keeps today's balance. **Import statements** is also in search and in Settings › Import & export.
 - **Bank statements and reconciliation.** Drop a CSV, OFX or QFX file from your bank on **Reconcile** (from Accounts, or Settings › Import & export). Kosha works out the columns, remembers them for that bank, ticks every entry that matches a statement line (a few days of posting delay allowed), lists what's missing so you can add it in one go, and flags amounts that are close but not the same, such as a tip. A live bar shows the statement balance, what's ticked and the difference. When it doesn't add up, Kosha runs the bookkeeper's checks: an entry equal to the difference, half of it (a wrong sign), digits swapped (a difference divisible by 9), a misplaced decimal point, a duplicate, or entries at the period's end that will show on the next statement. Finishing marks the entries reconciled, Kosha warns before you change one, and the latest reconciliation can be undone. No file? Tick entries against the statement by hand, or confirm in one tap that your bank shows the same balance.
 - **Refunds.** Mark spending as refunded, in full or in parts, into the account the money came back to, which can be a bank account for a card purchase. The entry stays, and a refund lowers spending instead of counting as income.
-- **Receipts and payslips.** Attach photos or PDFs to any transaction, up to 10 MB each. A recurring payment such as a salary lists every file on its payments by month, so you can tick the months you need and download them as one zip.
+- **Receipts and payslips.** Attach photos (HEIC from a phone camera too) or PDFs to any transaction, up to 10 MB each. A recurring payment such as a salary lists every file on its payments by month, so you can tick the months you need and download them as one zip.
 - **Recurring payments, spotted.** Recurring lists payees you pay on a steady rhythm (weekly to yearly) that aren't set up yet. One tap makes one a recurring payment and files its past payments under it.
 - **Import from Cashew.** Bring over accounts, categories, transactions and recurring payments.
 - **Optional AI, with your own key.** Connect Anthropic, OpenAI, Gemini, OpenRouter, Ollama or any OpenAI-compatible endpoint in Settings › AI, and turn on what you want:
@@ -102,6 +103,12 @@ Password reset emails go out over SMTP. Set `SMTP_HOST`, `SMTP_USER` and `SMTP_P
 Before you deploy, set `BETTER_AUTH_URL` under `vars` in `wrangler.jsonc` to the public URL of the app. Its hostname is the passkey RP ID, and its origin is where passkeys can be used. Keep this hostname stable: existing passkeys cannot move to another domain, so users would need another sign-in method and would have to register new passkeys.
 
 To deploy on every push, connect the repository under the Worker's **Settings → Build**. Use `npm run deploy` as the deploy command and leave the build command empty. The build token needs **D1: Edit** for the migration step, which the token Cloudflare creates by default does not have.
+
+## Phone apps
+
+Kosha has native apps for Android ([get-kosha/android](https://github.com/get-kosha/android), Kotlin and Jetpack Compose) and iOS and iPadOS ([get-kosha/ios](https://github.com/get-kosha/ios), Swift and SwiftUI). Both are in testing. They sign in to getkosha.app or your own Kosha server, add entries offline, and read their strings from this repo's `messages/`, in the `app*.json` areas.
+
+They use `/api/v1` and the app-only endpoints under `/api/app` (`src/server/app-api.server.ts`), with the OAuth clients `kosha-android` and `kosha-ios` that `migrations/0009_app_clients.sql` registers on every server. For the apps' sign-in link on your own deployment, see `ANDROID_CERT_SHA256` and `APPLE_TEAM_ID` under [Deploy to Cloudflare](#deploy-to-cloudflare).
 
 ## API and MCP
 
