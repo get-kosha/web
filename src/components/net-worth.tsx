@@ -1,5 +1,6 @@
 import { getRouteApi } from "@tanstack/react-router"
 import { Reveal, RollingMoney } from "@/components/motion"
+import type { Loan } from "@/lib/loans"
 import type { Wallet } from "@/lib/api"
 import { fmt, netWorth, type Rates } from "@/lib/core"
 import { cn } from "@/lib/utils"
@@ -12,10 +13,21 @@ import { m } from "@/paraglide/messages"
  * shows what is left. The legend gives each amount and share, plus a "Card balance" row when there are
  * credit cards. It draws no card of its own, so place it inside one.
  */
-export function CompositionBar({ wallets, currency, rates }: { wallets: Wallet[]; currency: string; rates: Rates }) {
-  const nw = netWorth(wallets, currency, rates)
+export function CompositionBar({
+  wallets,
+  currency,
+  rates,
+  loans,
+}: {
+  wallets: Wallet[]
+  currency: string
+  rates: Rates
+  loans: Loan[]
+}) {
+  const nw = netWorth(wallets, currency, rates, loans)
   const loss = Math.min(0, nw.gains)
   const groups = [
+    { label: m.loans_owed_to_you(), value: nw.receivables, color: "bg-chart-3" },
     { label: m.overview_worth_cash(), value: nw.cash, color: "bg-chart-4" },
     { label: m.overview_worth_invested(), value: nw.invested + loss, color: "bg-chart-2" },
     { label: m.overview_worth_gains(), value: Math.max(0, nw.gains), color: "hatch", signed: true },
@@ -53,6 +65,13 @@ export function CompositionBar({ wallets, currency, rates }: { wallets: Wallet[]
             <span className="h-0.5 w-2.5 bg-destructive" aria-hidden="true" />
             <dt>{m.overview_worth_loss()}</dt>
             <dd className="num text-right text-destructive">{fmt(loss, currency)}</dd>
+          </div>
+        )}
+        {nw.personalDebt > 0 && (
+          <div className="contents">
+            <span className="h-0.5 w-2.5 bg-muted-foreground" aria-hidden="true" />
+            <dt>{m.loans_you_owe()}</dt>
+            <dd className="num text-right text-subtle-foreground">{fmt(-nw.personalDebt, currency)}</dd>
           </div>
         )}
         {cards && (

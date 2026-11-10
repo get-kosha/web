@@ -2,10 +2,13 @@
 // UI's server functions (lib/api.ts) and the public API (server/api.server.ts) run the same code.
 // Every query is scoped by user_id, joins included.
 
+import { listLoans, loanChanges } from "@/server/loans.server"
+import { loanTotals } from "@/lib/loans"
 import { z } from "zod"
 import { m } from "@/paraglide/messages"
 import {
   CORRECTION_CATEGORY,
+  LOAN_CATEGORY,
   INCOME_SQL,
   NEUTRAL_SQL,
   SPENDING_SQL,
@@ -29,6 +32,7 @@ import {
   parseAmount,
   shiftMonth,
   unixOf,
+  timeOf,
   entryDate,
   usualCurve,
   type AccountType,
@@ -109,6 +113,11 @@ export type Tx = {
   refund_of?: string | null
   /** A spending entry's refunds as JSON; read with refundList. Only Activity's list reads them. */
   refunds?: string
+  loan_id?: string | null
+  loan_kind?: "funding" | "repayment" | null
+  loan_principal?: number | null
+  loan_person?: string | null
+  loan_direction?: "lent" | "borrowed" | null
 }
 export type Event = {
   id: string
@@ -196,6 +205,7 @@ export async function loadMeta(uid: string) {
   const ai = provider.results[0] as { id: string; model: string } | undefined
   return {
     wallets: wallets.results as Wallet[],
+    loans: await listLoans(uid),
     categories: categories.results as Category[],
     rules: rules.results as TitleRule[],
     titles: (titles.results as { name: string }[]).map((t) => t.name),
@@ -346,7 +356,13 @@ export async function dashboard(uid: string, data: z.infer<typeof dashboardInput
     gainChange.set(m, (gainChange.get(m) ?? 0) + delta)
     lastGain.set(v.wallet_id, g)
   }
-  const first = [...firstMonth.values()].sort()[0]
+  const loanLedger = await loanChanges(uid)
+  for (const change of loanLedger) {
+    const m = monthOf(change.date, tz)
+    adjust.set(m, (adjust.get(m) ?? 0) + convert(change.amount, change.currency, primary, rates))
+    if (m > lastMonth) lastMonth = m
+  }
+  const first = [...firstMonth.values(), ...loanLedger.map((l) => monthOf(l.date, tz))].sort()[0]
   const months = new Map<string, { income: number; expense: number; net: number }>()
   if (first) {
     const list: string[] = []
@@ -426,7 +442,7 @@ export async function dashboard(uid: string, data: z.infer<typeof dashboardInput
     usual,
   }
 
-  const keys = [...months.keys()].sort()
+  const keys = [...new Set([...months.keys(), ...adjust.keys()])].sort()
   const series: { month: string; income: number; expense: number; netWorth: number; gains: number }[] = []
   if (keys.length) {
     let worth = 0,
@@ -473,6 +489,7 @@ export async function dashboard(uid: string, data: z.infer<typeof dashboardInput
     spike,
     income,
     upcoming,
+    loans: await listLoans(uid),
   }
 }
 
@@ -493,7 +510,8 @@ export const listInput = z.object({
   /** Amount range in cents, by absolute value. */
   min: z.number().int().min(0).optional(),
   max: z.number().int().min(0).optional(),
-  type: z.enum(["out", "in", "transfers"]).optional(),
+  type: z.enum(["out", "in", "transfers", "loans"]).optional(),
+  loan: z.string().optional(),
   /** Balance corrections are hidden unless asked for. */
   corrections: z.boolean().optional(),
   /** Only entries checked against a statement (true), or only those not yet (false). */
@@ -534,7 +552,7 @@ export async function listTransactions(uid: string, data: z.infer<typeof listInp
   }
   // A day range is the dates asked for. Without one, a search, tag or event covers every date, since it
   // is about every entry it finds, and anything else covers the current month.
-  if (data.from || data.to || !(data.all || data.q || data.tag || data.event)) {
+  if (data.from || data.to || !(data.all || data.q || data.tag || data.event || data.loan)) {
     const [from, to] =
       data.from || data.to
         ? [data.from ? unixOf(data.from, tz) : 0, data.to ? unixOf(addDays(data.to, 1), tz) : 2 ** 40]
@@ -562,6 +580,13 @@ export async function listTransactions(uid: string, data: z.infer<typeof listInp
   }
   if (data.type === "out") where.push(`${SPENDING_SQL()} AND t.category_id NOT IN ${NEUTRAL_SQL}`)
   if (data.type === "in") where.push(`${INCOME_SQL()} AND t.category_id NOT IN ${NEUTRAL_SQL}`)
+  if (data.loan) {
+    where.push(
+      "EXISTS (SELECT 1 FROM loan_payments lp WHERE lp.user_id = t.user_id AND lp.transaction_id = t.id AND lp.loan_id = ?)"
+    )
+    binds.push(data.loan)
+  }
+  if (data.type === "loans") where.push(`t.category_id = '${LOAN_CATEGORY}'`)
   if (data.type === "transfers") where.push("t.transfer_id IS NOT NULL")
   if (!data.corrections) where.push(`t.category_id <> '${CORRECTION_CATEGORY}'`)
   if (data.reconciled !== undefined) where.push(`t.reconciled_id IS ${data.reconciled ? "NOT " : ""}NULL`)
@@ -702,8 +727,30 @@ type SaveTx = z.infer<typeof saveInput>
 export async function saveTransactions(uid: string, items: (SaveTx & { requestHash?: string; refundOf?: string })[]) {
   const DB = db()
   const { tz, prefs } = await getSettings(uid)
-  const now = Math.floor(Date.now() / 1000)
   const editIds = items.flatMap((t) => (t.id ? [t.id] : []))
+  const linked = editIds.length
+    ? await DB.prepare(
+        `SELECT t.* FROM transactions t JOIN loan_payments p ON p.user_id = t.user_id AND p.transaction_id = t.id WHERE t.user_id = ? AND t.id IN (SELECT value FROM json_each(?))`
+      )
+        .bind(uid, ids(editIds))
+        .all<Tx>()
+    : { results: [] }
+  for (const data of items) {
+    const tx = linked.results.find((t) => t.id === data.id)
+    if (
+      tx
+        ? data.amount !== tx.amount ||
+          data.walletId !== tx.wallet_id ||
+          data.categoryId !== LOAN_CATEGORY ||
+          !data.paid ||
+          data.day !== dayOf(tx.date, tz) ||
+          (data.time !== undefined && data.time !== timeOf(tx.date, tz)) ||
+          !!data.subcategoryId
+        : data.categoryId === LOAN_CATEGORY
+    )
+      throw new HttpError(409, m.loans_edit_payment())
+  }
+  const now = Math.floor(Date.now() / 1000)
   const existing = new Map<string, number>()
   if (editIds.length) {
     const { results } = await DB.prepare(
@@ -817,6 +864,12 @@ export async function deleteTransactions(uid: string, list: string[]) {
         due_day: string | null
         refund_of: string | null
       }>()
+  const funding = await DB.prepare(
+    "SELECT transaction_id FROM loan_payments WHERE user_id = ? AND kind = 'funding' AND transaction_id IN (SELECT value FROM json_each(?))"
+  )
+    .bind(uid, ids(list))
+    .first()
+  if (funding) throw new HttpError(409, m.loans_edit_payment())
   const asked = new Set(list)
   const found = rows.filter((r) => asked.has(r.id))
   const refunds = rows.filter((r) => !asked.has(r.id) && r.refund_of && asked.has(r.refund_of)).map((r) => r.id)
@@ -1135,6 +1188,7 @@ export const subInput = z.object({
 })
 
 export async function saveSubscription(uid: string, data: z.infer<typeof subInput>) {
+  if (data.categoryId === LOAN_CATEGORY) throw new HttpError(409, m.loans_edit_payment())
   const DB = db()
   const { tz } = await getSettings(uid)
   const today = dayOf(Date.now() / 1000, tz)
@@ -1479,11 +1533,12 @@ export async function saveAccounts(uid: string, items: z.infer<typeof accountInp
  */
 export async function deleteAllTransactions(uid: string) {
   const DB = db()
-  await DB.batch(
-    ["transfers", "valuations", "transactions", "subscriptions", "reconciliations"].map((t) =>
-      DB.prepare(`DELETE FROM ${t} WHERE user_id = ?`).bind(uid)
-    )
-  )
+  await DB.batch([
+    DB.prepare("DELETE FROM loan_payments WHERE user_id = ? AND kind = 'repayment'").bind(uid),
+    ...["loan_payments", "loans", "transfers", "valuations", "transactions", "subscriptions", "reconciliations"].map(
+      (t) => DB.prepare(`DELETE FROM ${t} WHERE user_id = ?`).bind(uid)
+    ),
+  ])
 }
 
 export async function deleteAccount(uid: string, id: string) {
@@ -1567,8 +1622,8 @@ export async function accountsOverview(uid: string, data: z.infer<typeof dashboa
     DB.prepare("SELECT wallet_id, day, gain FROM valuations WHERE user_id = ? ORDER BY day").bind(uid),
     // The selected month's in, out and moved per account.
     DB.prepare(`SELECT wallet_id,
-      SUM(CASE WHEN category_id <> '${TRANSFER_CATEGORY}' AND ${INCOME_SQL("transactions")} THEN amount ELSE 0 END) AS inc,
-      SUM(CASE WHEN category_id <> '${TRANSFER_CATEGORY}' AND ${SPENDING_SQL("transactions")} THEN amount ELSE 0 END) AS spent,
+      SUM(CASE WHEN category_id NOT IN ${NEUTRAL_SQL} AND ${INCOME_SQL("transactions")} THEN amount ELSE 0 END) AS inc,
+      SUM(CASE WHEN category_id NOT IN ${NEUTRAL_SQL} AND ${SPENDING_SQL("transactions")} THEN amount ELSE 0 END) AS spent,
       SUM(CASE WHEN category_id = '${TRANSFER_CATEGORY}' THEN ABS(amount) ELSE 0 END) AS moved
       FROM transactions WHERE user_id = ? AND paid = 1 AND date >= ? AND date < ? AND category_id <> '${CORRECTION_CATEGORY}'
       GROUP BY wallet_id`).bind(uid, from, to),
@@ -1581,9 +1636,10 @@ export async function accountsOverview(uid: string, data: z.infer<typeof dashboa
   ])
   type W = { id: string; type: AccountType; currency: string; credit_limit: number | null }
   const span = new Map((spans.results as Span[]).map((r) => [r.wallet_id, r]))
-  const first = Math.min(...[...span.values()].map((r) => r.first))
+  const loanLedger = await loanChanges(uid)
+  const first = Math.min(...[...span.values()].map((r) => r.first), ...loanLedger.map((l) => l.date))
   const months: string[] = []
-  if (span.size) for (let m = monthOf(first, tz); m <= nowMonth; m = shiftMonth(m, 1)) months.push(m)
+  if (Number.isFinite(first)) for (let m = monthOf(first, tz); m <= nowMonth; m = shiftMonth(m, 1)) months.push(m)
   const monthEnd = (m: string) => ({ t: monthRange(m, tz)[1], day: addDays(`${shiftMonth(m, 1)}-01`, -1) })
   const monthEnds = months.map(monthEnd)
   const last6Ends = last6.map(monthEnd)
@@ -1634,6 +1690,7 @@ export async function accountsOverview(uid: string, data: z.infer<typeof dashboa
   )
 
   const totals = months.map(() => 0)
+  const loanWorths = months.map(() => 0)
   // Per month: each account's owned part and all unrealized gains, in the display currency, for the stacked chart.
   const owned = months.map(() => ({}) as Record<string, number>)
   const gained = months.map(() => 0)
@@ -1660,9 +1717,18 @@ export async function accountsOverview(uid: string, data: z.infer<typeof dashboa
       moved: f?.moved ?? 0,
     }
   }
+  for (let k = 0; k < monthEnds.length; k++) {
+    const loanWorth = loanLedger
+      .filter((l) => l.date < monthEnds[k].t)
+      .reduce((sum, l) => sum + convert(l.amount, l.currency, display, rates), 0)
+    totals[k] += loanWorth
+    loanWorths[k] = loanWorth
+  }
+  const loans = loanTotals(await listLoans(uid), display, rates)
   const start = totals.findIndex((v) => v !== 0)
   return {
     currency: display,
+    loans,
     month: selected,
     today,
     ratesUpdated: settings.ratesUpdated,
@@ -1674,6 +1740,7 @@ export async function accountsOverview(uid: string, data: z.infer<typeof dashboa
             netWorth: totals[start + k],
             gains: gained[start + k],
             byAccount: owned[start + k],
+            loans: loanWorths[start + k],
           })),
     days,
     last6,

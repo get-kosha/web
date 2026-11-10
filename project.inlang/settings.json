@@ -15,6 +15,7 @@
       "./messages/{locale}/transactions.json",
       "./messages/{locale}/add.json",
       "./messages/{locale}/accounts.json",
+      "./messages/{locale}/loans.json",
       "./messages/{locale}/reconcile.json",
       "./messages/{locale}/import.json",
       "./messages/{locale}/welcome.json",

@@ -698,7 +698,7 @@ function Done({ ids, headingRef }: { ids: string[]; headingRef: Ref<HTMLHeadingE
   const meta = useMeta()
   const added = ids.flatMap((id) => meta.wallets.find((w) => w.id === id) ?? [])
   const currencies = new Set(added.map((w) => w.currency)).size
-  const total = netWorth(meta.wallets, meta.primary, meta.rates).total
+  const total = netWorth(meta.wallets, meta.primary, meta.rates, meta.loans).total
   return (
     <div className="flex flex-1 flex-col pb-[max(1.5rem,env(safe-area-inset-bottom))] md:pb-14">
       <Intro

@@ -275,6 +275,8 @@ export const USER_TABLES = [
   "import_layouts",
   "payee_aliases",
   "recurring_dismissed",
+  "loan_payments",
+  "loans",
   "transfers",
   "valuations",
   "transactions",
@@ -293,6 +295,7 @@ async function deleteUserData(id: string) {
   await avatars()?.delete(avatarKey(id))
   await deleteAllAttachments(id)
   await DB.batch([
+    DB.prepare("DELETE FROM loan_payments WHERE user_id = ? AND kind = 'repayment'").bind(id),
     ...USER_TABLES.map((t) => DB.prepare(`DELETE FROM ${t} WHERE user_id = ?`).bind(id)),
     DB.prepare('DELETE FROM "passkey" WHERE "userId" = ?').bind(id),
     DB.prepare('DELETE FROM "twoFactor" WHERE "userId" = ?').bind(id),

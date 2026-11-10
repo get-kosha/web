@@ -1,6 +1,8 @@
 import { createIsomorphicFn, createServerFn } from "@tanstack/react-start"
 import { z } from "zod"
 import { m } from "@/paraglide/messages"
+import * as loans from "@/server/loans.server"
+import { loanInput, loanRepaymentInput, loanEditInput, loanUnlinkInput } from "@/lib/loans"
 import * as finance from "@/server/finance.server"
 import * as ai from "@/server/ai-tasks.server"
 import * as statements from "@/server/statements.server"
@@ -548,3 +550,24 @@ export const setAccountPassword = createServerFn({ method: "POST" })
     await userId()
     await auth.api.setPassword({ body: { newPassword: data.password }, headers: getRequest().headers })
   })
+
+// ---------- loans ----------
+export const listLoans = createServerFn({ method: "GET" }).handler(async () => loans.listLoans(await userId()))
+export const getLoan = createServerFn({ method: "GET" })
+  .validator(z.object({ id: z.string() }))
+  .handler(async ({ data }) => loans.loanDetails(await userId(), data.id))
+export const createLoan = createServerFn({ method: "POST" })
+  .validator(loanInput)
+  .handler(async ({ data }) => loans.createLoan(await userId(), data))
+export const recordLoanRepayment = createServerFn({ method: "POST" })
+  .validator(loanRepaymentInput)
+  .handler(async ({ data }) => loans.recordLoanRepayment(await userId(), data))
+export const editLoan = createServerFn({ method: "POST" })
+  .validator(loanEditInput)
+  .handler(async ({ data }) => loans.editLoan(await userId(), data))
+export const unlinkLoanPayment = createServerFn({ method: "POST" })
+  .validator(loanUnlinkInput)
+  .handler(async ({ data }) => loans.unlinkLoanPayment(await userId(), data))
+export const deleteLoan = createServerFn({ method: "POST" })
+  .validator(z.object({ id: z.string() }))
+  .handler(async ({ data }) => loans.deleteLoan(await userId(), data.id))

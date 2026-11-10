@@ -149,6 +149,8 @@ What each term means in Kosha. Pick one word per concept and use it everywhere.
 | Install / Reload                 | App install and update prompts.                                                                          |
 | tagline                          | Jot down what you spent. Know where it went.                                                             |
 
+Loan terminology: **principal** is the amount lent or borrowed, excluding interest. **Repayment** reduces that outstanding amount; **paid back** describes the whole agreement, not the bank entry’s paid status. The loan messages in each locale use these terms consistently.
+
 ## Terms by language
 
 ### Deutsch (`de`)

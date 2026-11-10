@@ -3,6 +3,14 @@
 // Pure (zod only), so core.test.ts checks every example against its schemas. Handlers live in
 // server/api.server.ts, keyed by the same names.
 
+import {
+  loanInput,
+  loanRepaymentInput,
+  loanEditInput,
+  loanUnlinkInput,
+  loanSchema,
+  loanPaymentSchema,
+} from "./loans.ts"
 import { z } from "zod"
 import { MAX_TAGS, PREFS } from "./core.ts"
 import { m } from "../paraglide/messages.js"
@@ -11,6 +19,8 @@ export type Scope = "read" | "write"
 type Method = "GET" | "POST" | "PATCH" | "PUT" | "DELETE"
 const TAGS = {
   Accounts: "Bank accounts, cash, credit cards and investments, with their balances.",
+  Loans:
+    "Personal lending and borrowing agreements with flexible principal repayments. No interest or instalment schedules yet.",
   Transactions: "Spending and income. Bulk create, update and delete, up to 500 at a time.",
   Tags: "Hashtags on transactions. A tag exists as soon as an entry uses it; there is nothing to create first.",
   Transfers: "Money moved between your own accounts, including currency exchanges. Never income or spending.",
@@ -159,6 +169,16 @@ const Transaction = z.object({
     })
     .nullable()
     .describe("Set on both halves of a transfer."),
+  loan: z
+    .object({
+      id: Id,
+      kind: z.enum(["funding", "repayment"]),
+      principal: Positive,
+      person: z.string(),
+      direction: z.enum(["lent", "borrowed"]),
+    })
+    .optional()
+    .describe("Linked personal-loan principal. Neutral in income/spending reports."),
   reconciled: z
     .boolean()
     .describe("Checked against a bank statement. Changing its amount, account or day un-reconciles it."),
@@ -459,7 +479,7 @@ export const OPERATIONS = {
       month: Month.optional(),
       from: Day.optional().describe("First day of a range. Overrides month."),
       to: Day.optional().describe("Last day of a range, included."),
-      type: z.enum(["expense", "income", "transfer"]).optional(),
+      type: z.enum(["expense", "income", "transfer", "loan"]).optional(),
       minAmount: z.number().int().min(0).optional().describe("Smallest amount in cents, by absolute value."),
       maxAmount: z.number().int().min(0).optional().describe("Largest amount in cents, by absolute value."),
       includeCorrections: z.boolean().default(false).describe("Include balance corrections."),
@@ -1320,6 +1340,8 @@ export const OPERATIONS = {
     output: z.object({
       currency: Currency,
       total: z.number().int(),
+      receivables: z.number().int(),
+      personalDebt: z.number().int(),
       cash: z.number().int(),
       investments: z.number().int(),
       invested: z.number().int(),
@@ -1336,6 +1358,8 @@ export const OPERATIONS = {
       output: {
         currency: "eur",
         total: 3954300,
+        receivables: 0,
+        personalDebt: 0,
         cash: 2754300,
         investments: 1382000,
         invested: 1200000,
@@ -1653,6 +1677,160 @@ export const OPERATIONS = {
       output: { reconciliationId: "r1", entries: 42, adjustment: 0, account },
     },
   }),
+  // Keep the existing first 40 tools stable; loans precede rare undo/AI tools. REST has no tool cap.
+  list_loans: op({
+    title: "List loans",
+    tag: "Loans",
+    method: "GET",
+    path: "/loans",
+    scope: "read",
+    description:
+      "Personal lending and borrowing agreements, including fully repaid ones. Remaining principal is separate from cash. Use get_loan for payment history.",
+    input: z.object({}),
+    output: z.object({ loans: z.array(loanSchema) }),
+    example: {
+      input: {},
+      output: {
+        loans: [
+          {
+            id: "00000000-0000-4000-8000-000000000001",
+            direction: "lent" as const,
+            person: "Sam",
+            purpose: "Deposit",
+            note: "",
+            currency: "eur",
+            principal: 50000,
+            repaid: 0,
+            remaining: 50000,
+            day: "2026-10-01",
+            dueDay: null,
+            opening: true,
+          },
+        ],
+      },
+    },
+  }),
+  get_loan: op({
+    title: "Get loan",
+    tag: "Loans",
+    method: "GET",
+    path: "/loans/{id}",
+    scope: "read",
+    description:
+      "One agreement and its actual dated bank payments, including principal applied in the agreement's currency.",
+    input: z.object({ id: Id }),
+    output: z.object({ loan: loanSchema, payments: z.array(loanPaymentSchema) }),
+    example: {
+      input: { id: "00000000-0000-4000-8000-000000000001" },
+      output: {
+        loan: {
+          id: "00000000-0000-4000-8000-000000000001",
+          direction: "lent" as const,
+          person: "Sam",
+          purpose: "Deposit",
+          note: "",
+          currency: "eur",
+          principal: 50000,
+          repaid: 0,
+          remaining: 50000,
+          day: "2026-10-01",
+          dueDay: null,
+          opening: true,
+        },
+        payments: [],
+      },
+    },
+  }),
+  create_loan: op({
+    title: "Create loan",
+    tag: "Loans",
+    method: "POST",
+    path: "/loans",
+    scope: "write",
+    idempotent: true,
+    description:
+      "Create a personal loan: source new records one bank movement; existing links an eligible transactionId without duplicating cash; opening tracks a balance with no bank movement. Use a fresh UUID id and reuse it unchanged on retry. Principal is positive cents. Initial account and loan currencies must match. Do not add a loan for debt already counted in an account.",
+    input: loanInput,
+    output: z.object({ id: Id }),
+    example: {
+      input: {
+        id: "00000000-0000-4000-8000-000000000001",
+        direction: "lent",
+        person: "Sam",
+        purpose: "Deposit",
+        source: "opening",
+        amount: 50000,
+        currency: "eur",
+        day: "2026-10-01",
+      },
+      output: { id: "00000000-0000-4000-8000-000000000001" },
+    },
+  }),
+  update_loan: op({
+    title: "Update loan",
+    tag: "Loans",
+    method: "PATCH",
+    path: "/loans/{id}",
+    scope: "write",
+    idempotent: true,
+    description:
+      "Edit the person, purpose, note and optional dueDay. Principal, currency, direction and original date are immutable; resolve incorrect movements through unlink_loan_payment.",
+    input: loanEditInput,
+    output: z.object({ saved: z.boolean() }),
+    example: {
+      input: { id: "l1", person: "Sam", purpose: "Deposit", note: "", dueDay: "2026-12-01" },
+      output: { saved: true },
+    },
+  }),
+  record_loan_repayment: op({
+    title: "Record loan repayment",
+    tag: "Loans",
+    method: "POST",
+    path: "/loans/{loanId}/repayments",
+    scope: "write",
+    idempotent: true,
+    description:
+      "Record or link a partial/full repayment. amount is principal in loan currency; accountAmount is the actual positive bank amount if currencies differ. Provide accountId for a new bank movement, or transactionId to link an existing entry. Use a fresh UUID id and reuse it unchanged on retry. Overpayment is rejected atomically. Principal never counts as income/spending.",
+    input: loanRepaymentInput,
+    output: z.object({ id: Id }),
+    example: {
+      input: {
+        id: "00000000-0000-4000-8000-000000000002",
+        loanId: "l1",
+        amount: 15000,
+        accountId: "a1",
+        day: "2026-11-01",
+      },
+      output: { id: "l1" },
+    },
+  }),
+  unlink_loan_payment: op({
+    title: "Unlink loan payment",
+    tag: "Loans",
+    method: "POST",
+    path: "/loan-payments/{transactionId}/unlink",
+    scope: "write",
+    destructive: true,
+    description:
+      "Keep the bank entry and its reconciliation, but reclassify it into an ordinary categoryId matching the cash direction. Unlinking funding removes the agreement and requires unlinking repayments first. This changes income/spending totals.",
+    input: loanUnlinkInput,
+    output: z.object({ unlinked: z.boolean() }),
+    example: { input: { transactionId: "t1", categoryId: "salary" }, output: { unlinked: true } },
+  }),
+  delete_loan: op({
+    title: "Delete loan",
+    tag: "Loans",
+    method: "DELETE",
+    path: "/loans/{id}",
+    scope: "write",
+    destructive: true,
+    description:
+      "Remove an opening balance with no bank links. Any linked payment blocks deletion; explicitly unlink those payments first. No bank history is deleted.",
+    input: z.object({ id: Id }),
+    output: z.object({ deleted: z.boolean() }),
+    example: { input: { id: "l1" }, output: { deleted: true } },
+  }),
+
   undo_reconciliation: op({
     title: "Undo reconciliation",
     tag: "Reconciliation",

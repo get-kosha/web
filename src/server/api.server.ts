@@ -62,6 +62,7 @@ import {
   refreshRatesIfStale,
   type SubscriptionView,
 } from "@/server/db.server"
+import * as loans from "@/server/loans.server"
 import * as finance from "@/server/finance.server"
 import * as ai from "@/server/ai-tasks.server"
 import * as statements from "@/server/statements.server"
@@ -221,6 +222,17 @@ const toTransaction = (t: Tx, tz: string, l: Lookups) => ({
         marketRate: t.market_rate ?? null,
       }
     : null,
+  ...(t.loan_id
+    ? {
+        loan: {
+          id: t.loan_id,
+          kind: t.loan_kind!,
+          principal: t.loan_principal!,
+          person: t.loan_person!,
+          direction: t.loan_direction!,
+        },
+      }
+    : {}),
   reconciled: !!t.reconciled_id,
   bankRef: t.bank_ref ?? null,
   attachmentCount: t.files ?? 0,
@@ -399,7 +411,7 @@ const HANDLERS: Handlers = {
       to: month ? addDays(`${shiftMonth(input.month!, 1)}-01`, -1) : input.to,
       min: input.minAmount,
       max: input.maxAmount,
-      type: input.type && ({ expense: "out", income: "in", transfer: "transfers" } as const)[input.type],
+      type: input.type && ({ expense: "out", income: "in", transfer: "transfers", loan: "loans" } as const)[input.type],
       corrections: input.includeCorrections,
       reconciled: input.reconciled,
       limit: input.limit,
@@ -971,11 +983,13 @@ const HANDLERS: Handlers = {
   async get_net_worth(uid, input) {
     const [wallets, rates, settings] = await Promise.all([finance.loadWallets(uid), getRates(), getSettings(uid)])
     const currency = input.currency && rates[input.currency] ? input.currency : settings.primary
-    const nw = netWorth(wallets, currency, rates)
+    const nw = netWorth(wallets, currency, rates, await loans.listLoans(uid))
     const overview = await finance.accountsOverview(uid, { currency })
     return {
       currency,
       total: round(nw.total),
+      receivables: round(nw.receivables),
+      personalDebt: round(nw.personalDebt),
       cash: round(nw.cash),
       investments: round(nw.investments),
       invested: round(nw.invested),
@@ -1036,6 +1050,30 @@ const HANDLERS: Handlers = {
       adjustment: r.adjustment,
       account: toAccount(await findAccount(uid, input.id)),
     }
+  },
+  async list_loans(uid) {
+    return { loans: await loans.listLoans(uid) }
+  },
+  async get_loan(uid, input) {
+    return loans.loanDetails(uid, input.id)
+  },
+  async create_loan(uid, input) {
+    return { id: await loans.createLoan(uid, input) }
+  },
+  async update_loan(uid, input) {
+    await loans.editLoan(uid, input)
+    return { saved: true }
+  },
+  async record_loan_repayment(uid, input) {
+    return { id: await loans.recordLoanRepayment(uid, input) }
+  },
+  async unlink_loan_payment(uid, input) {
+    await loans.unlinkLoanPayment(uid, input)
+    return { unlinked: true }
+  },
+  async delete_loan(uid, input) {
+    await loans.deleteLoan(uid, input.id)
+    return { deleted: true }
   },
   async undo_reconciliation(uid, input) {
     await findAccount(uid, input.id)

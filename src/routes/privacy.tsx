@@ -12,7 +12,7 @@ export const Route = createFileRoute("/privacy")({
 
 function Privacy() {
   return (
-    <LegalPage title={m.legal_privacy_title()} updated="2026-11-07">
+    <LegalPage title={m.legal_privacy_title()} updated="2026-11-10">
       <p>{m.legal_privacy_intro()}</p>
 
       <h2>{m.legal_privacy_short_title()}</h2>
@@ -25,6 +25,7 @@ function Privacy() {
 
       <h2>{m.legal_privacy_stores_title()}</h2>
       <ul>
+        <li>{m.loans_privacy()}</li>
         <li>
           <ParaglideMessage message={m.legal_privacy_stores_account} markup={{ strong }} />
         </li>

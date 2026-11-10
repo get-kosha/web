@@ -1,3 +1,4 @@
+import { AccountTabs } from "@/components/loans"
 import { useId, useState, useSyncExternalStore } from "react"
 import { Link, createFileRoute, useRouter } from "@tanstack/react-router"
 import { Area, CartesianGrid, ComposedChart, Line, LineChart, XAxis, YAxis } from "recharts"
@@ -193,8 +194,23 @@ function Accounts() {
       </PageHeader>
 
       <div className="flex flex-col gap-5 px-4 md:px-8">
+        <AccountTabs />
         {starting && <GetStarted />}
         <Hero overview={overview} />
+        {(overview.loans.lent > 0 || overview.loans.borrowed > 0) && (
+          <Link
+            to="/loans"
+            className="flex min-h-11 flex-wrap items-center justify-between gap-3 rounded-xl border bg-card p-4 text-sm"
+          >
+            <span>
+              {m.loans_owed_to_you()}: <span className="num">{fmt(overview.loans.lent, cur)}</span>
+            </span>
+            <span>
+              {m.loans_you_owe()}: <span className="num">{fmt(overview.loans.borrowed, cur)}</span>
+            </span>
+            <CaretRightIcon className="size-4" />
+          </Link>
+        )}
 
         {meta.wallets.length > 0 && (
           <div className="flex flex-wrap items-start gap-5">
@@ -380,7 +396,7 @@ function Hero({ overview }: { overview: AccountsOverview }) {
         )}
       </div>
       <div className="flex min-w-0 flex-[1_1_280px] flex-col justify-center gap-3.5">
-        <CompositionBar wallets={meta.wallets} currency={cur} rates={meta.rates} />
+        <CompositionBar loans={meta.loans} wallets={meta.wallets} currency={cur} rates={meta.rates} />
         {others.length > 0 && (
           <p className="num border-t pt-3 text-xs text-muted-foreground">
             {others
@@ -410,7 +426,12 @@ function WorthChart({ points, currency }: { points: AccountsOverview["series"]; 
   const hatch = useId()
   const slots = colourSlots(meta.wallets)
   const rows = points.map((p) => {
-    const row: Record<string, number | string> = { month: p.month, netWorth: p.netWorth, gains: p.gains }
+    const row: Record<string, number | string> = {
+      month: p.month,
+      netWorth: p.netWorth,
+      gains: p.gains,
+      loans: p.loans,
+    }
     for (const [id, v] of Object.entries(p.byAccount)) {
       const slot = slots.get(id)
       const key = slot === undefined ? "other" : `a${slot}`
@@ -419,7 +440,9 @@ function WorthChart({ points, currency }: { points: AccountsOverview["series"]; 
     return row
   })
   const names = new Map([...slots].map(([id, i]) => [`a${i}`, meta.wallets.find((w) => w.id === id)?.name ?? ""]))
-  const keys = [...SERIES.map((_, i) => `a${i}`), "other"].filter((k) => rows.some((r) => Math.round(Number(r[k]))))
+  const keys = [...SERIES.map((_, i) => `a${i}`), "other", "loans"].filter((k) =>
+    rows.some((r) => Math.round(Number(r[k])))
+  )
   const hasGains = rows.some((r) => Math.round(Number(r.gains)))
   // Card debt stacks below zero. When it is a sliver, start the axis at zero instead of mirroring the scale
   // below it; the line and the tooltip still give the true total.
@@ -430,8 +453,8 @@ function WorthChart({ points, currency }: { points: AccountsOverview["series"]; 
     ...keys.map((k) => [
       k,
       {
-        label: names.get(k) ?? m.accounts_chart_other(),
-        color: k === "other" ? "var(--chart-3)" : `var(${SERIES[+k.slice(1)]})`,
+        label: k === "loans" ? m.loans_title() : (names.get(k) ?? m.accounts_chart_other()),
+        color: k === "loans" ? "var(--chart-4)" : k === "other" ? "var(--chart-3)" : `var(${SERIES[+k.slice(1)]})`,
       },
     ]),
     ["gains", { label: m.accounts_chart_gains(), color: "var(--chart-2)" }],

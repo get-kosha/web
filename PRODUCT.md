@@ -26,7 +26,7 @@ Built around the habit of writing each payment down as it happens: entry takes s
 
 ## Capabilities and Constraints
 
-- Accounts, categories, tags, events, subscriptions and bills, transfers, currency exchange, Cashew import, bank statement import (CSV, OFX, QFX) and reconciliation, spotting recurring payments, REST API and MCP.
+- Accounts, categories, tags, events, subscriptions and bills, personal loans with partial repayments, transfers, currency exchange, Cashew import, bank statement import (CSV, OFX, QFX) and reconciliation, spotting recurring payments, REST API and MCP.
 - Optional AI with the user's own provider key: auto-categorise, natural-language add, receipt scanning, a monthly recap and Ask Kosha. Each can be turned off, and an off feature leaves no trace.
 - Sign in with a password or passkey, optional two-factor codes. One account per person.
 - Runs on one Cloudflare Worker with a D1 database. Production is https://getkosha.app.

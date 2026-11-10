@@ -2,6 +2,7 @@
 // log live in ai.server.ts. Every request holds only what Settings › AI › What AI can see allows: hidden
 // payees and accounts go out as codes, and replies get the real names back before anyone reads them.
 
+import { listLoans } from "@/server/loans.server"
 import { waitUntil } from "cloudflare:workers"
 import { z } from "zod"
 import {
@@ -954,10 +955,12 @@ Tags: ${json(tags.map((t) => t.tag))}`
         label: m.ai_step_accounts(),
         result: async () => {
           const wallets = (await finance.loadWallets(s.uid)).filter((w) => !w.archived)
-          const nw = netWorth(wallets, p, rates)
+          const nw = netWorth(wallets, p, rates, await listLoans(s.uid))
           return {
             currency: p.toUpperCase(),
             netWorth: amount(nw.total),
+            moneyLent: amount(nw.receivables),
+            moneyBorrowed: amount(nw.personalDebt),
             cash: amount(nw.cash),
             investments: amount(nw.investments),
             owedOnCards: amount(nw.debt),

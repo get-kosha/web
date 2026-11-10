@@ -81,10 +81,12 @@ export function refreshRatesIfStale(ratesUpdated: number) {
  * Columns and joins that add a transfer's other half and exchange details to `t`.
  * Use as `SELECT t.*, ${COUNTERPART} WHERE t.user_id = ? ...`.
  */
-export const COUNTERPART = `p.wallet_id AS counter_wallet_id, p.amount AS counter_amount, x.fee, x.provider, x.market_rate
+export const COUNTERPART = `p.wallet_id AS counter_wallet_id, p.amount AS counter_amount, x.fee, x.provider, x.market_rate, lp.loan_id, lp.kind AS loan_kind, lp.principal AS loan_principal, l.person AS loan_person, l.direction AS loan_direction
   FROM transactions t
   LEFT JOIN transactions p ON p.user_id = t.user_id AND p.transfer_id = t.transfer_id AND p.id <> t.id
-  LEFT JOIN transfers x ON x.user_id = t.user_id AND x.id = t.transfer_id`
+  LEFT JOIN transfers x ON x.user_id = t.user_id AND x.id = t.transfer_id
+  LEFT JOIN loan_payments lp ON lp.user_id = t.user_id AND lp.transaction_id = t.id
+  LEFT JOIN loans l ON l.user_id = lp.user_id AND l.id = lp.loan_id`
 
 // --- subscriptions: record due occurrences as paid (auto_pay) ---
 

@@ -26,6 +26,7 @@ import { Route as AppAddRouteImport } from './routes/_app/add'
 import { Route as AppAskRouteImport } from './routes/_app/ask'
 import { Route as AppCategoriesRouteImport } from './routes/_app/categories'
 import { Route as AppImportRouteImport } from './routes/_app/import'
+import { Route as AppLoansRouteImport } from './routes/_app/loans'
 import { Route as AppReconcileRouteImport } from './routes/_app/reconcile'
 import { Route as AppSettingsRouteImport } from './routes/_app/settings'
 import { Route as AppSubscriptionsRouteImport } from './routes/_app/subscriptions'
@@ -127,6 +128,11 @@ const AppImportRoute = AppImportRouteImport.update({
   path: '/import',
   getParentRoute: () => AppRoute,
 } as any)
+const AppLoansRoute = AppLoansRouteImport.update({
+  id: '/loans',
+  path: '/loans',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppReconcileRoute = AppReconcileRouteImport.update({
   id: '/reconcile',
   path: '/reconcile',
@@ -226,6 +232,7 @@ export interface FileRoutesByFullPath {
   '/ask': typeof AppAskRoute
   '/categories': typeof AppCategoriesRoute
   '/import': typeof AppImportRoute
+  '/loans': typeof AppLoansRoute
   '/reconcile': typeof AppReconcileRoute
   '/settings': typeof AppSettingsRouteWithChildren
   '/subscriptions': typeof AppSubscriptionsRoute
@@ -259,6 +266,7 @@ export interface FileRoutesByTo {
   '/ask': typeof AppAskRoute
   '/categories': typeof AppCategoriesRoute
   '/import': typeof AppImportRoute
+  '/loans': typeof AppLoansRoute
   '/reconcile': typeof AppReconcileRoute
   '/subscriptions': typeof AppSubscriptionsRoute
   '/transactions': typeof AppTransactionsRoute
@@ -294,6 +302,7 @@ export interface FileRoutesById {
   '/_app/ask': typeof AppAskRoute
   '/_app/categories': typeof AppCategoriesRoute
   '/_app/import': typeof AppImportRoute
+  '/_app/loans': typeof AppLoansRoute
   '/_app/reconcile': typeof AppReconcileRoute
   '/_app/settings': typeof AppSettingsRouteWithChildren
   '/_app/subscriptions': typeof AppSubscriptionsRoute
@@ -331,6 +340,7 @@ export interface FileRouteTypes {
     | '/ask'
     | '/categories'
     | '/import'
+    | '/loans'
     | '/reconcile'
     | '/settings'
     | '/subscriptions'
@@ -364,6 +374,7 @@ export interface FileRouteTypes {
     | '/ask'
     | '/categories'
     | '/import'
+    | '/loans'
     | '/reconcile'
     | '/subscriptions'
     | '/transactions'
@@ -398,6 +409,7 @@ export interface FileRouteTypes {
     | '/_app/ask'
     | '/_app/categories'
     | '/_app/import'
+    | '/_app/loans'
     | '/_app/reconcile'
     | '/_app/settings'
     | '/_app/subscriptions'
@@ -560,6 +572,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppImportRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/loans': {
+      id: '/_app/loans'
+      path: '/loans'
+      fullPath: '/loans'
+      preLoaderRoute: typeof AppLoansRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/reconcile': {
       id: '/_app/reconcile'
       path: '/reconcile'
@@ -696,6 +715,7 @@ interface AppRouteChildren {
   AppAskRoute: typeof AppAskRoute
   AppCategoriesRoute: typeof AppCategoriesRoute
   AppImportRoute: typeof AppImportRoute
+  AppLoansRoute: typeof AppLoansRoute
   AppReconcileRoute: typeof AppReconcileRoute
   AppSettingsRoute: typeof AppSettingsRouteWithChildren
   AppSubscriptionsRoute: typeof AppSubscriptionsRoute
@@ -711,6 +731,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppAskRoute: AppAskRoute,
   AppCategoriesRoute: AppCategoriesRoute,
   AppImportRoute: AppImportRoute,
+  AppLoansRoute: AppLoansRoute,
   AppReconcileRoute: AppReconcileRoute,
   AppSettingsRoute: AppSettingsRouteWithChildren,
   AppSubscriptionsRoute: AppSubscriptionsRoute,

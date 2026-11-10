@@ -15,13 +15,15 @@ export const intlLocale = () => {
 export const CORRECTION_CATEGORY = "0"
 /** Both halves of a transfer between your own accounts. */
 export const TRANSFER_CATEGORY = "transfer"
+/** Principal moving between cash and a personal loan. */
+export const LOAN_CATEGORY = "loan_principal"
 /** Categories that are never income or spending. */
-export const isNeutral = (categoryId: string) => categoryId === CORRECTION_CATEGORY || categoryId === TRANSFER_CATEGORY
+export const isNeutral = (categoryId: string) =>
+  categoryId === CORRECTION_CATEGORY || categoryId === TRANSFER_CATEGORY || categoryId === LOAN_CATEGORY
 /** Categories Kosha itself relies on. They can be renamed and re-iconed, but never archived, merged or retyped.
- *  '0' and 'transfer' are neutral and stay out of category management. */
-export const isSystemCategory = (id: string) =>
-  id === CORRECTION_CATEGORY || id === TRANSFER_CATEGORY || id === "transfer_fee"
-export const NEUTRAL_SQL = `('${CORRECTION_CATEGORY}', '${TRANSFER_CATEGORY}')`
+ * Neutral categories stay out of category management. */
+export const isSystemCategory = (id: string) => isNeutral(id) || id === "transfer_fee"
+export const NEUTRAL_SQL = `('${CORRECTION_CATEGORY}', '${TRANSFER_CATEGORY}', '${LOAN_CATEGORY}')`
 /**
  * Spending and income as totals count them. A refund (a row with refund_of) is money in that undoes spending, so it
  * sits on the spending side and lowers it, and never counts as income. `t` is the table's name or alias.
@@ -741,7 +743,12 @@ export function guessCurrency(languages: readonly string[], known: Record<string
   return regions.map((r) => r && REGION_CURRENCY[r]).find((c) => c && known[c]) ?? fallback
 }
 
-export function netWorth(accounts: AccountLike[], to: string, rates: Rates) {
+export function netWorth(
+  accounts: AccountLike[],
+  to: string,
+  rates: Rates,
+  loans: readonly { direction: "lent" | "borrowed"; remaining: number; currency: string }[] = []
+) {
   const c = (v: number, from: string) => convert(v, from, to, rates)
   let total = 0,
     cash = 0,
@@ -759,7 +766,23 @@ export function netWorth(accounts: AccountLike[], to: string, rates: Rates) {
       available += c(a.balance, a.currency)
     } else cash += c(a.balance, a.currency)
   }
-  return { total, cash, invested, gains, investments: invested + gains, debt, available }
+  let receivables = 0,
+    personalDebt = 0
+  for (const loan of loans) {
+    if (loan.direction === "lent") receivables += c(loan.remaining, loan.currency)
+    else personalDebt += c(loan.remaining, loan.currency)
+  }
+  return {
+    total: total + receivables - personalDebt,
+    receivables,
+    personalDebt,
+    cash,
+    invested,
+    gains,
+    investments: invested + gains,
+    debt,
+    available,
+  }
 }
 
 // --- currency exchange ---

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react"
-import { useRouter } from "@tanstack/react-router"
+import { Link, useRouter } from "@tanstack/react-router"
 import {
   ArrowDownIcon,
   ArrowUUpLeftIcon,
@@ -438,6 +438,22 @@ export function TransactionForm({
       toast.error(err instanceof Error ? err.message : m.tx_delete_failed())
     }
   }
+
+  if (initial?.loan_id)
+    return (
+      <div className="grid gap-4">
+        <p className="num text-3xl">{fmt(initial.amount, wallet?.currency ?? meta.primary)}</p>
+        <p className="text-sm text-muted-foreground">{m.loans_edit_payment()}</p>
+        <Link
+          to="/loans"
+          search={{ loan: initial.loan_id }}
+          className="flex min-h-11 items-center text-sm underline underline-offset-4"
+        >
+          {m.loans_title()}
+        </Link>
+        <Attachments transactionId={initial.id} />
+      </div>
+    )
 
   return (
     <form onSubmit={submit} className="flex flex-1 flex-col gap-5">

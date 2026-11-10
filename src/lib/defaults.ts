@@ -28,5 +28,6 @@ export const DEFAULT_CATEGORIES: { id: string; readonly name: string; icon: stri
   cat("other_income", m.defaults_other_income, "💵", 1),
   cat("0", m.defaults_correction, "⚖️"),
   cat("transfer_fee", m.defaults_transfer_fees, "💱"),
+  cat("loan_principal", m.loans_title, "💸"),
   cat("transfer", m.defaults_transfer, "↔️"),
 ]

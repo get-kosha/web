@@ -1,3 +1,4 @@
+import { LoansCard } from "@/components/loans"
 import { useEffect, useId, useRef, useState, type ReactNode } from "react"
 import { Link, createFileRoute, useRouter } from "@tanstack/react-router"
 import { ArrowClockwiseIcon, XIcon } from "@phosphor-icons/react/ssr"
@@ -116,6 +117,7 @@ function Overview() {
         </div>
       </div>
 
+      <LoansCard loans={d.loans} />
       <LastTwelveMonths d={d} />
 
       <TransactionSheet
@@ -297,7 +299,7 @@ const More = ({
 function NetWorthCard({ d }: { d: Dash }) {
   const meta = useMeta()
   const p = d.primary
-  const nw = netWorth(meta.wallets, p, meta.rates)
+  const nw = netWorth(meta.wallets, p, meta.rates, meta.loans)
   const line = d.series.filter((x) => x.month <= d.month).slice(-12)
   const at = (m: string) => d.series.find((x) => x.month === m)?.netWorth
   const thisMonth = at(d.month) === undefined ? null : at(d.month)! - (at(shiftMonth(d.month, -1)) ?? 0) // null means a future month
@@ -359,7 +361,7 @@ function NetWorthCard({ d }: { d: Dash }) {
           </ChartContainer>
         </Reveal>
       )}
-      <CompositionBar wallets={meta.wallets} currency={p} rates={meta.rates} />
+      <CompositionBar loans={meta.loans} wallets={meta.wallets} currency={p} rates={meta.rates} />
     </Card>
   )
 }

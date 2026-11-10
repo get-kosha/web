@@ -76,7 +76,8 @@ const search = z.object({
   /** Amount range in cents, by absolute value. */
   min: z.number().int().min(0).optional(),
   max: z.number().int().min(0).optional(),
-  type: z.enum(["out", "in", "transfers"]).optional(),
+  type: z.enum(["out", "in", "transfers", "loans"]).optional(),
+  loan: z.string().optional(),
   corrections: z.boolean().optional(),
   limit: z.number().int().min(PAGE).max(2000).optional(),
 })
@@ -84,7 +85,7 @@ type Search = z.infer<typeof search>
 
 export const Route = createFileRoute("/_app/transactions")({
   validateSearch: search,
-  loaderDeps: ({ search: { q, wallet, category, tag, event, period, min, max, type, corrections, limit } }) => ({
+  loaderDeps: ({ search: { q, wallet, category, tag, event, period, min, max, type, loan, corrections, limit } }) => ({
     q,
     wallet,
     category,
@@ -94,6 +95,7 @@ export const Route = createFileRoute("/_app/transactions")({
     min,
     max,
     type,
+    loan,
     corrections,
     limit,
   }),
@@ -215,7 +217,7 @@ function Activity() {
 
   const event = s.event ? meta.events.find((e) => e.id === s.event) : undefined
   const period = parsePeriod(s.period)
-  const finding = !!(s.q || s.tag || s.event)
+  const finding = !!(s.q || s.tag || s.event || s.loan)
   // What's listed when no period is set, matching the server's default.
   const shown: Period = period ?? (finding ? { kind: "all" } : { kind: "month", month: current })
   // The current month is the default unless you're finding something, so it stays out of the URL then.
@@ -223,6 +225,7 @@ function Activity() {
     set({ period: !finding && p.kind === "month" && p.month === current ? undefined : periodParam(p) })
   // Every active filter as a removable chip under the search. `text` names it for screen readers.
   const chips = [
+    s.loan && { key: "loan", label: m.loans_title(), text: m.loans_title(), clear: { loan: undefined } },
     wallet && { key: "wallet", label: wallet.name, text: wallet.name, clear: { wallet: undefined } },
     category && {
       key: "category",
@@ -314,6 +317,7 @@ function Activity() {
               ["out", m.tx_out()],
               ["in", m.tx_in()],
               ["transfers", m.tx_type_transfers()],
+              ["loans", m.loans_title()],
             ]}
           />
         </div>
@@ -652,6 +656,7 @@ function Row({
   const foreign = currency !== cur
   const event = t.event_id ? meta.events.find((e) => e.id === t.event_id) : undefined
   const sub: ReactNode[] = [
+    t.loan_id && (t.loan_kind === "funding" ? m.loans_original() : m.loans_repayment()),
     !t.paid && kindLabel(t.kind),
     event?.name,
     ...tagList(t.tags).map((x) => (

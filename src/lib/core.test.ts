@@ -143,7 +143,7 @@ assert.equal(inst[1].wallet_id, null)
 console.log("subscriptions ok")
 
 // net worth
-import { accountWorth, netWorth } from "./core.ts"
+import { accountWorth, netWorth, isSystemCategory } from "./core.ts"
 const card = { type: "credit" as const, currency: "eur", balance: 458557, credit_limit: 600000, gain: null }
 const fund = { type: "investment" as const, currency: "eur", balance: 2445438, credit_limit: null, gain: 120000 }
 const bank = { type: "bank" as const, currency: "jpy", balance: 9000, credit_limit: null, gain: null }
@@ -153,6 +153,26 @@ const nw = netWorth([card, fund, bank], "eur", { eur: 1, jpy: 90 })
 assert.equal(Math.round(nw.total), -141443 + 2565438 + 100)
 assert.equal(nw.debt, 141443)
 assert.equal(nw.gains, 120000)
+assert.equal(isSystemCategory("loan_principal"), true)
+assert.equal(
+  netWorth([{ ...bank, currency: "eur", balance: 140000 }], "eur", { eur: 1 }, [
+    { direction: "lent", currency: "eur", remaining: 60000 },
+  ]).total,
+  200000
+)
+assert.equal(
+  netWorth([{ ...bank, currency: "eur", balance: 230000 }], "eur", { eur: 1 }, [
+    { direction: "borrowed", currency: "eur", remaining: 30000 },
+  ]).total,
+  200000
+)
+assert.equal(
+  netWorth([], "eur", { eur: 1, usd: 1.25 }, [
+    { direction: "lent", currency: "usd", remaining: 12500 },
+    { direction: "borrowed", currency: "eur", remaining: 2000 },
+  ]).total,
+  8000
+)
 console.log("net worth ok")
 
 // new accounts from what people know today
@@ -550,9 +570,12 @@ for (const [name, o] of operations) {
   assert.deepEqual(o.output.parse(o.example.output), o.example.output, `${name} example output has unknown fields`)
   assert.equal(o.scope === "read", o.method === "GET", `${name}: GET reads, everything else writes`)
 }
-// Cursor passes only the first 40 tools to its agent, so past those come only AI tools and rare undo and dismiss ones.
+// Keep Cursor’s first 40 tools stable. Loans follow those legacy slots, before rare undo and AI tools.
 for (const [name, o] of operations.slice(40))
-  assert.ok(o.tag === "AI" || /^(undo|dismiss)_/.test(name), `${name} is past the first 40 tools; move it up`)
+  assert.ok(
+    o.tag === "AI" || o.tag === "Loans" || /^(undo|dismiss)_/.test(name),
+    `${name} is past the first 40 tools; move it up`
+  )
 assert.ok(
   operations.slice(0, 40).every(([, o]) => o.tag !== "AI"),
   "AI tools come after the first 40"
@@ -1242,3 +1265,5 @@ assert.equal(periodDays({ kind: "all" }), null)
 assert.deepEqual(shiftPeriod(parsePeriod("2026-01")!, -1), { kind: "month", month: "2025-12" })
 assert.deepEqual(shiftPeriod(parsePeriod("2026")!, 1), { kind: "year", year: "2027" })
 assert.equal(shiftPeriod({ kind: "all" }, 1), undefined)
+
+await import("./loans.test.ts")

@@ -32,6 +32,7 @@ const PAGES = [
   { to: "/", label: m.shell_nav_overview, icon: ChartBarIcon },
   { to: "/transactions", label: m.shell_nav_activity, icon: ListIcon },
   { to: "/subscriptions", label: m.shell_nav_recurring, icon: RepeatIcon },
+  { to: "/loans", label: m.loans_title, icon: WalletIcon },
   { to: "/accounts", label: m.shell_nav_accounts, icon: CreditCardIcon },
   { to: "/categories", label: m.shell_categories, icon: TagIcon },
   { to: "/import", label: m.shell_page_import, icon: FileArrowUpIcon, keywords: m.shell_page_import_keywords },
@@ -111,6 +112,17 @@ function Body({ close, onAdd }: { close: () => void; onAdd: (text: string) => vo
     )
 
   const items: Item[] = []
+  for (const loan of meta.loans
+    .filter((l) => low && `${l.person} ${l.purpose}`.toLowerCase().includes(low))
+    .slice(0, 5))
+    items.push({
+      id: `loan:${loan.id}`,
+      group: m.loans_title(),
+      icon: <WalletIcon />,
+      label: loan.person,
+      end: <span className="num text-xs text-muted-foreground">{fmt(loan.remaining, loan.currency)}</span>,
+      run: go(() => void navigate({ to: "/loans", search: { loan: loan.id } })),
+    })
   const ask: Item | null =
     text && meta.ai.ask
       ? {

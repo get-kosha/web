@@ -93,6 +93,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   // /add, Ask and Settings are full-screen on phones, with no top header or tab bar around them.
   const bare = useLocation({ select: (l) => l.pathname === "/add" }) || settings || asking
 
+  const loansPage = useLocation({ select: (l) => l.pathname === "/loans" })
   const navigate = useNavigate()
   const [shortcuts, setShortcuts] = useState(false)
   // ⌘K / Ctrl+K opens search from anywhere (and closes it again). ⌘, opens Settings and ? lists the
@@ -135,7 +136,10 @@ export function AppShell({ children }: { children: ReactNode }) {
                 to={to}
                 viewTransition={pageTransition}
                 activeOptions={{ exact: to === "/" }}
-                className="inline-flex h-9 items-center rounded-md px-3 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground data-[status=active]:bg-muted data-[status=active]:font-medium data-[status=active]:text-foreground"
+                className={cn(
+                  "inline-flex h-9 items-center rounded-md px-3 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground data-[status=active]:bg-muted data-[status=active]:font-medium data-[status=active]:text-foreground",
+                  loansPage && to === "/accounts" && "bg-muted font-medium text-foreground"
+                )}
               >
                 {label()}
               </Link>
@@ -264,12 +268,16 @@ function DemoBanner() {
 }
 
 function Tab({ to, label, icon: Icon }: (typeof nav)[number]) {
+  const loansPage = useLocation({ select: (l) => l.pathname === "/loans" })
   return (
     <Link
       to={to}
       viewTransition={pageTransition}
       activeOptions={{ exact: to === "/" }}
-      className="flex min-h-14 flex-col items-center justify-center gap-1 text-[11px] text-muted-foreground data-[status=active]:font-medium data-[status=active]:text-foreground"
+      className={cn(
+        "flex min-h-14 flex-col items-center justify-center gap-1 text-[11px] text-muted-foreground data-[status=active]:font-medium data-[status=active]:text-foreground",
+        loansPage && to === "/accounts" && "font-medium text-foreground"
+      )}
     >
       <Icon className="size-5" /> {label()}
     </Link>

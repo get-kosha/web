@@ -726,7 +726,10 @@ insert("valuations", valuations)
 const now = new Date().toISOString()
 const hash = await hashPassword(PASSWORD)
 console.log("PRAGMA defer_foreign_keys = on;")
+console.log(`DELETE FROM loan_payments WHERE user_id = '${UID}' AND kind = 'repayment';`)
 for (const t of [
+  "loan_payments",
+  "loans",
   "ai_log",
   "ai_providers",
   "ai_recaps",

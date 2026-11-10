@@ -12,11 +12,13 @@ export async function transactionsCsv(uid: string) {
   const { tz } = await getSettings(uid)
   const { results } = await db()
     .prepare(`SELECT t.date, t.name, c.name AS category, s.name AS subcategory, w.name AS account, w.currency,
-        t.amount, t.note, t.paid, t.kind, t.transfer_id, t.tags, e.name AS event
+        t.amount, t.note, t.paid, t.kind, t.transfer_id, t.tags, e.name AS event, p.loan_id, p.kind AS loan_kind, p.principal AS loan_principal, l.currency AS loan_currency
       FROM transactions t
       JOIN wallets w ON w.user_id = t.user_id AND w.id = t.wallet_id
       LEFT JOIN categories c ON c.user_id = t.user_id AND c.id = t.category_id
       LEFT JOIN categories s ON s.user_id = t.user_id AND s.id = t.subcategory_id
+      LEFT JOIN loan_payments p ON p.user_id = t.user_id AND p.transaction_id = t.id
+      LEFT JOIN loans l ON l.user_id = p.user_id AND l.id = p.loan_id
       LEFT JOIN events e ON e.user_id = t.user_id AND e.id = t.event_id
       WHERE t.user_id = ? ORDER BY t.date DESC`)
     .bind(uid)
@@ -31,6 +33,10 @@ export async function transactionsCsv(uid: string) {
       note: string
       paid: number
       kind: string | null
+      loan_id: string | null
+      loan_kind: string | null
+      loan_principal: number | null
+      loan_currency: string | null
       transfer_id: string | null
       tags: string
       event: string | null
@@ -48,6 +54,10 @@ export async function transactionsCsv(uid: string) {
     "transfer",
     "tags",
     "event",
+    "loan",
+    "loan_kind",
+    "loan_principal",
+    "loan_currency",
   ]
   const rows = results.map((r) =>
     [
@@ -65,6 +75,10 @@ export async function transactionsCsv(uid: string) {
         .map((t) => `#${t}`)
         .join(" "),
       r.event,
+      r.loan_id,
+      r.loan_kind,
+      r.loan_principal === null ? "" : (r.loan_principal / 100).toFixed(2),
+      r.loan_currency,
     ]
       .map(cell)
       .join(",")

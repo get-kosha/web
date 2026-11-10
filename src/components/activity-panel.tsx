@@ -85,15 +85,17 @@ export function ActivityPanel({
   const currency = wallet?.currency ?? meta.primary
   const isTransfer = !!tx.transfer_id
   const isRefund = !!tx.refund_of
-  const kind = isTransfer
-    ? m.tx_kind_transfer()
-    : isRefund
-      ? m.tx_kind_refund()
-      : tx.category_id === CORRECTION_CATEGORY
-        ? m.tx_kind_correction()
-        : tx.amount > 0
-          ? m.tx_kind_income()
-          : m.tx_kind_expense()
+  const kind = tx.loan_id
+    ? m.loans_title()
+    : isTransfer
+      ? m.tx_kind_transfer()
+      : isRefund
+        ? m.tx_kind_refund()
+        : tx.category_id === CORRECTION_CATEGORY
+          ? m.tx_kind_correction()
+          : tx.amount > 0
+            ? m.tx_kind_income()
+            : m.tx_kind_expense()
 
   const initial: Draft = {
     name: tx.name,
@@ -195,6 +197,23 @@ export function ActivityPanel({
     </div>
   )
 
+  if (tx.loan_id)
+    return (
+      <div>
+        {header}
+        <h3 className="text-lg font-medium">{tx.loan_person ?? tx.name}</h3>
+        <p className="num mt-2 text-3xl">{fmt(tx.amount, currency)}</p>
+        <p className="mt-4 text-sm text-muted-foreground">{m.loans_neutral()}</p>
+        <Link
+          to="/loans"
+          search={{ loan: tx.loan_id }}
+          className="mt-4 flex min-h-11 items-center text-sm underline underline-offset-4"
+        >
+          {m.loans_title()}
+        </Link>
+        <Attachments transactionId={tx.id} />
+      </div>
+    )
   if (isTransfer)
     return (
       <div>
