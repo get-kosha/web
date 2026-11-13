@@ -12,7 +12,6 @@ import {
   accountOverview,
   auth,
   avatars,
-  demoAvailable,
   getUser,
   googleSignIn,
   appleSignIn,
@@ -21,6 +20,8 @@ import {
   userId,
 } from "@/server/auth.server"
 import { canEmail } from "@/server/email.server"
+import { demoAvailable } from "@/server/db.server"
+import { hasSessionCookie } from "@/lib/session-cookie"
 import {
   consentDetails,
   createApiKey,
@@ -61,7 +62,12 @@ export type Guest = { demo: boolean }
  * only ever reaches / by a full page load, so on the client the landing page on screen holds the answer.
  */
 export const guestVisit = createIsomorphicFn()
-  .server(async (): Promise<Guest | null> => ((await getUser()) ? null : { demo: await demoAvailable() }))
+  // Without a session cookie the visitor is signed out, and the landing page never loads Better Auth.
+  .server(async (): Promise<Guest | null> =>
+    hasSessionCookie(getRequest().headers.get("cookie")) && (await (await import("@/server/auth.server")).getUser())
+      ? null
+      : { demo: await demoAvailable() }
+  )
   // ponytail: reads the DOM for the server's earlier answer; a client-side sign-in would need a reload anyway
   .client(async (): Promise<Guest | null> => {
     const page = document.querySelector<HTMLElement>("[data-landing]")

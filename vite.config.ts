@@ -29,6 +29,23 @@ const serviceWorker = (): Plugin => ({
 
 export default defineConfig({
   resolve: { tsconfigPaths: true },
+  // The Worker's own chunks. Without its own group Rolldown leaves zod inside the OAuth provider's chunk, so every
+  // page's first request also loaded Better Auth. ponytail: messages still live in feature chunks (a shared group
+  // of them was bigger, every locale is in each message), so the router reaches Settings and the shell for a few
+  // strings.
+  environments: {
+    ssr: {
+      build: {
+        rolldownOptions: {
+          output: {
+            codeSplitting: {
+              groups: [{ name: "zod", test: /node_modules[\\/]zod[\\/]/, priority: 20 }],
+            },
+          },
+        },
+      },
+    },
+  },
   plugins: [
     // Compiles messages/ into typed functions in src/paraglide (options in project.inlang/paraglide.config.ts).
     paraglideVitePlugin({ project: "./project.inlang", outdir: "./src/paraglide" }),

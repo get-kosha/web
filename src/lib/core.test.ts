@@ -1279,3 +1279,13 @@ assert.equal(mostEntered([]), null)
 
 await import("./loans.test.ts")
 await import("../../scripts/setup-app-clients.test.ts")
+
+import { hasSessionCookie } from "./session-cookie.ts"
+assert.equal(hasSessionCookie(null), false)
+assert.equal(hasSessionCookie("kosha-locale=de"), false)
+assert.equal(hasSessionCookie("kosha-locale=de; better-auth.session_token=abc.def"), true)
+assert.equal(hasSessionCookie("__Secure-better-auth.session_token=abc"), true)
+// Another cookie whose name only ends the same way isn't a session.
+assert.equal(hasSessionCookie("my-better-auth.session_token=abc"), false)
+assert.equal(hasSessionCookie("better-auth.session_data=abc"), false)
+console.log("session cookie ok")

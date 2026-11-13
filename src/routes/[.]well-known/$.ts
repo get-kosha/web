@@ -1,7 +1,5 @@
 import { env } from "cloudflare:workers"
 import { createFileRoute } from "@tanstack/react-router"
-import { oauthProviderAuthServerMetadata, oauthProviderOpenIdConfigMetadata } from "@better-auth/oauth-provider"
-import { APP_CALLBACK, auth } from "@/server/auth.server"
 
 // OAuth discovery, which MCP clients look for at the root rather than under /api/auth:
 //   /.well-known/oauth-protected-resource[/mcp]        which authorization server guards /mcp (RFC 9728)
@@ -13,8 +11,14 @@ import { APP_CALLBACK, auth } from "@/server/auth.server"
 // Each needs its variable (ANDROID_CERT_SHA256, APPLE_TEAM_ID). A server without them answers 404, and the
 // callback page asks the person to open the app instead.
 const cors = { "Access-Control-Allow-Origin": "*" }
-const authServer = oauthProviderAuthServerMetadata(auth, { headers: cors })
-const openId = oauthProviderOpenIdConfigMetadata(auth, { headers: cors })
+// Better Auth and the OAuth provider load on first use, so page requests never evaluate them.
+const authOf = () => import("@/server/auth.server")
+async function metadata(kind: "server" | "openid", request: Request) {
+  const [{ auth }, op] = await Promise.all([authOf(), import("@better-auth/oauth-provider")])
+  return kind === "server"
+    ? op.oauthProviderAuthServerMetadata(auth, { headers: cors })(request)
+    : op.oauthProviderOpenIdConfigMetadata(auth, { headers: cors })(request)
+}
 
 /** /mcp accepts bearer tokens only (see fromAccessToken), so discovery mustn't offer DPoP. */
 async function withoutDpop(res: Response) {
@@ -46,7 +50,7 @@ function assetLinks() {
  * applinks lets Safari hand the callback to the app. webcredentials is what iOS checks before an
  * ASWebAuthenticationSession may finish on an HTTPS callback (.https(host:path:)), so the app's sign-in needs it.
  */
-function appleAppSite() {
+function appleAppSite(APP_CALLBACK: string) {
   const team = APPS.APPLE_TEAM_ID?.trim()
   if (!team) return null
   const app = `${team}.${APP_ID}`
@@ -64,11 +68,14 @@ export const Route = createFileRoute("/.well-known/$")({
     handlers: {
       GET: async ({ request }) => {
         const path = new URL(request.url).pathname
-        if (path.startsWith("/.well-known/oauth-protected-resource")) return withoutDpop(await auth.handler(request))
-        if (path.startsWith("/.well-known/oauth-authorization-server")) return withoutDpop(await authServer(request))
-        if (path.startsWith("/.well-known/openid-configuration")) return withoutDpop(await openId(request))
+        if (path.startsWith("/.well-known/oauth-protected-resource"))
+          return withoutDpop(await (await authOf()).auth.handler(request))
+        if (path.startsWith("/.well-known/oauth-authorization-server"))
+          return withoutDpop(await metadata("server", request))
+        if (path.startsWith("/.well-known/openid-configuration")) return withoutDpop(await metadata("openid", request))
         if (path === "/.well-known/assetlinks.json") return jsonOr404(assetLinks())
-        if (path === "/.well-known/apple-app-site-association") return jsonOr404(appleAppSite())
+        if (path === "/.well-known/apple-app-site-association")
+          return jsonOr404(appleAppSite((await authOf()).APP_CALLBACK))
         return new Response("Not found", { status: 404 })
       },
     },

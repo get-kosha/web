@@ -1,6 +1,6 @@
 import { createCsrfMiddleware, createMiddleware, createStart } from "@tanstack/react-start"
-import { demoLocked, getUser } from "@/server/auth.server"
 import { DEMO_READ_ONLY, safeReturn } from "@/lib/core"
+import { hasSessionCookie } from "@/lib/session-cookie"
 import { paraglideMiddleware } from "@/paraglide/server"
 
 const redirect = (to: string) => new Response(null, { status: 302, headers: { Location: to } }) as never
@@ -21,10 +21,13 @@ const SIGNED_OUT_PAGES = new Set([
   "/auth/error",
   "/app/oauth/callback",
 ])
+// Better Auth and the OAuth provider are most of the Worker's code. They load on first use, and a request with
+// no session cookie is signed out without them, so the landing and sign-in pages stay light.
+const auth = () => import("@/server/auth.server")
 const requireUser = createMiddleware().server(async ({ next, request }) => {
   const url = new URL(request.url)
   if (PUBLIC.test(url.pathname)) return next()
-  const user = await getUser(request)
+  const user = hasSessionCookie(request.headers.get("cookie")) ? await (await auth()).getUser(request) : null
   // An OAuth sign-in (signed `sig` query) can ask a signed-in user to sign in again (prompt=login).
   if (url.pathname === "/login")
     return user && !url.searchParams.has("sig") ? redirect(safeReturn(url.searchParams.get("returnTo"))) : next()
@@ -66,7 +69,9 @@ const csrf = createCsrfMiddleware({
 // The demo account is read-only. Every server function that changes data is a POST, so refuse them all
 // here rather than in each one. GET functions still run, so due subscriptions keep settling on load.
 const demoReadOnly = createMiddleware({ type: "function" }).server(async ({ next, method }) => {
-  if (method === "POST" && demoLocked((await getUser())?.id)) throw new Error(DEMO_READ_ONLY())
+  if (method !== "POST") return next()
+  const { demoLocked, getUser } = await auth()
+  if (demoLocked((await getUser())?.id)) throw new Error(DEMO_READ_ONLY())
   return next()
 })
 

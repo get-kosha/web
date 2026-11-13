@@ -11,9 +11,15 @@ import {
   type Materialized,
   type Rates,
   type Schedule,
+  DEMO,
 } from "@/lib/core"
 
 export const db = () => env.DB
+
+/** Whether this deployment has the demo account (scripts/seed-demo.ts), so the landing page can offer it. */
+export async function demoAvailable() {
+  return !!(await db().prepare('SELECT 1 FROM "user" WHERE id = ?').bind(DEMO.id).first())
+}
 
 /**
  * An error with the HTTP status the public API answers with, and optionally its error code (else the status's

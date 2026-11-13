@@ -1,6 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router"
-import { userId } from "@/server/auth.server"
-import { getAttachment } from "@/server/attachments.server"
 
 // Serves one of the signed-in user's attachments from R2. The request middleware has already checked the session.
 // The type was read from the file's bytes on upload, and nosniff stops the browser guessing another.
@@ -9,6 +7,8 @@ export const Route = createFileRoute("/api/attachments/$id")({
   server: {
     handlers: {
       GET: async ({ params, request }) => {
+        const { getAttachment } = await import("@/server/attachments.server")
+        const { userId } = await import("@/server/auth.server")
         const file = await getAttachment(await userId(), params.id)
         if (!file) return new Response("Not found", { status: 404 })
         const download = new URL(request.url).searchParams.has("download")

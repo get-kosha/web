@@ -368,11 +368,6 @@ export function getUser(request: Request = getRequest()) {
 export const demoLocked = (uid: string | undefined) =>
   uid === DEMO.id && (env as { DEMO_WRITABLE?: string }).DEMO_WRITABLE !== "1"
 
-/** Whether this deployment has the demo account (scripts/seed-demo.ts), so the landing page can offer it. */
-export async function demoAvailable() {
-  return !!(await env.DB.prepare('SELECT 1 FROM "user" WHERE id = ?').bind(DEMO.id).first())
-}
-
 /** The signed-in user's id. Every data query is scoped by it. */
 export async function userId() {
   const user = await getUser()
