@@ -990,7 +990,7 @@ export const OPERATIONS = {
     path: "/payees",
     scope: "read",
     description:
-      "Finds payees you have used before, most used first, with the category and account they last used and their average amount. Use it to fill in a new transaction the way you usually do.",
+      "Finds payees you have used before, most used first, with the category and account they last used, the amount they usually come to (the amount entered most often) and their average. Use it to fill in a new transaction the way you usually do.",
     input: z.object({
       query: z.string().trim().max(40).default(""),
       limit: z.number().int().min(1).max(20).default(5),
@@ -1003,7 +1003,12 @@ export const OPERATIONS = {
           categoryId: Id,
           accountId: Id,
           currency: Currency,
-          averageAmount: Cents,
+          usualAmount: Cents.describe(
+            'The amount entered most often, the newest on a tie. Kosha shows it as "usually".'
+          ),
+          averageAmount: Cents.describe(
+            "The average of every payment. Kept for older clients; show usualAmount instead."
+          ),
         })
       ),
     }),
@@ -1017,6 +1022,7 @@ export const OPERATIONS = {
             categoryId: "groceries",
             accountId: "a1",
             currency: "eur",
+            usualAmount: -2850,
             averageAmount: -3120,
           },
         ],

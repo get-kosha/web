@@ -21,6 +21,7 @@ import {
   shiftMonth,
   timeOf,
   usualCurve,
+  mostEntered,
 } from "./core.ts"
 
 const keys = (k: string[], decimals = 2) => k.reduce((a, key) => pressKey(a, key, decimals), "")
@@ -1265,5 +1266,15 @@ assert.equal(periodDays({ kind: "all" }), null)
 assert.deepEqual(shiftPeriod(parsePeriod("2026-01")!, -1), { kind: "month", month: "2025-12" })
 assert.deepEqual(shiftPeriod(parsePeriod("2026")!, 1), { kind: "year", year: "2027" })
 assert.equal(shiftPeriod({ kind: "all" }, 1), undefined)
+
+const eur = (...a: number[]) => a.map((amount) => ({ amount, currency: "eur" }))
+assert.deepEqual(mostEntered(eur(-1500, -9000, -1500, -1200)), { amount: -1500, currency: "eur" })
+assert.deepEqual(mostEntered(eur(-1500, -1200, -1200, -1500)), { amount: -1500, currency: "eur" })
+assert.deepEqual(mostEntered(eur(-9000, -1000)), { amount: -9000, currency: "eur" })
+assert.deepEqual(mostEntered([...eur(-500), { amount: -500, currency: "usd" }, { amount: -500, currency: "usd" }]), {
+  amount: -500,
+  currency: "usd",
+})
+assert.equal(mostEntered([]), null)
 
 await import("./loans.test.ts")

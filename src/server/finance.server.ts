@@ -35,6 +35,7 @@ import {
   timeOf,
   entryDate,
   usualCurve,
+  mostEntered,
   type AccountType,
   type Schedule,
   type TitleRule,
@@ -632,7 +633,7 @@ export async function listTransactions(uid: string, data: z.infer<typeof listInp
   }
 }
 
-/** A payee's recent payments, for the "At this payee" bars in the Activity panel. */
+/** A payee's recent payments, for the "At this payee" bars in the Activity panel, and the amount entered most often. */
 export async function payeeHistory(uid: string, name: string) {
   const { tz } = await getSettings(uid)
   const { results } = await db()
@@ -647,6 +648,7 @@ export async function payeeHistory(uid: string, name: string) {
       .reverse()
       .map((r) => ({ id: r.id, amount: r.amount, currency: r.currency, day: dayOf(r.date, tz) })),
     count: results.length,
+    usual: mostEntered(results),
     thisYear: results.filter((r) => dayOf(r.date, tz).startsWith(year)),
   }
 }
@@ -1768,13 +1770,17 @@ export type PayeeSuggestion = {
   category_id: string
   wallet_id: string
   currency: string
+  /** The amount entered most often, newest on a tie. */
+  usual: number
   avg: number
 }
 
-/** Past payees matching q (most used first) with their last category and account and their average amount. */
+/** Past payees matching q (most used first) with their last category and account, the amount they most often come to, and their average. */
 export async function suggestPayees(uid: string, q: string, limit = 5) {
   const { results } = await db()
     .prepare(`SELECT t.name, COUNT(*) AS count, CAST(ROUND(AVG(t.amount)) AS INTEGER) AS avg,
+      (SELECT x.amount FROM transactions x WHERE x.user_id = t.user_id AND x.name = t.name AND x.transfer_id IS NULL AND x.paid = 1 AND x.category_id NOT IN ${NEUTRAL_SQL}
+        GROUP BY x.amount ORDER BY COUNT(*) DESC, MAX(x.date) DESC LIMIT 1) AS usual,
       (SELECT x.category_id FROM transactions x WHERE x.user_id = t.user_id AND x.name = t.name AND x.transfer_id IS NULL ORDER BY x.date DESC LIMIT 1) AS category_id,
       (SELECT x.wallet_id FROM transactions x WHERE x.user_id = t.user_id AND x.name = t.name AND x.transfer_id IS NULL ORDER BY x.date DESC LIMIT 1) AS wallet_id
     FROM transactions t WHERE t.user_id = ? AND t.name <> '' AND t.name LIKE ? AND t.transfer_id IS NULL AND t.paid = 1 AND t.category_id NOT IN ${NEUTRAL_SQL}
@@ -1786,7 +1792,7 @@ export async function suggestPayees(uid: string, q: string, limit = 5) {
     .bind(uid)
     .all<{ id: string; currency: string }>()
   const cur = new Map(wallets.map((w) => [w.id, w.currency]))
-  // ponytail: the average mixes currencies if a payee was paid from accounts in different currencies; shown in the last account's.
+  // ponytail: the usual amount and the average mix currencies if a payee was paid from accounts in different currencies; shown in the last account's.
   return results.map((r) => ({ ...r, currency: cur.get(r.wallet_id) ?? "" }))
 }
 

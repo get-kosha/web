@@ -154,7 +154,7 @@ function Body({ close, onAdd }: { close: () => void; onAdd: (text: string) => vo
         label: p.name,
         end: (
           <span className="num text-xs text-muted-foreground">
-            {m.shell_search_payee_usually({ count: p.count, amount: fmt(Math.abs(p.avg), p.currency) })}
+            {m.shell_search_payee_usually({ count: p.count, amount: fmt(Math.abs(p.usual), p.currency) })}
           </span>
         ),
         run: activity({ q: p.name }),

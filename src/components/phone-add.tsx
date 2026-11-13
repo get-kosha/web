@@ -688,9 +688,9 @@ export function PhoneAdd() {
             placeholder={m.add_payee()}
             className="min-w-0 flex-1 bg-transparent outline-none placeholder:text-muted-foreground"
           />
-          {match && match.avg !== 0 && (
+          {match && match.usual !== 0 && (
             <span className="num shrink-0 text-xs text-muted-foreground">
-              {m.add_usually({ amount: fmt(Math.abs(match.avg), match.currency) })}
+              {m.add_usually({ amount: fmt(Math.abs(match.usual), match.currency) })}
             </span>
           )}
         </label>

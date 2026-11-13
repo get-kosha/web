@@ -63,6 +63,19 @@ export const DEMO_READ_ONLY = () => m.common_demo_read_only()
 /** Allows only same-origin paths, never "//host". */
 export const safeReturn = (p: string | null | undefined) => (p && p.startsWith("/") && !p.startsWith("//") ? p : "/")
 
+/**
+ * The amount entered most often: what "usually" shows for a payee, never an average. `rows` come newest first,
+ * so a tie goes to the newest amount; when nothing repeats that is the latest payment.
+ */
+export function mostEntered<T extends { amount: number; currency: string }>(rows: T[]) {
+  const key = (r: T) => `${r.amount} ${r.currency}`
+  const n = new Map<string, number>()
+  for (const r of rows) n.set(key(r), (n.get(key(r)) ?? 0) + 1)
+  const top = Math.max(0, ...n.values())
+  const r = rows.find((r) => n.get(key(r)) === top)
+  return r ? { amount: r.amount, currency: r.currency } : null
+}
+
 export function convert(cents: number, from: string, to: string, rates: Rates) {
   if (from === to) return cents
   const f = rates[from]

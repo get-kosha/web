@@ -774,6 +774,7 @@ const HANDLERS: Handlers = {
         categoryId: p.category_id,
         accountId: p.wallet_id,
         currency: p.currency,
+        usualAmount: p.usual,
         averageAmount: p.avg,
       })),
     }

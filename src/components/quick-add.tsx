@@ -581,7 +581,7 @@ function Body({
                   end={
                     x.currency && (
                       <span className="num text-xs text-muted-foreground">
-                        {m.add_usually({ amount: fmt(Math.abs(x.avg), x.currency) })}
+                        {m.add_usually({ amount: fmt(Math.abs(x.usual), x.currency) })}
                       </span>
                     )
                   }
