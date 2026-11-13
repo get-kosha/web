@@ -67,6 +67,8 @@ BETTER_AUTH_URL=http://localhost:3000
 AI_KEY_SECRET=        # 32+ random characters; encrypts AI provider keys (Settings › AI)
 ```
 
+After creating or changing `.dev.vars`, run `npm run db:migrate` before starting the app. It also provisions the phone apps’ OAuth clients using Wrangler’s local vars (including `BETTER_AUTH_URL` from `.dev.vars`), so local sign-in redirects back to your local server. Re-run it when that URL changes.
+
 The demo account is `demo@kosha.local` with the password `kosha-demo-2026`. It has about 14 months of invented data, and running `npm run db:demo` again resets it.
 
 The demo account is read-only: the server refuses every change it tries to make, in the app, the API and its sign-in settings. That makes it safe to seed in production with `npm run db:demo:remote`, which also turns on **Try the demo** on the landing page. Its data ends on the day you seed it, so re-run that now and then. To try features that write as the demo user locally, add `DEMO_WRITABLE=1` to `.dev.vars`.
@@ -77,7 +79,7 @@ The demo account is read-only: the server refuses every change it tries to make,
 
 Kosha runs on a single Cloudflare Worker with a D1 database. Production is at https://getkosha.app, and every push to `main` deploys it through Workers Builds.
 
-`npm run deploy` builds the app, applies new D1 migrations, then deploys the Worker. Workers Builds runs the same command.
+`npm run deploy` builds the app, applies new D1 migrations, provisions the phone apps’ OAuth redirects and API resource links for `vars.BETTER_AUTH_URL` in `wrangler.jsonc`, then deploys the Worker. A provisioning failure stops deployment. Workers Builds runs the same command. Auth requests do no client setup writes.
 
 To set up your own copy:
 

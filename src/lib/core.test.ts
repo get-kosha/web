@@ -1278,3 +1278,4 @@ assert.deepEqual(mostEntered([...eur(-500), { amount: -500, currency: "usd" }, {
 assert.equal(mostEntered([]), null)
 
 await import("./loans.test.ts")
+await import("../../scripts/setup-app-clients.test.ts")

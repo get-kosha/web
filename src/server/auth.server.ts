@@ -34,8 +34,6 @@ export const APP_CLIENTS = new Set(["kosha-android", "kosha-ios"])
  * redirect when the app didn't.
  */
 export const APP_CALLBACK = `${ORIGIN}/app/oauth/callback`
-/** The apps' older redirect. Any app on the phone can register this scheme, so it always asks for consent. */
-const APP_SCHEME_CALLBACK = "app.getkosha:/oauth/callback"
 /** What an MCP connection may do. A read-only connection sees only the read tools. */
 export const API_SCOPES = { read: "kosha:read", write: "kosha:write" } as const
 
@@ -140,44 +138,6 @@ async function grantClaim({ ctx, opts, client, grantType }: OAuthClaimExtensionI
   return {}
 }
 
-/**
- * Points Kosha's apps (migrations/0009_app_clients.sql) at this server's own callback and REST API, which a
- * migration can't know. It runs on the first auth request of each isolate, before Better Auth reads (and caches)
- * the clients: a Worker can't reach D1 while it starts up, so a plugin `init` would silently do nothing.
- */
-let appClientsReady: Promise<void> | null = null
-function ensureAppClients() {
-  appClientsReady ??= (async () => {
-    const DB = env.DB
-    const ids = [...APP_CLIENTS]
-    const now = new Date().toISOString()
-    // The resources as Better Auth seeds them (it does so lazily, on its first look-up), so the link below has
-    // its row to point at. Better Auth leaves rows that already exist alone.
-    const resource =
-      DB.prepare(`INSERT OR IGNORE INTO "oauthResource" ("id", "identifier", "name", "dpopBoundAccessTokensRequired",
-      "disabled", "policyVersion", "createdAt", "updatedAt") VALUES (?1, ?1, ?1, 0, 0, 1, ?2, ?2)`)
-    await DB.batch([
-      resource.bind(API_RESOURCE, now),
-      resource.bind(MCP_RESOURCE, now),
-      DB.prepare(
-        `UPDATE "oauthClient" SET "redirectUris" = ?1 WHERE "clientId" IN (?2, ?3) AND "redirectUris" IS NOT ?1`
-      ).bind(JSON.stringify([APP_CALLBACK, APP_SCHEME_CALLBACK]), ...ids),
-      DB.prepare(`INSERT OR IGNORE INTO "oauthClientResource" ("id", "clientId", "resourceId", "createdAt")
-        SELECT c."clientId" || ' ' || r."identifier", c."clientId", r."identifier", ?1
-        FROM "oauthClient" c JOIN "oauthResource" r ON r."identifier" = ?4 WHERE c."clientId" IN (?2, ?3)`).bind(
-        now,
-        ...ids,
-        API_RESOURCE
-      ),
-    ])
-  })().catch((e) => {
-    // Before the migrations have run there is nothing to update; the next request tries again.
-    appClientsReady = null
-    console.error("Couldn't set up Kosha's app clients", e)
-  })
-  return appClientsReady
-}
-
 export const auth = betterAuth({
   appName: "Kosha",
   database: env.DB,
@@ -230,7 +190,6 @@ export const auth = betterAuth({
     // consent for APP_CALLBACK; any other redirect of theirs, such as the app.getkosha: scheme that another
     // app could register, shows the consent screen every time, remembered consent or not.
     before: createAuthMiddleware(async (ctx) => {
-      await ensureAppClients()
       if (appleSignIn && ctx.request && new URL(ctx.request.url).pathname.endsWith("/callback/apple"))
         appleConfig.clientSecret = await appleClientSecret()
       if (ctx.path !== "/oauth2/authorize") return
@@ -277,7 +236,7 @@ export const auth = betterAuth({
       resource: MCP_RESOURCE,
       resources: [API_RESOURCE],
       // RFC 8707: a client gets tokens only for the resources it's linked to. Registration links new clients to
-      // both (mcp() adds /mcp); ensureAppClients() links Kosha's apps to the REST API alone.
+      // both (mcp() adds /mcp); scripts/setup-app-clients.ts links Kosha's apps to the REST API alone.
       clientRegistrationDefaultResources: [API_RESOURCE],
       cachedTrustedClients: APP_CLIENTS,
       loginPage: "/login",
