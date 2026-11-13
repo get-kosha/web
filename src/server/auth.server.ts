@@ -80,6 +80,13 @@ async function appleClientSecret() {
 }
 
 /**
+ * Better Auth reads its providers while the Worker starts up, when Workers hold the clock at 1970, so a secret
+ * signed then has long expired and Apple answers invalid_client. The before hook signs a fresh one for each
+ * Apple callback instead; until then it holds a placeholder, since Better Auth refuses an empty one.
+ */
+const appleConfig = { clientId: APPLE.APPLE_CLIENT_ID ?? "", clientSecret: "signed for each callback" }
+
+/**
  * Apple asks apps to revoke their Sign in with Apple tokens when the account is deleted, so the person's
  * Apple ID stops listing Kosha. A failure is logged and never stops the deletion.
  */
@@ -203,7 +210,7 @@ export const auth = betterAuth({
       },
     }),
     ...(appleSignIn && {
-      apple: async () => ({ clientId: APPLE.APPLE_CLIENT_ID!, clientSecret: await appleClientSecret() }),
+      apple: appleConfig,
     }),
   },
   // Apple posts its answer back to <BETTER_AUTH_URL>/api/auth/callback/apple from its own origin.
@@ -224,6 +231,8 @@ export const auth = betterAuth({
     // app could register, shows the consent screen every time, remembered consent or not.
     before: createAuthMiddleware(async (ctx) => {
       await ensureAppClients()
+      if (appleSignIn && ctx.request && new URL(ctx.request.url).pathname.endsWith("/callback/apple"))
+        appleConfig.clientSecret = await appleClientSecret()
       if (ctx.path !== "/oauth2/authorize") return
       const post = ctx.method === "POST"
       const params = ((post ? ctx.body : ctx.query) ?? {}) as Record<string, unknown>
