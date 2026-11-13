@@ -94,7 +94,9 @@ function Body({
   const meta = useMeta()
   const router = useRouter()
   const navigate = useNavigate()
-  const today = dayOf(Date.now() / 1000, meta.tz)
+  // The day and time shown are those of when the box opened.
+  const [openedAt] = useState(() => Date.now() / 1000)
+  const today = dayOf(openedAt, meta.tz)
   const [q, setQ] = useState(initial)
   const [over, setOver] = useState<Over>({})
   const [payees, setPayees] = useState<PayeeSuggestion[]>([])
@@ -134,7 +136,7 @@ function Body({
       clearTimeout(t)
       setReading((r) => (r === "line" ? null : r))
     }
-  }, [q, askAi])
+  }, [q, askAi, read?.q])
   const ai = read && read.q === q ? read.entry : null
 
   // Payee suggestions follow the typed words (or the payee AI read), debounced.
@@ -196,8 +198,8 @@ function Body({
   const currency = wallet?.currency ?? meta.primary
   const fitted = ai ? inCurrency(ai, currency, meta.rates) : null
   const day = over.day ?? ai?.day ?? (p.date === "yesterday" ? addDays(today, -1) : today)
-  // Shows now until you change it. Untouched on today, the server stamps the exact moment.
-  const time = over.time ?? ai?.time ?? timeOf(Date.now() / 1000, meta.tz)
+  // Shows when the box opened until you change it. Untouched on today, the server stamps the exact moment.
+  const time = over.time ?? ai?.time ?? timeOf(openedAt, meta.tz)
   const note = over.note ?? fitted?.note ?? ""
   const tags = [...new Set([...p.tags, ...(ai?.tags ?? []), ...(over.tags ?? [])])]
   // The server files a new entry under the event its day falls in, so show that event here.

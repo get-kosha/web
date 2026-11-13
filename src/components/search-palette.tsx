@@ -77,18 +77,19 @@ function Body({ close, onAdd }: { close: () => void; onAdd: (text: string) => vo
   const meta = useMeta()
   const navigate = useNavigate()
   const [q, setQ] = useState("")
-  const [payees, setPayees] = useState<PayeeSuggestion[]>([])
+  const [found, setFound] = useState<PayeeSuggestion[]>([])
   const [active, setActive] = useState(0)
   const text = q.trim()
   const low = text.toLowerCase()
+  const payees = text ? found : []
 
   useEffect(() => {
-    if (!text) return setPayees([])
+    if (!text) return
     let live = true
     const t = setTimeout(
       () =>
         void suggestPayees({ data: { q: text } })
-          .then((r) => live && setPayees(r))
+          .then((r) => live && setFound(r))
           .catch(() => {}),
       120
     )
@@ -203,7 +204,6 @@ function Body({ close, onAdd }: { close: () => void; onAdd: (text: string) => vo
   })
 
   const index = Math.min(active, items.length - 1)
-  useEffect(() => setActive(0), [text])
 
   let lastGroup = ""
   return (
@@ -214,7 +214,10 @@ function Body({ close, onAdd }: { close: () => void; onAdd: (text: string) => vo
         <input
           autoFocus
           value={q}
-          onChange={(e) => setQ(e.target.value)}
+          onChange={(e) => {
+            setQ(e.target.value)
+            setActive(0)
+          }}
           onKeyDown={(e) => {
             if (e.key === "ArrowDown" || e.key === "ArrowUp") {
               e.preventDefault()

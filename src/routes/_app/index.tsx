@@ -79,7 +79,7 @@ function Overview() {
   const meta = useMeta()
   const { current } = useGlobals()
   const starting = useStarting()
-  const today = dayOf(Date.now() / 1000, meta.tz)
+  const [today] = useState(() => dayOf(Date.now() / 1000, meta.tz))
   const [paying, setPaying] = useState<{ card: Wallet; owed: number } | null>(null)
   const [gainFor, setGainFor] = useState<Wallet | null>(null)
   const p = d.primary
@@ -160,13 +160,15 @@ function RecapCard({ view }: { view: RecapView }) {
       setWriting(false)
     }
   }
-  // Once per card: effects can run twice (React's strict mode), and each run would spend tokens.
+  // Once per card, on mount: effects can run twice (React's strict mode), and each run would spend tokens.
   const started = useRef(false)
+  /* oxlint-disable react/exhaustive-deps */
   useEffect(() => {
     if (started.current || !view.auto || view.recap) return
     started.current = true
     void write()
   }, [])
+  /* oxlint-enable react/exhaustive-deps */
   async function hide() {
     setHidden(true)
     try {

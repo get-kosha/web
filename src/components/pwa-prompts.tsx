@@ -67,6 +67,8 @@ export function PwaPrompts({ uid, bare, away }: { uid: string; bare: boolean; aw
     window.addEventListener("beforeinstallprompt", onPrompt)
     window.addEventListener("appinstalled", onInstalled)
     // ponytail: iPhone only. Safari has no install event, so this explains the Share menu; iPads go unprompted.
+    // It reads the browser, so it waits for mount to keep server and client's first frame the same.
+    // oxlint-disable-next-line react/set-state-in-effect
     if (/iphone|ipod/i.test(navigator.userAgent)) setInstall("ios")
     return () => {
       window.removeEventListener("beforeinstallprompt", onPrompt)

@@ -250,7 +250,9 @@ export function TransactionForm({
   const meta = useMeta()
   const router = useRouter()
   const amountRef = useRef<HTMLInputElement>(null)
-  const today = dayOf(Date.now() / 1000, meta.tz)
+  // A new entry shows the day and time the form opened.
+  const [openedAt] = useState(() => Date.now() / 1000)
+  const today = dayOf(openedAt, meta.tz)
   const sides = initial?.transfer_id ? transferSides(initial) : null
   const activeWallets = meta.wallets.filter(
     (w) => !w.archived || w.id === initial?.wallet_id || w.id === sides?.to || w.id === sides?.from
@@ -284,7 +286,7 @@ export function TransactionForm({
   const [day, setDay] = useState(initial ? dayOf(initial.date, meta.tz) : today)
   // null until you change it. It shows the entry's own time, or now for a new one.
   const [time, setTime] = useState<string | null>(null)
-  const shownTime = time ?? timeOf(initial ? initial.date : Date.now() / 1000, meta.tz)
+  const shownTime = time ?? timeOf(initial ? initial.date : openedAt, meta.tz)
   // Untouched on its own day, the server keeps an edit's exact time or stamps a new entry with now.
   const sendTime = time ?? (day === (initial ? dayOf(initial.date, meta.tz) : today) ? undefined : shownTime)
   const [paid, setPaid] = useState(initial ? !!initial.paid : true)
@@ -301,12 +303,15 @@ export function TransactionForm({
   // A refund is money in that keeps its spending entry's category, so it lists spending categories.
   const refund = !!initial?.refund_of
 
-  // A new entry starts on the default or last used account.
+  // A new entry starts on the default or last used account. That is read from localStorage after mount,
+  // so server and client render the same first frame, and only once, so it never undoes a pick.
+  /* oxlint-disable react/set-state-in-effect, react/exhaustive-deps */
   useEffect(() => {
     if (initial) return
     const saved = startWallet(meta.prefs.default_wallet, activeWallets, presetTo)
     if (saved) setWalletId(saved)
   }, [])
+  /* oxlint-enable react/set-state-in-effect, react/exhaustive-deps */
 
   const categories = useMemo(
     () =>
@@ -696,7 +701,7 @@ function WalletChips({
 export function Refunds({ tx, className }: { tx: Tx; className?: string }) {
   const meta = useMeta()
   const router = useRouter()
-  const today = dayOf(Date.now() / 1000, meta.tz)
+  const [today] = useState(() => dayOf(Date.now() / 1000, meta.tz))
   const walletOf = (id: string) => meta.wallets.find((w) => w.id === id)
   const currencyOf = (id: string) => walletOf(id)?.currency ?? meta.primary
   const currency = currencyOf(tx.wallet_id)

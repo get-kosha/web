@@ -1,3 +1,4 @@
+import { createElement } from "react"
 import {
   AirplaneTiltIcon,
   ArrowUUpLeftIcon,
@@ -232,6 +233,9 @@ export const categoryIcon = (icon: string | null | undefined): Icon =>
 
 /** A category's icon at 18px in the subtle text colour. It is decorative because the name is always next to it. */
 export function CategoryIcon({ icon, className }: { icon: string | null | undefined; className?: string }) {
-  const I = categoryIcon(icon)
-  return <I aria-hidden="true" className={cn("size-[18px] shrink-0 text-subtle-foreground", className)} />
+  // categoryIcon returns one of the module's own icon components, never a new one, so state can't reset.
+  return createElement(categoryIcon(icon), {
+    "aria-hidden": true,
+    className: cn("size-[18px] shrink-0 text-subtle-foreground", className),
+  })
 }

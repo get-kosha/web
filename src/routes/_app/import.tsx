@@ -177,7 +177,7 @@ function Import() {
   const input = useRef<HTMLInputElement>(null)
   const [over, setOver] = useState(false)
 
-  const today = dayOf(Date.now() / 1000, meta.tz)
+  const [today] = useState(() => dayOf(Date.now() / 1000, meta.tz))
   const accept = `.csv,.ofx,.qfx,.txt,text/csv${meta.ai.statements ? ",.pdf,application/pdf" : ""}`
   const wallets = meta.wallets.filter((w) => !w.archived && w.type !== "investment")
   const currencies = [...new Set([meta.primary, ...meta.wallets.map((w) => w.currency), "eur", "inr", "usd", "gbp"])]
@@ -332,11 +332,13 @@ function Import() {
     await Promise.all([worker(), worker(), worker()])
   }
 
-  // Statements dropped on the Get started banner arrive with the page.
+  // Statements dropped on the Get started banner arrive with the page, taken once on mount.
+  /* oxlint-disable react/exhaustive-deps, react/set-state-in-effect */
   useEffect(() => {
     const files = takeFiles()
     if (files.length) void add(files)
   }, [])
+  /* oxlint-enable react/exhaustive-deps, react/set-state-in-effect */
 
   // ---------- accounts ----------
 
@@ -429,6 +431,9 @@ function Import() {
   const categories = meta.categories.filter((c) => !c.archived && !c.parent_id && !isNeutral(c.id))
   const have = new Set(categories.map((c) => c.id))
 
+  // Keyed on the page's own state: live, info, linesOf and the category lists are rebuilt from it each
+  // render, so listing them would recompute the plan every time.
+  /* oxlint-disable react/exhaustive-deps */
   const plan = useMemo(() => {
     if (step === "files") return null
     const rows: Row[] = live.flatMap((a) =>
@@ -499,6 +504,7 @@ function Import() {
   }, [step, stmts, accts, already, unpaired, edits, tidy])
 
   // AI names payees and sorts what Kosha can't place itself, once, in chunks a model answers well.
+  // The ref keeps it to one ask, since each spends the user's tokens.
   const tidyAsked = useRef(false)
   useEffect(() => {
     if (step !== "review" || !plan || tidyAsked.current) return
@@ -527,6 +533,7 @@ function Import() {
       setNaming(false)
     })()
   }, [step, plan])
+  /* oxlint-enable react/exhaustive-deps */
 
   function editGroup(g: Group, p: { payee?: string; category?: string }) {
     setEdits((all) => {

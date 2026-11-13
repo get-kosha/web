@@ -40,7 +40,7 @@ function GainForm({ w, onDone }: { w: Wallet; onDone: () => void }) {
   const start = w.gain ?? 0
   const [value, setValue] = useState(((w.balance + start) / 100).toFixed(2))
   const [gain, setGain] = useState((start / 100).toFixed(2))
-  const [day, setDay] = useState(dayOf(Date.now() / 1000, meta.tz))
+  const [day, setDay] = useState(() => dayOf(Date.now() / 1000, meta.tz))
   const [note, setNote] = useState("")
   const cents = parseAmount(gain) ?? 0
 

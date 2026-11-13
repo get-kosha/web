@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef, useState, type ReactNode } from "react"
+import { Fragment, useCallback, useEffect, useRef, useState, type ReactNode } from "react"
 import {
   CaretDownIcon,
   CaretLeftIcon,
@@ -147,15 +147,20 @@ function Activity() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [editing, setEditing] = useState<Tx | null>(null)
   const listRef = useRef<HTMLDivElement>(null)
-  const set = (patch: Partial<Search>) =>
-    navigate({ search: (prev) => ({ ...prev, limit: undefined, ...patch }), replace: true, resetScroll: false })
+  const set = useCallback(
+    (patch: Partial<Search>) =>
+      navigate({ search: (prev) => ({ ...prev, limit: undefined, ...patch }), replace: true, resetScroll: false }),
+    [navigate]
+  )
 
   useEffect(() => {
     const t = setTimeout(() => q !== (s.q ?? "") && set({ q: q || undefined }), 250)
     return () => clearTimeout(t)
-  }, [q])
+  }, [q, s.q, set])
   // Follow outside changes (e.g. "See all" at a payee), but never overwrite what the user is typing.
+  // Which field has focus is only known in the browser, so this waits for the effect.
   useEffect(() => {
+    // oxlint-disable-next-line react/set-state-in-effect
     if (document.activeElement?.id !== "activity-search") setQ(s.q ?? "")
   }, [s.q])
 
@@ -165,9 +170,7 @@ function Activity() {
   const selected = data.rows.find((t) => t.id === selectedId) ?? null
 
   // Drop the selection when its row leaves the list (deleted, filtered out, other month).
-  useEffect(() => {
-    if (selectedId && !selected) setSelectedId(null)
-  }, [selectedId, selected])
+  if (selectedId && !selected) setSelectedId(null)
 
   // Arrow keys move the selection and Esc closes the panel. List navigation never animates, on purpose.
   useEffect(() => {
@@ -504,6 +507,7 @@ function PeriodPicker({ shown, current, onPick }: { shown: Period; current: stri
   const [choosing, setChoosing] = useState(false)
   // Remounts the dates dialog each time it opens, so it starts from what's shown.
   const [opened, setOpened] = useState(0)
+  const [today] = useState(() => dayOf(Date.now() / 1000, meta.tz))
   const days = periodDays(shown)
   // Switching to a month or a year keeps where you are, but never moves past now.
   const month = days && days.to.slice(0, 7) < current ? days.to.slice(0, 7) : current
@@ -571,7 +575,7 @@ function PeriodPicker({ shown, current, onPick }: { shown: Period; current: stri
       <DaysDialog
         key={opened}
         open={choosing}
-        initial={days ?? { from: `${current}-01`, to: dayOf(Date.now() / 1000, meta.tz) }}
+        initial={days ?? { from: `${current}-01`, to: today }}
         onClose={() => setChoosing(false)}
         onPick={(from, to) => onPick({ kind: "range", from, to })}
       />

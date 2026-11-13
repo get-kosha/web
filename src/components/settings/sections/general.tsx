@@ -150,7 +150,8 @@ export function TimeZonePicker({ value, onChange }: { value: string; onChange: (
   const [open, setOpen] = useState(false)
   const [q, setQ] = useState("")
   const zones = useMemo(() => (open ? Intl.supportedValuesOf("timeZone") : []), [open])
-  const now = useMemo(() => new Date(), [open])
+  // Offsets are worked out for the moment the picker last opened.
+  const [now, setNow] = useState(() => new Date())
   const words = q.trim().toLowerCase().split(/\s+/).filter(Boolean)
   // ponytail: offsets are computed only for the first 80 matches; typing narrows the rest.
   const shown = zones.filter((z) => words.every((w) => z.toLowerCase().replace(/_/g, " ").includes(w))).slice(0, 80)
@@ -166,14 +167,15 @@ export function TimeZonePicker({ value, onChange }: { value: string; onChange: (
       open={open}
       onOpenChange={(o) => {
         setOpen(o)
-        if (!o) setQ("")
+        if (o) setNow(new Date())
+        else setQ("")
       }}
       autoHighlight
     >
       <ComboboxTrigger className="inline-flex h-9 items-center gap-2 rounded-md border bg-card pr-2.5 pl-3 text-[13px] whitespace-nowrap transition-colors hover:border-muted-foreground/50 aria-expanded:border-muted-foreground/50 max-md:h-11 max-md:border-0 max-md:bg-transparent max-md:pr-0 max-md:text-[15px] max-md:text-subtle-foreground [&>svg]:ml-auto [&>svg]:size-3.5">
         <span className="max-md:hidden">{value.replace(/_/g, " ")}</span>
         <span className="md:hidden">{value.split("/").pop()?.replace(/_/g, " ")}</span>
-        <span className="font-mono text-muted-foreground tabular-nums">{offsetOf(value, new Date())}</span>
+        <span className="font-mono text-muted-foreground tabular-nums">{offsetOf(value, now)}</span>
       </ComboboxTrigger>
       <ComboboxContent align="end" className="w-80">
         <ComboboxInput

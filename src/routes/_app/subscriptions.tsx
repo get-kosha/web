@@ -134,7 +134,7 @@ function Subscriptions() {
   const [adopting, setAdopting] = useState<Guess | null>(null)
   const router = useRouter()
   const [showEnded, setShowEnded] = useState(false)
-  const today = dayOf(Date.now() / 1000, meta.tz)
+  const [today] = useState(() => dayOf(Date.now() / 1000, meta.tz))
   const cur = useGlobals().currency
   const money = (v: number) => fmt(v, cur)
   const toCur = (v: number, from: string) => convert(v, from, cur, meta.rates)

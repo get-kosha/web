@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react"
 import { Link, createFileRoute, useNavigate, useRouter } from "@tanstack/react-router"
 import {
   ArrowCounterClockwiseIcon,
@@ -169,9 +169,11 @@ function Session({ data }: { data: ReconcileData }) {
   const fileInput = useRef<HTMLInputElement>(null)
 
   // A half-done reconciliation survives leaving the page. A statement file has to be dropped in again.
+  // The draft is in localStorage, so it's read after mount to keep server and client's first frame the same.
   useEffect(() => {
     const d = readDraft(a.id)
     if (d) {
+      // oxlint-disable-next-line react/set-state-in-effect
       setDay(d.day)
       setBalanceText(d.balance)
       setTicks(d.ticks)
@@ -189,14 +191,17 @@ function Session({ data }: { data: ReconcileData }) {
 
   // ---------- matching an imported statement ----------
 
-  const name = (e: ReconcileEntry) => {
-    if (!e.transfer_id)
-      return e.name || meta.categories.find((c) => c.id === e.category_id)?.name || m.reconcile_no_payee()
-    const account = meta.wallets.find((w) => w.id === e.counter_wallet_id)?.name
-    if (account) return (e.amount < 0 ? m.reconcile_transfer_to_name : m.reconcile_transfer_from_name)({ account })
-    return e.amount < 0 ? m.reconcile_transfer_to_other() : m.reconcile_transfer_from_other()
-  }
-  const lines = loaded?.lines ?? []
+  const name = useCallback(
+    (e: ReconcileEntry) => {
+      if (!e.transfer_id)
+        return e.name || meta.categories.find((c) => c.id === e.category_id)?.name || m.reconcile_no_payee()
+      const account = meta.wallets.find((w) => w.id === e.counter_wallet_id)?.name
+      if (account) return (e.amount < 0 ? m.reconcile_transfer_to_name : m.reconcile_transfer_from_name)({ account })
+      return e.amount < 0 ? m.reconcile_transfer_to_other() : m.reconcile_transfer_from_other()
+    },
+    [meta.categories, meta.wallets]
+  )
+  const lines = useMemo(() => loaded?.lines ?? [], [loaded])
   // What matches, what's missing and what counts as ticked: the same plan the public API uses.
   const plan = useMemo(() => {
     const entry = (e: ReconcileEntry) => ({
@@ -216,7 +221,7 @@ function Session({ data }: { data: ReconcileData }) {
       rejected: notSame,
       withdrawn: loaded?.withdrawn,
     })
-  }, [lines, loaded?.withdrawn, data.open, data.done, day, last, notSame])
+  }, [lines, loaded?.withdrawn, data.open, data.done, day, last, notSame, name])
   const { close, periodStart, inPeriod, ticks: defaultTick, matched: matchedOpen } = plan
   const missing = plan.missing.map((i) => ({ l: lines[i], i }))
   const closeIds = new Set(close.map((p) => p.entry))
@@ -262,8 +267,10 @@ function Session({ data }: { data: ReconcileData }) {
   }
   const pick = (ref: string, patch: Pickd) => setPicks((p) => ({ ...p, [ref]: { ...p[ref], ...patch } }))
 
-  // AI tidies the payee names and categories Kosha couldn't work out itself, once per statement.
+  // AI tidies the payee names and categories Kosha couldn't work out itself, once per statement. It is
+  // keyed on the statement alone: the ref already stops a second ask, and each ask spends the user's tokens.
   const tidyAsked = useRef<string | null>(null)
+  /* oxlint-disable react/exhaustive-deps, react/set-state-in-effect */
   useEffect(() => {
     if (!meta.ai.statements || meta.prefs.ai_share_payee !== "1" || !loaded || !missing.length) return
     const sig = `${loaded.name}:${lines.length}`
@@ -284,6 +291,7 @@ function Session({ data }: { data: ReconcileData }) {
       .catch(() => {}) // without it, Kosha's own names stand
       .finally(() => setBusy((b) => (b === "tidy" ? null : b)))
   }, [loaded, missing.length])
+  /* oxlint-enable react/exhaustive-deps, react/set-state-in-effect */
 
   // ---------- reading a file ----------
 

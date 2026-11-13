@@ -129,6 +129,7 @@ export function PhoneAdd() {
       meta.prefs.default_wallet,
       meta.wallets.filter((w) => !w.archived)
     )
+    // oxlint-disable-next-line react/set-state-in-effect
     if (id) setWalletId(id)
   }, [meta.wallets, meta.prefs.default_wallet])
   const [day, setDay] = useState(today)
@@ -143,7 +144,8 @@ export function PhoneAdd() {
   // Until you pick an event this stays undefined, and the entry gets the event its day falls in.
   const [pickedEvent, setPickedEvent] = useState<string | null | undefined>(undefined)
   const eventId = pickedEvent !== undefined ? pickedEvent : eventFor(day, meta.events)
-  const [match, setMatch] = useState<PayeeSuggestion | null>(null)
+  const [found, setFound] = useState<PayeeSuggestion | null>(null)
+  const match = payee.trim().length < 2 ? null : found
   const [saving, setSaving] = useState(false)
   const [savedOnce, setSavedOnce] = useState(false)
   const [repeat, setRepeat] = useState<Repeat | null>(null)
@@ -178,11 +180,11 @@ export function PhoneAdd() {
   // Look up the payee's usual amount, category and account.
   useEffect(() => {
     const q = payee.trim()
-    if (q.length < 2) return setMatch(null)
+    if (q.length < 2) return
     let live = true
     const t = setTimeout(() => {
       void suggestPayees({ data: { q } })
-        .then((r) => live && setMatch(r.find((x) => x.name.toLowerCase() === q.toLowerCase()) ?? r[0] ?? null))
+        .then((r) => live && setFound(r.find((x) => x.name.toLowerCase() === q.toLowerCase()) ?? r[0] ?? null))
         .catch(() => {})
     }, 150)
     return () => {

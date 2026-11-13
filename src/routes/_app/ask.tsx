@@ -103,13 +103,16 @@ function Ask() {
     }
   }
 
-  // A question carried in the URL is asked once, then dropped from the URL.
+  // A question carried in the URL is asked once, then dropped from the URL. The ref, not the deps,
+  // keeps it to one ask.
+  /* oxlint-disable react/exhaustive-deps */
   useEffect(() => {
     if (!q || asked.current === q) return
     asked.current = q
     void navigate({ search: {}, replace: true })
     void send(q)
   }, [q])
+  /* oxlint-enable react/exhaustive-deps */
 
   const leave = () => (router.history.canGoBack() ? router.history.back() : void navigate({ to: "/" }))
   const clear = () => {

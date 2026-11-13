@@ -115,13 +115,16 @@ function Login() {
     window.location.assign(mode === "up" && !returnTo ? "/welcome" : safeReturn(returnTo))
   }
 
-  // Offer saved passkeys in the email field's autofill (WebAuthn conditional UI).
+  // Offer saved passkeys in the email field's autofill (WebAuthn conditional UI). It is armed once:
+  // running again would start a second WebAuthn request.
+  /* oxlint-disable react/exhaustive-deps */
   useEffect(() => {
     if (!window.PublicKeyCredential?.isConditionalMediationAvailable) return
     void PublicKeyCredential.isConditionalMediationAvailable().then((ok) => {
       if (ok) void authClient.signIn.passkey({ autoFill: true }).then((r) => !r?.error && done(r?.data))
     })
   }, [])
+  /* oxlint-enable react/exhaustive-deps */
 
   /** Switches between sign in, create account and the demo. */
   function show(next: { mode?: "up"; demo?: true }) {

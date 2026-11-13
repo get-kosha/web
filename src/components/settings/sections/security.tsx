@@ -288,7 +288,7 @@ function Passkeys({
             >
               <KeyIcon className="size-[18px] shrink-0 text-subtle-foreground" />
               <div className="min-w-0 flex-1">
-                <PasskeyName id={p.id} name={p.name ?? ""} onSaved={refetch} />
+                <PasskeyName key={p.name ?? ""} id={p.id} name={p.name ?? ""} onSaved={refetch} />
                 <p className="text-xs text-muted-foreground">
                   {p.backedUp
                     ? m.settings_sec_passkey_added_synced({ date: when(p.createdAt) })
@@ -441,9 +441,9 @@ function Google() {
 }
 
 /** A passkey's name, editable in place and saved when you leave the field. */
+// The row is keyed by the saved name, so a rename from elsewhere starts the field afresh.
 function PasskeyName({ id, name, onSaved }: { id: string; name: string; onSaved: () => void }) {
   const [value, setValue] = useState(name)
-  useEffect(() => setValue(name), [name])
   return (
     <input
       aria-label={m.settings_sec_passkey_name()}

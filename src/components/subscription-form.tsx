@@ -49,7 +49,7 @@ export function SubscriptionForm({
 }) {
   const meta = useMeta()
   const router = useRouter()
-  const today = dayOf(Date.now() / 1000, meta.tz)
+  const [today] = useState(() => dayOf(Date.now() / 1000, meta.tz))
   const active = meta.wallets.filter((w) => !w.archived)
   const [kind, setKind] = useState<Kind>(
     initial?.to_wallet_id || (!initial && startAsTransfer)

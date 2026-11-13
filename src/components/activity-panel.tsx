@@ -115,7 +115,8 @@ export function ActivityPanel({
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle")
   const [amountText, setAmountText] = useState<string | null>(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
-  const [history, setHistory] = useState<History | null>(null)
+  const [found, setFound] = useState<History | null>(null)
+  const history = !tx.name || isTransfer ? null : found
 
   async function persist(next: Draft) {
     pending.current = null
@@ -140,7 +141,9 @@ export function ActivityPanel({
     pending.current = { next, timer: setTimeout(() => void persist(next), wait) }
   }
 
-  // Switching rows or closing the panel saves any pending change.
+  // Switching rows or closing the panel saves any pending change. It runs on unmount only, and the first
+  // render's persist is enough since the panel is remounted for each row.
+  /* oxlint-disable react/exhaustive-deps */
   useEffect(
     () => () => {
       if (!pending.current) return
@@ -149,12 +152,13 @@ export function ActivityPanel({
     },
     []
   )
+  /* oxlint-enable react/exhaustive-deps */
 
   useEffect(() => {
-    if (!tx.name || isTransfer) return setHistory(null)
+    if (!tx.name || isTransfer) return
     let live = true
     getPayeeHistory({ data: { name: tx.name } }).then(
-      (h) => live && setHistory(h),
+      (h) => live && setFound(h),
       () => {}
     )
     return () => {

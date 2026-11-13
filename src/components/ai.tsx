@@ -44,7 +44,7 @@ export function useAiCategory(payee: string, kind: "expense" | "income", on: boo
       live = false
       clearTimeout(t)
     }
-  }, [ready, key])
+  }, [ready, key, name, kind])
   return { id: ready ? (guesses.get(key) ?? null) : null, loading: ready && asking === key }
 }
 

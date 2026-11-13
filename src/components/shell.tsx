@@ -45,7 +45,7 @@ export const useMeta = () => app.useLoaderData()
 export function useGlobals() {
   const meta = useMeta()
   const s = app.useSearch()
-  const current = monthOf(Date.now() / 1000, meta.tz)
+  const [current] = useState(() => monthOf(Date.now() / 1000, meta.tz))
   return {
     month: s.month ?? current,
     current,
@@ -118,7 +118,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     }
     window.addEventListener("keydown", onKey)
     return () => window.removeEventListener("keydown", onKey)
-  }, [])
+  }, [navigate])
 
   return (
     <ShortcutsContext value={() => setShortcuts(true)}>
