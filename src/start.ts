@@ -51,11 +51,14 @@ const locale = createMiddleware().server(({ next, request }) =>
 // without cookies: they authenticate with a code, PKCE verifier or token, never a session. A request that carries
 // cookies is checked like any other, so another site can't, say, register a client owned by the user.
 const COOKIELESS = /^\/api\/auth\/oauth2\/(token|revoke|introspect|register)$/
+// Sign in with Apple posts its answer from appleid.apple.com. Better Auth only turns that POST into a GET of the
+// same callback, which then checks the sign-in's state cookie, so letting it through can't act as anyone.
+const APPLE_CALLBACK = "/api/auth/callback/apple"
 const csrf = createCsrfMiddleware({
   filter: (ctx) => {
     if (ctx.handlerType === "serverFn") return true
     const path = new URL(ctx.request.url).pathname
-    if (ctx.request.method !== "POST" || BEARER.test(path)) return false
+    if (ctx.request.method !== "POST" || BEARER.test(path) || path === APPLE_CALLBACK) return false
     return !COOKIELESS.test(path) || ctx.request.headers.has("cookie")
   },
 })
