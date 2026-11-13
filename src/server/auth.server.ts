@@ -44,11 +44,14 @@ const GOOGLE = env as { GOOGLE_CLIENT_ID?: string; GOOGLE_CLIENT_SECRET?: string
 export const googleSignIn = !!(GOOGLE.GOOGLE_CLIENT_ID && GOOGLE.GOOGLE_CLIENT_SECRET)
 
 // APPLE_CLIENT_ID is the Services ID, and APPLE_TEAM_ID is the same team id the apps' universal links use.
-const APPLE = env as {
-  APPLE_CLIENT_ID?: string
-  APPLE_TEAM_ID?: string
-  APPLE_KEY_ID?: string
-  APPLE_PRIVATE_KEY?: string
+// Trimmed, because a value pasted into `wrangler secret put` can keep a trailing newline, and Apple then rejects
+// the client secret signed with it as invalid_client.
+const appleVar = (name: string) => (env as unknown as Record<string, string | undefined>)[name]?.trim()
+const APPLE = {
+  APPLE_CLIENT_ID: appleVar("APPLE_CLIENT_ID"),
+  APPLE_TEAM_ID: appleVar("APPLE_TEAM_ID"),
+  APPLE_KEY_ID: appleVar("APPLE_KEY_ID"),
+  APPLE_PRIVATE_KEY: appleVar("APPLE_PRIVATE_KEY"),
 }
 /** Whether this deployment has a Sign in with Apple key, so sign-in can offer Apple. */
 export const appleSignIn = !!(
