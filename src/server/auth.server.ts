@@ -8,6 +8,8 @@ import { mcp } from "@better-auth/mcp"
 import { getOAuthProviderApi, type OAuthClaimExtensionInput } from "@better-auth/oauth-provider"
 import { dash, sentinel } from "@better-auth/infra"
 import { getRequest } from "@tanstack/react-start/server"
+import { decryptOAuthToken } from "better-auth/oauth2"
+import { importPKCS8, SignJWT } from "jose"
 import { DEFAULT_CATEGORIES } from "@/lib/defaults"
 import { DEMO, MIN_PASSWORD, intlLocale } from "@/lib/core"
 import { m } from "@/paraglide/messages"
@@ -40,6 +42,69 @@ export const API_SCOPES = { read: "kosha:read", write: "kosha:write" } as const
 const GOOGLE = env as { GOOGLE_CLIENT_ID?: string; GOOGLE_CLIENT_SECRET?: string }
 /** Whether this deployment has a Google OAuth client, so sign-in and Settings can offer Google. */
 export const googleSignIn = !!(GOOGLE.GOOGLE_CLIENT_ID && GOOGLE.GOOGLE_CLIENT_SECRET)
+
+// APPLE_CLIENT_ID is the Services ID, and APPLE_TEAM_ID is the same team id the apps' universal links use.
+const APPLE = env as {
+  APPLE_CLIENT_ID?: string
+  APPLE_TEAM_ID?: string
+  APPLE_KEY_ID?: string
+  APPLE_PRIVATE_KEY?: string
+}
+/** Whether this deployment has a Sign in with Apple key, so sign-in can offer Apple. */
+export const appleSignIn = !!(
+  APPLE.APPLE_CLIENT_ID &&
+  APPLE.APPLE_TEAM_ID &&
+  APPLE.APPLE_KEY_ID &&
+  APPLE.APPLE_PRIVATE_KEY
+)
+
+/**
+ * Apple takes no fixed client secret: it's a JWT signed with the Sign in with Apple key (the .p8 file), which
+ * Apple accepts for at most six months. Signing a fresh one each time means nothing to renew.
+ */
+async function appleClientSecret() {
+  const now = Math.floor(Date.now() / 1000)
+  // A .dev.vars line can't hold the key's line breaks, so it may come with literal \n instead.
+  const key = await importPKCS8(APPLE.APPLE_PRIVATE_KEY!.replaceAll("\\n", "\n"), "ES256")
+  return new SignJWT({})
+    .setProtectedHeader({ alg: "ES256", kid: APPLE.APPLE_KEY_ID! })
+    .setIssuer(APPLE.APPLE_TEAM_ID!)
+    .setSubject(APPLE.APPLE_CLIENT_ID!)
+    .setAudience("https://appleid.apple.com")
+    .setIssuedAt(now)
+    .setExpirationTime(now + 60 * 60 * 24 * 150)
+    .sign(key)
+}
+
+/**
+ * Apple asks apps to revoke their Sign in with Apple tokens when the account is deleted, so the person's
+ * Apple ID stops listing Kosha. A failure is logged and never stops the deletion.
+ */
+async function revokeApple(uid: string) {
+  if (!appleSignIn) return
+  const row = await env.DB.prepare(`SELECT "refreshToken" FROM "account" WHERE "userId" = ? AND "providerId" = 'apple'`)
+    .bind(uid)
+    .first<{ refreshToken: string | null }>()
+  if (!row?.refreshToken) return
+  try {
+    const res = await fetch("https://appleid.apple.com/auth/revoke", {
+      method: "POST",
+      body: new URLSearchParams({
+        client_id: APPLE.APPLE_CLIENT_ID!,
+        client_secret: await appleClientSecret(),
+        // Better Auth types its context per config; this helper takes the general one.
+        token: await decryptOAuthToken(
+          row.refreshToken,
+          (await auth.$context) as unknown as Parameters<typeof decryptOAuthToken>[1]
+        ),
+        token_type_hint: "refresh_token",
+      }),
+    })
+    if (!res.ok) console.error("Apple didn't revoke the sign-in", res.status, await res.text())
+  } catch (e) {
+    console.error("Couldn't revoke the Apple sign-in", e)
+  }
+}
 
 // Better Auth's hosted dashboard (dash.better-auth.com) for managing accounts, and Sentinel, its abuse checks
 // (new email addresses, plus whatever the dashboard turns on). Off without a key, so a self-hosted copy never
@@ -124,16 +189,22 @@ export const auth = betterAuth({
   },
   // Google's callback is <BETTER_AUTH_URL>/api/auth/callback/google. A Google email that already has a
   // password account isn't linked on sign-in, since that address was never verified here; its owner
-  // connects Google from Settings › Sign-in & security instead.
-  socialProviders: googleSignIn
-    ? {
-        google: {
-          clientId: GOOGLE.GOOGLE_CLIENT_ID!,
-          clientSecret: GOOGLE.GOOGLE_CLIENT_SECRET!,
-          prompt: "select_account",
-        },
-      }
-    : undefined,
+  // connects Google from Settings › Sign-in & security instead. Apple works the same way, except that Settings
+  // has no Connect Apple: with Hide My Email the address rarely matches anyway.
+  socialProviders: {
+    ...(googleSignIn && {
+      google: {
+        clientId: GOOGLE.GOOGLE_CLIENT_ID!,
+        clientSecret: GOOGLE.GOOGLE_CLIENT_SECRET!,
+        prompt: "select_account",
+      },
+    }),
+    ...(appleSignIn && {
+      apple: async () => ({ clientId: APPLE.APPLE_CLIENT_ID!, clientSecret: await appleClientSecret() }),
+    }),
+  },
+  // Apple posts its answer back to <BETTER_AUTH_URL>/api/auth/callback/apple from its own origin.
+  trustedOrigins: appleSignIn ? ["https://appleid.apple.com"] : [],
   session: { expiresIn: 60 * 60 * 24 * 30, updateAge: 60 * 60 * 24 },
   // Better Auth's default for reset emails is 3 a minute per IP. Stated here so an upgrade can't loosen it.
   rateLimit: { enabled: true, storage: "database", customRules: { "/request-password-reset": { window: 60, max: 3 } } },
@@ -163,7 +234,8 @@ export const auth = betterAuth({
     // Deleting an account removes every row of the user's finance data first (Settings › Account › Delete).
     deleteUser: { enabled: true, beforeDelete: (user) => deleteUserData(user.id) },
   },
-  // Better Auth keeps Google's tokens on the account row. Kosha never calls Google with them, so keep them encrypted.
+  // Better Auth keeps Google's and Apple's tokens on the account row. Kosha only uses Apple's, to revoke them when
+  // the account is deleted, so keep them encrypted.
   account: { encryptOAuthTokens: true },
   databaseHooks: {
     user: {
@@ -292,6 +364,7 @@ export const USER_TABLES = [
 ]
 async function deleteUserData(id: string) {
   const DB = env.DB
+  await revokeApple(id)
   await avatars()?.delete(avatarKey(id))
   await deleteAllAttachments(id)
   await DB.batch([

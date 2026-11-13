@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react"
 import { createFileRoute } from "@tanstack/react-router"
-import { EyeIcon, GoogleLogoIcon, KeyIcon } from "@phosphor-icons/react/ssr"
+import { AppleLogoIcon, EyeIcon, GoogleLogoIcon, KeyIcon } from "@phosphor-icons/react/ssr"
 import { ParaglideMessage } from "@inlang/paraglide-js-react"
 import { REGEXP_ONLY_DIGITS } from "input-otp"
 import { z } from "zod"
@@ -29,8 +29,10 @@ export const Route = createFileRoute("/login")({
     returnTo: z.string().optional(),
     mode: z.enum(["in", "up"]).optional().catch(undefined),
     demo: z.coerce.boolean().optional().catch(undefined),
-    // Set by Better Auth when Google sends the visitor back without signing them in.
+    // Set by Better Auth when Google or Apple sends the visitor back without signing them in. provider is ours,
+    // added to the way back so the message names the right one.
     error: z.string().optional().catch(undefined),
+    provider: z.enum(["google", "apple"]).optional().catch(undefined),
     // Set by /reset-password after a new password is saved.
     reset: z.coerce.boolean().optional().catch(undefined),
     // An OAuth sign-in from Kosha's phone apps sends login_hint=demo for "Try the demo".
@@ -45,9 +47,11 @@ export const Route = createFileRoute("/login")({
 type Failure = { field?: "email" | "password"; message: string }
 type AuthResult = { error: { code?: string; message?: string; status?: number } | null; data?: unknown } | undefined
 
-/** What to say when Google sign-in comes back with an error code. */
-function googleError(code: string | undefined): Failure | null {
+/** What to say when Google or Apple sign-in comes back with an error code. */
+function socialError(code: string | undefined, provider: "google" | "apple" | undefined): Failure | null {
   if (!code) return null
+  if (provider === "apple")
+    return { message: code === "account_not_linked" ? m.auth_apple_not_linked() : m.auth_apple_failed() }
   if (code === "account_not_linked") return { message: m.auth_google_not_linked() }
   return { message: m.auth_google_failed() }
 }
@@ -89,7 +93,7 @@ const offline = { error: { code: "OFFLINE" }, data: null }
 
 function Login() {
   const search = Route.useSearch()
-  const { google, demo: hasDemo, resetByEmail } = Route.useLoaderData()
+  const { google, apple, demo: hasDemo, resetByEmail } = Route.useLoaderData()
   const { returnTo } = search
   // The landing page's "Create an account" opens this page with ?mode=up, and "Try the demo" with ?demo=1
   // (the phone apps with login_hint=demo).
@@ -99,7 +103,7 @@ function Login() {
   const [notice, setNotice] = useState(!!search.reset)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [error, setError] = useState(googleError(search.error))
+  const [error, setError] = useState(socialError(search.error, search.provider))
   const [busy, setBusy] = useState(false)
   // Set after a correct password when the account has two-factor on. The next step asks for the code.
   const [twoFactor, setTwoFactor] = useState(false)
@@ -137,14 +141,15 @@ function Login() {
     else done(res?.data)
   }
 
-  function signInWithGoogle() {
-    // Come back to this page, minus any earlier error, if Google sign-in fails.
+  function signInWith(provider: "google" | "apple") {
+    // Come back to this page, minus any earlier error, if the sign-in fails.
     const back = new URL(window.location.href)
     back.searchParams.delete("error")
     back.searchParams.delete("error_description")
+    back.searchParams.set("provider", provider)
     void run(() =>
       authClient.signIn.social({
-        provider: "google",
+        provider,
         callbackURL: safeReturn(returnTo),
         newUserCallbackURL: returnTo ? safeReturn(returnTo) : "/welcome",
         errorCallbackURL: back.pathname + back.search,
@@ -279,11 +284,11 @@ function Login() {
       {signIn && !demo && (
         <>
           <AuthDivider>{m.auth_or_sign_in_with()}</AuthDivider>
-          <div className={cn("grid gap-2.5", google && "grid-cols-2")}>
+          <div className={cn("grid gap-2.5", (google || apple) && "grid-cols-2")}>
             <Button
               variant="outline"
               size="auth-option"
-              className={optionClass}
+              className={cn(optionClass, google && apple && "col-span-2")}
               aria-label={m.auth_sign_in_passkey()}
               disabled={busy}
               onClick={passkey}
@@ -297,9 +302,21 @@ function Login() {
                 className={optionClass}
                 aria-label={m.auth_sign_in_google()}
                 disabled={busy}
-                onClick={signInWithGoogle}
+                onClick={() => signInWith("google")}
               >
                 <GoogleLogoIcon className="text-subtle-foreground" /> Google
+              </Button>
+            )}
+            {apple && (
+              <Button
+                variant="outline"
+                size="auth-option"
+                className={optionClass}
+                aria-label={m.auth_sign_in_apple()}
+                disabled={busy}
+                onClick={() => signInWith("apple")}
+              >
+                <AppleLogoIcon weight="fill" /> Apple
               </Button>
             )}
           </div>
@@ -320,20 +337,33 @@ function Login() {
         </>
       )}
 
-      {!signIn && google && (
+      {!signIn && (google || apple) && (
         <>
           <div className="max-md:hidden">
             <AuthDivider>{m.auth_or()}</AuthDivider>
           </div>
-          <Button
-            variant="outline"
-            size="auth-option"
-            className={optionClass}
-            disabled={busy}
-            onClick={signInWithGoogle}
-          >
-            <GoogleLogoIcon className="text-subtle-foreground" /> {m.auth_sign_up_google()}
-          </Button>
+          {google && (
+            <Button
+              variant="outline"
+              size="auth-option"
+              className={optionClass}
+              disabled={busy}
+              onClick={() => signInWith("google")}
+            >
+              <GoogleLogoIcon className="text-subtle-foreground" /> {m.auth_sign_up_google()}
+            </Button>
+          )}
+          {apple && (
+            <Button
+              variant="outline"
+              size="auth-option"
+              className={optionClass}
+              disabled={busy}
+              onClick={() => signInWith("apple")}
+            >
+              <AppleLogoIcon weight="fill" /> {m.auth_sign_up_apple()}
+            </Button>
+          )}
         </>
       )}
 

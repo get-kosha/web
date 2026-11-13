@@ -15,6 +15,7 @@ import {
   demoAvailable,
   getUser,
   googleSignIn,
+  appleSignIn,
   resetEmail,
   setAvatar,
   userId,
@@ -68,9 +69,10 @@ export const guestVisit = createIsomorphicFn()
   })
 
 /** The sign-in methods this deployment offers beyond email, password and passkeys. */
-/** What /login can offer: Google, the demo account, and "Forgot password?" (only where email can go out). */
+/** What /login can offer: Google, Apple, the demo account, and "Forgot password?" (only where email can go out). */
 export const signInOptions = createServerFn({ method: "GET" }).handler(async () => ({
   google: googleSignIn,
+  apple: appleSignIn,
   demo: await demoAvailable(),
   resetByEmail: canEmail,
 }))
