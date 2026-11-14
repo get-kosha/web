@@ -147,9 +147,37 @@ export function isPrivateIp(ip: string): boolean {
   )
 }
 
+/** The digits, separators and grouping a locale writes 12,345,678.9 of `currency` with, without its symbol. */
+const moneyDigits = (locale: string, currency: string) =>
+  new Intl.NumberFormat(locale, { style: "currency", currency })
+    .formatToParts(12345678.9)
+    .filter((p) => p.type !== "currency" && p.type !== "literal")
+    .map((p) => p.value)
+    .join("")
+
+const moneyLocales = new Map<string, string>()
+/**
+ * The locale to write amounts of `currency` in. English uses the currency's home country's digit grouping and separators
+ * (₹1,23,45,678.90, CHF 12'345.00, 12 345,00 kr), and otherwise British English so symbols stay unambiguous (US$, CA$).
+ */
+// ponytail: other languages keep their own number format for every currency; CLDR has no de-IN or fr-IN to borrow from
+export function moneyLocale(currency: string) {
+  const locale = intlLocale()
+  if (locale !== "en-GB") return locale
+  const code = currency.toUpperCase()
+  let l = moneyLocales.get(code)
+  if (!l) {
+    // A currency code starts with its country's code (INR, CHF); en-<country> falls back to plain English when unknown.
+    const home = `en-${code.slice(0, 2)}`
+    l = moneyDigits(home, code) === moneyDigits(locale, code) ? locale : home
+    moneyLocales.set(code, l)
+  }
+  return l
+}
+
 const moneyFormats = new Map<string, Intl.NumberFormat>()
 export function fmt(cents: number, currency: string, compact = false) {
-  const locale = intlLocale()
+  const locale = moneyLocale(currency)
   const key = locale + currency + compact
   let f = moneyFormats.get(key)
   if (!f) {

@@ -1148,7 +1148,7 @@ console.log("getting started ok")
 // languages: every message exists in every locale, and formats follow the language
 import { m as messages } from "../paraglide/messages.js"
 import { locales } from "../paraglide/runtime.js"
-import { fmt } from "./core.ts"
+import { fmt, moneyLocale } from "./core.ts"
 import { readdirSync, readFileSync } from "node:fs"
 const keysOf = (l: string) =>
   readdirSync(`messages/${l}`).flatMap((f) =>
@@ -1185,6 +1185,12 @@ for (const [key, [{ declarations }]] of plurals) {
     }
 }
 assert.equal(fmt(123456, "eur"), "€1,234.56")
+// English writes each currency the way its home country groups and separates digits; symbols stay British.
+assert.equal(fmt(1367828176, "inr"), "₹1,36,78,281.76")
+assert.equal(fmt(1367828176, "inr", true), "₹1.4Cr")
+assert.equal(fmt(123456789, "chf"), "CHF\u00a01'234'567.89")
+assert.equal(fmt(123456, "usd"), "US$1,234.56")
+assert.equal(moneyLocale("usd"), "en-GB")
 console.log("languages ok")
 
 // ---------- month boundaries across DST ----------

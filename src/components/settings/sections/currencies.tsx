@@ -15,7 +15,7 @@ import { currencyOptions, useMeta } from "@/components/shell"
 import { Pill, SettingGroup, SettingRow } from "@/components/settings/row"
 import { useSave } from "@/components/settings/saved"
 import { saveCore } from "@/components/settings/sections/general"
-import { intlLocale, convert } from "@/lib/core"
+import { intlLocale, convert, moneyLocale } from "@/lib/core"
 import { cn } from "@/lib/utils"
 import { m } from "@/paraglide/messages"
 
@@ -126,7 +126,7 @@ export function Currencies() {
 function rateIn(from: string, to: string, rates: Record<string, number>) {
   const r = convert(100, from, to, rates) / 100
   const digits = r >= 100 ? 2 : 4
-  return new Intl.NumberFormat(intlLocale(), {
+  return new Intl.NumberFormat(moneyLocale(to), {
     style: "currency",
     currency: to.toUpperCase(),
     minimumFractionDigits: digits,

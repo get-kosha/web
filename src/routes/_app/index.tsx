@@ -35,7 +35,7 @@ import {
   type Upcoming,
   type Wallet,
 } from "@/lib/api"
-import { intlLocale, addDays, convert, dayOf, fmt, netWorth, shiftMonth } from "@/lib/core"
+import { intlLocale, addDays, convert, dayOf, fmt, moneyLocale, netWorth, shiftMonth } from "@/lib/core"
 import { cn } from "@/lib/utils"
 import { ParaglideMessage } from "@inlang/paraglide-js-react"
 import { m } from "@/paraglide/messages"
@@ -1057,7 +1057,7 @@ function LastTwelveMonths({ d }: { d: Dash }) {
     <span className={cn("num", saved >= 0 ? "text-positive" : "text-warning")}>{children}</span>
   )
   const whole = (v: number) =>
-    `${v > 0 ? "+" : v < 0 ? "−" : ""}${Math.abs(Math.round(v / 100)).toLocaleString(intlLocale())}`
+    `${v > 0 ? "+" : v < 0 ? "−" : ""}${Math.abs(Math.round(v / 100)).toLocaleString(moneyLocale(d.primary))}`
 
   return (
     <Card className="gap-6 px-6 max-md:hidden">
